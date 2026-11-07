@@ -1,0 +1,30 @@
+{
+  // Plataforma de Indicadores APS – Cajamar (Cloudflare Worker + D1)
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "indicadores-aps",
+  "main": "api/index.js",
+  "compatibility_date": "2026-10-01",
+
+  // Painel (páginas estáticas). As rotas /api/* sempre passam pelo Worker.
+  "assets": {
+    "directory": "./painel",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "indicadores-aps",
+      "database_id": "PREENCHER_COM_O_ID_DO_BANCO",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "observability": { "enabled": true }
+
+  // Chaves (configurar como "secrets" no painel do Cloudflare, nunca neste arquivo):
+  //   TOKEN_COLETA  – usada pela extensão para enviar coletas
+  //   TOKEN_BACKUP  – somente leitura, usada pelo script de backup no Google Drive
+  //   TOKEN_ADMIN   – administração e restauração
+}
