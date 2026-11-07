@@ -1,11 +1,11 @@
-# plataforma-indicadores-aps
+# Painel APS
 
-Plataforma de Indicadores da Atenção Primária da Secretaria de Saúde de Cajamar.
+O **Painel APS** é a Plataforma de Indicadores da Atenção Primária da Secretaria de Saúde de Cajamar (repositório `plataforma-indicadores-aps`). Endereço previsto: `https://painelaps.pages.dev`.
 
 Ela recebe as coletas mensais feitas pela extensão do Chrome no PEC e-SUS APS, guarda o histórico e, nas próximas fases, mostra os painéis (dashboards) por município, unidade e equipe.
 
 ```
-PEC e-SUS ──► extensão do Chrome ──► API (Cloudflare Worker) ──► banco D1
+PEC e-SUS ──► extensão do Chrome ──► API (Cloudflare Pages Functions) ──► banco D1
                                           │                         │
                           painel de indicadores (fase 2)     backup mensal no Google Drive
 ```
@@ -20,9 +20,10 @@ PEC e-SUS ──► extensão do Chrome ──► API (Cloudflare Worker) ──
 
 | Pasta | Conteúdo |
 |---|---|
-| `api/` | Worker do Cloudflare: rotas, validação, gravação por etapa, backup e restauração |
+| `api/` | Lógica do servidor: rotas, login, validação, gravação por etapa, backup e restauração |
+| `functions/` | Ponto de entrada do Cloudflare Pages (`_middleware.js` chama `api/index.js` em todo pedido) |
 | `migrations/` | Estrutura do banco D1 (SQL) |
-| `painel/` | Páginas do painel (por enquanto, só uma página de verificação) |
+| `painel/` | Páginas: entrada (`entrar.html`), painel de notas (`index.html`), usuários e troca de senha |
 | `backup/` | Script do Google Apps Script que faz o backup mensal no Google Drive |
 | `test/` | Testes automáticos (Node 22+, sem dependências externas) |
 
@@ -50,11 +51,15 @@ Nas listas de gestantes e crianças, cada indicador pode vir em dois recortes: `
 
 ## API
 
-Todas as rotas ficam sob `/api/v1`. Com exceção de `/saude`, todas pedem o cabeçalho `Authorization: Bearer <chave>`.
+Todas as rotas ficam sob `/api/v1`. As rotas de leitura aceitam a chave da extensão (`Authorization: Bearer <chave>`) ou a sessão de um usuário logado; as de gravação, backup e restauração exigem a chave.
 
 | Método e rota | Chave | Uso |
 |---|---|---|
 | `GET /saude` | — | Verificação de funcionamento |
+| `POST /auth/entrar` · `POST /auth/sair` | — | Login por usuário e senha; grava ou apaga o cookie de sessão |
+| `GET /auth/eu` · `POST /auth/senha` | sessão | Quem está logado; troca de senha |
+| `GET /auth/config` | — | Se a entrada pelo Apoio está ligada |
+| `GET /usuarios` · `POST /usuarios` · `PATCH /usuarios/:id` | sessão de admin ou `TOKEN_ADMIN` | Administração de usuários |
 | `POST /coletas` | coleta | Abre uma coleta `{ id, competencia, tipo, versaoExtensao, iniciadoEm, config }` |
 | `PUT /coletas/:id/etapa` | coleta | Grava ou regrava uma etapa (exemplo abaixo) |
 | `POST /coletas/:id/concluir` | coleta | Encerra a coleta: `{ status: "concluida" \| "parcial" \| "cancelada" }` |
@@ -104,12 +109,56 @@ Os campos de uma linha que a API não conhece são guardados em `extras`.
 
 Use chaves longas e aleatórias, com pelo menos 32 caracteres. Uma chave não configurada nunca autentica.
 
-## Publicação
+## Acesso (login)
 
-1. **Banco:** crie no Cloudflare um banco D1 chamado `indicadores-aps`, coloque o ID dele em `wrangler.jsonc` (`database_id`) e aplique as migrações (`npm run migrar`).
-2. **Worker:** em *Workers & Pages → Create → Import a repository*, conecte este repositório. Comando de publicação: `npx wrangler deploy`. Cada envio para `main` publica de novo.
-3. **Chaves:** em *Worker → Settings → Variables and Secrets*, crie `TOKEN_COLETA`, `TOKEN_BACKUP` e `TOKEN_ADMIN` como *Secret*.
-4. **Conferência:** abra `https://<endereço-do-worker>/api/v1/saude`. A resposta deve ser `{"ok":true,...}`.
+Só a página `/entrar` e os arquivos visuais são públicos; todo o resto passa pelo `functions/_middleware.js` e exige login.
+
+- **Usuário e senha do Painel APS.** Senha guardada como resumo PBKDF2-SHA256 (100.000 iterações, sal por usuário). Sessão de 12 horas no cookie `__Host-painelaps` (HttpOnly, Secure, SameSite=Lax); o banco guarda só o resumo do código da sessão.
+- **Tentativas:** 5 erros por usuário ou 30 por IP a cada 15 minutos bloqueiam novas tentativas até a janela passar.
+- **Primeiro acesso:** a senha provisória obriga a pessoa a criar a própria senha (mínimo de 10 caracteres, letras e números, sem o nome de usuário).
+- **Perfis:** `admin` (tudo, inclusive usuários), `gestor` e `leitor` (painéis). A sessão só lê dados; gravar coletas continua exclusivo da chave da extensão.
+- **Usuários:** a página `/usuarios` (só administradores) cria, redefine senha, muda perfil e desativa. Desativar ou redefinir encerra as sessões da pessoa na hora. O sistema não deixa ficar sem administrador ativo.
+- **Backup:** as tabelas de usuários e sessões **não** vão para o backup do Drive. Se o banco for restaurado do zero, recrie o primeiro administrador.
+
+### Primeiro administrador
+
+Depois de publicar e configurar `TOKEN_ADMIN`:
+
+```bash
+curl -X POST https://painelaps.pages.dev/api/v1/usuarios \
+  -H "Authorization: Bearer $TOKEN_ADMIN" -H "Content-Type: application/json" \
+  -d '{"login":"herbet.santos","nome":"Herbet Santos","perfil":"admin"}'
+```
+
+A resposta traz `senhaProvisoria`. Entre em `/entrar` com ela e crie a sua senha. Os demais usuários se criam pela página `/usuarios`.
+
+### Integração com o login do Apoio
+
+O login do Apoio (`atencaoprimaria.apoiosaude.workers.dev`) já entrega um código de uso único para sites autorizados. O Painel APS está pronto para recebê-lo em `/auth/apoio?handoff=<código>`, mas a integração fica **desligada** até três coisas existirem:
+
+1. **No Apoio:**
+   - incluir `painelaps.pages.dev` em `ALLOWED_NEXT_HOSTS` (página de login);
+   - usar o `feature_key` do destino em vez do valor fixo `regulacao_vagas` (ex.: `indicadores_aps` para o Painel APS) e dar essa permissão a quem pode entrar;
+   - criar um endpoint servidor a servidor que troque o código pela identidade, por exemplo `POST /api/handoff/resgatar` com `Authorization: Bearer <APOIO_CHAVE>` e corpo `{ "token": "...", "servico": "painelaps" }`, respondendo `{ "user": { "username": "...", "name": "...", "email": "..." } }` (ou 403 se a pessoa não tem a permissão). O código deve valer uma única vez e por poucos minutos.
+2. **No Painel APS:** preencher `APOIO_RESGATE_URL` em `wrangler.jsonc` e criar o secret `APOIO_CHAVE` (a mesma chave do Apoio).
+3. **Usuários:** quem entra pelo Apoio precisa existir no Painel APS com o mesmo login (o administrador cadastra). Com `APOIO_CRIAR_USUARIOS = "sim"`, o Painel APS cria a pessoa sozinha como `leitor`.
+
+Ligada a integração, a página de entrada mostra o botão **Entrar com o login do Apoio**, e o login próprio continua funcionando.
+
+## Publicação (Cloudflare Pages)
+
+O Painel APS é um projeto do **Cloudflare Pages** chamado `painelaps`, no endereço **https://painelaps.pages.dev**. As páginas ficam em `painel/` e o servidor roda como *Pages Functions* (`functions/_middleware.js`).
+
+1. **Banco:** em *Storage & Databases → D1*, crie o banco `indicadores-aps`, coloque o ID dele em `wrangler.jsonc` (`database_id`) e aplique as migrações (`npm run migrar`, ou cole o conteúdo de cada arquivo de `migrations/` no console do D1, em ordem).
+2. **Projeto:** em *Workers & Pages → Create → Pages → Connect to Git*, escolha este repositório. Nome do projeto: `painelaps`. *Framework preset:* nenhum. *Build command:* vazio. *Build output directory:* `painel`. Cada envio para `main` publica de novo.
+3. **Banco no projeto:** o `wrangler.jsonc` já liga o banco como `DB`. Se o painel não ler o arquivo, ligue em *Settings → Bindings → D1 database*, nome `DB`.
+4. **Chaves:** em *Settings → Variables and Secrets*, crie `TOKEN_COLETA`, `TOKEN_BACKUP` e `TOKEN_ADMIN` como *Secret* (e `APOIO_CHAVE`, quando ligar a integração), em *Production*.
+5. **Primeiro administrador:** veja *Acesso (login)*.
+6. **Conferência:** abra `https://painelaps.pages.dev/api/v1/saude`. A resposta deve ser `{"ok":true,"servico":"painelaps",...}`.
+
+Alternativa sem Git: `npx wrangler pages deploy` (publica a pasta `painel` com as funções).
+
+**Limite de CPU no plano gratuito:** o login usa 100.000 iterações do PBKDF2. Se o login falhar com o erro 1102 (excesso de CPU), crie a variável `SENHA_ITERACOES` com `50000`; as senhas já criadas continuam valendo.
 
 Mudanças no banco entram sempre como um novo arquivo em `migrations/` (`0002_...sql`). Arquivos já aplicados nunca são editados.
 
@@ -138,6 +187,7 @@ Proteção em camadas:
 ```bash
 npm test        # testes da API e do script de backup (Node 22+, sem instalar nada)
 npm run dev     # API local com o wrangler (requer npm install)
+node test/servidor-local.mjs 8787 admin.local 'Senha#Local2026'   # páginas + API com banco em memória, sem instalar nada
 ```
 
 Os testes usam o SQLite embutido no Node para imitar o D1 (`test/d1-local.mjs`). O script de backup também é testado de ponta a ponta: backup, conferência, aviso e restauração num banco vazio.
@@ -145,6 +195,6 @@ Os testes usam o SQLite embutido no Node para imitar o D1 (`test/d1-local.mjs`).
 ## Fases
 
 1. **Base (esta):** banco, API, backup no Drive e extensão enviando por etapa.
-2. **Painel:** visão do município, detalhamento por unidade e equipe, série histórica, medidores com as faixas Regular, Suficiente, Bom e Ótimo, e login pelo Cloudflare Access.
+2. **Painel:** login próprio e integração com o Apoio (feito); painel de notas por município, unidade e equipe, ligado aos dados reais (o painel ainda mostra valores fictícios).
 3. **Fontes externas e novos indicadores:** absenteísmo de exames, internações, CVAT, cobertura potencial; saúde bucal, eMulti e C7.
 4. **Inteligência:** alertas de mudança de faixa, tendência em relação à meta, rankings e resumo mensal.

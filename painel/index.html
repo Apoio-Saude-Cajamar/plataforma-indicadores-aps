@@ -1,30 +1,287 @@
 <!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Indicadores APS – Cajamar</title>
-  <style>
-    :root { --fundo: #f6f7f9; --texto: #1d2330; --suave: #5b6475; --destaque: #0b5ea8; }
-    @media (prefers-color-scheme: dark) { :root { --fundo: #14171d; --texto: #e7eaf0; --suave: #a3abba; --destaque: #6fb2f0; } }
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--fundo); color: var(--texto);
-           font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding: 0 16px; }
-    main { max-width: 520px; }
-    h1 { font-size: 1.4rem; font-weight: 600; margin: 0 0 .5rem; }
-    p { color: var(--suave); margin: .25rem 0; }
-    #estado { color: var(--destaque); }
-  </style>
-</head>
-<body>
-  <main>
-    <h1>Plataforma de Indicadores da Atenção Primária</h1>
-    <p>Secretaria de Saúde de Cajamar. O painel de indicadores está em construção.</p>
-    <p id="estado">Verificando o serviço…</p>
-  </main>
-  <script>
-    fetch('/api/v1/saude').then(r => r.json())
-      .then(d => { document.getElementById('estado').textContent = d.ok ? 'Serviço de dados em funcionamento (versão ' + d.versao + ').' : 'Serviço indisponível.'; })
-      .catch(() => { document.getElementById('estado').textContent = 'Serviço indisponível no momento.'; });
-  </script>
-</body>
-</html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Painel APS · Notas metodológicas</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Temas: Personalizado (identidade de Cajamar, fundo branco), Claro e Escuro. */
+:root,:root[data-theme=pers]{box-sizing:border-box;color-scheme:light;
+--ff:Montserrat,'Segoe UI',system-ui,sans-serif;--fs:15px;--fw:500;--hw:800;
+--pg:#FFFFFF;--cd:#fff;--bd:#D9E1EA;--tx:#14213D;--su:#46556A;--ac:#00A7E7;--lk:#0A6F9E;--rl:#F6F9FC;--ct:#A9B6C6;
+--hd:#1F3C72;--ht:#fff;--hs:rgba(255,255,255,.85);--hb:4px solid #00A7E7;--hl:rgba(255,255,255,.5);--tab:#fff;--tabl:#00A7E7;--tabi:rgba(255,255,255,.85);
+--tagb:#fff;--tagt:#1F3C72;--sel:#1F3C72;--selt:#fff;--mk:#1F3C72;--ttl:#1F3C72;
+--rg:#F6C9CE;--sf:#F7E4B2;--bm:#C9DCE8;--ot:#94D2F0;--ne:#DDE3EA;--up:#0A6F9E;--dn:#B0001E}
+:root[data-theme=claro]{color-scheme:light;
+--ff:'Source Sans 3','Segoe UI',system-ui,sans-serif;--fs:16px;--fw:400;--hw:700;
+--pg:#F4F6F5;--cd:#fff;--bd:#DCE2E0;--tx:#14212B;--su:#566370;--ac:#2F8FD8;--lk:#0E5E8C;--rl:#E7EEF3;--ct:#B9C4C9;
+--hd:#fff;--ht:#14212B;--hs:#566370;--hb:1px solid #DCE2E0;--hl:#B9C4C9;--tab:#0B3F5E;--tabl:#0E5E8C;--tabi:#33414C;
+--tagb:#FBF0D3;--tagt:#6E4D00;--sel:#14212B;--selt:#fff;--mk:#0E5E8C;--ttl:#14212B;
+--rg:#F6D5D1;--sf:#F8EBC6;--bm:#DCEBC8;--ot:#BFE0CC;--ne:#E3E8E6;--up:#1D6B45;--dn:#A8322A}
+:root[data-theme=escuro]{color-scheme:dark;
+--ff:'Source Sans 3','Segoe UI',system-ui,sans-serif;--fs:16px;--fw:400;--hw:700;
+--pg:#0E151C;--cd:#16202A;--bd:#2A3743;--tx:#E6EDF3;--su:#A7B4C0;--ac:#5AA9E0;--lk:#7CC0EE;--rl:#1A2531;--ct:#4B5D6E;
+--hd:#16202A;--ht:#E6EDF3;--hs:#A7B4C0;--hb:1px solid #2A3743;--hl:#4B5D6E;--tab:#E6EDF3;--tabl:#5AA9E0;--tabi:#A7B4C0;
+--tagb:#3A2F12;--tagt:#F3D27A;--sel:#E6EDF3;--selt:#0E151C;--mk:#7CC0EE;--ttl:#E6EDF3;
+--rg:#5E2F35;--sf:#5C4B22;--bm:#2F4D3B;--ot:#2B6B50;--ne:#2E3B48;--up:#7AD39E;--dn:#F29A72}
+@media(prefers-color-scheme:dark){:root:not([data-theme]){color-scheme:dark;--ff:'Source Sans 3','Segoe UI',system-ui,sans-serif;--fs:16px;--fw:400;--hw:700;
+--pg:#0E151C;--cd:#16202A;--bd:#2A3743;--tx:#E6EDF3;--su:#A7B4C0;--lk:#7CC0EE;--rl:#1A2531;--ct:#4B5D6E;--hd:#16202A;--ht:#E6EDF3;--hs:#A7B4C0;--hb:1px solid #2A3743;
+--sel:#E6EDF3;--selt:#0E151C;--mk:#7CC0EE;--ttl:#E6EDF3;--rg:#5E2F35;--sf:#5C4B22;--bm:#2F4D3B;--ot:#2B6B50;--ne:#2E3B48;--up:#7AD39E;--dn:#F29A72}}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--pg);color:var(--tx);font-family:var(--ff);font-size:var(--fs);font-weight:var(--fw);line-height:1.5}
+button,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+header{background:var(--hd);color:var(--ht);border-bottom:var(--hb)}
+.w{max-width:1280px;margin:0 auto;padding:0 20px}
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 20px;padding-top:12px}
+.top b{font-size:17px;font-weight:700}.top small{display:block;color:var(--hs)}
+.tag{font-size:12px;font-weight:600;background:var(--tagb);color:var(--tagt);border-radius:99px;padding:3px 10px}
+.tm{display:flex;border:1px solid var(--hl);border-radius:8px;overflow:hidden}
+.tm button{background:none;border:0;color:var(--ht);padding:0 12px;min-height:32px;font-size:13px;cursor:pointer}
+.tm button[aria-pressed=true]{background:var(--ht);color:var(--hd);font-weight:600}
+.tabs{display:flex;flex-wrap:wrap;gap:0 26px}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;color:var(--tabi);padding:8px 0 9px;cursor:pointer}
+.tabs button[aria-pressed=true]{color:var(--tab);border-color:var(--tabl);font-weight:700}
+.filt{position:sticky;top:0;z-index:3;background:var(--pg);border-bottom:1px solid var(--bd)}
+.filt .w{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:flex-end;padding-top:10px;padding-bottom:10px}
+.g{display:flex;flex-direction:column;gap:4px}
+.g>span{font-size:12px;font-weight:700;color:var(--su);text-transform:uppercase;letter-spacing:.04em}
+.seg{display:flex;border:1px solid var(--ct);border-radius:8px;overflow:hidden;background:var(--cd)}
+.seg button{border:0;background:none;padding:0 14px;min-height:40px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--sel);color:var(--selt);font-weight:700}
+.ms{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.ms button,.ch button{min-height:36px;min-width:46px;padding:0 10px;border:1px solid var(--ct);border-radius:8px;background:var(--cd);cursor:pointer}
+.ms button[aria-pressed=true],.ch button[aria-pressed=true]{background:var(--sel);color:var(--selt);border-color:var(--sel);font-weight:700}
+.ms button:disabled{opacity:.35;cursor:default}
+.ms .ano{min-width:0;border-style:dashed}
+.ch{display:flex;flex-wrap:wrap;gap:4px}
+select{min-height:40px;padding:0 10px;border:1px solid var(--ct);border-radius:8px;background:var(--cd);min-width:200px;max-width:340px}
+select:disabled{opacity:.5}
+.ck{display:flex;gap:8px;align-items:center;min-height:40px;cursor:pointer}
+main{padding:22px 0 48px;display:flex;flex-direction:column;gap:18px}
+h1{margin:0;font-size:28px;line-height:1.2;color:var(--ttl);font-weight:var(--hw)}
+p{margin:0;color:var(--su)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.card{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:14px 18px}
+.card b{display:block;font-size:26px;line-height:1.2;color:var(--ttl)}
+.card span{color:var(--su)}
+.card.fx{border-top:6px solid var(--c)}
+.fxh{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.fxh em{display:inline-block;width:14px;height:14px;border-radius:4px;background:var(--c)}
+.card b.lst{font-size:18px;line-height:1.4;margin-top:6px}
+.sec{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:16px 0 6px}
+.sec h2{margin:0;font-size:19px;color:var(--ttl)}
+.sh{padding:0 20px 10px;display:flex;flex-wrap:wrap;gap:6px 20px;align-items:flex-end;justify-content:space-between}
+.sh .g{margin-left:auto}
+.sc{overflow-x:auto}
+.gr{display:grid;gap:14px;align-items:center;padding:9px 20px;border-top:1px solid var(--bd)}
+.gr.h{border:0;font-size:12px;font-weight:700;color:var(--su);padding-bottom:4px}
+.gr.ref{background:var(--rl)}
+.nm{min-width:0;line-height:1.3}.nm small{display:block;color:var(--su);font-size:13px}
+.tr{position:relative;height:30px}
+.tr i{position:absolute;left:0;right:0;top:11px;height:8px;border-radius:99px}
+.tr u{position:absolute;top:6px;width:2px;height:18px;margin-left:-1px;background:var(--tx);opacity:.8}
+.tr s{position:absolute;top:6px;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:var(--mk);border:3px solid var(--cd);box-shadow:0 0 0 1.5px var(--mk);box-sizing:border-box}
+.v{text-align:right;line-height:1.2}.v b{font-size:17px}.v small{display:block;font-size:12px;font-weight:600}
+.up{color:var(--up)}.dn{color:var(--dn)}
+.mc{display:flex;align-items:center;justify-content:center;min-height:32px;border-radius:6px;font-weight:600;font-size:13px}
+.mc.e{border:1px dashed var(--ct);color:var(--su);font-weight:400}
+.mc.p{outline:1.5px dashed var(--tx);outline-offset:-1.5px}
+.pl{display:inline-block;font-size:13px;font-weight:700;padding:2px 10px;border-radius:99px}
+.pos{text-align:right;color:var(--su)}
+.q1{border-left:2px solid var(--bd)}
+.lg{display:flex;flex-wrap:wrap;gap:6px 16px;padding:12px 20px 10px;border-top:1px solid var(--bd);font-size:13px;color:var(--su)}
+.lg em{display:inline-block;width:14px;height:8px;border-radius:4px;margin-right:5px;font-style:normal}
+.nt{padding:6px 20px 10px;font-size:13px;color:var(--su)}
+.ii{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-left:6px;padding:0;border-radius:50%;border:1.5px solid var(--su);background:transparent;color:var(--su);font:700 11px/1 inherit;cursor:help;position:relative;vertical-align:middle}
+.ii:hover::after,.ii:focus::after{content:attr(data-tip);position:absolute;z-index:20;left:50%;top:calc(100% + 8px);transform:translateX(-50%);width:min(320px,80vw);padding:10px 12px;border-radius:8px;background:var(--tx,#1f2933);color:var(--pg,#fff);font:400 13px/1.45 inherit;text-align:left;box-shadow:0 6px 20px rgba(0,0,0,.18);white-space:normal}
+.barra-usuario{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ht)}
+.barra-usuario a,.barra-usuario button{color:inherit;font:inherit;background:none;border:1px solid var(--hl);border-radius:99px;padding:3px 10px;cursor:pointer;text-decoration:none}
+.barra-usuario a:hover,.barra-usuario button:hover{border-color:var(--ht)}
+</style></head><body>
+<header><div class="w">
+ <div class="top"><div style="display:flex;align-items:center;gap:10px"><img src="/img/painelaps.svg" alt="" width="30" height="30"><div><b>Painel APS · Notas metodológicas</b><small>Cofinanciamento federal da APS · Cajamar · sem APS prisional e ribeirinha</small></div></div>
+ <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="tag">Rascunho · valores fictícios</span><div class="tm" id="tema" role="group" aria-label="Tema"></div><div id="barra"></div></div></div>
+ <nav class="tabs" id="tabs" aria-label="Relatórios"></nav></div></header>
+<div class="filt"><div class="w" id="filt" role="search" aria-label="Filtros"></div></div>
+<main class="w" id="main"></main>
+<script>
+const ATUAL=2026*12+9,INI=2025*12,ML=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'],
+MG=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'],
+rm=a=>ML[a%12]+'/'+String(a/12|0).slice(2),rml=a=>MG[a%12]+' de '+(a/12|0),
+rng=(a,b)=>{const r=[];for(;a<=b;a++)r.push(a);return r},
+rj=ms=>ms.length==1?rm(ms[0]):rm(ms[0])+'–'+rm(ms[ms.length-1]),
+jt=a=>a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+' e '+a[a.length-1],
+/* Vários meses, contínuos ou não: "set/26–out/26", "jan, mar–abr/26 · nov/25". */
+rms=ms=>{if(ms[ms.length-1]-ms[0]+1==ms.length)return rj(ms);const g=[];ms.forEach(a=>{const y=a/12|0;let x=g[g.length-1];if(!x||x.y!=y){x={y,r:[]};g.push(x)}const r=x.r[x.r.length-1];if(r&&r[1]==a-1)r[1]=a;else x.r.push([a,a])});
+ return g.map(x=>jt(x.r.map(r=>r[0]==r[1]?ML[r[0]%12]:ML[r[0]%12]+'–'+ML[r[1]%12]))+'/'+String(x.y).slice(2)).join(' · ')},
+nf=(v,c)=>v.toLocaleString('pt-BR',{minimumFractionDigits:c,maximumFractionDigits:c}),
+hs=s=>{let h=7;for(const ch of String(s))h=(h*31+ch.charCodeAt(0))%9973;return h},
+CF={regular:'rg',suficiente:'sf',bom:'bm',otimo:'ot'},NF={regular:'Regular',suficiente:'Suficiente',bom:'Bom',otimo:'Ótimo'},
+PS={regular:0,suficiente:1,bom:2,otimo:3,neutro:1.5};
+/* Escopo Cajamar: não existem eAPP (prisional) nem eSFR/eABR (ribeirinha) neste catálogo nem nas equipes.
+   Nomes conforme as notas metodológicas do MS (eSF/eAP 23/09/2025; eSB e eCR 02/10/2026; eMulti 01/07/2026). */
+const F100=[[0,25,'regular'],[25,50,'suficiente'],[50,75,'bom'],[75,100,'otimo']],
+GR=[['qualidade','Qualidade do cuidado','C1 a C7'],['vinculo','Vínculo (CVAT)','CVAT'],['bucal','Saúde bucal','B1 a B6'],['emulti','eMulti','M1 e M2'],['ecr','Consultório na Rua','CR1 a CR4']];
+const mk=(g,c,nome,mun,ant,o)=>Object.assign({g,c,nome,mun,ant,min:0,max:100,d:1,fmt:1,un:'',f:F100,ni:['municipio','unidade','equipe'],tp:['eSF','eAP'],ap:'m'},o||{});
+const L=[
+mk('qualidade','C1','Mais acesso',81.1,80.7,{d:0,fmt:0,un:'%',ap:'r',f:[[0,10,'regular'],[10,30,'suficiente'],[30,50,'bom'],[50,70,'otimo'],[70,100,'regular']],sen:'Ótimo entre 50% e 70% de demanda programada; acima de 70% volta a Regular.'}),
+mk('qualidade','C2','Cuidado no desenvolvimento infantil',46.3,47,{pr:[['A','1ª consulta até 30 dias de vida',20,.82],['B','9 ou mais consultas até 2 anos',20,.41],['C','9 ou mais registros de peso e altura',20,.38],['D','2 visitas do ACS',20,.36],['E','Vacinas completas',20,.55]]}),
+mk('qualidade','C3','Cuidado na gestação e puerpério',58.9,61.2,{pr:[['A','1ª consulta até a 12ª semana',10,.71],['B','7 ou mais consultas',9,.34],['C','7 ou mais aferições de pressão',9,.39],['D','7 ou mais registros de peso e altura',9,.42],['E','3 visitas do ACS',9,.58],['F','dTpa a partir da 20ª semana',9,.63],['G','Testes no 1º trimestre',9,.76],['H','Testes no 3º trimestre',9,.45],['I','Consulta no puerpério',9,.55],['J','Visita do ACS no puerpério',9,.47],['K','Atendimento de saúde bucal',9,.61]]}),
+mk('qualidade','C4','Cuidado da pessoa com diabetes',61.6,60.8,{pr:[['A','Consulta nos últimos 6 meses',20,.78],['B','Pressão nos últimos 6 meses',15,.82],['C','Peso e altura em 12 meses',15,.64],['D','2 visitas do ACS em 12 meses',20,.48],['E','Hemoglobina glicada em 12 meses',15,.59],['F','Avaliação dos pés em 12 meses',15,.37]]}),
+mk('qualidade','C5','Cuidado da pessoa com hipertensão',65.2,64.5,{pr:[['A','Consulta nos últimos 6 meses',25,.74],['B','Pressão nos últimos 6 meses',25,.8],['C','Peso e altura em 12 meses',25,.62],['D','2 visitas do ACS em 12 meses',25,.45]]}),
+mk('qualidade','C6','Cuidado da pessoa idosa',57.4,55.1,{pr:[['A','Consulta em 12 meses',25,.7],['B','Peso e altura em 12 meses',25,.58],['C','2 visitas do ACS em 12 meses',25,.41],['D','Vacina da gripe em 12 meses',25,.61]]}),
+mk('qualidade','C7','Cuidado da mulher na prevenção do câncer',39.4,38.2,{mg:'Aproximado. Itens A, B e D seguem a nota. O item C (consulta de saúde sexual e reprodutiva, 30 pontos) conta quem tem um código CIAP/CID da nota e atendimento médico ou de enfermagem em 12 meses, mas o PEC não informa quando o código foi registrado: o item real tende a ser menor, até cerca de 10 pontos percentuais, o que pesa uns 3 pontos na nota.'}),
+mk('vinculo','CVAT-C','Vínculo: dimensão cadastro',92.4,91.8,{mg:'Aproximado. O cadastro individual segue a nota (ficha CDS atualizada em 24 meses, sem fora da área). O cadastro do domicílio não é ligado à pessoa no PEC: usa a fração de imóveis atualizados da microárea, e o PEC conta imóvel atualizado em 1 ano (a nota aceita 24 meses). O índice tende a sair um pouco abaixo do real.',un:'%',f:null,ap:'f'}),
+mk('vinculo','CVAT-A','Vínculo: dimensão acompanhamento',64,62.5,{mg:'Piso: o valor real é igual ou maior. O PEC informa só a data do último contato de cada tipo (médico, enfermagem, odontologia, visita); quem teve dois contatos do mesmo tipo, atividade coletiva ou vacina não aparece. Bolsa Família/BPC (peso 1,3) virá de fonte externa.',un:'%',f:null,ap:'f'}),
+mk('bucal','B1','Primeira consulta programada',.92,.88,{mg:'Aproximado. Conta registros de primeira consulta programática; a nota conta cada pessoa uma vez em 12 meses por dentista. Repetições são raras, a diferença tende a ser pequena.',max:2,fmt:2,un:'%',tp:['eSB'],ap:'r',f:[[0,.25,'regular'],[.25,.75,'suficiente'],[.75,1.25,'bom'],[1.25,2,'otimo']]}),
+mk('bucal','B2','Tratamento concluído',48,45.5,{un:'%',tp:['eSB'],ap:'r'}),
+mk('bucal','B3','Taxa de exodontia',8.1,8.6,{max:20,d:0,fmt:1,un:'%',tp:['eSB'],ap:'r',f:[[0,3,'regular'],[3,10,'otimo'],[10,12,'bom'],[12,14,'suficiente'],[14,20,'regular']],sen:'Ótimo entre 3% e 10%; muito abaixo ou muito acima perde pontos.'}),
+mk('bucal','B4','Escovação supervisionada em faixa etária escolar (6 a 12 anos)',.31,.18,{max:2,fmt:2,un:'%',tp:['eSB'],ap:'r',f:[[0,.25,'regular'],[.25,.5,'suficiente'],[.5,1,'bom'],[1,2,'otimo']]}),
+mk('bucal','B5','Procedimentos odontológicos preventivos',71,73,{d:0,fmt:0,un:'%',tp:['eSB'],ap:'r',f:[[0,40,'regular'],[40,55,'suficiente'],[55,65,'bom'],[65,85,'otimo'],[85,100,'regular']],sen:'Ótimo entre 65% e 85%; acima de 85% volta a Regular.'}),
+mk('bucal','B6','Tratamento restaurador atraumático',4.2,3.9,{max:12,un:'%',tp:['eSB'],ap:'r',f:[[0,3,'regular'],[3,6,'suficiente'],[6,8,'bom'],[8,12,'otimo']]}),
+mk('emulti','M1','Média de atendimentos por pessoa pela eMulti',2.4,2.2,{mg:'Aproximado. Pessoas diferentes vêm da lista de atendimentos do PEC e dos participantes das atividades coletivas; atendimentos lançados só em ficha CDS não mostram a pessoa e entram por estimativa. A faixa vai de todos serem pessoas já contadas (média maior) a todos serem pessoas novas (média menor).',max:4,tp:['eMulti'],ni:['municipio','equipe'],ap:'r',f:[[0,1,'regular'],[1,2,'suficiente'],[2,3,'bom'],[3,4,'otimo']]}),
+mk('emulti','M2','Ações interprofissionais realizadas pela eMulti',1.8,1.6,{mg:'Aproximado. Exato para os registros da própria eMulti. Quando o profissional da eMulti é o segundo profissional num atendimento registrado por outra equipe, o registro fica com a outra equipe e não entra aqui.',max:7,tp:['eMulti'],ni:['municipio','equipe'],ap:'r',f:[[0,1,'regular'],[1,2.5,'suficiente'],[2.5,5,'bom'],[5,7,'otimo']]}),
+mk('ecr','CR1','Mais acesso à eCR',100,96,{fmt:0,tp:['eCR'],ni:['municipio','equipe'],ap:'r'}),
+mk('ecr','CR2','Cuidado na gestação',50,45,{mg:'Aproximado. A boa prática A pede 1 consulta por trimestre; o PEC dá o total e as consultas até 12 semanas, então conta 3 ou mais consultas com ao menos 1 no 1º trimestre.',fmt:0,tp:['eCR'],ni:['municipio','equipe']}),
+mk('ecr','CR3','Rastreio de infecções sexualmente transmissíveis',62,58,{fmt:0,tp:['eCR'],ni:['municipio','equipe']}),
+mk('ecr','CR4','Cuidado da pessoa com tuberculose',40,40,{mg:'Aproximado. Pessoas com tuberculose e teste de HIV são exatos. Consultas, baciloscopia e raio X vêm de totais do relatório filtrado pelos CIDs de tuberculose, que não diz a quem pertence cada registro: o valor é o teto, com faixa mínima e máxima. Com poucas pessoas, a diferença pode ser grande.',fmt:0,tp:['eCR'],ni:['municipio','equipe']})];
+const N={};L.forEach(n=>N[n.c]=n);
+const UN=['ESF Carlos dos Santos','Posto de Saude Nadilia de Oliveira Santos','Psf Belo Planalto','Psf Dra Maria de Lourdes Mendonca Bravo','Psf Edivaldo Soares Massagardi','UBS Dra Izabel Gratieri','UBS Enf Leontina Martins Franca','UBS Enfermeiro Carlos Moreira da Silva','Usf Manoel Inacio da Silva','Usf Maria Aparecida Misse','Usf Vereador Joaquim Alves de Castro'];
+const EQD={'UBS Dra Izabel Gratieri':[{n:'EQUIPE PANORAMA',t:'eSF'},{n:'ESF IZABEL GRATIERI',t:'eSF'},{n:'CONSULTORIO RUA CAJAMAR',t:'eCR'},{n:'ESB IZABEL GRATIERI',t:'eSB'}],'Usf Maria Aparecida Misse':[{n:'EQUIPE PONUNDUVA',t:'eSF'},{n:'[Equipe eSF 2]',t:'eSF'},{n:'ESTRATEGICA 1',t:'eMulti'}]};
+const eq=u=>EQD[u]||[{n:'[Equipe eSF 1]',t:'eSF'},{n:'[Equipe eSF 2]',t:'eSF'},{n:'[Equipe de saúde bucal]',t:'eSB'}];
+const esc=n=>(n.max-n.min)/100,cl=(n,x)=>+Math.max(n.min,Math.min(n.max,x)).toFixed(n.fmt+1);
+const fx=(n,v)=>{if(!n.f)return{k:'neutro',r:'Sem faixa oficial'};const s=n.f.find((s,i)=>(i?v>s[0]:v>=s[0])&&v<=s[1])||n.f[n.f.length-1];return{k:s[2],r:NF[s[2]]}};
+const sc=(n,v)=>n.d?v*n.d:PS[fx(n,v).k]*1000-Math.abs(v-((n.f.find(s=>s[2]=='otimo')||[n.min,n.max]).reduce((a,b)=>a+b,0)/2));
+const vm=(c,u,e,a)=>{const n=N[c],p=(n.mun-n.ant)*.8||esc(n)*.5;let v=a==ATUAL?n.mun:a==ATUAL-1?n.ant:n.ant-(ATUAL-1-a)*p+((hs(c+a)%7)-3)*esc(n)*.4;
+ if(u)v+=((hs(u+c)%17)-8)*esc(n)+((hs(u+e+c+a)%5)-2)*esc(n)*.3;if(e)v+=((hs(u+e+c)%15)-7)*esc(n);return cl(n,v)};
+const vp=(c,u,e,ms)=>N[c].ap=='f'?vm(c,u,e,ms[ms.length-1]):+(ms.reduce((t,a)=>t+vm(c,u,e,a),0)/ms.length).toFixed(N[c].fmt+1);
+/* Quadrimestres em ordem cronológica; id "ano-q". */
+const QS=[[2025,1],[2025,2],[2025,3],[2026,1],[2026,2],[2026,3]],qm=(y,q)=>rng(y*12+(q-1)*4,y*12+(q-1)*4+3),
+qi=id=>{const[y,q]=id.split('-').map(Number);return y*3+q-1},qd=i=>(i/3|0)+'-'+(i%3+1),
+rq=ids=>{const ys=[...new Set(ids.map(id=>id.split('-')[0]))];if(ys.length==1)return jt(ids.map(id=>id.split('-')[1]+'º'))+(ids.length>1?' quadrimestres de ':' quadrimestre de ')+ys[0];
+ return 'quadrimestres '+jt(ids.map(id=>id.split('-')[1]+'º/'+id.split('-')[0]))};
+const S={rel:'geral',modo:'q',qs:['2026-3'],ano:2026,ms:[ATUAL],u:'',e:'',gr:'',cmp:false,nota:'C4'};
+const $=s=>document.querySelector(s),esq=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+function ctx(){
+ const q=S.modo=='q',qs=S.qs.slice().sort((a,b)=>qi(a)-qi(b)),ms=S.ms.slice().sort((a,b)=>a-b),mesmoAno=(ms[0]/12|0)==(ms[ms.length-1]/12|0);
+ const bl=q?qs.map(id=>{const[y,qq]=id.split('-').map(Number),todos=qm(y,qq),f=todos.filter(a=>a<=ATUAL),ab=f.length<4;
+   return{y,todos,meses:f,ab,rot:qq+'º/'+String(y).slice(2),lg:qq+'º quadrimestre de '+y+(ab?' (até '+rm(f[f.length-1])+')':'')}})
+  :ms.map(a=>({y:a/12|0,todos:[a],meses:[a],ab:false,rot:mesmoAno?ML[a%12]:rm(a),lg:rml(a)}));
+ const per=[].concat(...bl.map(b=>b.meses)).sort((a,b)=>a-b),unico=q&&bl.length==1,aberto=unico&&bl[0].ab;
+ let ant,ct,pt,pc;
+ if(q){const sp=qi(qs[qs.length-1])-qi(qs[0])+1,qa=qs.map(id=>qd(qi(id)-sp));ant=[].concat(...qa.map(id=>{const[y,qq]=id.split('-').map(Number);return qm(y,qq)}));ct=rq(qa);
+  const ab=bl.find(b=>b.ab);pt=rq(qs)+(ab?(unico?' (prévia)':' (o '+ab.rot+' até '+rm(ab.meses[ab.meses.length-1])+')'):'');pc=unico?rq(qs):jt(bl.map(b=>b.rot))}
+ else{const sp=ms[ms.length-1]-ms[0]+1;ant=ms.map(a=>a-sp);ct=rms(ant);pt=ms.length==1?rml(ms[0]):rms(ms)+' ('+ms.length+' meses)';pc=rms(ms)}
+ const cmpOk=ant[0]>=INI;
+ /* Colunas de acompanhamento: com um quadrimestre, os 4 meses dele; com vários meses ou quadrimestres, um por coluna. */
+ const cols=unico?bl[0].todos.map(a=>({rot:ML[a%12],meses:[a],fut:a>ATUAL,lg:rml(a)})):bl.length>1?bl.slice(-12).map(b=>({rot:b.rot,meses:b.meses,fut:false,parc:b.ab,lg:b.lg})):[];
+ return{per,aberto,unico,ant,cmp:S.cmp&&cmpOk,cmpOk,pt,pc,ct,cols,muitos:bl.length>12,anoM:q?bl[bl.length-1].y:S.ano}}
+function ok(n){if(!S.u)return true;const es=eq(S.u);if(S.e){const t=es.find(x=>x.n==S.e).t;return n.ni.includes('equipe')&&n.tp.includes(t)}return n.ni.includes('unidade')&&es.some(x=>n.tp.includes(x.t))}
+const vis=()=>L.filter(n=>(!S.gr||n.g==S.gr)&&ok(n));
+/* Indicadores que "Quem precisa de apoio" e "Onde perdemos pontos" podem mostrar (o grupo de notas não se aplica a eles). */
+function cands(){const vs=L.filter(ok);if(S.rel=='apoio')return S.e?[]:vs;if(S.rel=='pontos')return vs.filter(n=>n.pr);return[]}
+function selG(cs){return'<select data-k="nota" style="min-width:320px">'+GR.map(g=>{const d=cs.filter(n=>n.g==g[0]);return d.length?'<optgroup label="'+esq(g[1])+'">'+d.map(n=>'<option value="'+esq(n.c)+'"'+(n.c==S.nota?' selected':'')+'>'+esq(n.c+' · '+n.nome)+'</option>').join('')+'</optgroup>':''}).join('')+'</select>'}
+function tr(n,lo,hi,v,ref){const p=x=>(Math.max(0,Math.min(1,(x-lo)/(hi-lo)))*100).toFixed(2);let bg='var(--ne)';
+ if(n&&n.f){let a=0;const ps=n.f.map(s=>[Math.max(lo,s[0]),Math.min(hi,s[1]),s[2]]).filter(s=>s[1]>s[0]).map(s=>{const w=(s[1]-s[0])/(hi-lo)*100,t='var(--'+CF[s[2]]+') '+a.toFixed(2)+'% '+(a+w).toFixed(2)+'%';a+=w;return t});bg='linear-gradient(90deg,'+ps.join(',')+')'}
+ return '<div class="tr" role="img" aria-label="'+nf(v,n?n.fmt:0)+'"><i style="background:'+bg+'"></i>'+(ref!=null?'<u style="left:'+p(ref)+'%"></u>':'')+'<s style="left:'+p(v)+'%"></s></div>'}
+function dl(n,v,a,f){if(a==null)return'';const d=v-a;if(!d)return'<span>=</span>';const m=n&&n.d==0?sc(n,v)-sc(n,a):d*(n?n.d:1);return'<span class="'+(m>0?'up':'dn')+'">'+(d>0?'▲ ':'▼ ')+nf(Math.abs(d),f)+'</span>'}
+function sel(k,val,opts,dis){return'<select data-k="'+k+'"'+(dis?' disabled':'')+'>'+opts.map(o=>'<option value="'+esq(o[0])+'"'+(String(o[0])==String(val)?' selected':'')+'>'+esq(o[1])+'</option>').join('')+'</select>'}
+const btn=(k,v,t,on,dis,cls,tit)=>'<button type="button" data-k="'+k+'" data-v="'+esq(v)+'" aria-pressed="'+!!on+'"'+(dis?' disabled':'')+(cls?' class="'+cls+'"':'')+(tit?' title="'+esq(tit)+'"':'')+'>'+t+'</button>';
+function filtros(c){
+ let h='<div class="g"><span>Quando</span><div class="seg">'+btn('modo','q','Quadrimestre',S.modo=='q')+btn('modo','m','Mês',S.modo=='m')+'</div></div>';
+ if(S.modo=='q')h+='<div class="g"><span>Quadrimestres'+(S.qs.length>1?' · '+S.qs.length+' marcados':'')+'</span><div class="ch">'+QS.map(([y,q])=>{const id=y+'-'+q,pv=qm(y,q).some(a=>a>ATUAL);
+   return btn('qt',id,q+'º/'+String(y).slice(2)+(pv?' prévia':''),S.qs.includes(id),false,'',q+'º quadrimestre de '+y+' ('+rj(qm(y,q))+')')}).join('')+'</div></div>';
+ else{const fora=S.ms.filter(a=>(a/12|0)!=S.ano).length;
+  h+='<div class="g"><span>Meses de '+S.ano+(S.ms.length>1?' · '+S.ms.length+' marcados'+(fora?' ('+fora+' em '+(S.ano==2026?2025:2026)+')':''):'')+'</span><div class="ms">'+btn('ano',S.ano==2026?2025:2026,S.ano==2026?'‹ 2025':'2026 ›',false,false,'ano')+rng(0,11).map(i=>{const a=S.ano*12+i;return btn('mt',a,ML[i],S.ms.includes(a),a>ATUAL||a<INI,'',rml(a))}).join('')+'</div></div>'}
+ h+='<div class="g"><span>Unidade</span>'+sel('u',S.u,[['','Município (todas)']].concat(UN.map(u=>[u,u])))+'</div>';
+ h+='<div class="g"><span>Equipe</span>'+sel('e',S.e,[['','Todas as equipes']].concat(S.u?eq(S.u).map(x=>[x.n,x.n+' · '+x.t]):[]),!S.u)+'</div>';
+ if(S.rel=='apoio'||S.rel=='pontos'){const cs=cands();if(cs.length)h+='<div class="g"><span>Indicador</span>'+selG(cs)+'</div>'}
+ if(S.rel=='geral'||S.rel=='meses')h+='<div class="g"><span>Grupo de notas</span><div class="ch">'+btn('gr','','Todas',!S.gr)+GR.map(g=>btn('gr',g[0],g[1].split(' ')[0]=='Qualidade'?'Qualidade':g[1].split(' (')[0],S.gr==g[0])).join('')+'</div></div>';
+ if(S.rel!='meses')h+='<label class="ck"><input type="checkbox" data-k="cmp"'+(c.cmp?' checked':'')+(c.cmpOk?'':' disabled')+'> Comparar com '+(c.cmpOk?esq(c.ct):'(sem dados antes de jan/25)')+'</label>';
+ $('#filt').innerHTML=h}
+function legenda(extra){return'<div class="lg"><span>● resultado</span>'+(extra||'')+['regular','suficiente','bom','otimo'].map(k=>'<span><em style="background:var(--'+CF[k]+')"></em>'+NF[k]+'</span>').join('')+'</div>'}
+const ii=n=>n.mg?'<button type="button" class="ii" aria-label="Precisão de '+n.c+'" data-tip="'+esq(n.mg)+'">i</button>':'';
+function cab(t,sub,extra){return'<div class="sh"><div><h2>'+t+'</h2><p style="font-size:14px">'+sub+'</p></div>'+(extra||'')+'</div>'}
+function notaSel(cs){return'<div class="g"><span>Nota</span>'+sel('nota',S.nota,cs.map(n=>[n.c,n.c+' · '+n.nome]))+'</div>'}
+function render(){
+ const c=ctx(),loc=S.e?S.e+' · '+S.u:S.u||'Município',vs=vis();let out='',perg='',desc='',cards='';
+ $('#tabs').innerHTML=[['geral','Como estamos'],['apoio','Quem precisa de apoio'],['pontos','Onde perdemos pontos'],['meses','Mês a mês']].map(r=>btn('rel',r[0],r[1],S.rel==r[0])).join('');
+ const cs0=cands();if(cs0.length&&!cs0.find(n=>n.c==S.nota))S.nota=cs0[0].c;
+ filtros(c);
+ const card=(b,t)=>'<div class="card"><b>'+b+'</b><span>'+t+'</span></div>';
+ if(S.rel=='geral'){
+  const it=vs.map(n=>{const v=vp(n.c,S.u,S.e,c.per);return{n,v,a:c.cmp?vp(n.c,S.u,S.e,c.ant):null,x:fx(n,v)}});
+  const K=c.cols.length,cw=K>6?50:56,cp=c.unico,cols='40px minmax(0,300px) minmax(150px,1fr) 84px'+(K?' repeat('+K+','+cw+'px)':'')+(cp?' 190px':!K&&c.cmp?' 90px':''),mw=780+K*(cw+14)+(cp?204:0);
+  perg='Como está '+(S.e?'a equipe '+S.e:S.u?'a '+S.u:'o município')+'?';desc='Todas as notas metodológicas em '+c.pt+'.'+(c.cmp?' Comparado com '+c.ct+'.':'');
+  const cf=it.filter(x=>x.n.f),bons=cf.filter(x=>x.x.k=='bom'||x.x.k=='otimo').length,reg=it.filter(x=>x.x.k=='regular').map(x=>x.n.c);
+  /* Um card por faixa, com as notas que estão nela. */
+  cards=['regular','suficiente','bom','otimo'].map(k=>{const cs=it.filter(x=>x.x.k==k).map(x=>x.n.c);
+   return'<div class="card fx" style="--c:var(--'+CF[k]+')"><span class="fxh"><em></em>'+NF[k]+' · '+cs.length+(cs.length==1?' nota':' notas')+'</span><b class="lst">'+(cs.length?jt(cs):'nenhuma')+'</b></div>'}).join('');
+  const sf=it.filter(x=>!x.n.f).map(x=>x.n.c);if(sf.length)desc+=' '+jt(sf)+(sf.length>1?' não têm':' não tem')+' faixa oficial.';
+  let rows='<div class="gr h" style="grid-template-columns:'+cols+'"><span></span><span>Nota</span><span></span><span style="text-align:right">'+(cp?(c.aberto?'Até agora':'Quadrimestre'):K?(S.modo=='q'?'No conjunto':'No período'):'Resultado')+'</span>'
+   +c.cols.map(k=>'<span style="text-align:center;white-space:nowrap" title="'+esq(k.lg)+'">'+k.rot+'</span>').join('')
+   +(cp?'<span>'+(c.aberto?'Caminho até '+rm(c.cols[3].meses[0]):'Fechamento')+'</span>':!K&&c.cmp?'<span>vs '+esq(c.ct)+'</span>':'')+'</div>';
+  GR.forEach(g=>{const d=it.filter(x=>x.n.g==g[0]);if(!d.length)return;if(!S.gr)rows+='<div class="gr" style="padding:14px 20px 4px 20px;border-top:1px solid var(--bd);display:block"><b>'+g[1]+'</b> <span style="color:var(--su);font-size:13px">'+g[2]+'</span></div>';
+   d.forEach(x=>{const n=x.n;let ex='';
+    if(K){const vals=c.cols.map(k=>k.fut?null:vp(n.c,S.u,S.e,k.meses));
+     ex=vals.map((v,i)=>v==null?'<span class="mc e" title="'+esq(c.cols[i].lg)+': ainda não fechou">—</span>':'<span class="mc'+(c.cols[i].parc?' p':'')+'" title="'+esq(c.cols[i].lg)+': '+nf(v,n.fmt)+n.un+' ('+fx(n,v).r+')" style="background:var(--'+(CF[fx(n,v).k]||'ne')+')">'+nf(v,n.fmt)+'</span>').join('');
+     if(cp){const fe=vals.filter(v=>v!=null),ult=fe[fe.length-1],pj=n.ap=='f'?ult:cl(n,(fe.reduce((t,v)=>t+v,0)+(4-fe.length)*ult)/4),fp=fx(n,pj);
+      ex+='<div><span class="pl" style="background:var(--'+(CF[fp.k]||'ne')+')">'+(n.f?(c.aberto?'Fecha em ':'Fechou em ')+fp.r:(c.aberto?'Previsto: ':'')+nf(pj,n.fmt)+n.un)+'</span></div>'}}
+    else if(c.cmp)ex='<span>'+dl(n,x.v,x.a,n.fmt)+'</span>';
+    rows+='<div class="gr" style="grid-template-columns:'+cols+'"><span></span><div class="nm" title="Contagem no período: '+(n.ap=='f'?'foto do último mês':n.ap=='r'?'soma dos numeradores ÷ soma dos denominadores':'média dos meses')+'">'+n.c+' · '+n.nome+ii(n)+'<small>'+x.x.r+(n.sen?' · '+n.sen:'')+'</small></div>'+tr(n,n.min,n.max,x.v,null)+'<div class="v"><b>'+nf(x.v,n.fmt)+n.un+'</b>'+(K&&c.cmp?'<small>'+dl(n,x.v,x.a,n.fmt)+'</small>':'')+'</div>'+ex+'</div>'});});
+  const nota=K&&!cp?'<p class="nt">Cada quadrado é '+(S.modo=='q'?'um quadrimestre escolhido':'um mês escolhido')+', com a cor da faixa'+(c.muitos?' (os 12 últimos da seleção)':'')+(c.cols.some(k=>k.parc)?'; o de borda tracejada ainda está em andamento':'')+'. O resultado conta '+(S.modo=='q'?'os quadrimestres':'os meses')+' juntos.</p>':cp&&c.aberto?'<p class="nt">“Fecha em” supõe que os meses que faltam repitam '+rm(ATUAL)+'.</p>':'';
+  out='<section class="sec">'+cab('Notas','Cada nota na sua própria escala e contada pela sua regra (passe o mouse no nome). C1, B3 e B5 têm faixa dupla.')+'<div class="sc"><div style="min-width:'+mw+'px">'+rows+'</div></div>'+nota+legenda()+'</section>'}
+ if(S.rel=='apoio'){
+  const cand=cands();
+  if(!cand.length){perg='Nenhuma nota para comparar neste recorte';out='<section class="sec"><p class="nt">Escolha “Município” ou uma unidade (sem equipe).</p></section>'}
+  else{if(!cand.find(n=>n.c==S.nota))S.nota=cand[0].c;const n=N[S.nota],porU=!S.u&&n.ni.includes('unidade'),cp=u=>c.cmp?vp(n.c,u,'',c.ant):null;
+   let its,rv=vp(n.c,S.u,'',c.per),ra=c.cmp?vp(n.c,S.u,'',c.ant):null,rn=S.u?S.u+' (todas as equipes)':'Município (todas as unidades)';
+   if(porU)its=UN.filter(u=>eq(u).some(x=>n.tp.includes(x.t))).map(u=>({nome:u,sub:'',v:vp(n.c,u,'',c.per),a:cp(u)}));
+   else{its=[];(S.u?[S.u]:UN).forEach(u=>eq(u).filter(x=>n.tp.includes(x.t)).forEach(x=>its.push({nome:x.n,sub:x.t+(S.u?'':' · '+u),v:vp(n.c,u,x.n,c.per),a:c.cmp?vp(n.c,u,x.n,c.ant):null})))}
+   its.sort((a,b)=>sc(n,b.v)-sc(n,a.v));const all=[rv].concat(its.map(x=>x.v),ra!=null?[ra]:[]),pad=(n.max-n.min)*.05,lo=Math.max(n.min,Math.floor((Math.min(...all)-pad)*10)/10),hi=Math.min(n.max,Math.ceil((Math.max(...all)+pad)*10)/10),
+   cols='40px minmax(0,300px) minmax(150px,1fr) 84px'+(c.cmp?' 90px':''),row=(x,i,ref)=>'<div class="gr'+(ref?' ref':'')+'" style="grid-template-columns:'+cols+'"><span class="pos">'+(ref?'':i+1+'º')+'</span><div class="nm"><b style="font-weight:'+(ref?700:400)+'">'+esq(x.nome)+'</b><small>'+(x.sub||'')+'</small></div>'+tr(n,lo,hi,x.v,ref?null:rv)+'<div class="v"><b>'+nf(x.v,n.fmt)+n.un+'</b><small style="color:var(--su)">'+fx(n,x.v).r+'</small></div>'+(c.cmp?'<span>'+dl(n,x.v,x.a,n.fmt)+'</span>':'')+'</div>';
+   const bm=its.filter(x=>['bom','otimo'].includes(fx(n,x.v).k)).length,pior=its[its.length-1],melhor=its[0];
+   perg='Quem precisa de apoio em '+n.c+'?';desc=(porU?'As unidades':'As equipes')+' no mesmo eixo, da melhor para a pior, em '+c.pt+'.'+(c.cmp?' Comparado com '+c.ct+'.':'');
+   cards=card(n.f?bm+' de '+its.length:'—',(porU?'unidades':'equipes')+' em Bom ou Ótimo')+(its.length>1?card(nf(Math.abs(melhor.v-pior.v),n.fmt)+(n.un=='%'?' p.p.':''),'entre a melhor ('+nf(melhor.v,n.fmt)+') e a pior ('+nf(pior.v,n.fmt)+')'):card(its.length+' equipe','com esta nota'))+card(pior?esq(pior.nome):'—','precisa de mais apoio nesta nota');
+   out='<section class="sec">'+cab(n.c+' · '+n.nome+ii(n),(n.sen||'Quanto maior, melhor.')+' Eixo ampliado de '+nf(lo,n.fmt)+' a '+nf(hi,n.fmt)+'.')+'<div class="sc"><div style="min-width:780px">'+row({nome:rn,v:rv,a:ra,sub:''},0,true)+its.map((x,i)=>row(x,i)).join('')+'</div></div>'+legenda('<span>| referência</span>')+'</section>'}}
+ if(S.rel=='pontos'){
+  const cand=cands();
+  if(!cand.length){perg='Nenhuma nota com boas práticas neste recorte';out='<section class="sec"><p class="nt">As boas práticas detalhadas existem nas notas C2 a C6 (equipes eSF e eAP).</p></section>'}
+  else{if(!cand.find(n=>n.c==S.nota))S.nota=cand[0].c;const n=N[S.nota],al=vp(n.c,S.u,S.e,c.per),f=al/n.pr.reduce((s,p)=>s+p[2]*p[3],0),
+   it=n.pr.map(p=>{const pc=Math.min(1,p[3]*f);return{l:p[0],t:p[1],w:p[2],pc,pd:(1-pc)*p[2]}}).sort((a,b)=>b.pd-a.pd),perd=it.reduce((s,x)=>s+x.pd,0),mc=it.slice().sort((a,b)=>b.pc-a.pc)[0],cols='40px minmax(0,320px) minmax(150px,1fr) 84px 90px';
+   perg='Onde '+(S.e?'a equipe':S.u?'a unidade':'o município')+' perde pontos em '+n.c+'?';desc='As boas práticas da nota em '+c.pt+', da que mais tira pontos para a que menos tira.';
+   cards=card(it[0].l+' · −'+nf(it[0].pd,1)+' pts','a prática que mais tira pontos: '+it[0].t.toLowerCase())+card(mc.l+' · '+nf(mc.pc*100,0)+'%','a mais cumprida: '+mc.t.toLowerCase())+card(nf(100-perd,1)+' = 100 − '+nf(perd,1),'nota de '+n.c+' = 100 menos os pontos perdidos');
+   out='<section class="sec">'+cab(n.c+' · '+n.nome+ii(n),'Quantas pessoas cumpriram cada boa prática e quantos pontos se deixa de ganhar nela.')+'<div class="sc"><div style="min-width:760px"><div class="gr h" style="grid-template-columns:'+cols+'"><span></span><span>Boa prática</span><span></span><span style="text-align:right">Cumpriram</span><span>Perde</span></div>'+it.map((x,i)=>'<div class="gr" style="grid-template-columns:'+cols+'"><span class="pos">'+(i+1)+'º</span><div class="nm">'+x.l+' · '+x.t+'<small>vale '+x.w+' pontos</small></div>'+tr(null,0,100,x.pc*100,null)+'<div class="v"><b>'+nf(x.pc*100,0)+'%</b></div><span class="'+(x.pd>=5?'dn':'')+'">−'+nf(x.pd,1)+' pts</span></div>').join('')+'</div></div></section>'}}
+ if(S.rel=='meses'){
+  const Y=c.anoM,ms=rng(Y*12,Y*12+11),cols='minmax(230px,1.6fr) repeat(12,minmax(46px,1fr))';
+  perg='Como cada nota andou mês a mês em '+Y+'?';desc=esq(S.e?'Equipe '+S.e:S.u||'Município')+'. Cada quadrado é um mês, com a cor da faixa; os quadrimestres estão separados.';
+  out=vs.length?'<section class="sec">'+cab('Notas','Meses ainda sem fechamento aparecem vazios. Passe o mouse num quadrado para ver o valor e a faixa.')+'<div class="sc"><div style="min-width:960px"><div class="gr h" style="grid-template-columns:'+cols+';padding-bottom:0"><span></span>'+[1,2,3].map(q=>'<span class="q1" style="grid-column:span 4;padding-left:6px">'+q+'º quadrimestre</span>').join('')+'</div><div class="gr h" style="grid-template-columns:'+cols+'"><span>Nota</span>'+ms.map((a,i)=>'<span style="text-align:center'+(i%4?'':';border-left:2px solid var(--bd)')+'">'+ML[i]+'</span>').join('')+'</div>'+
+  GR.map(g=>{const d=vs.filter(n=>n.g==g[0]);if(!d.length)return'';return(S.gr?'':'<div class="gr" style="display:block;padding:12px 20px 2px;border-top:1px solid var(--bd)"><b>'+g[1]+'</b></div>')+d.map(n=>'<div class="gr" style="grid-template-columns:'+cols+';padding-top:5px;padding-bottom:5px"><div class="nm">'+n.c+' · '+n.nome+ii(n)+'</div>'+ms.map((a,i)=>{if(a>ATUAL||a<INI)return'<span class="mc e" title="'+rml(a)+': sem dados">—</span>';const v=vm(n.c,S.u,S.e,a);return'<span class="mc" title="'+rml(a)+': '+nf(v,n.fmt)+n.un+' ('+fx(n,v).r+')" style="background:var(--'+(CF[fx(n,v).k]||'ne')+')">'+nf(v,n.fmt)+'</span>'}).join('')+'</div>').join('')}).join('')+'</div></div>'+legenda('<span>— sem dados</span>')+'</section>':'<section class="sec"><p class="nt">Nenhuma nota neste recorte. Troque a unidade, a equipe ou o grupo.</p></section>'}
+ $('#main').innerHTML='<div><h1>'+esq(perg)+'</h1><p>'+desc+'</p></div>'+(cards?'<div class="cards">'+cards+'</div>':'')+out}
+/* Vários meses ou quadrimestres: cada clique liga ou desliga; a seleção nunca fica vazia. */
+function alterna(lista,v){const i=lista.indexOf(v);if(i<0)lista.push(v);else if(lista.length>1)lista.splice(i,1)}
+function set(k,v){
+ if(k=='mt'){alterna(S.ms,+v);return render()}
+ if(k=='qt'){alterna(S.qs,v);return render()}
+ if(k=='ano')v=+v;
+ S[k]=v;
+ if(k=='u')S.e='';
+ if(k=='modo'&&v=='m')S.ano=Math.max(...S.ms)/12|0;
+ if(k=='cmp')S.cmp=!!v;
+ render()}
+document.addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(b&&!b.disabled)set(b.dataset.k,b.dataset.v)});
+document.addEventListener('change',e=>{const t=e.target;if(t.dataset&&t.dataset.k)set(t.dataset.k,t.type=='checkbox'?t.checked:t.value)});
+/* Tema: Personalizado (padrão), Claro e Escuro; a escolha fica guardada neste navegador. */
+const TEMAS=[['claro','Claro'],['pers','Personalizado'],['escuro','Escuro']];
+let tema='';try{tema=localStorage.getItem('notas-tema')||''}catch(e){}
+if(!TEMAS.some(t=>t[0]==tema))tema=matchMedia('(prefers-color-scheme: dark)').matches?'escuro':'pers';
+function aplicaTema(){document.documentElement.dataset.theme=tema;$('#tema').innerHTML=TEMAS.map(t=>'<button type="button" data-tema="'+t[0]+'" aria-pressed="'+(tema==t[0])+'">'+t[1]+'</button>').join('')}
+$('#tema').addEventListener('click',e=>{const b=e.target.closest('button[data-tema]');if(!b)return;tema=b.dataset.tema;try{localStorage.setItem('notas-tema',tema)}catch(e){}aplicaTema()});
+aplicaTema();render();
+</script><script src="/js/sessao.js"></script>
+</body></html>

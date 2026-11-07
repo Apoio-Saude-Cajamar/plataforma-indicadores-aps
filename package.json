@@ -2,13 +2,13 @@
   "name": "plataforma-indicadores-aps",
   "version": "0.1.0",
   "private": true,
-  "description": "Plataforma de Indicadores da Atenção Primária – Secretaria de Saúde de Cajamar",
+  "description": "Painel APS – Plataforma de Indicadores da Atenção Primária – Secretaria de Saúde de Cajamar",
   "type": "module",
   "scripts": {
     "test": "node --test --no-warnings=ExperimentalWarning \"test/**/*.test.mjs\"",
-    "dev": "wrangler dev",
+    "dev": "wrangler pages dev",
     "migrar": "wrangler d1 migrations apply indicadores-aps --remote",
-    "deploy": "wrangler d1 migrations apply indicadores-aps --remote && wrangler deploy"
+    "deploy": "wrangler d1 migrations apply indicadores-aps --remote && wrangler pages deploy"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"

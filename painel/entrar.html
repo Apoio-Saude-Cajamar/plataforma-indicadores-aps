@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Painel APS · Entrar</title>
+  <link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/painelaps.css">
+</head>
+<body>
+  <canvas id="rede" aria-hidden="true"></canvas>
+  <main class="acesso">
+    <section class="boas">
+      <h1>Bem-vindo ao Painel APS</h1>
+      <p>Indicadores da Atenção Primária de Cajamar, do município à equipe.</p>
+    </section>
+    <section class="cartao" aria-labelledby="titulo">
+      <div class="marca">
+        <img src="/img/painelaps.svg" alt="">
+        <b id="titulo">Painel APS</b>
+        <small>Acesso restrito a usuários autorizados</small>
+      </div>
+      <form id="form" novalidate>
+        <label for="login">Usuário</label>
+        <input id="login" name="login" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus>
+        <label for="senha">Senha</label>
+        <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+        <button class="botao" id="entrar" type="submit">Entrar</button>
+      </form>
+      <div id="apoio" hidden>
+        <div class="ou">ou</div>
+        <a class="botao sec" id="linkApoio" href="#">Entrar com o login do Apoio</a>
+      </div>
+      <div class="msg erro" id="msg" role="alert" hidden></div>
+      <p class="rodape">Sem acesso? Peça ao administrador do Painel APS.</p>
+    </section>
+  </main>
+  <script src="/js/publico/rede.js"></script>
+  <script src="/js/publico/entrar.js"></script>
+</body>
+</html>

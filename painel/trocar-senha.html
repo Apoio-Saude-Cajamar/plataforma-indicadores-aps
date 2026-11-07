@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Painel APS · Trocar senha</title>
+  <link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/painelaps.css">
+</head>
+<body>
+  <canvas id="rede" aria-hidden="true"></canvas>
+  <main class="acesso">
+    <section class="boas">
+      <h1>Crie sua senha</h1>
+      <p id="aviso">Escolha uma senha só sua, com pelo menos 10 caracteres, letras e números.</p>
+    </section>
+    <section class="cartao" aria-labelledby="titulo">
+      <div class="marca">
+        <img src="/img/painelaps.svg" alt="">
+        <b id="titulo">Trocar senha</b>
+        <small id="quem">&nbsp;</small>
+      </div>
+      <form id="form" novalidate>
+        <div id="blocoAtual">
+          <label for="atual">Senha atual ou provisória</label>
+          <input id="atual" type="password" autocomplete="current-password" required>
+        </div>
+        <label for="nova">Nova senha</label>
+        <input id="nova" type="password" autocomplete="new-password" minlength="10" required>
+        <label for="conf">Repita a nova senha</label>
+        <input id="conf" type="password" autocomplete="new-password" minlength="10" required>
+        <p class="dica">Mínimo de 10 caracteres, com letras e números, sem o seu usuário.</p>
+        <button class="botao" id="salvar" type="submit">Salvar senha</button>
+        <a class="botao sec" href="/">Voltar ao painel</a>
+      </form>
+      <div class="msg erro" id="msg" role="alert" hidden></div>
+    </section>
+  </main>
+  <script src="/js/publico/rede.js"></script>
+  <script>
+  (function () {
+    const $ = id => document.getElementById(id);
+    const msg = (t, ok) => { const m = $('msg'); m.textContent = t; m.hidden = !t; m.className = 'msg ' + (ok ? 'ok' : 'erro'); };
+    fetch('/api/v1/auth/eu').then(r => r.json()).then(d => {
+      if (!d.usuario) return;
+      $('quem').textContent = d.usuario.nome + ' · ' + d.usuario.login;
+      if (d.usuario.trocarSenha) $('aviso').textContent = 'Este é seu primeiro acesso ou sua senha foi redefinida. Crie uma senha nova para continuar.';
+    });
+    $('form').addEventListener('submit', async e => {
+      e.preventDefault(); msg('');
+      if ($('nova').value !== $('conf').value) { msg('As duas senhas novas não são iguais.'); return; }
+      const b = $('salvar'); b.disabled = true;
+      try {
+        const r = await fetch('/api/v1/auth/senha', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ atual: $('atual').value, nova: $('nova').value }) });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) { msg(d.erro || 'Não foi possível trocar a senha.'); return; }
+        msg('Senha trocada. Abrindo o painel…', true);
+        setTimeout(() => location.replace('/'), 900);
+      } catch { msg('Sem conexão. Tente de novo.'); } finally { b.disabled = false; }
+    });
+  })();
+  </script>
+</body>
+</html>

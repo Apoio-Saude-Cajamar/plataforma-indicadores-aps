@@ -1,0 +1,65 @@
+/* Painel APS: identidade das páginas de acesso (mesma família visual do Apoio). */
+:root {
+  color-scheme: light;
+  --ff: Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --bg: #FFFFFF; --surface: #FFFFFF; --ink: #1B2340; --muted: #5A6478; --line: #D9E1EA; --field: #FFFFFF;
+  --primary: #1F3C72; --primary-ink: #fff; --accent: #1C9C76; --accent-hover: #178563; --link: #1F3C72;
+  --danger: #B3261E; --danger-bg: #FDECEA; --ok-bg: #E7F6EF; --ok: #14684F;
+  --shadow: 0 16px 38px rgba(27, 35, 64, .12); --net: 32, 59, 143;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #141A24; --surface: #202838; --ink: #EEF3FF; --muted: #BAC4D8; --line: #3B465B; --field: #141C29;
+    --primary: #86A7FF; --primary-ink: #0E1522; --accent: #3FBF95; --accent-hover: #66D7B4; --link: #A9C1FF;
+    --danger: #FF8C82; --danger-bg: #3A1F1E; --ok-bg: #173329; --ok: #7CE1C2;
+    --shadow: 0 16px 38px rgba(0, 0, 0, .42); --net: 134, 167, 255;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 500 15px/1.5 var(--ff); }
+a { color: var(--link); }
+:focus-visible { outline: 3px solid #00A7E7; outline-offset: 2px; }
+
+#rede { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+.acesso { position: relative; z-index: 1; min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center; gap: 48px; max-width: 1080px; margin: 0 auto; padding: 32px 16px; }
+.boas h1 { font-size: clamp(30px, 4vw, 40px); font-weight: 800; color: var(--primary); margin: 0 0 10px; letter-spacing: -.01em; }
+.boas p { color: var(--muted); margin: 0; max-width: 380px; }
+.cartao { width: 100%; max-width: 340px; justify-self: center; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 14px; box-shadow: var(--shadow); padding: 28px 24px 22px; }
+.marca { text-align: center; margin-bottom: 18px; }
+.marca img { width: 44px; height: 44px; }
+.marca b { display: block; font-size: 17px; font-weight: 600; margin-top: 6px; }
+.marca small { color: var(--muted); font-size: 12px; }
+label { display: block; font-size: 13px; font-weight: 700; margin: 12px 0 5px; }
+input[type=text], input[type=password], input[type=email], select {
+  width: 100%; height: 40px; border: 1px solid var(--line); border-radius: 8px; padding: 0 12px;
+  background: var(--field); color: var(--ink); font: inherit; }
+input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(31, 60, 114, .18); }
+.botao { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 40px; margin-top: 16px;
+  border: 0; border-radius: 8px; background: var(--accent); color: #fff; font: 700 14px var(--ff); cursor: pointer; text-decoration: none; }
+.botao:hover { background: var(--accent-hover); }
+.botao[disabled] { opacity: .6; cursor: wait; }
+.botao.sec { background: transparent; color: var(--primary); border: 1px solid var(--line); margin-top: 10px; }
+.botao.sec:hover { background: rgba(31, 60, 114, .06); }
+.ou { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; margin: 16px 0 0; }
+.ou::before, .ou::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+.msg { margin-top: 12px; font-size: 13px; border-radius: 8px; padding: 8px 10px; }
+.msg.erro { background: var(--danger-bg); color: var(--danger); }
+.msg.ok { background: var(--ok-bg); color: var(--ok); }
+.rodape { text-align: center; color: var(--muted); font-size: 12px; margin-top: 16px; }
+.dica { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+@media (max-width: 760px) {
+  .acesso { grid-template-columns: 1fr; gap: 24px; padding-top: 40px; align-content: start; }
+  .boas { text-align: center; }
+  .boas p { margin: 0 auto; }
+}
+
+/* Barra do usuário nas páginas internas */
+.barra-usuario { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.barra-usuario a, .barra-usuario button { color: inherit; font: inherit; background: none; border: 1px solid currentColor;
+  border-radius: 99px; padding: 3px 10px; cursor: pointer; text-decoration: none; opacity: .9; }
+.barra-usuario a:hover, .barra-usuario button:hover { opacity: 1; }

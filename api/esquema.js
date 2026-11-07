@@ -1,5 +1,5 @@
 // Estrutura do banco conhecida pela API. Mantenha em sincronia com migrations/.
-export const VERSAO_API = '0.1.0';
+export const VERSAO_API = '0.2.0';
 export const VERSAO_ESQUEMA = 1;
 
 // Colunas de cada tabela, na ordem usada no backup e na restauração.

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Painel APS · Usuários</title>
+  <link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/painelaps.css">
+  <style>
+    header { background: #1F3C72; color: #fff; border-bottom: 4px solid #00A7E7; }
+    .w { max-width: 1080px; margin: 0 auto; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .logo { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; }
+    .logo img { width: 30px; height: 30px; }
+    .logo b { font-size: 17px; }
+    main { max-width: 1080px; margin: 0 auto; padding: 24px 16px 48px; }
+    h1 { font-size: 24px; font-weight: 800; color: var(--primary); margin: 0 0 4px; }
+    .sub { color: var(--muted); margin: 0 0 20px; }
+    .caixa { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+    .grade { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) auto; gap: 10px; align-items: end; }
+    .grade label { margin-top: 0; }
+    .grade .botao { margin-top: 0; width: auto; padding: 0 18px; }
+    .tab { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 720px; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    th { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+    td small { display: block; color: var(--muted); }
+    td select { height: 32px; width: auto; }
+    .acoes { display: flex; gap: 6px; flex-wrap: wrap; }
+    .acoes button { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 6px; padding: 4px 10px; font: 600 12px var(--ff); cursor: pointer; }
+    .acoes button:hover { border-color: var(--primary); }
+    .inativo { opacity: .55; }
+    .senha { font: 700 18px ui-monospace, Menlo, Consolas, monospace; letter-spacing: .05em; background: var(--ok-bg); color: var(--ok); padding: 6px 10px; border-radius: 6px; display: inline-block; margin: 6px 0; }
+    @media (max-width: 760px) { .grade { grid-template-columns: 1fr 1fr; } .grade .botao { grid-column: 1 / -1; width: 100%; } }
+  </style>
+</head>
+<body>
+  <header><div class="w">
+    <a class="logo" href="/"><img src="/img/painelaps.svg" alt=""><b>Painel APS</b></a>
+    <div class="barra-usuario" id="barra"></div>
+  </div></header>
+  <main>
+    <h1>Usuários</h1>
+    <p class="sub">Quem pode entrar no Painel APS. Ao criar ou redefinir, a senha provisória aparece uma única vez: entregue à pessoa por um canal seguro. No primeiro acesso ela cria a própria senha.</p>
+
+    <section class="caixa" aria-labelledby="tNovo">
+      <h2 id="tNovo" style="font-size:16px;margin:0 0 12px">Novo usuário</h2>
+      <form id="novo" class="grade" novalidate>
+        <div><label for="nLogin">Usuário</label><input id="nLogin" type="text" autocapitalize="none" spellcheck="false" placeholder="ex.: maria.silva" required></div>
+        <div><label for="nNome">Nome</label><input id="nNome" type="text" required></div>
+        <div><label for="nEmail">E-mail (opcional)</label><input id="nEmail" type="email"></div>
+        <div><label for="nPerfil">Perfil</label>
+          <select id="nPerfil"><option value="leitor">Leitor: vê os painéis</option><option value="gestor">Gestor: vê e registra metas</option><option value="admin">Administrador: tudo e usuários</option></select></div>
+        <button class="botao" type="submit">Criar</button>
+      </form>
+      <div class="msg" id="msg" role="status" hidden></div>
+    </section>
+
+    <section class="caixa" aria-labelledby="tLista">
+      <h2 id="tLista" style="font-size:16px;margin:0 0 6px">Cadastrados</h2>
+      <div class="tab"><table>
+        <thead><tr><th>Pessoa</th><th>Perfil</th><th>Último acesso</th><th>Situação</th><th>Ações</th></tr></thead>
+        <tbody id="lista"><tr><td colspan="5">Carregando…</td></tr></tbody>
+      </table></div>
+    </section>
+  </main>
+  <script src="/js/sessao.js"></script>
+  <script>
+  (function () {
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const PERFIS = { admin: 'Administrador', gestor: 'Gestor', leitor: 'Leitor' };
+    const quando = v => v ? new Date(v).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'nunca';
+    function msg(html, ok) { const m = $('msg'); m.innerHTML = html; m.hidden = !html; m.className = 'msg ' + (ok ? 'ok' : 'erro'); }
+    async function api(metodo, caminho, corpo) {
+      const r = await fetch('/api/v1' + caminho, { method: metodo, credentials: 'same-origin',
+        headers: corpo ? { 'content-type': 'application/json' } : {}, body: corpo ? JSON.stringify(corpo) : undefined });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.erro || 'Falha (' + r.status + ')');
+      return d;
+    }
+    function mostrarSenha(login, senha) {
+      msg('Senha provisória de <b>' + esc(login) + '</b>:<br><span class="senha">' + esc(senha) + '</span><br>Ela não será mostrada de novo.', true);
+    }
+    async function carregar() {
+      const { usuarios } = await api('GET', '/usuarios');
+      $('lista').innerHTML = usuarios.map(u => '<tr class="' + (u.ativo ? '' : 'inativo') + '" data-id="' + u.id + '" data-login="' + esc(u.login) + '">'
+        + '<td><b>' + esc(u.nome) + '</b><small>' + esc(u.login) + (u.email ? ' · ' + esc(u.email) : '') + '</small></td>'
+        + '<td><select data-acao="perfil" aria-label="Perfil de ' + esc(u.nome) + '">' + Object.entries(PERFIS).map(([k, v]) => '<option value="' + k + '"' + (u.perfil === k ? ' selected' : '') + '>' + v + '</option>').join('') + '</select></td>'
+        + '<td>' + quando(u.ultimo_acesso) + '</td>'
+        + '<td>' + (u.ativo ? (u.trocar_senha ? 'aguardando 1º acesso' : 'ativo') : 'desativado') + '</td>'
+        + '<td><div class="acoes"><button data-acao="senha">Redefinir senha</button><button data-acao="ativo">' + (u.ativo ? 'Desativar' : 'Reativar') + '</button></div></td></tr>').join('')
+        || '<tr><td colspan="5">Nenhum usuário.</td></tr>';
+    }
+    $('novo').addEventListener('submit', async e => {
+      e.preventDefault(); msg('');
+      try {
+        const d = await api('POST', '/usuarios', { login: $('nLogin').value.trim(), nome: $('nNome').value.trim(), email: $('nEmail').value.trim() || undefined, perfil: $('nPerfil').value });
+        e.target.reset(); mostrarSenha(d.usuario.login, d.senhaProvisoria); carregar();
+      } catch (err) { msg(esc(err.message)); }
+    });
+    $('lista').addEventListener('click', async e => {
+      const b = e.target.closest('button[data-acao]'); if (!b) return;
+      const tr = b.closest('tr'), id = tr.dataset.id, login = tr.dataset.login;
+      try {
+        if (b.dataset.acao === 'senha') {
+          if (!confirm('Redefinir a senha de ' + login + '? A pessoa terá de criar uma nova no próximo acesso.')) return;
+          const d = await api('PATCH', '/usuarios/' + id, { redefinirSenha: true }); mostrarSenha(login, d.senhaProvisoria);
+        } else if (b.dataset.acao === 'ativo') {
+          const ativar = b.textContent === 'Reativar';
+          if (!ativar && !confirm('Desativar ' + login + '? A pessoa sai na hora e não consegue mais entrar.')) return;
+          await api('PATCH', '/usuarios/' + id, { ativo: ativar }); msg('');
+        }
+        carregar();
+      } catch (err) { msg(esc(err.message)); }
+    });
+    $('lista').addEventListener('change', async e => {
+      const s = e.target.closest('select[data-acao="perfil"]'); if (!s) return;
+      try { await api('PATCH', '/usuarios/' + s.closest('tr').dataset.id, { perfil: s.value }); msg('Perfil alterado.', true); }
+      catch (err) { msg(esc(err.message)); carregar(); }
+    });
+    carregar().catch(err => msg(esc(err.message)));
+  })();
+  </script>
+</body>
+</html>
