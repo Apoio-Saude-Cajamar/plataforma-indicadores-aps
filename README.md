@@ -142,16 +142,15 @@ A resposta traz `senhaProvisoria`. Entre em `/entrar` com ela e crie a sua senha
 
 ### Integração com o login do Apoio
 
-O login do Apoio (`atencaoprimaria.apoiosaude.workers.dev`) já entrega um código de uso único para sites autorizados. O Painel APS está pronto para recebê-lo em `/auth/apoio?handoff=<código>`, mas a integração fica **desligada** até três coisas existirem:
+O botão "Entrar com o login do Apoio" usa o código de uso único que o Apoio (`atencaoprimaria.apoiosaude.workers.dev`) já gera para o eMulti. O Painel APS troca o código pela identidade em `POST /api/handoff/consume` do Apoio e **só deixa entrar quem já está cadastrado e ativo** em `/usuarios` (o login do Painel APS precisa ser igual ao usuário do Apoio).
 
-1. **No Apoio:**
-   - incluir `painelaps.pages.dev` em `ALLOWED_NEXT_HOSTS` (página de login);
-   - usar o `feature_key` do destino em vez do valor fixo `regulacao_vagas` (ex.: `indicadores_aps` para o Painel APS) e dar essa permissão a quem pode entrar;
-   - criar um endpoint servidor a servidor que troque o código pela identidade, por exemplo `POST /api/handoff/resgatar` com `Authorization: Bearer <APOIO_CHAVE>` e corpo `{ "token": "...", "servico": "painelaps" }`, respondendo `{ "user": { "username": "...", "name": "...", "email": "..." } }` (ou 403 se a pessoa não tem a permissão). O código deve valer uma única vez e por poucos minutos.
-2. **No Painel APS:** preencher `APOIO_RESGATE_URL` em `wrangler.jsonc` e criar o secret `APOIO_CHAVE` (a mesma chave do Apoio).
-3. **Usuários:** quem entra pelo Apoio precisa existir no Painel APS com o mesmo login (o administrador cadastra). Com `APOIO_CRIAR_USUARIOS = "sim"`, o Painel APS cria a pessoa sozinha como `leitor`.
+Para ligar:
 
-Ligada a integração, a página de entrada mostra o botão **Entrar com o login do Apoio**, e o login próprio continua funcionando.
+1. **No Apoio** (`public/login.html`): incluir `'painelaps.pages.dev'` em `ALLOWED_NEXT_HOSTS`.
+2. **No Painel APS** (Pages → Settings → Variables and secrets): criar o secret `APOIO_CHAVE` com o **mesmo valor** de `EMULTI_HANDOFF_SECRET` do projeto do Apoio. A variável `APOIO_RESGATE_URL` já vem preenchida no `wrangler.jsonc`.
+3. **Quem entra:** o Apoio só emite o código para quem tem a permissão `eMulti | Regulação` (`regulacao_vagas`). Para separar o acesso do Painel APS, o Apoio precisaria de uma permissão própria (ex.: `indicadores_aps`), mudança que fica para depois.
+
+Sem o secret `APOIO_CHAVE`, o botão não aparece e o login por usuário e senha segue funcionando.
 
 ## Publicação (Cloudflare Pages)
 

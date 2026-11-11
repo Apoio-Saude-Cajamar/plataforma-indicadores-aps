@@ -309,7 +309,8 @@ export async function retornoApoio(req, env, url) {
   try {
     const r = await fetch(env.APOIO_RESGATE_URL, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + env.APOIO_CHAVE },
+      // 'x-handoff-secret' é o cabeçalho que o Apoio já usa em /api/handoff/consume; 'authorization' vale para um endpoint novo.
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + env.APOIO_CHAVE, 'x-handoff-secret': env.APOIO_CHAVE },
       body: JSON.stringify({ token: codigo, servico: env.APOIO_SERVICO || 'painelaps' })
     });
     if (!r.ok) return destinoErro(r.status === 403 ? 'Seu usuário do Apoio não tem acesso ao Painel APS.' : 'O código do Apoio expirou. Tente entrar de novo.');
