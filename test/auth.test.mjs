@@ -186,3 +186,28 @@ test('ponto de entrada do Pages (functions/_middleware.js) usa a mesma lógica',
   r = await onRequest({ request: new Request(BASE + '/', { redirect: 'manual' }), env });
   assert.equal(r.status, 302);
 });
+
+test('composição: a extensão grava com a chave e o painel lê com a sessão', async () => {
+  const env = comPaginas(ambiente());
+  const put = (corpo, chave = CHAVES.TOKEN_COLETA) => worker.fetch(new Request(BASE + '/api/v1/composicao', { method: 'PUT',
+    headers: { 'content-type': 'application/json', authorization: 'Bearer ' + chave }, body: JSON.stringify(corpo) }), env);
+  assert.equal((await put({ competencia: '2026-10' })).status, 400);
+  assert.equal((await put({ competencia: '2026-10', unidades: [] }, CHAVES.TOKEN_BACKUP)).status, 401);
+  assert.equal((await put({ competencia: '2026-09', coletadoEm: '2026-10-01T10:00:00Z', unidades: [{ nome: 'U0', equipes: [] }] })).status, 200);
+  assert.equal((await put({ competencia: '2026-10', coletadoEm: '2026-11-03T10:00:00Z', alertas: ['x'], unidades: [{ nome: 'U1', equipes: [] }] })).status, 200);
+  assert.equal((await put({ competencia: '2026-10', coletadoEm: '2026-11-04T10:00:00Z', unidades: [{ nome: 'U2', equipes: [] }] })).status, 200);
+
+  await admin(env, { login: 'dora', nome: 'Dora', senha: 'Painel#Forte2026' });
+  await env.DB.prepare('UPDATE usuario SET trocar_senha = 0').run();
+  const nav = navegador(env);
+  assert.equal((await nav.pedir('GET', '/api/v1/composicao')).status, 401);
+  await nav.pedir('POST', '/api/v1/auth/entrar', { login: 'dora', senha: 'Painel#Forte2026' });
+  let d = await (await nav.pedir('GET', '/api/v1/composicao')).json();
+  assert.deepEqual(d.competencias, ['2026-10', '2026-09']);
+  assert.equal(d.composicao.unidades[0].nome, 'U2', 'vale o último envio da competência');
+  d = await (await nav.pedir('GET', '/api/v1/composicao?competencia=2026-09')).json();
+  assert.equal(d.composicao.unidades[0].nome, 'U0');
+  // a sessão não grava
+  assert.equal((await nav.pedir('PUT', '/api/v1/composicao', { competencia: '2026-10', unidades: [] })).status, 401);
+  assert.equal((await nav.pedir('GET', '/composicao')).status, 200);
+});

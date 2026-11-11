@@ -23,7 +23,7 @@ PEC e-SUS ──► extensão do Chrome ──► API (Cloudflare Pages Function
 | `api/` | Lógica do servidor: rotas, login, validação, gravação por etapa, backup e restauração |
 | `functions/` | Ponto de entrada do Cloudflare Pages (`_middleware.js` chama `api/index.js` em todo pedido) |
 | `migrations/` | Estrutura do banco D1 (SQL) |
-| `painel/` | Páginas: entrada (`entrar.html`), painel de notas (`index.html`), usuários e troca de senha |
+| `painel/` | Páginas: entrada (`entrar.html`), painel de notas (`index.html`), composição das equipes (`composicao.html`), usuários e troca de senha |
 | `backup/` | Script do Google Apps Script que faz o backup mensal no Google Drive |
 | `test/` | Testes automáticos (Node 22+, sem dependências externas) |
 
@@ -59,6 +59,8 @@ Todas as rotas ficam sob `/api/v1`. As rotas de leitura aceitam a chave da exten
 | `POST /auth/entrar` · `POST /auth/sair` | — | Login por usuário e senha; grava ou apaga o cookie de sessão |
 | `GET /auth/eu` · `POST /auth/senha` | sessão | Quem está logado; troca de senha |
 | `GET /auth/config` | — | Se a entrada pelo Apoio está ligada |
+| `PUT /composicao` | coleta | Composição das equipes de uma competência (árvore unidade → equipe → profissionais, com os pontos de atenção) |
+| `GET /composicao?competencia=AAAA-MM` | coleta ou sessão | Composição mais recente (ou da competência) e a lista de competências |
 | `GET /usuarios` · `POST /usuarios` · `PATCH /usuarios/:id` | sessão de admin ou `TOKEN_ADMIN` | Administração de usuários |
 | `POST /coletas` | coleta | Abre uma coleta `{ id, competencia, tipo, versaoExtensao, iniciadoEm, config }` |
 | `PUT /coletas/:id/etapa` | coleta | Grava ou regrava uma etapa (exemplo abaixo) |
@@ -108,6 +110,12 @@ Os campos de uma linha que a API não conhece são guardados em `extras`.
 | `TOKEN_ADMIN` | Administração | Tudo, inclusive restaurar |
 
 Use chaves longas e aleatórias, com pelo menos 32 caracteres. Uma chave não configurada nunca autentica.
+
+## Composição das equipes
+
+A página `/composicao` mostra um fluxograma que abre do macro ao micro: município → unidade → equipe → categoria profissional → profissional. Cada cartão traz um selo com os pontos de atenção daquele nível e dos níveis abaixo (equipe sem médico, eSB sem vínculo, ACS sem equipe etc.). Dá para buscar, ver só o que tem ponto de atenção e trocar a competência.
+
+Os dados vêm da extensão (opção "Composição das equipes"), que lê o quadro de lotação de cada unidade no PEC e envia a árvore pronta por `PUT /api/v1/composicao`. Enquanto nada foi enviado, a página mostra um exemplo fictício. A tabela `composicao` não entra no backup do Drive: a extensão recoleta a cada mês.
 
 ## Acesso (login)
 

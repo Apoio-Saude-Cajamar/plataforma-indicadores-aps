@@ -25,6 +25,7 @@ import { ErroHttp, json, jsonTexto, lerJson, exigir } from './util.js';
 import { entrar, sair, eu, trocarSenha, listarUsuarios, criarUsuario, alterarUsuario, exigirSessao, sessaoDoPedido, configApoio, retornoApoio } from './auth.js';
 import { criarColeta, gravarEtapa, concluirColeta, listarColetas, etapasDaColeta } from './coletas.js';
 import { situacao, dadosVigentes, competencias } from './consultas.js';
+import { gravarComposicao, lerComposicao } from './composicao.js';
 import { manifesto, paginaTabela, iniciarRestauracao, restaurarParte, concluirRestauracao } from './backup.js';
 
 const ROTAS = [
@@ -48,6 +49,9 @@ const ROTAS = [
   ['GET', /^\/situacao$/, 'leitura', async (req, env, m, url) => json(await situacao(env, url.searchParams.get('competencia')))],
   ['GET', /^\/dados$/, 'leitura', async (req, env, m, url) => jsonTexto(await dadosVigentes(env, url.searchParams.get('competencia')))],
   ['GET', /^\/competencias$/, 'leitura', async (req, env) => json(await competencias(env))],
+
+  ['PUT', /^\/composicao$/, 'coleta', async (req, env) => json(await gravarComposicao(env, await lerJson(req)))],
+  ['GET', /^\/composicao$/, 'leitura', async (req, env, m, url) => json(await lerComposicao(env, url.searchParams.get('competencia')))],
 
   ['GET', /^\/backup\/manifesto$/, 'backup', async (req, env) => json(await manifesto(env))],
   ['GET', /^\/backup\/tabela\/(\w+)$/, 'backup', async (req, env, m, url) =>
