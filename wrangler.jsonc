@@ -13,7 +13,7 @@
     {
       "binding": "DB",
       "database_name": "indicadores-aps",
-      "database_id": "PREENCHER_COM_O_ID_DO_BANCO",
+      "database_id": "65a2a4a0-a66d-4480-9f02-aee96eac8278",
       "migrations_dir": "migrations"
     }
   ],
