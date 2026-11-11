@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Painel APS">
+  <rect x="3" y="3" width="58" height="58" rx="14" fill="#1F3C72"/>
+  <rect x="14" y="34" width="8" height="16" rx="2" fill="#fff" fill-opacity=".55"/>
+  <rect x="28" y="24" width="8" height="26" rx="2" fill="#fff" fill-opacity=".8"/>
+  <rect x="42" y="16" width="8" height="34" rx="2" fill="#00A7E7"/>
+  <path d="M13 27 L25 19 L34 23 L49 11" fill="none" stroke="#1C9C76" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="49" cy="11" r="3.2" fill="#1C9C76"/>
+</svg>

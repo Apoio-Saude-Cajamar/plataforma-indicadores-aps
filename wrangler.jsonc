@@ -1,0 +1,34 @@
+{
+  // Painel APS · Plataforma de Indicadores da APS de Cajamar (Cloudflare Pages + Functions + D1)
+  // Endereço: https://painelaps.pages.dev
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "painelaps",
+  "compatibility_date": "2026-10-01",
+
+  // Páginas estáticas. Toda requisição passa antes por functions/_middleware.js,
+  // que exige login (só /entrar e os arquivos visuais são públicos) e atende /api/v1.
+  "pages_build_output_dir": "./painel",
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "indicadores-aps",
+      "database_id": "65a2a4a0-a66d-4480-9f02-aee96eac8278",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // Integração com o login do Apoio (fica desligada enquanto APOIO_RESGATE_URL e o secret APOIO_CHAVE não existirem).
+  "vars": {
+    "APOIO_LOGIN_URL": "https://atencaoprimaria.apoiosaude.workers.dev/login",
+    "APOIO_RESGATE_URL": "",
+    "APOIO_SERVICO": "painelaps",
+    "APOIO_CRIAR_USUARIOS": "nao"
+  }
+
+  // Chaves (configurar como "secrets" no projeto do Pages, nunca neste arquivo):
+  //   TOKEN_COLETA  – usada pela extensão para enviar coletas
+  //   TOKEN_BACKUP  – somente leitura, usada pelo script de backup no Google Drive
+  //   TOKEN_ADMIN   – administração, restauração e criação do primeiro usuário
+  //   APOIO_CHAVE   – chave combinada com o Apoio para resgatar o código de entrada
+}
