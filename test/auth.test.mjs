@@ -173,6 +173,15 @@ test('entrada pelo Apoio fica desligada sem configuração e funciona com ela', 
     globalThis.fetch = async () => new Response(JSON.stringify({ user: { username: 'desconhecido' } }), { status: 200 });
     r = await worker.fetch(new Request(BASE + '/auth/apoio?handoff=x', { redirect: 'manual' }), env);
     assert.match(decodeURIComponent(r.headers.get('location')), /ainda não foi liberado/);
+    // super_admin do Apoio: é criado como administrador; usuário comum existente não é promovido
+    globalThis.fetch = async () => new Response(JSON.stringify({ valid: true, user: { username: 'chefe', name: 'Chefe', role: 'super_admin' } }), { status: 200 });
+    r = await worker.fetch(new Request(BASE + '/auth/apoio?handoff=a', { redirect: 'manual' }), env);
+    assert.equal(r.headers.get('location'), '/');
+    const chefe = await env.DB.prepare("SELECT perfil, ativo FROM usuario WHERE login = 'chefe'").first();
+    assert.equal(chefe.perfil, 'admin');
+    globalThis.fetch = async () => new Response(JSON.stringify({ valid: true, user: { username: 'carla', role: 'admin' } }), { status: 200 });
+    await worker.fetch(new Request(BASE + '/auth/apoio?handoff=b', { redirect: 'manual' }), env);
+    assert.notEqual((await env.DB.prepare("SELECT perfil FROM usuario WHERE login = 'carla'").first()).perfil, 'admin');
   } finally {
     globalThis.fetch = original;
   }

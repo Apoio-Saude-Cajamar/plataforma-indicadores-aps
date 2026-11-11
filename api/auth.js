@@ -322,6 +322,23 @@ export async function retornoApoio(req, env, url) {
   const login = texto(ext.login || ext.username, 60);
   if (!login) return destinoErro('O Apoio não informou o usuário.');
   let u = await env.DB.prepare('SELECT * FROM usuario WHERE login = ?').bind(login.toLowerCase()).first();
+  // Quem é super_admin no Apoio entra como administrador do Painel APS (é criado ou promovido na hora).
+  // A lista pode ser mudada em APOIO_PERFIS_ADMIN (separada por vírgula); vazio desliga esta regra.
+  const perfisAdmin = String(env.APOIO_PERFIS_ADMIN ?? 'super_admin').split(',').map(x => x.trim()).filter(Boolean);
+  const ehAdminApoio = perfisAdmin.includes(String(ext.role || ext.perfil || ''));
+  if (ehAdminApoio) {
+    const t = agora();
+    if (!u) {
+      await env.DB.prepare(`INSERT INTO usuario (login, nome, email, perfil, trocar_senha, ativo, criado_em, atualizado_em) VALUES (?, ?, ?, 'admin', 0, 1, ?, ?)`)
+        .bind(login.toLowerCase(), texto(ext.nome || ext.name, 120) || login, texto(ext.email, 160), t, t).run();
+      u = await env.DB.prepare('SELECT * FROM usuario WHERE login = ?').bind(login.toLowerCase()).first();
+      await registrar(env, u.id, 'admin_criado_apoio', login, req);
+    } else if (u.ativo && u.perfil !== 'admin') {
+      await env.DB.prepare(`UPDATE usuario SET perfil = 'admin', atualizado_em = ? WHERE id = ?`).bind(t, u.id).run();
+      u = await env.DB.prepare('SELECT * FROM usuario WHERE login = ?').bind(login.toLowerCase()).first();
+      await registrar(env, u.id, 'admin_promovido_apoio', login, req);
+    }
+  }
   if (!u && env.APOIO_CRIAR_USUARIOS === 'sim') {
     const t = agora();
     await env.DB.prepare(`INSERT INTO usuario (login, nome, email, perfil, trocar_senha, ativo, criado_em, atualizado_em) VALUES (?, ?, ?, 'leitor', 0, 1, ?, ?)`)

@@ -150,6 +150,8 @@ Para ligar:
 2. **No Painel APS** (Pages → Settings → Variables and secrets): criar o secret `APOIO_CHAVE` com o **mesmo valor** de `EMULTI_HANDOFF_SECRET` do projeto do Apoio. A variável `APOIO_RESGATE_URL` já vem preenchida no `wrangler.jsonc`.
 3. **Quem entra:** o Apoio só emite o código para quem tem a permissão `eMulti | Regulação` (`regulacao_vagas`). Para separar o acesso do Painel APS, o Apoio precisaria de uma permissão própria (ex.: `indicadores_aps`), mudança que fica para depois.
 
+**Administrador:** quem é `super_admin` no Apoio entra no Painel APS como administrador (o usuário é criado ou promovido na hora, e fica registrado em `registro_acesso`). Para mudar quais perfis valem, use a variável `APOIO_PERFIS_ADMIN` (separados por vírgula; vazio desliga a regra). Os demais perfis do Apoio só entram se já estiverem cadastrados.
+
 Sem o secret `APOIO_CHAVE`, o botão não aparece e o login por usuário e senha segue funcionando.
 
 ## Publicação (Cloudflare Pages)
