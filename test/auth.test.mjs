@@ -253,3 +253,33 @@ test('monitoramento: só administrador; avisa quando não há coleta e quando a 
   assert.ok(c && c.lista[0].includes('Sem médico lotado.'));
   assert.equal((await nav.pedir('GET', '/monitoramento')).status, 200);
 });
+
+test('comunicados: administrador publica, usuário vê e marca "Entendi", público respeitado', async () => {
+  const env = comPaginas(ambiente());
+  await admin(env, { login: 'ana', nome: 'Ana', senha: 'Painel#Forte2026', perfil: 'admin' });
+  await admin(env, { login: 'leo', nome: 'Leo', senha: 'Painel#Forte2026', perfil: 'leitor' });
+  await admin(env, { login: 'gil', nome: 'Gil', senha: 'Painel#Forte2026', perfil: 'gestor' });
+  await env.DB.prepare('UPDATE usuario SET trocar_senha = 0').run();
+  const entrar = async l => { const n = navegador(env); await n.pedir('POST', '/api/v1/auth/entrar', { login: l, senha: 'Painel#Forte2026' }); return n; };
+  const ana = await entrar('ana'), leo = await entrar('leo'), gil = await entrar('gil');
+  assert.equal((await leo.pedir('POST', '/api/v1/comunicados', { titulo: 'x', texto: 'y' })).status, 403);
+  assert.equal((await ana.pedir('POST', '/api/v1/comunicados', { titulo: '', texto: 'y' })).status, 400);
+  assert.equal((await ana.pedir('POST', '/api/v1/comunicados', { titulo: 'Manutenção', texto: 'Sábado o painel fica fora do ar.', nivel: 'importante' })).status, 201);
+  assert.equal((await ana.pedir('POST', '/api/v1/comunicados', { titulo: 'Só gestores', texto: 'Reunião.', publico: 'gestor' })).status, 201);
+  assert.equal((await ana.pedir('POST', '/api/v1/comunicados', { titulo: 'Vencido', texto: 'Já passou.', fimEm: '2020-01-01T00:00:00Z' })).status, 201);
+  let d = await (await leo.pedir('GET', '/api/v1/comunicados/ativos')).json();
+  assert.deepEqual(d.comunicados.map(c => c.titulo), ['Manutenção']);
+  d = await (await gil.pedir('GET', '/api/v1/comunicados/ativos')).json();
+  assert.deepEqual(d.comunicados.map(c => c.titulo).sort(), ['Manutenção', 'Só gestores']);
+  const id = d.comunicados.find(c => c.titulo === 'Manutenção').id;
+  assert.equal((await leo.pedir('POST', '/api/v1/comunicados/' + id + '/lido')).status, 200);
+  d = await (await leo.pedir('GET', '/api/v1/comunicados/ativos')).json();
+  assert.equal(d.comunicados[0].lido, true);
+  const lista = await (await ana.pedir('GET', '/api/v1/comunicados')).json();
+  assert.equal(lista.comunicados.find(c => c.id === id).leituras, 1);
+  assert.equal((await ana.pedir('PATCH', '/api/v1/comunicados/' + id, { ativo: false })).status, 200);
+  d = await (await leo.pedir('GET', '/api/v1/comunicados/ativos')).json();
+  assert.equal(d.comunicados.length, 0);
+  assert.equal((await ana.pedir('GET', '/comunicados')).status, 200);
+  assert.equal((await leo.pedir('GET', '/comunicados')).status, 302);
+});

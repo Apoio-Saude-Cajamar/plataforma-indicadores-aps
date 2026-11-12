@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comunicados · Painel APS</title>
+<link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Montserrat,system-ui,sans-serif;color:#1B2340;background:#F4F7FB}
+a{color:inherit;text-decoration:none}
+a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #00A7E7;outline-offset:3px}
+header{background:#1F3C72;border-bottom:4px solid #00A7E7;color:#fff}
+.topo{max-width:1100px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.marca{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
+.barra-usuario{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#fff}
+.barra-usuario a,.barra-usuario button{color:inherit;font:inherit;background:none;border:1px solid rgba(255,255,255,.6);border-radius:99px;padding:5px 14px;cursor:pointer}
+main{max-width:1100px;margin:0 auto;padding:32px 32px 56px}
+.voltar{font-weight:600;color:#1F3C72;text-decoration:underline;font-size:14px}
+h1{margin:12px 0 8px;font-size:30px;font-weight:800;color:#1F3C72;line-height:1.2}
+.intro{margin:0 0 20px;font-size:15px;line-height:1.55;color:#4A5670;max-width:760px}
+.sel{display:flex;flex-wrap:wrap;gap:16px 28px;margin-bottom:20px}
+.sel label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em}
+.sel select{font:inherit;font-size:15px;font-weight:600;text-transform:none;letter-spacing:0;min-height:42px;padding:0 12px;border:2px solid #D5DCE8;border-radius:10px;background:#fff;color:#1B2340;min-width:180px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:24px}
+.card,.bloco{background:#fff;border:2px solid #D5DCE8;border-radius:14px;padding:18px 20px}
+.card small{display:block;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.card .v{font-size:34px;font-weight:800;color:#1F3C72;line-height:1.1}
+.card .s{font-size:13px;color:#4A5670;margin-top:6px;line-height:1.45}
+.pill{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px;margin-left:8px;vertical-align:middle}
+.c-o{background:#C7ECD9;color:#0F5A41}.c-b{background:#D9ECF8;color:#0B4F73}.c-s{background:#FBF0D3;color:#6E4700}.c-r{background:#F8D9DC;color:#8A1B2A}
+.up{color:#0F6B4F;font-weight:700}.dn{color:#A8222F;font-weight:700}
+.bloco{margin-bottom:20px}
+.bloco h2{margin:0 0 6px;font-size:19px;color:#1B2340}
+.bloco p.d{margin:0 0 14px;font-size:14px;color:#4A5670;line-height:1.5}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #E3E8F0;vertical-align:middle}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#4A5670}
+td.n,th.n{text-align:right;white-space:nowrap}
+.tab{overflow-x:auto}
+.barra{display:flex;height:16px;border-radius:5px;overflow:hidden;min-width:140px;background:#E3E8F0}
+.barra i{display:block;height:100%}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:#4A5670;margin-top:12px}
+.leg em{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.k-o{background:#1C9C76}.k-b{background:#4FB3E8}.k-s{background:#F2C14E}.k-r{background:#E0525F}
+.nota{font-size:13px;color:#4A5670;line-height:1.55}
+.nota li{margin-bottom:6px}
+.mini{display:inline-block;height:10px;border-radius:3px;background:#1F3C72;vertical-align:middle;margin-right:8px}
+@media(max-width:600px){.topo{padding:14px 16px}main{padding:20px 16px 36px}h1{font-size:24px}.card .v{font-size:28px}}
+.item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #E3E8F0}
+.item:last-child{border-bottom:0}
+.dot{flex:0 0 12px;height:12px;border-radius:50%;margin-top:6px}
+.d-erro{background:#E0525F}.d-atencao{background:#F2C14E}.d-ok{background:#1C9C76}
+.item b{display:block;font-size:16px}.item small{display:block;color:#4A5670;font-size:12px;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.item p{margin:4px 0 0;color:#4A5670;font-size:14px;line-height:1.5}
+.item ul{margin:8px 0 0;padding-left:18px;color:#4A5670;font-size:13px;line-height:1.6}
+.pill.sit-Atingida{background:#C7ECD9;color:#0F5A41}.pill.sit-No{background:#FBF0D3;color:#6E4700}.pill.sit-Crítica{background:#F8D9DC;color:#8A1B2A}.pill{margin-left:0;font-size:14px;padding:5px 12px}
+.resumo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.btn2{font:inherit;font-weight:700;font-size:14px;color:#1F3C72;border:2px solid #1F3C72;background:#fff;border-radius:10px;padding:8px 16px;cursor:pointer}
+form.novo{display:grid;gap:14px;max-width:760px}
+form.novo label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em}
+form.novo input,form.novo textarea,form.novo select{font:inherit;font-size:15px;text-transform:none;letter-spacing:0;font-weight:500;padding:9px 12px;border:2px solid #D5DCE8;border-radius:10px;background:#fff;color:#1B2340}
+form.novo textarea{min-height:110px;resize:vertical}
+.duas{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.btn1{font:inherit;font-weight:700;font-size:15px;color:#fff;background:#1F3C72;border:0;border-radius:10px;padding:11px 20px;cursor:pointer;justify-self:start}
+.msg{font-size:14px;font-weight:600}.msg.ok{color:#0F6B4F}.msg.er{color:#A8222F}
+.cm{padding:14px 0;border-bottom:1px solid #E3E8F0}.cm:last-child{border-bottom:0}
+.cm .l{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.cm p{margin:6px 0;white-space:pre-wrap;color:#4A5670;font-size:14px;line-height:1.5}
+.cm small{color:#4A5670;font-size:13px}
+</style>
+</head>
+<body>
+<header><div class="topo">
+ <a class="marca" href="/"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
+ <div id="barra"></div>
+</div></header>
+<main>
+ <a class="voltar" href="/">← Voltar aos acompanhamentos</a>
+ <h1>Comunicados</h1>
+ <p class="intro">Escreva um aviso para os usuários do painel. Ele aparece no topo das páginas até cada pessoa marcar "Entendi". Não coloque dados de pacientes nem de profissionais.</p>
+ <section class="bloco"><h2>Novo comunicado</h2>
+  <form class="novo" id="f">
+   <label>Título<input name="titulo" maxlength="120" required></label>
+   <label>Texto<textarea name="texto" maxlength="2000" required></textarea></label>
+   <div class="duas">
+    <label>Destinatários<select name="publico"><option value="todos">Todos os usuários</option><option value="gestor">Só gestores</option><option value="leitor">Só leitores</option><option value="admin">Só administradores</option></select></label>
+    <label>Importância<select name="nivel"><option value="info">Informação</option><option value="importante">Importante</option></select></label>
+   </div>
+   <div class="duas">
+    <label>Começa em (opcional)<input type="datetime-local" name="inicioEm"></label>
+    <label>Termina em (opcional)<input type="datetime-local" name="fimEm"></label>
+   </div>
+   <button class="btn1" type="submit">Publicar</button><span class="msg" id="msg" role="status"></span>
+  </form>
+ </section>
+ <section class="bloco"><h2>Publicados</h2><div id="lista">Carregando…</div></section>
+</main>
+<script src="/js/sessao.js"></script>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PUB={todos:'todos os usuários',admin:'administradores',gestor:'gestores',leitor:'leitores'};
+const dt=v=>v?new Date(v).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'';
+async function api(m,u,b){const r=await fetch(u,{method:m,credentials:'same-origin',headers:b?{'content-type':'application/json'}:{},body:b?JSON.stringify(b):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.erro||'Falha.');return d}
+async function carregar(){try{const d=await api('GET','/api/v1/comunicados');
+ const agora=Date.now();
+ $('#lista').innerHTML=d.comunicados.length?d.comunicados.map(c=>{const vig=c.ativo&&(!c.fimEm||new Date(c.fimEm)>=agora)&&(!c.inicioEm||new Date(c.inicioEm)<=agora);
+  return '<div class="cm"><div class="l"><b>'+esc(c.titulo)+'</b><span class="pill '+(vig?'sit-Atingida':'sit-Sem')+'">'+(vig?'No ar':c.ativo?'Fora do período':'Encerrado')+'</span>'+(c.nivel=='importante'?'<span class="pill sit-No">Importante</span>':'')+'</div><p>'+esc(c.texto)+'</p><small>Para '+PUB[c.publico]+' · '+c.leituras+' de '+c.destinatarios+' marcaram "Entendi" · criado em '+dt(c.criadoEm)+(c.fimEm?' · termina em '+dt(c.fimEm):'')+'</small><div style="margin-top:8px"><button class="btn2" data-id="'+c.id+'" data-ativo="'+(c.ativo?0:1)+'" type="button">'+(c.ativo?'Encerrar':'Reativar')+'</button></div></div>'}).join(''):'Nenhum comunicado ainda.'}
+ catch(e){$('#lista').textContent='Não foi possível carregar: '+e.message}}
+$('#lista').addEventListener('click',async e=>{const b=e.target.closest('button[data-id]');if(!b)return;b.disabled=true;try{await api('PATCH','/api/v1/comunicados/'+b.dataset.id,{ativo:b.dataset.ativo=='1'});carregar()}catch(x){b.disabled=false;alert(x.message)}});
+$('#f').addEventListener('submit',async e=>{e.preventDefault();const f=e.target,m=$('#msg'),v=Object.fromEntries(new FormData(f));
+ ['inicioEm','fimEm'].forEach(k=>{v[k]=v[k]?new Date(v[k]).toISOString():null});m.className='msg';m.textContent='Publicando…';
+ try{await api('POST','/api/v1/comunicados',v);f.reset();m.className='msg ok';m.textContent='Publicado.';carregar()}catch(x){m.className='msg er';m.textContent=x.message}});
+carregar();
+</script>
+</body>
+</html>

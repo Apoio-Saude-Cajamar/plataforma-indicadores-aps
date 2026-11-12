@@ -68,7 +68,7 @@ export function senhaProvisoria() {
 const ip = req => req.headers.get('cf-connecting-ip') || req.headers.get('x-forwarded-for') || '';
 const janelaAtual = () => { const d = new Date(); d.setUTCMinutes(Math.floor(d.getUTCMinutes() / JANELA_MIN) * JANELA_MIN, 0, 0); return d.toISOString(); };
 
-async function registrar(env, usuarioId, acao, detalhe, req) {
+export async function registrar(env, usuarioId, acao, detalhe, req) {
   await env.DB.prepare('INSERT INTO registro_acesso (quando, usuario_id, acao, detalhe, ip) VALUES (?, ?, ?, ?, ?)')
     .bind(agora(), usuarioId ?? null, acao, detalhe ?? null, req ? ip(req) : null).run();
 }

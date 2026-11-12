@@ -207,3 +207,11 @@ Os testes usam o SQLite embutido no Node para imitar o D1 (`test/d1-local.mjs`).
 2. **Painel:** login próprio e integração com o Apoio (feito); painel de notas por município, unidade e equipe, ligado aos dados reais (o painel ainda mostra valores fictícios).
 3. **Fontes externas e novos indicadores:** absenteísmo de exames, internações, CVAT, cobertura potencial; saúde bucal, eMulti e C7.
 4. **Inteligência:** alertas de mudança de faixa, tendência em relação à meta, rankings e resumo mensal.
+
+## Comunicados internos
+
+O administrador publica avisos em `/comunicados` (título, texto, destinatários, importância e período opcional). Cada usuário vê uma faixa no topo das páginas até marcar "Entendi"; o administrador vê quantos já leram. Requer a migração `migrations/0004_comunicados.sql`.
+
+## Monitoramento das coletas
+
+`/monitoramento` (só administradores) confere se a coleta do PEC e a composição chegaram no prazo (`MONITOR_DIAS`, padrão 40), quais etapas falharam e o que a extensão não identificou. Quando há problema, a tela inicial mostra um aviso aos administradores.
