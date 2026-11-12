@@ -47,6 +47,12 @@ header{background:var(--hd);color:var(--ht);border-bottom:var(--hb)}
 .tabs button{background:none;border:0;border-bottom:3px solid transparent;color:var(--tabi);padding:8px 0 9px;cursor:pointer}
 .tabs button[aria-pressed=true]{color:var(--tab);border-color:var(--tabl);font-weight:700}
 .filt{position:sticky;top:0;z-index:3;background:var(--pg);border-bottom:1px solid var(--bd)}
+.fbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+.fbtn{font:inherit;font-weight:700;font-size:14px;color:var(--tx);background:var(--cd);border:1px solid var(--bd);border-radius:99px;padding:6px 14px;cursor:pointer}
+.fbtn[aria-expanded=true] .fseta{display:inline-block;transform:rotate(180deg)}
+.fres{font-size:13px;color:var(--su)}
+.filt #filt[hidden]{display:none}
+.filt #filt.w{border-top:1px solid var(--bd)}
 .filt .w{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:flex-end;padding-top:10px;padding-bottom:10px}
 .g{display:flex;flex-direction:column;gap:4px}
 .g>span{font-size:12px;font-weight:700;color:var(--su);text-transform:uppercase;letter-spacing:.04em}
@@ -107,7 +113,8 @@ p{margin:0;color:var(--su)}
  <div class="top"><div style="display:flex;align-items:center;gap:10px"><img src="/img/painelaps.svg" alt="" width="30" height="30"><div><b>Cofinanciamento federal · Notas metodológicas</b><small>Cofinanciamento federal da APS · Cajamar · sem APS prisional e ribeirinha</small></div></div>
  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="tag">Rascunho · valores fictícios</span><div class="tm" id="tema" role="group" aria-label="Tema"></div><a href="/" style="color:var(--ht);font-size:13px;font-weight:600;border:1px solid var(--hl);border-radius:99px;padding:3px 10px;text-decoration:none">← Início</a><a href="/composicao" style="color:var(--ht);font-size:13px;font-weight:600;border:1px solid var(--hl);border-radius:99px;padding:3px 10px;text-decoration:none">Composição</a><div id="barra"></div></div></div>
  <nav class="tabs" id="tabs" aria-label="Relatórios"></nav></div></header>
-<div class="filt"><div class="w" id="filt" role="search" aria-label="Filtros"></div></div>
+<div class="filt"><div class="w fbar"><button type="button" id="fbtn" class="fbtn" aria-expanded="false" aria-controls="filt">Filtros <span class="fseta" aria-hidden="true">▾</span></button><span id="fres" class="fres"></span></div>
+<div class="w" id="filt" role="search" aria-label="Filtros" hidden></div></div>
 <main class="w" id="main"></main>
 <script>
 const ATUAL=2026*12+9,INI=2025*12,ML=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'],
@@ -203,7 +210,11 @@ function filtros(c){
  if(S.rel=='apoio'||S.rel=='pontos'){const cs=cands();if(cs.length)h+='<div class="g"><span>Indicador</span>'+selG(cs)+'</div>'}
  if(S.rel=='geral'||S.rel=='meses')h+='<div class="g"><span>Grupo de notas</span><div class="ch">'+btn('gr','','Todas',!S.gr)+GR.map(g=>btn('gr',g[0],g[1].split(' ')[0]=='Qualidade'?'Qualidade':g[1].split(' (')[0],S.gr==g[0])).join('')+'</div></div>';
  if(S.rel!='meses')h+='<label class="ck"><input type="checkbox" data-k="cmp"'+(c.cmp?' checked':'')+(c.cmpOk?'':' disabled')+'> Comparar com '+(c.cmpOk?esq(c.ct):'(sem dados antes de jan/25)')+'</label>';
- $('#filt').innerHTML=h}
+ $('#filt').innerHTML=h;
+ const rs=[];rs.push(S.u||'Município (todas as unidades)');if(S.e)rs.push(S.e);
+ rs.push(S.modo=='q'?(S.qs.length+' quadrimestre'+(S.qs.length>1?'s':'')):(S.ms.length+' '+(S.ms.length>1?'meses':'mês')));
+ $('#fres').textContent=rs.join(' · ')}
+$('#fbtn').addEventListener('click',()=>{const f=$('#filt'),ab=f.hidden;f.hidden=!ab;$('#fbtn').setAttribute('aria-expanded',String(ab))});
 function legenda(extra){return'<div class="lg"><span>● resultado</span>'+(extra||'')+['regular','suficiente','bom','otimo'].map(k=>'<span><em style="background:var(--'+CF[k]+')"></em>'+NF[k]+'</span>').join('')+'</div>'}
 const ii=n=>n.mg?'<button type="button" class="ii" aria-label="Precisão de '+n.c+'" data-tip="'+esq(n.mg)+'">i</button>':'';
 function cab(t,sub,extra){return'<div class="sh"><div><h2>'+t+'</h2><p style="font-size:14px">'+sub+'</p></div>'+(extra||'')+'</div>'}
