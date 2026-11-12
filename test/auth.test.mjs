@@ -221,3 +221,13 @@ test('composição: a extensão grava com a chave e o painel lê com a sessão',
   assert.equal((await nav.pedir('GET', '/composicao')).status, 200);
   for (const p of ['/', '/federal', '/federal-notas', '/estadual', '/municipal']) assert.equal((await nav.pedir('GET', p)).status, 200, p);
 });
+
+test('população: lê a estimativa mais recente do IBGE (com resposta simulada)', async () => {
+  const { populacaoMunicipio } = await import('../api/populacao.js');
+  const resp = { ok: true, json: async () => [{ resultados: [{ series: [{ localidade: { nome: 'Cajamar - SP' }, serie: { 2024: '80100', 2025: '81234' } }] }] }] };
+  const r = await populacaoMunicipio({}, async () => resp);
+  assert.equal(r.populacao, 81234);
+  assert.equal(r.ano, 2025);
+  await assert.rejects(() => populacaoMunicipio({}, async () => ({ ok: true, json: async () => [] })));
+  await assert.rejects(() => populacaoMunicipio({}, async () => ({ ok: false })));
+});

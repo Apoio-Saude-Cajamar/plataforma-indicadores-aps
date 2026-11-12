@@ -26,6 +26,7 @@ import { entrar, sair, eu, trocarSenha, listarUsuarios, criarUsuario, alterarUsu
 import { criarColeta, gravarEtapa, concluirColeta, listarColetas, etapasDaColeta } from './coletas.js';
 import { situacao, dadosVigentes, competencias } from './consultas.js';
 import { gravarComposicao, lerComposicao } from './composicao.js';
+import { populacaoMunicipio } from './populacao.js';
 import { manifesto, paginaTabela, iniciarRestauracao, restaurarParte, concluirRestauracao } from './backup.js';
 
 const ROTAS = [
@@ -52,6 +53,8 @@ const ROTAS = [
 
   ['PUT', /^\/composicao$/, 'coleta', async (req, env) => json(await gravarComposicao(env, await lerJson(req)))],
   ['GET', /^\/composicao$/, 'leitura', async (req, env, m, url) => json(await lerComposicao(env, url.searchParams.get('competencia')))],
+
+  ['GET', /^\/populacao$/, 'leitura', async (req, env) => json(await populacaoMunicipio(env))],
 
   ['GET', /^\/backup\/manifesto$/, 'backup', async (req, env) => json(await manifesto(env))],
   ['GET', /^\/backup\/tabela\/(\w+)$/, 'backup', async (req, env, m, url) =>
