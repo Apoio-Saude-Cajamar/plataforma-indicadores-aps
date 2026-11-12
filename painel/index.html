@@ -48,11 +48,11 @@ h1{margin:0 0 12px;font-size:32px;font-weight:800;color:#1F3C72;line-height:1.2}
  <a class="marca" href="/"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
  <div id="barra"></div>
 </div></header>
-<main><div class="wrap">
+<main><div id="aviso-adm" role="status" hidden style="background:#FBF0D3;border:2px solid #E8C873;border-left:8px solid #E0A41B;border-radius:12px;padding:14px 18px;margin-bottom:24px;color:#5C3D00;font-weight:600"></div><div class="wrap">
  <div class="lado">
   <h1>Acompanhamentos</h1>
   <p class="intro">Indicadores da Atenção Primária de Cajamar, do município à equipe. Cada acompanhamento tem as suas regras e a sua leitura.</p>
-  <div class="ferr"><b>Ferramentas</b><a href="/composicao">Composição das equipes</a><a href="/usuarios" id="f-usuarios" hidden>Usuários</a></div>
+  <div class="ferr"><b>Ferramentas</b><a href="/composicao">Composição das equipes</a><a href="/usuarios" id="f-usuarios" hidden>Usuários</a><a href="/monitoramento" id="f-monit" hidden>Monitoramento das coletas</a></div>
  </div>
  <div class="lista">
   <a class="linha" href="/federal"><span class="faixa" style="background:#1F3C72"></span><span class="corpo">
@@ -69,7 +69,8 @@ h1{margin:0 0 12px;font-size:32px;font-weight:800;color:#1F3C72;line-height:1.2}
    <span class="btn s">Ver o que está previsto</span></span></a>
  </div>
 </div></main>
-<script>document.addEventListener('painelaps:usuario',e=>{if(e.detail.perfil==='admin')document.getElementById('f-usuarios').hidden=false;});</script>
+<script>document.addEventListener('painelaps:usuario',e=>{if(e.detail.perfil!=='admin')return;document.getElementById('f-usuarios').hidden=false;document.getElementById('f-monit').hidden=false;
+fetch('/api/v1/monitoramento',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(d=>{if(!d||!d.problemas)return;const a=document.getElementById('aviso-adm');a.hidden=false;a.innerHTML='⚠ '+d.problemas+' ponto'+(d.problemas>1?'s':'')+' nas coletas precisa'+(d.problemas>1?'m':'')+' de atenção. <a href="/monitoramento" style="text-decoration:underline">Ver detalhes</a>';}).catch(()=>{});});</script>
 <script src="/js/sessao.js"></script>
 </body>
 </html>

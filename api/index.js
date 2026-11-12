@@ -27,6 +27,7 @@ import { criarColeta, gravarEtapa, concluirColeta, listarColetas, etapasDaColeta
 import { situacao, dadosVigentes, competencias } from './consultas.js';
 import { gravarComposicao, lerComposicao } from './composicao.js';
 import { populacaoMunicipio } from './populacao.js';
+import { monitoramento } from './monitoramento.js';
 import { manifesto, paginaTabela, iniciarRestauracao, restaurarParte, concluirRestauracao } from './backup.js';
 
 const ROTAS = [
@@ -54,6 +55,7 @@ const ROTAS = [
   ['PUT', /^\/composicao$/, 'coleta', async (req, env) => json(await gravarComposicao(env, await lerJson(req)))],
   ['GET', /^\/composicao$/, 'leitura', async (req, env, m, url) => json(await lerComposicao(env, url.searchParams.get('competencia')))],
 
+  ['GET', /^\/monitoramento$/, 'usuarios', async (req, env) => json(await monitoramento(env))],
   ['GET', /^\/populacao$/, 'leitura', async (req, env) => json(await populacaoMunicipio(env))],
 
   ['GET', /^\/backup\/manifesto$/, 'backup', async (req, env) => json(await manifesto(env))],
@@ -94,7 +96,7 @@ async function tratarApi(request, env, url) {
 
 // Páginas: só /entrar e os arquivos visuais são públicos; o resto exige login.
 const PUBLICAS = [/^\/entrar(\.html)?$/, /^\/css\//, /^\/img\//, /^\/js\/publico\//, /^\/favicon\.(ico|svg)$/, /^\/robots\.txt$/];
-const SO_ADMIN = [/^\/usuarios(\.html)?$/];
+const SO_ADMIN = [/^\/usuarios(\.html)?$/, /^\/monitoramento(\.html)?$/];
 const SEGURANCA = {
   'x-frame-options': 'DENY', 'x-content-type-options': 'nosniff', 'referrer-policy': 'same-origin',
   'permissions-policy': 'camera=(), microphone=(), geolocation=()'

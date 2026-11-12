@@ -231,3 +231,25 @@ test('população: lê a estimativa mais recente do IBGE (com resposta simulada)
   await assert.rejects(() => populacaoMunicipio({}, async () => ({ ok: true, json: async () => [] })));
   await assert.rejects(() => populacaoMunicipio({}, async () => ({ ok: false })));
 });
+
+test('monitoramento: só administrador; avisa quando não há coleta e quando a composição tem pontos a conferir', async () => {
+  const env = comPaginas(ambiente());
+  await admin(env, { login: 'ana', nome: 'Ana', senha: 'Painel#Forte2026', perfil: 'admin' });
+  await env.DB.prepare('UPDATE usuario SET trocar_senha = 0').run();
+  const anon = navegador(env);
+  assert.equal((await anon.pedir('GET', '/api/v1/monitoramento')).status, 401);
+  const nav = navegador(env);
+  await nav.pedir('POST', '/api/v1/auth/entrar', { login: 'ana', senha: 'Painel#Forte2026' });
+  let r = await nav.pedir('GET', '/api/v1/monitoramento');
+  assert.equal(r.status, 200);
+  let d = await r.json();
+  assert.equal(d.situacao, 'erro');
+  assert.ok(d.itens.some(i => i.titulo === 'Nenhuma coleta recebida'));
+  await worker.fetch(new Request(BASE + '/api/v1/composicao', { method: 'PUT',
+    headers: { 'content-type': 'application/json', authorization: 'Bearer ' + CHAVES.TOKEN_COLETA },
+    body: JSON.stringify({ competencia: '2026-10', coletadoEm: new Date().toISOString(), unidades: [{ nome: 'U1', alertas: [], equipes: [{ nome: 'E1', tipo: 'ESF', alertas: ['Sem médico lotado.'] }] }] }) }), env);
+  d = await (await nav.pedir('GET', '/api/v1/monitoramento')).json();
+  const c = d.itens.find(i => i.fonte === 'Composição das equipes' && i.nivel === 'atencao');
+  assert.ok(c && c.lista[0].includes('Sem médico lotado.'));
+  assert.equal((await nav.pedir('GET', '/monitoramento')).status, 200);
+});
