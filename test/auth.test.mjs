@@ -219,4 +219,5 @@ test('composição: a extensão grava com a chave e o painel lê com a sessão',
   // a sessão não grava
   assert.equal((await nav.pedir('PUT', '/api/v1/composicao', { competencia: '2026-10', unidades: [] })).status, 401);
   assert.equal((await nav.pedir('GET', '/composicao')).status, 200);
+  for (const p of ['/', '/federal', '/estadual', '/municipal']) assert.equal((await nav.pedir('GET', p)).status, 200, p);
 });

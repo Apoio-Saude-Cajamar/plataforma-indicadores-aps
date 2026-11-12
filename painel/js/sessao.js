@@ -6,6 +6,7 @@
     if (!d || !d.usuario) return;
     const u = d.usuario;
     window.PAINELAPS_USUARIO = u;
+    document.dispatchEvent(new CustomEvent('painelaps:usuario', { detail: u }));
     let alvo = document.getElementById('barra');
     if (!alvo) {
       alvo = document.createElement('div');
