@@ -102,7 +102,7 @@ async function tratarApi(request, env, url) {
 
 // Páginas: só /entrar e os arquivos visuais são públicos; o resto exige login.
 const PUBLICAS = [/^\/entrar(\.html)?$/, /^\/css\//, /^\/img\//, /^\/js\/publico\//, /^\/favicon\.(ico|svg)$/, /^\/robots\.txt$/];
-const SO_ADMIN = [/^\/usuarios(\.html)?$/, /^\/monitoramento(\.html)?$/, /^\/comunicados(\.html)?$/];
+const SO_ADMIN = [/^\/usuarios(\.html)?$/, /^\/monitoramento(\.html)?$/, /^\/comunicados(\.html)?$/, /^\/extensao(\.html)?$/, /^\/downloads\//];
 const SEGURANCA = {
   'x-frame-options': 'DENY', 'x-content-type-options': 'nosniff', 'referrer-policy': 'same-origin',
   'permissions-policy': 'camera=(), microphone=(), geolocation=()'
