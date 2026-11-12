@@ -215,3 +215,7 @@ O administrador publica avisos em `/comunicados` (título, texto, destinatários
 ## Monitoramento das coletas
 
 `/monitoramento` (só administradores) confere se a coleta do PEC e a composição chegaram no prazo (`MONITOR_DIAS`, padrão 40), quais etapas falharam e o que a extensão não identificou. Quando há problema, a tela inicial mostra um aviso aos administradores.
+
+## Página pública
+
+O administrador escolhe em `/publicacao` (categorias com caixas de seleção e uma autorização final) o que aparece sem senha em `/publico`. Tudo nasce privado; só totais agregados do catálogo (sem observações, responsáveis, pendências, equipes ou profissionais). Tabelas `publicacao_item` e `publicacao_historico` (migração 0005). API pública: `GET /api/v1/publico/dados`.

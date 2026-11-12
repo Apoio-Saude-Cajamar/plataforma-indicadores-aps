@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Página pública · Painel APS</title>
+<link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Montserrat,system-ui,sans-serif;color:#1B2340;background:#F4F7FB}
+a{color:inherit;text-decoration:none}
+a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #00A7E7;outline-offset:3px}
+header{background:#1F3C72;border-bottom:4px solid #00A7E7;color:#fff}
+.topo{max-width:1100px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.marca{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
+.barra-usuario{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#fff}
+.barra-usuario a,.barra-usuario button{color:inherit;font:inherit;background:none;border:1px solid rgba(255,255,255,.6);border-radius:99px;padding:5px 14px;cursor:pointer}
+main{max-width:1100px;margin:0 auto;padding:32px 32px 56px}
+.voltar{font-weight:600;color:#1F3C72;text-decoration:underline;font-size:14px}
+h1{margin:12px 0 8px;font-size:30px;font-weight:800;color:#1F3C72;line-height:1.2}
+.intro{margin:0 0 20px;font-size:15px;line-height:1.55;color:#4A5670;max-width:760px}
+.sel{display:flex;flex-wrap:wrap;gap:16px 28px;margin-bottom:20px}
+.sel label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em}
+.sel select{font:inherit;font-size:15px;font-weight:600;text-transform:none;letter-spacing:0;min-height:42px;padding:0 12px;border:2px solid #D5DCE8;border-radius:10px;background:#fff;color:#1B2340;min-width:180px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:24px}
+.card,.bloco{background:#fff;border:2px solid #D5DCE8;border-radius:14px;padding:18px 20px}
+.card small{display:block;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.card .v{font-size:34px;font-weight:800;color:#1F3C72;line-height:1.1}
+.card .s{font-size:13px;color:#4A5670;margin-top:6px;line-height:1.45}
+.pill{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px;margin-left:8px;vertical-align:middle}
+.c-o{background:#C7ECD9;color:#0F5A41}.c-b{background:#D9ECF8;color:#0B4F73}.c-s{background:#FBF0D3;color:#6E4700}.c-r{background:#F8D9DC;color:#8A1B2A}
+.up{color:#0F6B4F;font-weight:700}.dn{color:#A8222F;font-weight:700}
+.bloco{margin-bottom:20px}
+.bloco h2{margin:0 0 6px;font-size:19px;color:#1B2340}
+.bloco p.d{margin:0 0 14px;font-size:14px;color:#4A5670;line-height:1.5}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #E3E8F0;vertical-align:middle}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#4A5670}
+td.n,th.n{text-align:right;white-space:nowrap}
+.tab{overflow-x:auto}
+.barra{display:flex;height:16px;border-radius:5px;overflow:hidden;min-width:140px;background:#E3E8F0}
+.barra i{display:block;height:100%}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:#4A5670;margin-top:12px}
+.leg em{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.k-o{background:#1C9C76}.k-b{background:#4FB3E8}.k-s{background:#F2C14E}.k-r{background:#E0525F}
+.nota{font-size:13px;color:#4A5670;line-height:1.55}
+.nota li{margin-bottom:6px}
+.mini{display:inline-block;height:10px;border-radius:3px;background:#1F3C72;vertical-align:middle;margin-right:8px}
+@media(max-width:600px){.topo{padding:14px 16px}main{padding:20px 16px 36px}h1{font-size:24px}.card .v{font-size:28px}}
+.item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #E3E8F0}
+.item:last-child{border-bottom:0}
+.dot{flex:0 0 12px;height:12px;border-radius:50%;margin-top:6px}
+.d-erro{background:#E0525F}.d-atencao{background:#F2C14E}.d-ok{background:#1C9C76}
+.item b{display:block;font-size:16px}.item small{display:block;color:#4A5670;font-size:12px;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.item p{margin:4px 0 0;color:#4A5670;font-size:14px;line-height:1.5}
+.item ul{margin:8px 0 0;padding-left:18px;color:#4A5670;font-size:13px;line-height:1.6}
+.pill.sit-Atingida{background:#C7ECD9;color:#0F5A41}.pill.sit-No{background:#FBF0D3;color:#6E4700}.pill.sit-Crítica{background:#F8D9DC;color:#8A1B2A}.pill{margin-left:0;font-size:14px;padding:5px 12px}
+.resumo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.btn2{font:inherit;font-weight:700;font-size:14px;color:#1F3C72;border:2px solid #1F3C72;background:#fff;border-radius:10px;padding:8px 16px;cursor:pointer}
+.cat{margin-bottom:18px}.cat h3{margin:0 0 8px;font-size:16px}.cat .g{font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:6px 0;font-size:14px;line-height:1.4}.chk input{width:20px;height:20px;margin-top:1px;flex:0 0 20px}
+.todos{font-size:13px;font-weight:700;color:#1F3C72;background:none;border:0;text-decoration:underline;cursor:pointer;padding:0;margin-left:8px}
+.rev{background:#FBF0D3;border:2px solid #F2C14E;border-radius:14px;padding:18px 20px;margin:20px 0}.rev ul{margin:6px 0 10px;padding-left:18px;font-size:14px}
+.btn1{font:inherit;font-weight:800;font-size:15px;color:#fff;background:#1F3C72;border:0;border-radius:10px;padding:11px 20px;cursor:pointer}.btn1:disabled{opacity:.45;cursor:not-allowed}
+</style>
+</head>
+<body>
+<header><div class="topo">
+ <a class="marca" href="/"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
+ <div id="barra"></div>
+</div></header>
+<main>
+ <a class="voltar" href="/">← Voltar aos acompanhamentos</a>
+ <h1>Página pública</h1>
+ <p class="intro">Escolha o que fica visível, <b>sem senha</b>, em <a href="/publico" style="text-decoration:underline">/publico</a>. Tudo começa privado. Só totais agregados fazem parte da lista: observações internas, responsáveis, pendências, equipes e profissionais nunca são publicados.</p>
+ <div class="resumo"><span class="pill c-b" id="cont"></span><span class="nota" id="msg" aria-live="polite"></span></div>
+ <div id="cats" class="bloco">Carregando…</div>
+ <div class="rev" id="rev" hidden>
+  <h2 style="margin:0 0 6px;font-size:18px">Revisar e autorizar</h2>
+  <div id="resumo-mud" class="nota"></div>
+  <label class="chk"><input type="checkbox" id="ok"><span>Autorizo a divulgação pública dos itens marcados. Entendo que qualquer pessoa com o endereço poderá vê-los, e que posso voltar atrás a qualquer momento.</span></label>
+  <button class="btn1" id="salvar" type="button" disabled>Autorizar e publicar</button> <button class="btn2" id="cancelar" type="button">Cancelar</button>
+ </div>
+ <div class="resumo"><button class="btn1" id="revisar" type="button" disabled>Revisar alterações</button></div>
+ <section class="bloco"><h2>Últimas alterações</h2><div id="hist" class="nota">Carregando…</div></section>
+</main>
+<script src="/js/sessao.js"></script>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let cat=[],orig=new Set(),rot={};
+const marcados=()=>new Set([...document.querySelectorAll('#cats input[data-i]:checked')].map(x=>x.dataset.i));
+function desenhar(){
+ let g='';
+ $('#cats').innerHTML=cat.map(c=>{const h=c.grupo!==g?'<div class="g">'+esc(c.grupo)+'</div>':'';g=c.grupo;
+  return '<div class="cat">'+h+'<h3>'+esc(c.nome)+'<button class="todos" type="button" data-c="'+esc(c.id)+'">marcar/desmarcar todos</button></h3>'+c.itens.map(i=>'<label class="chk"><input type="checkbox" data-c="'+esc(c.id)+'" data-i="'+esc(i.id)+'"'+(i.publico?' checked':'')+'><span>'+esc(i.rotulo)+'</span></label>').join('')+'</div>'}).join('');
+ atualizar();
+}
+function atualizar(){const m=marcados();const mud=[...m].some(i=>!orig.has(i))||[...orig].some(i=>!m.has(i));
+ $('#cont').textContent=m.size+' ite'+(m.size==1?'m público':'ns públicos');$('#revisar').disabled=!mud;if(!mud)$('#rev').hidden=true;}
+$('#cats').addEventListener('change',atualizar);
+$('#cats').addEventListener('click',e=>{const b=e.target.closest('.todos');if(!b)return;const bx=[...document.querySelectorAll('#cats input[data-c="'+b.dataset.c+'"]')];const t=bx.some(x=>!x.checked);bx.forEach(x=>x.checked=t);atualizar();});
+$('#revisar').addEventListener('click',()=>{const m=marcados();const en=[...m].filter(i=>!orig.has(i)),sa=[...orig].filter(i=>!m.has(i));
+ $('#resumo-mud').innerHTML=(en.length?'<b>Passam a ser públicos ('+en.length+'):</b><ul>'+en.map(i=>'<li>'+esc(rot[i]||i)+'</li>').join('')+'</ul>':'')+(sa.length?'<b>Voltam a ser privados ('+sa.length+'):</b><ul>'+sa.map(i=>'<li>'+esc(rot[i]||i)+'</li>').join('')+'</ul>':'');
+ $('#ok').checked=false;$('#salvar').disabled=true;$('#rev').hidden=false;$('#rev').scrollIntoView({block:'center'});});
+$('#ok').addEventListener('change',()=>$('#salvar').disabled=!$('#ok').checked);
+$('#cancelar').addEventListener('click',()=>{$('#rev').hidden=true});
+$('#salvar').addEventListener('click',async()=>{$('#salvar').disabled=true;
+ try{const r=await fetch('/api/v1/publicacao',{method:'PUT',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({itens:[...marcados()],confirmo:true})});
+  if(!r.ok)throw new Error((await r.json().catch(()=>({}))).erro||'Falha ao salvar.');
+  $('#msg').textContent='Publicação atualizada.';$('#rev').hidden=true;await carregar();}catch(e){$('#msg').textContent=e.message;$('#salvar').disabled=false}});
+async function carregar(){
+ try{const r=await fetch('/api/v1/publicacao',{credentials:'same-origin'});if(!r.ok)throw 0;const d=await r.json();cat=d.categorias;orig=new Set();rot={};
+  cat.forEach(c=>c.itens.forEach(i=>{rot[i.id]=c.nome+' · '+i.rotulo;if(i.publico)orig.add(i.id)}));desenhar();}catch{$('#cats').textContent='Não foi possível carregar.'}
+ try{const r=await fetch('/api/v1/publicacao/historico',{credentials:'same-origin'});const d=await r.json();
+  $('#hist').innerHTML=d.historico.length?d.historico.map(h=>esc(new Date(h.quando).toLocaleString('pt-BR'))+' · '+esc(h.login||'—')+': +'+(h.entram||[]).length+' / −'+(h.saem||[]).length).join('<br>'):'Nenhuma alteração ainda.';}catch{$('#hist').textContent=''}}
+carregar();
+</script>
+</body>
+</html>

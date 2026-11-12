@@ -284,3 +284,36 @@ test('comunicados: administrador publica, usuário vê e marca "Entendi", públi
   assert.equal((await ana.pedir('GET', '/comunicados')).status, 200);
   assert.equal((await leo.pedir('GET', '/comunicados')).status, 302);
 });
+
+test('página pública: tudo privado por padrão, só o admin autoriza, só campos permitidos saem sem senha', async () => {
+  const env = comPaginas(ambiente());
+  const { readFileSync } = await import('node:fs');
+  env.ASSETS = { fetch: async req => { const p = new URL(req.url).pathname; for (const c of [p, p + '.html']) { try { return new Response(readFileSync('painel' + c, 'utf8'), { status: 200 }); } catch {} } return new Response('x', { status: 404 }); } };
+  const ana = navegador(env), leo = navegador(env), anon = navegador(env);
+  await admin(env, { login: 'ana', nome: 'Ana', senha: 'Painel#Forte2026', perfil: 'admin' });
+  await admin(env, { login: 'leo', nome: 'Leo', senha: 'Painel#Forte2026', perfil: 'leitor' });
+  await env.DB.prepare('UPDATE usuario SET trocar_senha = 0').run();
+  for (const [n, l] of [[ana, 'ana'], [leo, 'leo']]) assert.equal((await n.pedir('POST', '/api/v1/auth/entrar', { login: l, senha: 'Painel#Forte2026' })).status, 200);
+  let d = await (await anon.pedir('GET', '/api/v1/publico/dados')).json();
+  assert.deepEqual(d.categorias, [], 'nada público no início');
+  assert.equal((await leo.pedir('GET', '/api/v1/publicacao')).status, 403);
+  assert.equal((await leo.pedir('PUT', '/api/v1/publicacao', { itens: [], confirmo: true })).status, 403);
+  const cat = await (await ana.pedir('GET', '/api/v1/publicacao')).json();
+  assert.ok(cat.categorias.length >= 3);
+  const meta = cat.categorias.find(c => c.id.startsWith('municipal-') && c.id !== 'municipal-vacinas').itens[0].id;
+  assert.equal((await ana.pedir('PUT', '/api/v1/publicacao', { itens: [meta] })).status, 400, 'exige confirmação');
+  assert.equal((await ana.pedir('PUT', '/api/v1/publicacao', { itens: ['municipal:meta:nao-existe'], confirmo: true })).status, 400);
+  assert.equal((await ana.pedir('PUT', '/api/v1/publicacao', { itens: [meta], confirmo: true })).status, 200);
+  const txt = await (await anon.pedir('GET', '/api/v1/publico/dados')).text();
+  d = JSON.parse(txt);
+  assert.equal(d.categorias.length, 1);
+  assert.equal(d.categorias[0].itens.length, 1);
+  assert.ok(!/"resp"|"obs"|pendencias/.test(txt), 'sem responsável nem observações');
+  assert.equal((await anon.pedir('GET', '/publico')).status, 200);
+  assert.equal((await anon.pedir('GET', '/publicacao')).status, 302);
+  await ana.pedir('PUT', '/api/v1/publicacao', { itens: [], confirmo: true });
+  d = await (await anon.pedir('GET', '/api/v1/publico/dados')).json();
+  assert.deepEqual(d.categorias, [], 'revogação imediata');
+  const h = await (await ana.pedir('GET', '/api/v1/publicacao/historico')).json();
+  assert.equal(h.historico.length, 2);
+});

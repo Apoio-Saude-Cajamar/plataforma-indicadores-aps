@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Indicadores de Atenção Primária · Cajamar</title>
+<link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Montserrat,system-ui,sans-serif;color:#1B2340;background:#F4F7FB}
+a{color:inherit;text-decoration:none}
+a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #00A7E7;outline-offset:3px}
+header{background:#1F3C72;border-bottom:4px solid #00A7E7;color:#fff}
+.topo{max-width:1100px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.marca{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
+.barra-usuario{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#fff}
+.barra-usuario a,.barra-usuario button{color:inherit;font:inherit;background:none;border:1px solid rgba(255,255,255,.6);border-radius:99px;padding:5px 14px;cursor:pointer}
+main{max-width:1100px;margin:0 auto;padding:32px 32px 56px}
+.voltar{font-weight:600;color:#1F3C72;text-decoration:underline;font-size:14px}
+h1{margin:12px 0 8px;font-size:30px;font-weight:800;color:#1F3C72;line-height:1.2}
+.intro{margin:0 0 20px;font-size:15px;line-height:1.55;color:#4A5670;max-width:760px}
+.sel{display:flex;flex-wrap:wrap;gap:16px 28px;margin-bottom:20px}
+.sel label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em}
+.sel select{font:inherit;font-size:15px;font-weight:600;text-transform:none;letter-spacing:0;min-height:42px;padding:0 12px;border:2px solid #D5DCE8;border-radius:10px;background:#fff;color:#1B2340;min-width:180px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:24px}
+.card,.bloco{background:#fff;border:2px solid #D5DCE8;border-radius:14px;padding:18px 20px}
+.card small{display:block;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.card .v{font-size:34px;font-weight:800;color:#1F3C72;line-height:1.1}
+.card .s{font-size:13px;color:#4A5670;margin-top:6px;line-height:1.45}
+.pill{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px;margin-left:8px;vertical-align:middle}
+.c-o{background:#C7ECD9;color:#0F5A41}.c-b{background:#D9ECF8;color:#0B4F73}.c-s{background:#FBF0D3;color:#6E4700}.c-r{background:#F8D9DC;color:#8A1B2A}
+.up{color:#0F6B4F;font-weight:700}.dn{color:#A8222F;font-weight:700}
+.bloco{margin-bottom:20px}
+.bloco h2{margin:0 0 6px;font-size:19px;color:#1B2340}
+.bloco p.d{margin:0 0 14px;font-size:14px;color:#4A5670;line-height:1.5}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #E3E8F0;vertical-align:middle}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#4A5670}
+td.n,th.n{text-align:right;white-space:nowrap}
+.tab{overflow-x:auto}
+.barra{display:flex;height:16px;border-radius:5px;overflow:hidden;min-width:140px;background:#E3E8F0}
+.barra i{display:block;height:100%}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:#4A5670;margin-top:12px}
+.leg em{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.k-o{background:#1C9C76}.k-b{background:#4FB3E8}.k-s{background:#F2C14E}.k-r{background:#E0525F}
+.nota{font-size:13px;color:#4A5670;line-height:1.55}
+.nota li{margin-bottom:6px}
+.mini{display:inline-block;height:10px;border-radius:3px;background:#1F3C72;vertical-align:middle;margin-right:8px}
+@media(max-width:600px){.topo{padding:14px 16px}main{padding:20px 16px 36px}h1{font-size:24px}.card .v{font-size:28px}}
+.item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #E3E8F0}
+.item:last-child{border-bottom:0}
+.dot{flex:0 0 12px;height:12px;border-radius:50%;margin-top:6px}
+.d-erro{background:#E0525F}.d-atencao{background:#F2C14E}.d-ok{background:#1C9C76}
+.item b{display:block;font-size:16px}.item small{display:block;color:#4A5670;font-size:12px;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.item p{margin:4px 0 0;color:#4A5670;font-size:14px;line-height:1.5}
+.item ul{margin:8px 0 0;padding-left:18px;color:#4A5670;font-size:13px;line-height:1.6}
+.pill.sit-Atingida{background:#C7ECD9;color:#0F5A41}.pill.sit-No{background:#FBF0D3;color:#6E4700}.pill.sit-Crítica{background:#F8D9DC;color:#8A1B2A}.pill{margin-left:0;font-size:14px;padding:5px 12px}
+.resumo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.btn2{font:inherit;font-weight:700;font-size:14px;color:#1F3C72;border:2px solid #1F3C72;background:#fff;border-radius:10px;padding:8px 16px;cursor:pointer}
+.cat{margin-bottom:18px}.cat h3{margin:0 0 8px;font-size:16px}.cat .g{font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:6px 0;font-size:14px;line-height:1.4}.chk input{width:20px;height:20px;margin-top:1px;flex:0 0 20px}
+.todos{font-size:13px;font-weight:700;color:#1F3C72;background:none;border:0;text-decoration:underline;cursor:pointer;padding:0;margin-left:8px}
+.rev{background:#FBF0D3;border:2px solid #F2C14E;border-radius:14px;padding:18px 20px;margin:20px 0}.rev ul{margin:6px 0 10px;padding-left:18px;font-size:14px}
+.btn1{font:inherit;font-weight:800;font-size:15px;color:#fff;background:#1F3C72;border:0;border-radius:10px;padding:11px 20px;cursor:pointer}.btn1:disabled{opacity:.45;cursor:not-allowed}
+</style>
+</head>
+<body>
+<header><div class="topo"><span class="marca"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS · Cajamar</span></span></div></header>
+<main>
+ <h1>Indicadores da Atenção Primária</h1>
+ <p class="intro">Totais agregados da Atenção Primária à Saúde de Cajamar, divulgados pela Secretaria de Saúde. Não há dados de pacientes nem de profissionais. <span id="quando"></span></p>
+ <div id="conteudo" aria-live="polite">Carregando…</div>
+</main>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pct=v=>v==null?'—':(v*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
+const num=v=>v==null?'—':Number(v).toLocaleString('pt-BR',{maximumFractionDigits:2});
+const T={
+ meta:{c:['Meta','Indicador','Alvo','Acumulado','Situação'],l:(i)=>i.linhas.map(x=>[x.meta,x.ind,num(x.alvo),num(x.acum),x.sit])},
+ vacina:{c:['Vacina','Meta','2025','Jan–ago/2026','Jan–set/2026'],l:i=>[[i.linhas.v,pct(i.linhas.metaPAS),pct(i.linhas.d25),pct(i.linhas.ago),pct(i.linhas.set)]]},
+ conceito:{c:['Quadrimestre','Equipe','Indicador','Ótimo','Bom','Suficiente','Regular'],l:i=>i.linhas.map(x=>[x.q,x.eq,x.nome,x.o,x.b,x.s,x.r])},
+ final:{c:['Quadrimestre','Equipe','Ótimo','Bom','Suficiente','Regular'],l:i=>i.linhas.map(x=>[x.q,x.eq,x.o,x.b,x.s,x.r])}
+};
+(async()=>{try{
+ const r=await fetch('/api/v1/publico/dados');if(!r.ok)throw 0;const d=await r.json();
+ $('#quando').textContent='Atualizado em '+new Date(d.geradoEm).toLocaleDateString('pt-BR')+'.';
+ if(!d.categorias.length){$('#conteudo').innerHTML='<section class="bloco">Nenhum indicador foi publicado ainda.</section>';return}
+ $('#conteudo').innerHTML=d.categorias.map(c=>{const t=T[c.tipo];if(!t)return '';
+  const linhas=c.itens.flatMap(i=>t.l(i).map(r=>'<tr>'+r.map(x=>'<td>'+esc(x)+'</td>').join('')+'</tr>')).join('');
+  return '<section class="bloco"><div class="nota"><b>'+esc(c.grupo)+'</b></div><h2>'+esc(c.nome)+'</h2><div class="tab"><table><thead><tr>'+t.c.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+linhas+'</tbody></table></div></section>'}).join('');
+ }catch{$('#conteudo').textContent='Não foi possível carregar os indicadores agora.'}})();
+</script>
+</body>
+</html>
