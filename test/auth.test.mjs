@@ -220,7 +220,7 @@ test('composição: a extensão grava com a chave e o painel lê com a sessão',
   assert.equal((await nav.pedir('PUT', '/api/v1/composicao', { competencia: '2026-10', unidades: [] })).status, 401);
   assert.equal((await nav.pedir('GET', '/composicao')).status, 200);
   for (const p of ['/', '/federal', '/federal-notas', '/estadual', '/municipal']) assert.equal((await nav.pedir('GET', p)).status, 200, p);
-  for (const p of ['/extensao', '/downloads/coletor-aps-v0.5.0.zip']) assert.notEqual((await nav.pedir('GET', p)).status, 200, p + ' só para administrador');
+  for (const p of ['/extensao', '/downloads/coletor-aps-v0.6.0.zip']) assert.notEqual((await nav.pedir('GET', p)).status, 200, p + ' só para administrador');
 });
 
 test('população: lê a estimativa mais recente do IBGE (com resposta simulada)', async () => {
@@ -316,4 +316,30 @@ test('página pública: tudo privado por padrão, só o admin autoriza, só camp
   assert.deepEqual(d.categorias, [], 'revogação imediata');
   const h = await (await ana.pedir('GET', '/api/v1/publicacao/historico')).json();
   assert.equal(h.historico.length, 2);
+});
+
+test('chaves de coleta: admin gera, a chave só envia coleta, revogação vale na hora, nada do hash vaza', async () => {
+  const env = comPaginas(ambiente());
+  await admin(env, { login: 'ana', nome: 'Ana', senha: 'Painel#Forte2026', perfil: 'admin' });
+  await admin(env, { login: 'leo', nome: 'Leo', senha: 'Painel#Forte2026', perfil: 'leitor' });
+  await env.DB.prepare('UPDATE usuario SET trocar_senha = 0').run();
+  const ana = navegador(env), leo = navegador(env);
+  await ana.pedir('POST', '/api/v1/auth/entrar', { login: 'ana', senha: 'Painel#Forte2026' });
+  await leo.pedir('POST', '/api/v1/auth/entrar', { login: 'leo', senha: 'Painel#Forte2026' });
+  assert.equal((await leo.pedir('POST', '/api/v1/chaves', { nome: 'x' })).status, 403);
+  assert.equal((await ana.pedir('POST', '/api/v1/chaves', { nome: '' })).status, 400);
+  const c = await (await ana.pedir('POST', '/api/v1/chaves', { nome: 'PC Vigilância', dias: 30 })).json();
+  assert.match(c.chave, /^pc_[\w-]{40,}$/);
+  const com = (chave, m, caminho, corpo) => worker.fetch(new Request(BASE + caminho, { method: m, headers: { authorization: 'Bearer ' + chave, 'content-type': 'application/json' }, body: corpo ? JSON.stringify(corpo) : undefined }), env);
+  assert.equal((await com(c.chave, 'POST', '/api/v1/coletas', { id: 'c1', competencia: '2026-10' })).status, 201);
+  assert.equal((await com(c.chave, 'GET', '/api/v1/usuarios')).status, 401, 'chave de coleta não administra');
+  assert.equal((await com('pc_' + 'a'.repeat(43), 'POST', '/api/v1/coletas', { id: 'c2', competencia: '2026-10' })).status, 401);
+  const l = await (await ana.pedir('GET', '/api/v1/chaves')).json();
+  assert.equal(l.chaves.length, 1);
+  assert.ok(l.chaves[0].ultimoUso, 'registra o último uso');
+  assert.ok(!JSON.stringify(l).includes(c.chave.slice(3)) && !('hash' in l.chaves[0]));
+  assert.equal((await ana.pedir('DELETE', '/api/v1/chaves/' + c.id)).status, 200);
+  assert.equal((await com(c.chave, 'POST', '/api/v1/coletas', { id: 'c3', competencia: '2026-10' })).status, 401, 'revogada');
+  assert.equal((await ana.pedir('GET', '/chaves')).status, 200);
+  assert.notEqual((await leo.pedir('GET', '/chaves')).status, 200);
 });

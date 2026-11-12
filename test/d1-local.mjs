@@ -19,7 +19,8 @@ class Instrucao {
   _executar() {
     const linhas = this.db.prepare(this.sql).all(...this.params).map(r => ({ ...r }));
     const changes = this.db.prepare('SELECT changes() AS c').get().c;
-    return { results: linhas, success: true, meta: { changes } };
+    const last_row_id = this.db.prepare('SELECT last_insert_rowid() AS i').get().i;
+    return { results: linhas, success: true, meta: { changes, last_row_id } };
   }
   async all() { return this._executar(); }
   async run() { return this._executar(); }

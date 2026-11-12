@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chaves de coleta · Painel APS</title>
+<link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Montserrat,system-ui,sans-serif;color:#1B2340;background:#F4F7FB}
+a{color:inherit;text-decoration:none}
+a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #00A7E7;outline-offset:3px}
+header{background:#1F3C72;border-bottom:4px solid #00A7E7;color:#fff}
+.topo{max-width:1100px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.marca{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
+.barra-usuario{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#fff}
+.barra-usuario a,.barra-usuario button{color:inherit;font:inherit;background:none;border:1px solid rgba(255,255,255,.6);border-radius:99px;padding:5px 14px;cursor:pointer}
+main{max-width:1100px;margin:0 auto;padding:32px 32px 56px}
+.voltar{font-weight:600;color:#1F3C72;text-decoration:underline;font-size:14px}
+h1{margin:12px 0 8px;font-size:30px;font-weight:800;color:#1F3C72;line-height:1.2}
+.intro{margin:0 0 20px;font-size:15px;line-height:1.55;color:#4A5670;max-width:760px}
+.sel{display:flex;flex-wrap:wrap;gap:16px 28px;margin-bottom:20px}
+.sel label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em}
+.sel select{font:inherit;font-size:15px;font-weight:600;text-transform:none;letter-spacing:0;min-height:42px;padding:0 12px;border:2px solid #D5DCE8;border-radius:10px;background:#fff;color:#1B2340;min-width:180px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:24px}
+.card,.bloco{background:#fff;border:2px solid #D5DCE8;border-radius:14px;padding:18px 20px}
+.card small{display:block;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.card .v{font-size:34px;font-weight:800;color:#1F3C72;line-height:1.1}
+.card .s{font-size:13px;color:#4A5670;margin-top:6px;line-height:1.45}
+.pill{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px;margin-left:8px;vertical-align:middle}
+.c-o{background:#C7ECD9;color:#0F5A41}.c-b{background:#D9ECF8;color:#0B4F73}.c-s{background:#FBF0D3;color:#6E4700}.c-r{background:#F8D9DC;color:#8A1B2A}
+.up{color:#0F6B4F;font-weight:700}.dn{color:#A8222F;font-weight:700}
+.bloco{margin-bottom:20px}
+.bloco h2{margin:0 0 6px;font-size:19px;color:#1B2340}
+.bloco p.d{margin:0 0 14px;font-size:14px;color:#4A5670;line-height:1.5}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #E3E8F0;vertical-align:middle}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#4A5670}
+td.n,th.n{text-align:right;white-space:nowrap}
+.tab{overflow-x:auto}
+.barra{display:flex;height:16px;border-radius:5px;overflow:hidden;min-width:140px;background:#E3E8F0}
+.barra i{display:block;height:100%}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:#4A5670;margin-top:12px}
+.leg em{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.k-o{background:#1C9C76}.k-b{background:#4FB3E8}.k-s{background:#F2C14E}.k-r{background:#E0525F}
+.nota{font-size:13px;color:#4A5670;line-height:1.55}
+.nota li{margin-bottom:6px}
+.mini{display:inline-block;height:10px;border-radius:3px;background:#1F3C72;vertical-align:middle;margin-right:8px}
+@media(max-width:600px){.topo{padding:14px 16px}main{padding:20px 16px 36px}h1{font-size:24px}.card .v{font-size:28px}}
+.item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #E3E8F0}
+.item:last-child{border-bottom:0}
+.dot{flex:0 0 12px;height:12px;border-radius:50%;margin-top:6px}
+.d-erro{background:#E0525F}.d-atencao{background:#F2C14E}.d-ok{background:#1C9C76}
+.item b{display:block;font-size:16px}.item small{display:block;color:#4A5670;font-size:12px;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.item p{margin:4px 0 0;color:#4A5670;font-size:14px;line-height:1.5}
+.item ul{margin:8px 0 0;padding-left:18px;color:#4A5670;font-size:13px;line-height:1.6}
+.pill.sit-Atingida{background:#C7ECD9;color:#0F5A41}.pill.sit-No{background:#FBF0D3;color:#6E4700}.pill.sit-Crítica{background:#F8D9DC;color:#8A1B2A}.pill{margin-left:0;font-size:14px;padding:5px 12px}
+.resumo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.btn2{font:inherit;font-weight:700;font-size:14px;color:#1F3C72;border:2px solid #1F3C72;background:#fff;border-radius:10px;padding:8px 16px;cursor:pointer}
+.nova{background:#E6F6EE;border:2px solid #1C9C76;border-radius:14px;padding:16px 20px;margin:16px 0}.nova code{display:block;word-break:break-all;font-size:15px;background:#fff;border:1px solid #D5DCE8;border-radius:8px;padding:10px;margin:8px 0}
+.frm{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}.frm label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase}.frm input{font:inherit;font-size:15px;min-height:42px;padding:0 12px;border:2px solid #D5DCE8;border-radius:10px}
+.btn1{font:inherit;font-weight:800;font-size:15px;color:#fff;background:#1F3C72;border:0;border-radius:10px;padding:11px 20px;cursor:pointer}
+</style>
+</head>
+<body>
+<header><div class="topo">
+ <a class="marca" href="/"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
+ <div id="barra"></div>
+</div></header>
+<main>
+ <a class="voltar" href="/extensao">← Extensões do Chrome</a>
+ <h1>Chaves de coleta</h1>
+ <p class="intro">Cada computador com a extensão usa uma chave própria para enviar coletas ao painel. A chave só envia dados (não lê nada nem administra) e pode ser revogada a qualquer momento. Ela aparece uma única vez, ao ser criada.</p>
+ <section class="bloco"><h2>Nova chave</h2>
+  <div class="frm"><label>Nome (computador)<input id="nome" maxlength="80" placeholder="Ex.: PC da Vigilância"></label><label>Validade (dias, opcional)<input id="dias" type="number" min="1" max="730" placeholder="sem validade"></label><button class="btn1" id="gerar" type="button">Gerar chave</button></div>
+  <div class="nota" id="msg" aria-live="polite"></div>
+  <div class="nova" id="nova" hidden><b>Copie agora e cole no painel da extensão. Não será mostrada de novo.</b><code id="valor"></code><button class="btn2" id="copiar" type="button">Copiar</button></div>
+ </section>
+ <section class="bloco"><h2>Chaves criadas</h2><div class="tab"><table><thead><tr><th>Nome</th><th>Início</th><th>Criada em</th><th>Último uso</th><th>Validade</th><th>Situação</th><th></th></tr></thead><tbody id="lista"><tr><td colspan="7">Carregando…</td></tr></tbody></table></div></section>
+</main>
+<script src="/js/sessao.js"></script>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dt=v=>v?new Date(v).toLocaleString('pt-BR'):'—';
+async function carregar(){
+ try{const r=await fetch('/api/v1/chaves',{credentials:'same-origin'});if(!r.ok)throw 0;const d=await r.json();
+  $('#lista').innerHTML=d.chaves.length?d.chaves.map(c=>{const venc=c.expiraEm&&c.expiraEm<new Date().toISOString();const sit=c.revogadaEm?'Revogada':venc?'Vencida':'Ativa';
+   return '<tr><td>'+esc(c.nome)+'</td><td>'+esc(c.prefixo)+'…</td><td>'+dt(c.criadaEm)+'</td><td>'+dt(c.ultimoUso)+'</td><td>'+(c.expiraEm?dt(c.expiraEm):'sem validade')+'</td><td>'+sit+'</td><td>'+(sit=='Ativa'?'<button class="btn2" data-r="'+c.id+'">Revogar</button>':'')+'</td></tr>'}).join(''):'<tr><td colspan="7">Nenhuma chave criada.</td></tr>';
+ }catch{$('#lista').innerHTML='<tr><td colspan="7">Não foi possível carregar.</td></tr>'}}
+$('#gerar').addEventListener('click',async()=>{$('#msg').textContent='';
+ try{const r=await fetch('/api/v1/chaves',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({nome:$('#nome').value,dias:$('#dias').value||null})});
+  const d=await r.json();if(!r.ok)throw new Error(d.erro||'Falha');$('#valor').textContent=d.chave;$('#nova').hidden=false;$('#nome').value='';$('#dias').value='';carregar();}catch(e){$('#msg').textContent=e.message}});
+$('#copiar').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('#valor').textContent);$('#msg').textContent='Copiada.'}catch{$('#msg').textContent='Selecione e copie manualmente.'}});
+$('#lista').addEventListener('click',async e=>{const b=e.target.closest('[data-r]');if(!b)return;if(!confirm('Revogar esta chave? A extensão que a usa deixará de enviar dados.'))return;
+ const r=await fetch('/api/v1/chaves/'+b.dataset.r,{method:'DELETE',credentials:'same-origin'});if(r.ok){$('#nova').hidden=true;carregar()}});
+carregar();
+</script>
+</body>
+</html>

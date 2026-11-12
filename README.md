@@ -219,3 +219,7 @@ O administrador publica avisos em `/comunicados` (título, texto, destinatários
 ## Página pública
 
 O administrador escolhe em `/publicacao` (categorias com caixas de seleção e uma autorização final) o que aparece sem senha em `/publico`. Tudo nasce privado; só totais agregados do catálogo (sem observações, responsáveis, pendências, equipes ou profissionais). Tabelas `publicacao_item` e `publicacao_historico` (migração 0005). API pública: `GET /api/v1/publico/dados`.
+
+## Chaves de coleta
+
+O administrador gera em `/chaves` uma chave por computador (guardada só como hash; aparece uma vez). Ela só envia coletas e composição e pode ser revogada na hora. Migração 0006. A `TOKEN_COLETA` do Cloudflare continua valendo como reserva.
