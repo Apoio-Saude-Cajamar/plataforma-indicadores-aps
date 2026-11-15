@@ -4,8 +4,8 @@ import { ErroHttp, agora, lerJson, json } from './util.js';
 import { registrar } from './auth.js';
 
 const FONTES = [
-  { arq: '/js/dados-municipal.js', chave: 'MUNICIPAL' },
-  { arq: '/js/dados-federal.js', chave: 'FEDERAL' }
+  { arq: '/js/dados-municipal.js', chave: 'MUNICIPAL' }
+  // Federal (Siaps) fora por ora: a página pública e o Painel mostram só o que vem do PEC e-SUS.
 ];
 
 async function carregar(env, url) {
