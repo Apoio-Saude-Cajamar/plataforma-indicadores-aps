@@ -59,6 +59,7 @@ details summary{cursor:pointer;color:#1F3C72;font-weight:600;font-size:13px}
 details p{margin:6px 0 0;font-size:13px;color:#4A5670;line-height:1.5;max-width:520px}
 tr.dir td{background:#F4F7FB;font-weight:800;color:#1F3C72;font-size:13px}
 td.m{min-width:230px}
+.info{display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border-radius:50%;background:#D9ECF8;color:#0B4F73;font-size:12px;font-weight:800;cursor:help;margin-left:6px}
 </style>
 </head>
 <body>
@@ -70,10 +71,11 @@ td.m{min-width:230px}
  <a class="voltar" href="/">← Voltar aos acompanhamentos</a>
  <h1>Indicadores municipais</h1>
  <p class="intro">Metas da Atenção Primária e da Saúde Bucal no PAS 2026 de Cajamar, com o acumulado de janeiro a setembro de 2026 (parcial do 3º quadrimestre, extração da DAPS de 09/11/2026). O RDQA completo do município entra depois da configuração dos indicadores.</p>
+ <p class="intro" style="margin-top:-8px"><a class="voltar" href="/lancamentos">Lançar metas por formulário</a> · <a class="voltar" href="/lancamentos-vacinas">Lançar coberturas vacinais</a></p>
  <div class="chips" id="chips" role="group" aria-label="Filtrar por situação"></div>
  <div class="sel"><label>Diretriz<select id="dir"></select></label></div>
  <section class="bloco"><h2 id="t-m">Metas</h2><div class="tab" id="metas"></div></section>
- <section class="bloco"><h2>Coberturas vacinais (meta 1.6.1)</h2><p class="d">Painel de Cobertura Vacinal do Ministério da Saúde, por residência. Doses até 30/09/2026. Acima de 100% reflete o denominador estimado do painel.</p><div class="tab" id="vac"></div></section>
+ <section class="bloco"><h2>Coberturas vacinais (meta 1.6.1)<span class="info" title="Fonte: painel de cobertura vacinal do Ministério da Saúde, informado por formulário do Painel (lançamento manual), não coletado do PEC. As colunas até set/2026 vêm da planilha da PAS.">i</span></h2><p class="d">Painel de Cobertura Vacinal do Ministério da Saúde, por residência. Doses até 30/09/2026. Acima de 100% reflete o denominador estimado do painel.</p><div class="tab" id="vac"></div></section>
  <section class="bloco"><h2>Pendências para fechar o ano</h2><div class="tab" id="pend"></div></section>
  <section class="bloco"><h2>Como ler</h2><ul class="nota">
   <li>Metas do tipo <b>Soma</b> acumulam entregas por período; o previsto até o mês é a meta anual × mês ÷ 12. Metas do tipo <b>Posição</b> medem a situação na data.</li>
@@ -87,6 +89,11 @@ td.m{min-width:230px}
 const D=window.MUNICIPAL,$=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const pc=v=>(v*100).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%',nn=v=>v.toLocaleString('pt-BR',{maximumFractionDigits:2});
 const fv=(v,un)=>v==null||v===''?'—':typeof v!='number'?esc(v):un=='%'?pc(v):nn(v);
+const DO_PEC={'3.1.8':'B2','3.1.9':'B6','1.7.1':''};let LM={},LV={};
+const mesN=c=>{const [a,m]=c.split('-');return ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][m-1]+'/'+a};
+const ultimo=ls=>{const o={};ls.forEach(l=>{if(!o[l.item]||l.competencia>o[l.item].competencia)o[l.item]=l});return o};
+const dica=t=>'<span class="info" title="'+esc(t)+'">i</span>';
+const fonteMeta=m=>m.id in DO_PEC?dica('Fonte: coleta do PEC e-SUS pela extensão'+(DO_PEC[m.id]?' (indicador '+DO_PEC[m.id]+', em Indicadores do PEC)':'')+'. Enquanto a ligação automática não entra, o valor mostrado é o da planilha da PAS.'):dica('Fonte: formulário do Painel (lançamento manual), não coletado do PEC.'+(LM[m.id]?' Último lançamento: '+mesN(LM[m.id].competencia)+(LM[m.id].por?', por '+LM[m.id].por:'')+'.':' Sem lançamento ainda: o valor mostrado é o da planilha da PAS de 09/11/2026.'));
 const SIT=['Atingida','No ritmo','Crítica','Não atingida','Sem dado'];let S={sit:'',dir:''};
 const cls=s=>'sit-'+s.split(' ')[0];
 function chips(){const c={};D.metas.forEach(m=>c[m.sit]=(c[m.sit]||0)+1);
@@ -94,15 +101,17 @@ function chips(){const c={};D.metas.forEach(m=>c[m.sit]=(c[m.sit]||0)+1);
 function metas(){const ms=D.metas.filter(m=>(!S.sit||m.sit==S.sit)&&(!S.dir||m.dir==S.dir));let last='',h='';
  ms.forEach(m=>{if(m.dir!=last){last=m.dir;h+='<tr class="dir"><td colspan="5">'+esc(m.dir)+'</td></tr>'}
   const alvo=(m.pol||'')+' '+fv(m.alvo,m.un);
-  h+='<tr><td class="m"><b>'+esc(m.id)+'</b> · '+esc(m.meta)+'<br><small style="color:#4A5670">'+esc(m.ind)+'</small>'+(m.obs?'<details><summary>Observação</summary><p>'+esc(m.obs)+'</p></details>':'')+'</td><td class="n">'+alvo+'</td><td class="n">'+fv(m.acum,m.un)+(m.tipo=='Soma'&&m.prev!=null?'<br><small style="color:#4A5670">previsto '+fv(m.prev,m.un)+'</small>':'')+'</td><td><span class="pill '+cls(m.sit)+'">'+esc(m.sit)+'</span></td><td>'+esc(m.resp||'')+'</td></tr>'});
+  h+='<tr><td class="m"><b>'+esc(m.id)+'</b> · '+esc(m.meta)+fonteMeta(m)+'<br><small style="color:#4A5670">'+esc(m.ind)+'</small>'+(m.obs?'<details><summary>Observação</summary><p>'+esc(m.obs)+'</p></details>':'')+'</td><td class="n">'+alvo+'</td><td class="n">'+(LM[m.id]&&!(m.id in DO_PEC)?fv(LM[m.id].valor,m.un)+'<br><small style="color:#4A5670">formulário · '+mesN(LM[m.id].competencia)+'</small>':fv(m.acum,m.un))+(m.tipo=='Soma'&&m.prev!=null?'<br><small style="color:#4A5670">previsto '+fv(m.prev,m.un)+'</small>':'')+'</td><td><span class="pill '+cls(m.sit)+'">'+esc(m.sit)+'</span></td><td>'+esc(m.resp||'')+'</td></tr>'});
  $('#t-m').textContent='Metas ('+ms.length+')';
  $('#metas').innerHTML=ms.length?'<table><thead><tr><th>Meta</th><th class="n">Meta 2026</th><th class="n">Acumulado jan–set</th><th>Situação</th><th>Responsável</th></tr></thead><tbody>'+h+'</tbody></table>':'<p class="d">Nenhuma meta neste recorte.</p>'}
 $('#dir').innerHTML='<option value="">Todas as diretrizes</option>'+[...new Set(D.metas.map(m=>m.dir))].map(d=>'<option value="'+esc(d)+'">'+esc(d)+'</option>').join('');
 $('#chips').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.sit=b.dataset.s;chips();metas()});
 $('#dir').addEventListener('change',e=>{S.dir=e.target.value;metas()});
-$('#vac').innerHTML='<table><thead><tr><th>Vacina</th><th class="n">Meta PAS</th><th class="n">Meta MS</th><th class="n">Dez/2025</th><th class="n">Jan–ago/26</th><th class="n">Jan–set/26</th><th>Abaixo da meta PAS?</th></tr></thead><tbody>'+D.vacinas.map(v=>'<tr><td>'+esc(v.v)+(v.obs?'<details><summary>Observação</summary><p>'+esc(v.obs)+'</p></details>':'')+'</td><td class="n">'+fv(v.metaPAS,'%')+'</td><td class="n">'+fv(v.metaMS,'%')+'</td><td class="n">'+fv(v.d25,'%')+'</td><td class="n">'+fv(v.ago,'%')+'</td><td class="n">'+fv(v.set,'%')+'</td><td>'+(v.abaixo=='Sim'?'<span class="pill sit-Crítica">Sim</span>':v.abaixo=='Não'?'Não':'Sem dado')+'</td></tr>').join('')+'</tbody></table>';
+function vac(){$('#vac').innerHTML='<table><thead><tr><th>Vacina</th><th class="n">Meta PAS</th><th class="n">Meta MS</th><th class="n">Dez/2025</th><th class="n">Jan–ago/26</th><th class="n">Jan–set/26</th><th class="n">Formulário</th><th>Abaixo da meta PAS?</th></tr></thead><tbody>'+D.vacinas.map(v=>'<tr><td>'+esc(v.v)+(v.obs?'<details><summary>Observação</summary><p>'+esc(v.obs)+'</p></details>':'')+'</td><td class="n">'+fv(v.metaPAS,'%')+'</td><td class="n">'+fv(v.metaMS,'%')+'</td><td class="n">'+fv(v.d25,'%')+'</td><td class="n">'+fv(v.ago,'%')+'</td><td class="n">'+fv(v.set,'%')+'</td><td class="n">'+(LV[v.v]?fv(LV[v.v].valor,'%')+'<br><small style="color:#4A5670">'+mesN(LV[v.v].competencia)+'</small>':'—')+'</td><td>'+(v.abaixo=='Sim'?'<span class="pill sit-Crítica">Sim</span>':v.abaixo=='Não'?'Não':'Sem dado')+'</td></tr>').join('')+'</tbody></table>'}
+vac();
 $('#pend').innerHTML='<table><thead><tr><th>#</th><th>Pendência</th><th>Metas</th><th>Responsável</th></tr></thead><tbody>'+D.pendencias.map(p=>'<tr><td>'+p.n+'</td><td>'+esc(p.t)+'</td><td>'+esc(p.metas)+'</td><td>'+esc(p.resp)+'</td></tr>').join('')+'</tbody></table>';
 chips();metas();
+Promise.all(['meta','vacina'].map(t=>fetch('/api/v1/lancamentos?tipo='+t,{credentials:'same-origin'}).then(r=>r.ok?r.json():{vigentes:[]}))).then(([a,b])=>{LM=ultimo(a.vigentes);LV=ultimo(b.vigentes);metas();vac()}).catch(()=>{});
 </script>
 </body>
 </html>

@@ -28,6 +28,7 @@ import { situacao, dadosVigentes, competencias } from './consultas.js';
 import { gravarComposicao, lerComposicao } from './composicao.js';
 import { populacaoMunicipio } from './populacao.js';
 import { monitoramento } from './monitoramento.js';
+import { listarLancamentos, criarLancamento } from './lancamentos.js';
 import { listarChaves, criarChave, revogarChave, chaveGeradaValida } from './chaves.js';
 import { catalogoAdmin, salvarPublicacao, historico as historicoPublicacao, dadosPublicos } from './publicacao.js';
 import { comunicadosAtivos, marcarLido, listarComunicados, criarComunicado, alterarComunicado } from './comunicados.js';
@@ -61,6 +62,8 @@ const ROTAS = [
   ['GET', /^\/chaves$/, 'usuarios', async (req, env) => json(await listarChaves(env))],
   ['POST', /^\/chaves$/, 'usuarios', async (req, env, m, url, quem) => json(await criarChave(req, env, quem), 201)],
   ['DELETE', /^\/chaves\/(\d+)$/, 'usuarios', async (req, env, m, url, quem) => json(await revogarChave(req, env, Number(m[1]), quem))],
+  ['GET', /^\/lancamentos$/, 'leitura', async (req, env, m, url) => json(await listarLancamentos(env, url))],
+  ['POST', /^\/lancamentos$/, 'lancar', async (req, env, m, url, quem) => json(await criarLancamento(req, env, quem), 201)],
   ['GET', /^\/publico\/dados$/, null, async (req, env, m, url) => dadosPublicos(env, url)],
   ['GET', /^\/publicacao$/, 'usuarios', async (req, env, m, url) => json(await catalogoAdmin(env, url))],
   ['PUT', /^\/publicacao$/, 'usuarios', async (req, env, m, url, quem) => json(await salvarPublicacao(req, env, url, quem))],
@@ -90,6 +93,7 @@ async function autorizar(request, env, papel) {
     if (temChave) { exigir(request, env, 'admin'); return null; }
     return (await exigirSessao(request, env, ['admin'])).usuario.id;
   }
+  if (papel === 'lancar') return (await exigirSessao(request, env, ['admin', 'gestor'])).usuario.id;
   if (papel === 'leitura' && !temChave) return (await exigirSessao(request, env)).usuario.id;
   try { exigir(request, env, papel); } catch (e) {
     if (papel === 'coleta' && e instanceof ErroHttp && e.status === 401 && await chaveGeradaValida(request, env)) return null;

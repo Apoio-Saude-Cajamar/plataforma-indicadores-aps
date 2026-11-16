@@ -219,7 +219,7 @@ test('composição: a extensão grava com a chave e o painel lê com a sessão',
   // a sessão não grava
   assert.equal((await nav.pedir('PUT', '/api/v1/composicao', { competencia: '2026-10', unidades: [] })).status, 401);
   assert.equal((await nav.pedir('GET', '/composicao')).status, 200);
-  for (const p of ['/', '/indicadores', '/federal', '/federal-notas', '/estadual', '/municipal']) assert.equal((await nav.pedir('GET', p)).status, 200, p);
+  for (const p of ['/', '/indicadores', '/lancamentos', '/lancamentos-vacinas', '/federal', '/federal-notas', '/estadual', '/municipal']) assert.equal((await nav.pedir('GET', p)).status, 200, p);
   for (const p of ['/extensao', '/downloads/coletor-aps-v0.8.5.zip']) assert.notEqual((await nav.pedir('GET', p)).status, 200, p + ' só para administrador');
 });
 
@@ -342,4 +342,21 @@ test('chaves de coleta: admin gera, a chave só envia coleta, revogação vale n
   assert.equal((await com(c.chave, 'POST', '/api/v1/coletas', { id: 'c3', competencia: '2026-10' })).status, 401, 'revogada');
   assert.equal((await ana.pedir('GET', '/chaves')).status, 200);
   assert.notEqual((await leo.pedir('GET', '/chaves')).status, 200);
+});
+
+test('lançamentos por formulário: gestor lança, leitor só consulta, o histórico guarda tudo e o vigente é o mais recente', async () => {
+  const env = comPaginas(ambiente());
+  const criar = async (login, perfil) => { const r = await admin(env, { login, nome: login, perfil }); env.DB.prepare('UPDATE usuario SET trocar_senha = 0').run(); const n = navegador(env); assert.equal((await n.pedir('POST', '/api/v1/auth/entrar', { login, senha: r.senhaProvisoria })).status, 200); return n; };
+  const gestor = await criar('gestor.um', 'gestor'), leitor = await criar('leitor.um', 'leitor');
+  const O = { headers: { origin: BASE } };
+  assert.equal((await leitor.pedir('POST', '/api/v1/lancamentos', { tipo: 'meta', item: '1.1.2', competencia: '2026-10', valor: 0.1 }, O)).status, 403);
+  assert.equal((await gestor.pedir('POST', '/api/v1/lancamentos', { tipo: 'meta', item: 'x', competencia: '2026-10', valor: 1 }, O)).status, 400);
+  assert.equal((await gestor.pedir('POST', '/api/v1/lancamentos', { tipo: 'meta', item: '1.1.2', competencia: '2026-10', valor: -1 }, O)).status, 400);
+  assert.equal((await gestor.pedir('POST', '/api/v1/lancamentos', { tipo: 'meta', item: '1.1.2', competencia: '2026-10', valor: 0.1 }, O)).status, 201);
+  assert.equal((await gestor.pedir('POST', '/api/v1/lancamentos', { tipo: 'meta', item: '1.1.2', competencia: '2026-10', valor: 0.2, obs: 'correção' }, O)).status, 201);
+  assert.equal((await gestor.pedir('POST', '/api/v1/lancamentos', { tipo: 'vacina', item: '1. BCG', competencia: '2026-10', valor: 0.95 }, O)).status, 201);
+  const d = await (await leitor.pedir('GET', '/api/v1/lancamentos?tipo=meta')).json();
+  assert.equal(d.vigentes.length, 1); assert.equal(d.vigentes[0].valor, 0.2); assert.equal(d.historico.length, 2); assert.equal(d.vigentes[0].por, 'gestor.um');
+  assert.equal((await (await leitor.pedir('GET', '/api/v1/lancamentos?tipo=vacina')).json()).vigentes.length, 1);
+  assert.equal((await leitor.pedir('GET', '/api/v1/lancamentos')).status, 400);
 });

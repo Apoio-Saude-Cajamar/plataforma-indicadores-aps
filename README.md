@@ -223,3 +223,7 @@ O administrador escolhe em `/publicacao` (categorias com caixas de seleção e u
 ## Chaves de coleta
 
 O administrador gera em `/chaves` uma chave por computador (guardada só como hash; aparece uma vez). Ela só envia coletas e composição e pode ser revogada na hora. Migração 0006. A `TOKEN_COLETA` do Cloudflare continua valendo como reserva.
+
+## Lançamentos por formulário
+
+Metas da PAS que não vêm do PEC e-SUS e as coberturas vacinais do Ministério são informadas em `/lancamentos` e `/lancamentos-vacinas` (administrador ou gestor lança; qualquer usuário consulta). Cada lançamento é guardado (tabela `lancamento`, migration 0007); o valor vigente de um item no mês é o mais recente. A tela de Indicadores municipais mostra o último lançamento e indica a fonte no (i).
