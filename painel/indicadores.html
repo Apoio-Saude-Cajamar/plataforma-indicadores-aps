@@ -80,7 +80,17 @@ button.ab{font:inherit;font-size:13px;font-weight:700;color:#1F3C72;background:n
   <label>Unidade<select id="un"><option value="">Todas</option></select></label>
  </div>
  <p class="nota" id="estado" role="status"></p>
+ <section class="cards" id="cards" aria-live="polite"></section>
+ <section class="bloco" id="visao" hidden><h2>Equipes por conceito</h2><p class="d">Quantas equipes ficaram em cada conceito no mês mais recente do período, nos indicadores cujas faixas temos confirmadas. É uma prévia com dados do PEC; o conceito oficial é o do Ministério.</p><div class="tab" id="conc"></div>
+  <div class="leg"><span><em class="k-o"></em>Ótimo</span><span><em class="k-b"></em>Bom</span><span><em class="k-s"></em>Suficiente</span><span><em class="k-r"></em>Regular</span><span>Números nas barras: quantas equipes em cada conceito</span></div></section>
+ <section class="bloco" id="evol" hidden><h2>Evolução mensal no município</h2><p class="d">Resultado de cada mês coletado. A barra compara os meses do mesmo indicador.</p><div class="tab" id="evo"></div></section>
+ <h2 style="font-size:19px;margin:8px 0 14px;color:#1B2340">Detalhe por grupo de notas</h2>
  <div id="grupos"></div>
+ <section class="bloco"><h2>Como ler</h2><ul class="nota">
+  <li>Os conceitos são uma prévia calculada com os dados do PEC; o conceito oficial de cada equipe é o do Ministério da Saúde.</li>
+  <li>Faixas usadas: boas práticas (C2 a C7), Ótimo acima de 75, Bom acima de 50, Suficiente acima de 25, Regular até 25, conforme os exemplos da NT nº 8/2026; vínculo (CVAT), Ótimo acima de 8,5, Bom de 7 a 8,5, Suficiente de 5 a 6,9, Regular abaixo de 5; M1, Ótimo acima de 3, Bom acima de 2, Suficiente acima de 1 (NT nº 43/2026).</li>
+  <li>C1, B1 a B6, M2 e Consultório na Rua aparecem só com o resultado, sem conceito, até confirmarmos as faixas nas notas vigentes de cada um.</li>
+ </ul></section>
 </main>
 <script src="/js/sessao.js"></script>
 <script src="/js/catalogo-indicadores.js"></script>
@@ -122,10 +132,44 @@ function agregar(linhas,chave){
  }
  return m;
 }
+// Faixas confirmadas: boas práticas C2 a C7 (0 a 100), vínculo CVAT (NT 8/2026) e M1 (NT 43/2026).
+const FAIXA={C2:'bp',C3:'bp',C4:'bp',C5:'bp',C6:'bp',C7:'bp',CVAT:'cvat',M1:'m1'};
+function conceito(cod,v){if(v==null||isNaN(v))return null;const f=FAIXA[cod];
+ if(f==='bp')return v>75?'o':v>50?'b':v>25?'s':'r';
+ if(f==='cvat')return v>8.5?'o':v>=7?'b':v>=5?'s':'r';
+ if(f==='m1')return v>3?'o':v>2?'b':v>1?'s':'r';return null}
+const NOMEC={o:'Ótimo',b:'Bom',s:'Suficiente',r:'Regular'},PILL={o:'c-o',b:'c-b',s:'c-s',r:'c-r'};
+function linhasDe(cod,comps,un){let ls=[];comps.forEach(c=>ls.push(...(dados[c]||[]).filter(l=>l.codigo===cod||(cod==='C7'&&/^C7-/.test(l.codigo))||(cod==='CVAT'&&/^CVAT-/.test(l.codigo)))));
+ ls=ls.filter(l=>l.recorte!=='desfecho'||cod==='C2'||cod==='C3');return un?ls.filter(l=>l.unidade===un):ls}
+function painel(comps,un){
+ const ult=comps[comps.length-1],todas=(dados[ult]||[]).filter(l=>!un||l.unidade===un);
+ const uns=new Set(todas.map(l=>l.unidade).filter(u=>u&&u!=='Município')),eqs=new Set(todas.filter(l=>l.equipe&&l.equipe!=='Município').map(l=>l.unidade+'|'+l.equipe)),cods=new Set(todas.map(l=>l.codigo));
+ let h='<div class="card"><small>Mês mais recente</small><div class="v">'+(ult?mesNome(ult):'—')+'</div><div class="s">'+comps.length+' mês(es) no período</div></div>'
+  +'<div class="card"><small>Cobertura da coleta</small><div class="v">'+uns.size+'</div><div class="s">unidade(s) e '+eqs.size+' equipe(s) com dados</div></div>'
+  +'<div class="card"><small>Indicadores coletados</small><div class="v">'+cods.size+'</div><div class="s">códigos diferentes no mês</div></div>';
+ let linhas='',tot={o:0,b:0,s:0,r:0};
+ for(const cod of Object.keys(FAIXA)){const ls=linhasDe(cod,[ult],un);if(!ls.length)continue;const cat=(window.CATALOGO||{})[cod]||{nome:cod,tipo:''};
+  const m=agregar(ls,l=>l.unidade+' · '+l.equipe),c={o:0,b:0,s:0,r:0};let n=0;
+  [...m.values()].filter(g=>g.codigo===cod).forEach(g=>{const k=conceito(cod,resultado(g,cat.tipo));if(k){c[k]++;tot[k]++;n++}});
+  if(!n)continue;const mun=agregar(ls,()=>'M').get(cod+'|M'),vm=mun?resultado(mun,cat.tipo):null,km=conceito(cod,vm);
+  linhas+='<tr><td><b>'+esc(cod)+'</b> · '+esc(cat.nome)+'</td><td class="n">'+fmt(vm,cat.tipo)+(km?' <span class="pill '+PILL[km]+'">'+NOMEC[km]+'</span>':'')+'</td><td style="min-width:200px"><div class="barra" role="img" aria-label="Ótimo '+c.o+', Bom '+c.b+', Suficiente '+c.s+', Regular '+c.r+'">'+['o','b','s','r'].map(k=>c[k]?'<i class="k-'+k+'" style="width:'+(c[k]/n*100)+'%" title="'+c[k]+' '+NOMEC[k]+'"></i>':'').join('')+'</div><small style="color:#4A5670">'+['o','b','s','r'].filter(k=>c[k]).map(k=>c[k]+' '+NOMEC[k]).join(' · ')+'</small></td><td class="n">'+n+'</td></tr>'}
+ const nt=tot.o+tot.b+tot.s+tot.r;
+ if(nt)h+='<div class="card"><small>Conceitos das equipes (prévia)</small><div class="barra" role="img" aria-label="Ótimo '+tot.o+', Bom '+tot.b+', Suficiente '+tot.s+', Regular '+tot.r+'">'+['o','b','s','r'].map(k=>tot[k]?'<i class="k-'+k+'" style="width:'+(tot[k]/nt*100)+'%"></i>':'').join('')+'</div><div class="s">'+['o','b','s','r'].filter(k=>tot[k]).map(k=>tot[k]+' '+NOMEC[k]).join(' · ')+', somando os indicadores com faixa</div></div>';
+ $('cards').innerHTML=ult?h:'';
+ $('visao').hidden=!linhas;$('conc').innerHTML=linhas?'<table><thead><tr><th>Indicador</th><th class="n">Município</th><th>Equipes por conceito</th><th class="n">Equipes</th></tr></thead><tbody>'+linhas+'</tbody></table>':'';
+ // Evolução: um valor do município por mês coletado (todos os meses disponíveis, não só o período).
+ const meses=Object.keys(dados).sort();let ev='';
+ if(meses.length>1){for(const [,cods2] of GRUPOS)for(const cod of cods2){const cat=(window.CATALOGO||{})[cod];if(!cat||cat.tipo==='contagem'||/-/.test(cod))continue;
+   const vs=meses.map(c=>{const ls=linhasDe(cod,[c],un);const g=ls.length?agregar(ls,()=>'M').get(cod+'|M'):null;return g?resultado(g,cat.tipo):null});if(vs.every(v=>v==null))continue;
+   const mx=Math.max(...vs.filter(v=>v!=null),0.0001);
+   ev+='<tr><td><b>'+esc(cod)+'</b> · '+esc(cat.nome)+'</td>'+vs.map(v=>'<td class="n">'+(v==null?'–':'<span class="mini" style="width:'+Math.round(v/mx*46)+'px"></span>'+fmt(v,cat.tipo))+'</td>').join('')+'</tr>'}}
+ $('evol').hidden=!ev;$('evo').innerHTML=ev?'<table><thead><tr><th>Indicador</th>'+meses.map(c=>'<th class="n">'+mesNome(c)+'</th>').join('')+'</tr></thead><tbody>'+ev+'</tbody></table>':'';
+}
 function desenhar(){
  const comps=Object.keys(dados).sort().filter(c=>c>=$('de').value&&c<=$('ate').value);
  const un=$('un').value;
  const varios=comps.length>1;
+ painel(comps,un);
  let html='';let algum=false;
  for(const [nome,cods] of GRUPOS){
   let corpo='';
