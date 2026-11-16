@@ -93,7 +93,8 @@ const DO_PEC={'3.1.8':'B2','3.1.9':'B6','1.7.1':''};let LM={},LV={};
 const mesN=c=>{const [a,m]=c.split('-');return ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][m-1]+'/'+a};
 const ultimo=ls=>{const o={};ls.forEach(l=>{if(!o[l.item]||l.competencia>o[l.item].competencia)o[l.item]=l});return o};
 const dica=t=>'<span class="info" title="'+esc(t)+'">i</span>';
-const fonteMeta=m=>m.id in DO_PEC?dica('Fonte: coleta do PEC e-SUS pela extensão'+(DO_PEC[m.id]?' (indicador '+DO_PEC[m.id]+', em Indicadores do PEC)':'')+'. Enquanto a ligação automática não entra, o valor mostrado é o da planilha da PAS.'):dica('Fonte: formulário do Painel (lançamento manual), não coletado do PEC.'+(LM[m.id]?' Último lançamento: '+mesN(LM[m.id].competencia)+(LM[m.id].por?', por '+LM[m.id].por:'')+'.':' Sem lançamento ainda: o valor mostrado é o da planilha da PAS de 09/11/2026.'));
+let PEC={},PECMES='';
+const fonteMeta=m=>m.id in DO_PEC?dica('Fonte: coleta do PEC e-SUS pela extensão'+(DO_PEC[m.id]?' (indicador '+DO_PEC[m.id]+' das notas metodológicas)':'')+'. '+(PEC[m.id]!=null?'Valor do município em '+mesN(PECMES)+'.':'Sem coleta deste indicador ainda: o valor mostrado é o da planilha da PAS.')):dica('Fonte: formulário do Painel (lançamento manual), não coletado do PEC.'+(LM[m.id]?' Último lançamento: '+mesN(LM[m.id].competencia)+(LM[m.id].por?', por '+LM[m.id].por:'')+'.':' Sem lançamento ainda: o valor mostrado é o da planilha da PAS de 09/11/2026.'));
 const SIT=['Atingida','No ritmo','Crítica','Não atingida','Sem dado'];let S={sit:'',dir:''};
 const cls=s=>'sit-'+s.split(' ')[0];
 function chips(){const c={};D.metas.forEach(m=>c[m.sit]=(c[m.sit]||0)+1);
@@ -101,7 +102,7 @@ function chips(){const c={};D.metas.forEach(m=>c[m.sit]=(c[m.sit]||0)+1);
 function metas(){const ms=D.metas.filter(m=>(!S.sit||m.sit==S.sit)&&(!S.dir||m.dir==S.dir));let last='',h='';
  ms.forEach(m=>{if(m.dir!=last){last=m.dir;h+='<tr class="dir"><td colspan="5">'+esc(m.dir)+'</td></tr>'}
   const alvo=(m.pol||'')+' '+fv(m.alvo,m.un);
-  h+='<tr><td class="m"><b>'+esc(m.id)+'</b> · '+esc(m.meta)+fonteMeta(m)+'<br><small style="color:#4A5670">'+esc(m.ind)+'</small>'+(m.obs?'<details><summary>Observação</summary><p>'+esc(m.obs)+'</p></details>':'')+'</td><td class="n">'+alvo+'</td><td class="n">'+(LM[m.id]&&!(m.id in DO_PEC)?fv(LM[m.id].valor,m.un)+'<br><small style="color:#4A5670">formulário · '+mesN(LM[m.id].competencia)+'</small>':fv(m.acum,m.un))+(m.tipo=='Soma'&&m.prev!=null?'<br><small style="color:#4A5670">previsto '+fv(m.prev,m.un)+'</small>':'')+'</td><td><span class="pill '+cls(m.sit)+'">'+esc(m.sit)+'</span></td><td>'+esc(m.resp||'')+'</td></tr>'});
+  h+='<tr><td class="m"><b>'+esc(m.id)+'</b> · '+esc(m.meta)+fonteMeta(m)+'<br><small style="color:#4A5670">'+esc(m.ind)+'</small>'+(m.obs?'<details><summary>Observação</summary><p>'+esc(m.obs)+'</p></details>':'')+'</td><td class="n">'+alvo+'</td><td class="n">'+(PEC[m.id]!=null?fv(PEC[m.id],m.un)+'<br><small style="color:#4A5670">PEC · '+mesN(PECMES)+'</small>':LM[m.id]&&!(m.id in DO_PEC)?fv(LM[m.id].valor,m.un)+'<br><small style="color:#4A5670">formulário · '+mesN(LM[m.id].competencia)+'</small>':fv(m.acum,m.un))+(m.tipo=='Soma'&&m.prev!=null?'<br><small style="color:#4A5670">previsto '+fv(m.prev,m.un)+'</small>':'')+'</td><td><span class="pill '+cls(m.sit)+'">'+esc(m.sit)+'</span></td><td>'+esc(m.resp||'')+'</td></tr>'});
  $('#t-m').textContent='Metas ('+ms.length+')';
  $('#metas').innerHTML=ms.length?'<table><thead><tr><th>Meta</th><th class="n">Meta 2026</th><th class="n">Acumulado jan–set</th><th>Situação</th><th>Responsável</th></tr></thead><tbody>'+h+'</tbody></table>':'<p class="d">Nenhuma meta neste recorte.</p>'}
 $('#dir').innerHTML='<option value="">Todas as diretrizes</option>'+[...new Set(D.metas.map(m=>m.dir))].map(d=>'<option value="'+esc(d)+'">'+esc(d)+'</option>').join('');
@@ -111,6 +112,10 @@ function vac(){$('#vac').innerHTML='<table><thead><tr><th>Vacina</th><th class="
 vac();
 $('#pend').innerHTML='<table><thead><tr><th>#</th><th>Pendência</th><th>Metas</th><th>Responsável</th></tr></thead><tbody>'+D.pendencias.map(p=>'<tr><td>'+p.n+'</td><td>'+esc(p.t)+'</td><td>'+esc(p.metas)+'</td><td>'+esc(p.resp)+'</td></tr>').join('')+'</tbody></table>';
 chips();metas();
+fetch('/api/v1/competencias',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(async d=>{const cs=((d&&d.competencias)||[]).map(c=>c.competencia).sort();if(!cs.length)return;PECMES=cs[cs.length-1];
+ const r=await fetch('/api/v1/dados?competencia='+PECMES,{credentials:'same-origin'});if(!r.ok)return;const ls=(await r.json()).indicadores||[];
+ for(const [id,cod] of Object.entries(DO_PEC)){if(!cod)continue;let n=0,dn=0;ls.filter(l=>l.codigo===cod).forEach(l=>{n+=l.numerador||0;dn+=l.denominador||0});if(dn)PEC[id]=n/dn}
+ metas()}).catch(()=>{});
 Promise.all(['meta','vacina'].map(t=>fetch('/api/v1/lancamentos?tipo='+t,{credentials:'same-origin'}).then(r=>r.ok?r.json():{vigentes:[]}))).then(([a,b])=>{LM=ultimo(a.vigentes);LV=ultimo(b.vigentes);metas();vac()}).catch(()=>{});
 </script>
 </body>
