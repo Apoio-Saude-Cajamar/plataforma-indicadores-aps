@@ -48,7 +48,8 @@ function montarREAL(porComp, ultimaColeta) {
       else if (n.apura === 'razao') v = calcula(n.cod, escolhe(n.cod, ls, com));
       else { const vs = com.map(a => calcula(n.cod, escolhe(n.cod, ls, [a]))).filter(x => x != null); v = vs.length ? vs.reduce((t, x) => t + x, 0) / vs.length : null; }
       if (v == null || isNaN(v)) return n.min;
-      return +Math.max(n.min, Math.min(n.max, v)).toFixed(n.fmt);
+      // O valor não é cortado no teto da régua: uma equipe acima da escala mostra o número real, com o ponto no fim da régua.
+      return +Math.max(n.min, v).toFixed(n.fmt);
     },
     pessoas(n, u, e) { const rs = escolhe(n.cod, [{ u, e }], [R.atual]); return Math.round(rs.reduce((t, l) => t + l.den, 0)); },
     // Fica só o que a coleta trouxe; nada de números de exemplo.
