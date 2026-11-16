@@ -80,11 +80,13 @@ button.ab{font:inherit;font-size:13px;font-weight:700;color:#1F3C72;background:n
   <label>Unidade<select id="un"><option value="">Todas</option></select></label>
  </div>
  <p class="nota" id="estado" role="status"></p>
+ <p style="margin:0 0 18px"><button type="button" class="chip" id="btnDash" aria-pressed="false">Ver dashboard</button></p>
+ <div id="dash" hidden>
  <section class="cards" id="cards" aria-live="polite"></section>
  <section class="bloco" id="visao" hidden><h2>Equipes por conceito</h2><p class="d">Quantas equipes ficaram em cada conceito no mês mais recente do período, nos indicadores cujas faixas temos confirmadas. É uma prévia com dados do PEC; o conceito oficial é o do Ministério.</p><div class="tab" id="conc"></div>
   <div class="leg"><span><em class="k-o"></em>Ótimo</span><span><em class="k-b"></em>Bom</span><span><em class="k-s"></em>Suficiente</span><span><em class="k-r"></em>Regular</span><span>Números nas barras: quantas equipes em cada conceito</span></div></section>
  <section class="bloco" id="evol" hidden><h2>Evolução mensal no município</h2><p class="d">Resultado de cada mês coletado. A barra compara os meses do mesmo indicador.</p><div class="tab" id="evo"></div></section>
- <h2 style="font-size:19px;margin:8px 0 14px;color:#1B2340">Detalhe por grupo de notas</h2>
+ </div>
  <div id="grupos"></div>
  <section class="bloco"><h2>Como ler</h2><ul class="nota">
   <li>Os conceitos são uma prévia calculada com os dados do PEC; o conceito oficial de cada equipe é o do Ministério da Saúde.</li>
@@ -211,6 +213,9 @@ async function carregar(){
  }catch(e){$('grupos').innerHTML='<div class="bloco vazio">Não foi possível carregar os indicadores. Recarregue a página; se continuar, veja o Monitoramento das coletas.</div>'}
 }
 ['de','ate','un'].forEach(i=>$(i).addEventListener('change',()=>{if($('de').value>$('ate').value)$('ate').value=$('de').value;desenhar()}));
+function modo(on){$('dash').hidden=!on;$('btnDash').setAttribute('aria-pressed',on);$('btnDash').textContent=on?'Ocultar dashboard':'Ver dashboard';try{localStorage.setItem('painelaps.dash',on?'1':'')}catch(e){}}
+$('btnDash').addEventListener('click',()=>modo($('dash').hidden));
+try{if(localStorage.getItem('painelaps.dash'))modo(true)}catch(e){}
 carregar();
 </script>
 </body>
