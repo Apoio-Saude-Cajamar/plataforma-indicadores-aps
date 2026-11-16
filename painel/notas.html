@@ -738,7 +738,7 @@ class Component extends DCLogic {
             const cont = ['otimo', 'bom', 'suficiente', 'regular'].map((k) => [k, fxs.filter((f) => f === k).length]).filter((p) => p[1]).map((p) => p[1] + ' em ' + nomeF[p[0]]).join(', ');
             sub = (x.nn.f ? sub + ' com as ' + x.ls.length + ' juntas' : 'as ' + x.ls.length + ' juntas') + (cont ? ' · ' + cont : '');
           } else if (varios) sub += ' · só ' + x.ls[0].nome;
-          linhas.push(linha({ nome: x.nn.cod + ' · ' + x.nn.nome, sub, exemplo: x.nn.exemplo, info: 'n-' + x.c, infoTxt: infoNota(x.nn),
+          linhas.push(linha({ nome: x.nn.cod + ' · ' + x.nn.nome, sub, exemplo: x.nn.exemplo, info: 'n-' + x.c, infoTxt: infoNota(x.nn) + REAL.calculo(x.nn, x.ls, periodo),
             v: x.v, a: x.a, n: x.nn, lo: x.nn.min, hi: x.nn.max, ref: null, segmentos: seg, un: x.nn.un, acomp: x.ac, realce: aberta,
             alternar: multi ? () => { const o = { ...(this.state.abertas || {}) }; if (o[x.c]) delete o[x.c]; else o[x.c] = true; this.setState({ abertas: o }); } : null,
             expandido: aberta, rotuloAbrir: x.nn.cod + (aberta ? ': fechar ' : ': ver cada uma das ') + quemPl }));
@@ -848,7 +848,7 @@ class Component extends DCLogic {
       tituloLista = n.cod + ' · ' + n.nome + ' · ' + perCurto;
       comoLer = (n.sentido || (n.un === '%' ? 'Quanto maior, melhor.' : 'Quanto maior a nota, mais completo o cuidado.')) + ' Eixo ampliado de ' + num(lo, casas) + ' a ' + num(hi, casas) + '.'
         + (porUnidade ? ' Clique numa unidade para ver as equipes.' : '');
-      infoListaTxt = infoNota(n);
+      infoListaTxt = infoNota(n) + REAL.calculo(n, refLs, periodo);
       pergunta = 'Quem precisa de apoio em ' + n.cod + '?';
       descricao = quemTxt + ' no mesmo eixo, da melhor para a pior, em ' + perTxt + '.';
       rotuloNome = porUnidade ? 'Unidade' : 'Equipe';
@@ -874,7 +874,7 @@ class Component extends DCLogic {
       ];
       tituloLista = n.cod + ' · ' + n.nome + ' · ' + localNome + ' · ' + perCurto;
       comoLer = 'Quantas pessoas cumpriram cada boa prática e quantos pontos se deixa de ganhar nela. Comece pelo topo.' + (ls.length > 1 ? ' Conta as ' + ls.length + ' ' + quemPl + ' juntas.' : '');
-      infoListaTxt = infoNota(n);
+      infoListaTxt = infoNota(n) + REAL.calculo(n, ls, periodo);
       pergunta = 'Onde ' + descLocal + ' ' + (varios ? 'perdem' : 'perde') + ' pontos em ' + n.cod + '?';
       descricao = 'As boas práticas da nota em ' + perTxt + ', da que mais tira pontos para a que menos tira.';
       rotuloNome = 'Boa prática'; rotuloValor = 'Cumpriram'; rotuloDelta = 'Perde'; legendaPonto = '% de pessoas que cumpriram';
@@ -915,7 +915,7 @@ class Component extends DCLogic {
       tituloLista = n.cod + ' · ' + n.nome + ' · ' + localNome;
       comoLer = 'Cada mês mostra a mudança em relação ao mês anterior. As linhas de fundo destacado são a contagem de cada quadrimestre, pela regra da nota.' +
         (cod === 'C2' || cod === 'C3' ? ' Na nota oficial, C2 e C3 usam só os meses com desfecho.' : '') + (ls.length > 1 ? ' Conta as ' + ls.length + ' ' + quemPl + ' juntas.' : '') + notaMesesTxt;
-      infoListaTxt = infoNota(n);
+      infoListaTxt = infoNota(n) + REAL.calculo(n, ls, periodo);
       pergunta = 'Como ' + n.cod + ' andou mês a mês?';
       descricao = 'De ' + rotMesLongo(meses[0]) + ' a ' + rotMesLongo(meses[meses.length - 1]) + ', ' + (visao === 'municipio' ? 'no município' : varios ? 'nas ' + quemPl + ' escolhidas' : visao === 'unidades' ? 'na ' + locais[0].nome : 'na equipe ' + locais[0].nome) + ', agrupados por quadrimestre.';
       rotuloNome = 'Mês'; rotuloDelta = 'Mês anterior'; legendaPonto = 'mês'; legendaRef = 'contagem do quadrimestre';

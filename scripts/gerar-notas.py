@@ -51,6 +51,10 @@ js = troca(js, "equipesDa(u).filter((e) => n.tipos.indexOf(e.tipo) >= 0)", "equi
 js = troca(js, "a = anoPainel * 12 + k, fut = a > ATUAL;", "a = anoPainel * 12 + k, fut = !REAL.temMes(a);")
 js = troca(js, "titulo: fut ? rotMesLongo(a) + ': ainda não fechou'", "titulo: fut ? rotMesLongo(a) + ': sem coleta'")
 js = troca(js, ", ['pontos', 'Onde perdemos pontos']", '')
+# O (i) mostra também a conta feita, com os totais reais do recorte.
+js = troca(js, "infoTxt: infoNota(x.nn),", "infoTxt: infoNota(x.nn) + REAL.calculo(x.nn, x.ls, periodo),")
+js = troca(js, "infoListaTxt = infoNota(n);", "infoListaTxt = infoNota(n) + REAL.calculo(n, refLs, periodo);", 1)
+js = troca(js, "infoListaTxt = infoNota(n);\n", "infoListaTxt = infoNota(n) + REAL.calculo(n, ls, periodo);\n", 0)
 # Temas uniformes: os três usam a mesma letra, os mesmos tamanhos e a mesma estrutura; só as cores mudam.
 js = troca(js, "tFonte: \"'Montserrat', 'Segoe UI', system-ui, sans-serif\", tPeso: 500, tTam: '15px', tPesoForte: 700, tPesoTitulo: 800", "tFonte: SANS, tPeso: 400, tTam: '16px', tPesoForte: 700, tPesoTitulo: 700")
 js = troca(js, "tTopoBorda: '4px solid #00A7E7'", "tTopoBorda: '1px solid #00A7E7'")
