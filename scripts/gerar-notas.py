@@ -22,7 +22,7 @@ marc = troca(marc, 'Rascunho · valores fictícios', 'Protótipo · dados reais 
 js = troca(js, "intervalo: 'quad', meses: [24321], quads: ['2026-3']", "intervalo: 'mensal', meses: [REAL.atual], quads: [REAL.quadAtual]")
 js = troca(js, 'const ATUAL = 2026 * 12 + 9, INICIO = 2025 * 12;', 'const ATUAL = REAL.atual, INICIO = REAL.inicio;')
 js = troca(js, 'const lista = [', 'let lista = [')
-js = troca(js, '    const N = {};', '    const N = {};')
+js = troca(js, '    const N = {};', '    lista = REAL.ajustar(lista);\n    const N = {};')
 js = troca(js, "'componente à parte (Nota Técnica nº 6/2025)'", "'componente à parte (Nota Técnica nº 8/2026)'")
 js = troca(js, 'Nota Técnica nº 6/2025 do Ministério', 'Nota Técnica nº 8/2026 do Ministério')
 a = js.index('    const infoNota = (n) =>'); b = js.index('// ===== INTERVALO')
@@ -55,23 +55,6 @@ js = troca(js, ", ['pontos', 'Onde perdemos pontos']", '')
 js = troca(js, "infoTxt: infoNota(x.nn),", "infoTxt: infoNota(x.nn) + REAL.calculo(x.nn, x.ls, periodo),")
 js = troca(js, "infoListaTxt = infoNota(n);", "infoListaTxt = infoNota(n) + REAL.calculo(n, refLs, periodo);", 1)
 js = troca(js, "infoListaTxt = infoNota(n);\n", "infoListaTxt = infoNota(n) + REAL.calculo(n, ls, periodo);\n", 0)
-# 4º relatório: absenteísmo de consultas (indicador municipal Q14.2.1), no formato de "quem precisa de apoio".
-js = troca(js, "    const N = {};", """    lista.push(nota({ g: 'faltas', cod: 'Q14.2.1', nome: 'Faltas em consultas agendadas (absenteísmo)', max: 40, d: -1, un: '%', apura: 'razao',
-      tipos: ['eSF', 'eAP', 'eSB', 'eMulti', 'eCR'], sentido: 'Quanto menor, melhor. Meta municipal: até 19,59% de faltas.',
-      fonte: 'Origem: PEC, relatório de absenteísmo (não compareceu e não aguardou) e atendimentos realizados, por equipe.',
-      f: [[0, 19.59, 'otimo', 'Na meta'], [19.59, 40, 'regular', 'Acima da meta']] }));
-    lista = REAL.ajustar(lista);
-    const N = {};""")
-js = troca(js, "{ id: 'vinculo', titulo: 'Vínculo e acompanhamento territorial'", "{ id: 'faltas', titulo: 'Absenteísmo de consultas', sigla: 'Q14.2.1', quem: 'todas as equipes', data: '' },\n      { id: 'vinculo', titulo: 'Vínculo e acompanhamento territorial'")
-js = troca(js, "const pubGrupo = (g) => ", "const pubGrupo = (g) => g.id === 'faltas' ? 'indicador municipal, meta de 19,59%' : ")
-js = troca(js, "const refNota = (n) => ", "const refNota = (n) => n.g === 'faltas' ? ' Regra: faltas ÷ (faltas + atendimentos realizados) × 100; indicador municipal Q14.2.1, fora das notas metodológicas do Ministério.' : ")
-js = troca(js, "const rel = ['geral', 'apoio', 'pontos', 'meses'].indexOf(st.rel) >= 0 ? st.rel : 'geral';", "const relTela = ['geral', 'apoio', 'meses', 'faltas'].indexOf(st.rel) >= 0 ? st.rel : 'geral';\n    const rel = relTela === 'faltas' ? 'apoio' : relTela;")
-js = troca(js, "const visiveis = lista.map((n) => n.cod).filter((c) => !st.ocultas[c]);", "const visiveis = lista.map((n) => n.cod).filter((c) => relTela === 'faltas' ? c === 'Q14.2.1' : (c !== 'Q14.2.1' && !st.ocultas[c]));")
-js = troca(js, "pergunta = 'Quem precisa de apoio em ' + n.cod + '?';", "pergunta = relTela === 'faltas' ? 'Onde as pessoas mais faltam às consultas?' : 'Quem precisa de apoio em ' + n.cod + '?';")
-js = troca(js, "['meses', 'Mês a mês']];", "['meses', 'Mês a mês'], ['faltas', 'Absenteísmo']];")
-js = troca(js, "pressionado: rel === id ? 'true' : 'false', borda: rel === id ? T.tAbaLinha : 'transparent', cor: rel === id ? T.tAba : T.tAbaInativa", "pressionado: relTela === id ? 'true' : 'false', borda: relTela === id ? T.tAbaLinha : 'transparent', cor: relTela === id ? T.tAba : T.tAbaInativa")
-js = troca(js, "texto: quem + ' em Bom ou Ótimo' }", "texto: quem + (relTela === 'faltas' ? ' na meta de 19,59%' : ' em Bom ou Ótimo') }")
-js = troca(js, "texto: 'precisa de mais apoio nesta nota' }", "texto: relTela === 'faltas' ? 'tem mais faltas' : 'precisa de mais apoio nesta nota' }")
 # Temas uniformes: os três usam a mesma letra, os mesmos tamanhos e a mesma estrutura; só as cores mudam.
 js = troca(js, "tFonte: \"'Montserrat', 'Segoe UI', system-ui, sans-serif\", tPeso: 500, tTam: '15px', tPesoForte: 700, tPesoTitulo: 800", "tFonte: SANS, tPeso: 400, tTam: '16px', tPesoForte: 700, tPesoTitulo: 700")
 js = troca(js, "tTopoBorda: '4px solid #00A7E7'", "tTopoBorda: '1px solid #00A7E7'")

@@ -468,10 +468,6 @@ class Component extends DCLogic {
       nota({ g: 'vinculo', cod: 'CVAT-A', nome: 'Vínculo: dimensão acompanhamento', mun: 64.0, ant: 62.5, un: '%', f: null, exemplo: true,
         fonte: 'Origem: PEC, acompanhamentos registrados das pessoas cadastradas.' })
     ];
-    lista.push(nota({ g: 'faltas', cod: 'Q14.2.1', nome: 'Faltas em consultas agendadas (absenteísmo)', max: 40, d: -1, un: '%', apura: 'razao',
-      tipos: ['eSF', 'eAP', 'eSB', 'eMulti', 'eCR'], sentido: 'Quanto menor, melhor. Meta municipal: até 19,59% de faltas.',
-      fonte: 'Origem: PEC, relatório de absenteísmo (não compareceu e não aguardou) e atendimentos realizados, por equipe.',
-      f: [[0, 19.59, 'otimo', 'Na meta'], [19.59, 40, 'regular', 'Acima da meta']] }));
     lista = REAL.ajustar(lista);
     const N = {};
     lista.forEach((n) => { N[n.cod] = n; });
@@ -480,16 +476,15 @@ class Component extends DCLogic {
       { id: 'bucal', titulo: 'Saúde bucal (eSB)', sigla: 'B1 a B6', quem: 'equipes de saúde bucal', data: '02/10/2026' },
       { id: 'emulti', titulo: 'eMulti', sigla: 'M1 e M2', quem: 'equipes multiprofissionais', data: '01/07/2026' },
       { id: 'ecr', titulo: 'Consultório na Rua (eCR)', sigla: 'CR1 a CR4', quem: 'equipe de Consultório na Rua', data: '02/10/2026' },
-      { id: 'faltas', titulo: 'Absenteísmo de consultas', sigla: 'Q14.2.1', quem: 'todas as equipes', data: '' },
       { id: 'vinculo', titulo: 'Vínculo e acompanhamento territorial', sigla: 'CVAT', quem: 'equipes eSF e eAP', data: '' }
     ];
     const G = {};
     GRUPOS.forEach((g) => { G[g.id] = g; });
-    const pubGrupo = (g) => g.id === 'faltas' ? 'indicador municipal, meta de 19,59%' : g.data ? 'notas do MS de ' + g.data : 'componente à parte (Nota Técnica nº 8/2026)';
+    const pubGrupo = (g) => g.data ? 'notas do MS de ' + g.data : 'componente à parte (Nota Técnica nº 8/2026)';
     const apuraTxt = (n) => n.apura === 'foto' ? ' No período, vale a foto do último mês.'
       : n.apura === 'razao' ? ' No período, soma os numeradores e os denominadores de todos os meses e divide.'
       : ' No período, a nota é a média dos meses' + (n.cod === 'C2' || n.cod === 'C3' ? ' com desfecho (regra da nota).' : ' (regra da nota).');
-    const refNota = (n) => n.g === 'faltas' ? ' Regra: faltas ÷ (faltas + atendimentos realizados) × 100; indicador municipal Q14.2.1, fora das notas metodológicas do Ministério.' : G[n.g].data ? ' Regra: Nota metodológica ' + n.cod + ' do Ministério da Saúde, publicada em ' + G[n.g].data + '.'
+    const refNota = (n) => G[n.g].data ? ' Regra: Nota metodológica ' + n.cod + ' do Ministério da Saúde, publicada em ' + G[n.g].data + '.'
       : ' Regra: Nota Técnica nº 8/2026 do Ministério da Saúde (componente Vínculo e Acompanhamento Territorial, fora das notas metodológicas).';
     const infoNota = (n) => 'Coletado do PEC e-SUS pela extensão. ' + n.fonte + apuraTxt(n) + refNota(n) + (REAL.ultima ? ' Última coleta: ' + REAL.ultima + '.' : '');
 
@@ -611,8 +606,7 @@ class Component extends DCLogic {
       return marcas;
     };
 
-    const relTela = ['geral', 'apoio', 'meses', 'faltas'].indexOf(st.rel) >= 0 ? st.rel : 'geral';
-    const rel = relTela === 'faltas' ? 'apoio' : relTela;
+    const rel = ['geral', 'apoio', 'pontos', 'meses'].indexOf(st.rel) >= 0 ? st.rel : 'geral';
 
     // Colunas de acompanhamento: os meses (ou quadrimestres) escolhidos lado a lado.
     // Com um quadrimestre só, as colunas são os 4 meses dele e aparece o caminho até o fechamento.
@@ -706,7 +700,7 @@ class Component extends DCLogic {
     };
 
     // Notas na tela e por que alguma não aparece no recorte.
-    const visiveis = lista.map((n) => n.cod).filter((c) => relTela === 'faltas' ? c === 'Q14.2.1' : (c !== 'Q14.2.1' && !st.ocultas[c]));
+    const visiveis = lista.map((n) => n.cod).filter((c) => !st.ocultas[c]);
     const resumirCodigos = (cods, baseCods) => GRUPOS.map((g) => {
       const doGrupo = cods.filter((c) => N[c].g === g.id);
       if (!doGrupo.length) return '';
@@ -841,12 +835,12 @@ class Component extends DCLogic {
         const melhor = itens[0], piorItem = itens[itens.length - 1];
         const queda = temComp ? itens.slice().sort((x, y) => mudanca(n, x.v, x.a) - mudanca(n, y.v, y.a))[0] : null;
         resumo = [
-          n.f ? { grande: fx.filter((k) => k === 'bom' || k === 'otimo').length + ' de ' + itens.length, texto: quem + (relTela === 'faltas' ? ' na meta de 19,59%' : ' em Bom ou Ótimo') }
+          n.f ? { grande: fx.filter((k) => k === 'bom' || k === 'otimo').length + ' de ' + itens.length, texto: quem + ' em Bom ou Ótimo' }
             : { grande: itens.filter((x) => score(n, x.v) >= score(n, refV)).length + ' de ' + itens.length, texto: quem + ' no resultado de referência ou melhor' },
           itens.length > 1 ? { grande: num(Math.abs(melhor.v - piorItem.v), n.fmt) + unidMedida(n), texto: 'entre a melhor (' + num(melhor.v, n.fmt) + ') e a pior (' + num(piorItem.v, n.fmt) + ')' }
             : { grande: '1 ' + (porUnidade ? 'unidade' : 'equipe'), texto: 'com esta nota neste recorte' },
           temComp ? (queda && mudanca(n, queda.v, queda.a) < 0 ? { grande: sinal(queda.v - queda.a, n.fmt) + unidMedida(n), texto: 'maior piora: ' + queda.nome } : { grande: 'nenhuma', texto: 'piora em relação a ' + compTxt })
-            : { grande: piorItem.nome, texto: relTela === 'faltas' ? 'tem mais faltas' : 'precisa de mais apoio nesta nota' }
+            : { grande: piorItem.nome, texto: 'precisa de mais apoio nesta nota' }
         ];
         if (quadAberto) resumo[2] = { grande: itens.filter((x) => n.f ? (x.ac.k === 'bom' || x.ac.k === 'otimo') : score(n, x.ac.proj) >= score(n, refV)).length + ' de ' + itens.length,
           texto: quem + ' devem fechar o quadrimestre em Bom ou Ótimo, se o ritmo de ' + rotMes(ATUAL) + ' continuar' };
@@ -855,7 +849,7 @@ class Component extends DCLogic {
       comoLer = (n.sentido || (n.un === '%' ? 'Quanto maior, melhor.' : 'Quanto maior a nota, mais completo o cuidado.')) + ' Eixo ampliado de ' + num(lo, casas) + ' a ' + num(hi, casas) + '.'
         + (porUnidade ? ' Clique numa unidade para ver as equipes.' : '');
       infoListaTxt = infoNota(n) + REAL.calculo(n, refLs, periodo);
-      pergunta = relTela === 'faltas' ? 'Onde as pessoas mais faltam às consultas?' : 'Quem precisa de apoio em ' + n.cod + '?';
+      pergunta = 'Quem precisa de apoio em ' + n.cod + '?';
       descricao = quemTxt + ' no mesmo eixo, da melhor para a pior, em ' + perTxt + '.';
       rotuloNome = porUnidade ? 'Unidade' : 'Equipe';
       const refMun = refLs[0] === MUN;
@@ -994,7 +988,7 @@ class Component extends DCLogic {
       : dLocais.length === 1 ? dLocais[0].nome : dLocais.length + (dVisao === 'unidades' ? ' unidades' : ' equipes');
 
     const { marca, tinta: _t, trilha, subtitulo, selo, ...tokens } = T;
-    const RELS = [['geral', 'Como estamos'], ['apoio', 'Quem precisa de apoio'], ['meses', 'Mês a mês'], ['faltas', 'Absenteísmo']];
+    const RELS = [['geral', 'Como estamos'], ['apoio', 'Quem precisa de apoio'], ['meses', 'Mês a mês']];
     const ocultarVarios = (cods, ocultar) => { const o = { ...this.state.ocultas }; cods.forEach((c) => { if (ocultar) o[c] = true; else delete o[c]; }); this.setState({ ocultas: o }); };
     const K = colunas.length, cw = K > 6 ? 54 : 60, gap = temMesesCols && K > 6 ? 10 : 16;
 
@@ -1014,7 +1008,7 @@ class Component extends DCLogic {
       legendaFaixas: [{ rot: 'Regular', cor: tinta.regular }, { rot: 'Suficiente', cor: tinta.suficiente }, { rot: 'Bom', cor: tinta.bom }, { rot: 'Ótimo', cor: tinta.otimo }],
       temas: [['claro', 'Claro'], ['personalizado', 'Personalizado'], ['escuro', 'Escuro']].map(([id, rotulo]) => ({ rotulo, pressionado: tema === id ? 'true' : 'false',
         fundo: tema === id ? T.tTopoTexto : 'transparent', cor: tema === id ? T.tTopoFundo : T.tTopoTexto, peso: tema === id ? 600 : 400, escolher: () => this.setState({ tema: id }) })),
-      relatorios: RELS.map(([id, titulo]) => ({ titulo, pressionado: relTela === id ? 'true' : 'false', borda: relTela === id ? T.tAbaLinha : 'transparent', cor: relTela === id ? T.tAba : T.tAbaInativa,
+      relatorios: RELS.map(([id, titulo]) => ({ titulo, pressionado: rel === id ? 'true' : 'false', borda: rel === id ? T.tAbaLinha : 'transparent', cor: rel === id ? T.tAba : T.tAbaInativa,
         peso: rel === id ? 600 : 400, escolher: () => this.setState({ rel: id, info: '', painel: false }) })),
 
       // Filtros
