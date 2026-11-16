@@ -86,7 +86,78 @@
   $('so').addEventListener('click', e => { soAlertas = !soAlertas; e.currentTarget.setAttribute('aria-pressed', soAlertas); if (soAlertas) todos(raiz, n => { n.aberto = n.total > 0 && n.nivel < 2; }); desenhar(); });
   $('busca').addEventListener('input', e => { termo = norm(e.target.value.trim()); desenhar(); });
 
+  // ---- vínculos entre equipes: as eMulti atendem várias unidades, então ficam fora das caixas das unidades ----
+  const CORES = ['#1F6FB2', '#D9822B', '#7A3E9D', '#1C9C76', '#B23A48', '#6B7A14'];
+  let comp = null, selV = '';
+  const chave = e => e.ine || e.nome;
+  function grafo(c) {
+    const multi = new Map(), unidades = [], porNome = new Map(), fios = [];
+    for (const u of c.unidades || []) {
+      const U = { nome: u.nome, ref: [], apoio: [] };
+      for (const e of u.equipes || []) {
+        if (e.tipo === 'EMULTI') { const m = multi.get(chave(e)) || { id: 'm:' + chave(e), e, unidades: [] }; m.unidades.push(u.nome); multi.set(chave(e), m); continue; }
+        const n = { id: 'e:' + u.nome + '|' + chave(e), e, unidade: u.nome };
+        (e.tipo === 'ESF' || e.tipo === 'EAP' ? U.ref : U.apoio).push(n);
+        if (!porNome.has(e.nome)) porNome.set(e.nome, n);
+        if (e.ine && !porNome.has(e.ine)) porNome.set(e.ine, n);
+      }
+      if (U.ref.length || U.apoio.length) unidades.push(U);
+    }
+    [...multi.values()].forEach((m, i) => { m.cor = CORES[i % CORES.length]; (m.e.vinculadas || []).forEach(v => { const alvo = porNome.get(v); if (alvo) fios.push({ de: m.id, para: alvo.id, cor: m.cor, tipo: 'm' }); }); });
+    unidades.forEach(U => U.apoio.forEach(n => (n.e.vinculadas || []).forEach(v => { const alvo = porNome.get(v); if (alvo) fios.push({ de: n.id, para: alvo.id, cor: '', tipo: 'a' }); })));
+    return { multi: [...multi.values()], unidades, fios };
+  }
+  let G = null;
+  function desenharVinculos() {
+    if (!comp) return;
+    G = grafo(comp);
+    const liga = new Set();
+    if (selV) G.fios.forEach(f => { if (f.de === selV) liga.add(f.para); if (f.para === selV) liga.add(f.de); });
+    const cartao = (n, extra) => '<button type="button" class="eq' + (liga.has(n.id) ? ' liga' : '') + '" data-v="' + esc(n.id) + '" aria-pressed="' + (selV === n.id) + '"><b>'
+      + (n.cor ? '<span class="cor" style="background:' + n.cor + '"></span>' : '') + '<span class="chip">' + esc(TIPOS[n.e.tipo] || n.e.tipo) + '</span>' + esc(n.e.nome) + '</b><small>' + esc(extra) + '</small></button>';
+    const nFios = id => G.fios.filter(f => f.de === id || f.para === id).length;
+    const h = '<div class="col-m"><div><h2>eMulti · atendem várias unidades</h2></div>'
+      + (G.multi.length ? G.multi.map(m => { const us = new Set(G.fios.filter(f => f.de === m.id).map(f => f.para.slice(2).split('|')[0])); return cartao(m, plural(nFios(m.id), 'equipe vinculada', 'equipes vinculadas') + ' em ' + plural(us.size, 'unidade', 'unidades')); }).join('') : '<small style="color:var(--muted)">Nenhuma eMulti na composição.</small>') + '</div>'
+      + '<div class="col-u">' + G.unidades.map(U => '<div class="u-box"><h2>' + esc(U.nome) + '</h2><div class="u-cols"><div>'
+        + U.ref.map(n => { const ms = G.fios.filter(f => f.para === n.id && f.tipo === 'm').length; return cartao(n, ms ? plural(ms, 'eMulti vinculada', 'eMulti vinculadas') : 'sem eMulti vinculada'); }).join('') + '</div><div>'
+        + U.apoio.map(n => cartao(n, (n.e.vinculadas || []).length ? 'referência: ' + n.e.vinculadas.join(', ') : 'sem equipe de referência no PEC')).join('') + '</div></div></div>').join('') + '</div>';
+    const cx = $('vinc');
+    cx.className = 'vinc' + (selV ? ' sel' : '');
+    cx.innerHTML = h + '<svg aria-hidden="true"></svg>';
+    fiosSvg();
+    const alvo = selV && [...G.multi, ...G.unidades.flatMap(U => U.ref.concat(U.apoio))].find(n => n.id === selV);
+    if (!alvo) { $('vinc-resumo').textContent = G.fios.length ? '' : 'A composição lida não traz vínculos entre equipes.'; return; }
+    const outros = G.fios.filter(f => f.de === selV || f.para === selV).map(f => f.de === selV ? f.para : f.de);
+    const nomes = outros.map(id => { const n = [...G.multi, ...G.unidades.flatMap(U => U.ref.concat(U.apoio))].find(x => x.id === id); return n ? n.e.nome + (n.unidade ? ' (' + n.unidade + ')' : '') : ''; }).filter(Boolean);
+    const us = new Set(outros.filter(id => id[0] === 'e').map(id => id.slice(2).split('|')[0]));
+    $('vinc-resumo').textContent = alvo.e.nome + ': ' + (nomes.length ? plural(nomes.length, 'vínculo', 'vínculos') + (alvo.e.tipo === 'EMULTI' ? ' em ' + plural(us.size, 'unidade', 'unidades') : '') + ' · ' + nomes.join('; ') : 'nenhum vínculo registrado no PEC') + '.';
+  }
+  function fiosSvg() {
+    const cx = $('vinc'), svg = cx.querySelector('svg'); if (!svg || !G) return;
+    const base = cx.getBoundingClientRect();
+    const pos = id => { const el = cx.querySelector('[data-v="' + CSS.escape(id) + '"]'); if (!el) return null; const r = el.getBoundingClientRect(); return { e: r.left - base.left, d: r.right - base.left, y: r.top - base.top + r.height / 2 }; };
+    svg.innerHTML = G.fios.map(f => {
+      const a = pos(f.de), b = pos(f.para); if (!a || !b) return '';
+      // eMulti sai pela direita e chega pela esquerda da equipe; a saúde bucal sai pela esquerda e chega pela direita.
+      const x1 = f.tipo === 'm' ? a.d : a.e, x2 = f.tipo === 'm' ? b.e : b.d, m = (x1 + x2) / 2;
+      const ativo = !selV || f.de === selV || f.para === selV;
+      return '<path d="M' + x1 + ' ' + a.y + ' C' + m + ' ' + a.y + ' ' + m + ' ' + b.y + ' ' + x2 + ' ' + b.y + '" stroke="' + (f.cor || 'var(--fio)') + '" opacity="' + (ativo ? (selV ? 1 : .75) : .08) + '"' + (ativo && selV ? ' stroke-width="3"' : '') + '></path>';
+    }).join('');
+  }
+  $('vinc').addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; selV = selV === b.dataset.v ? '' : b.dataset.v; desenharVinculos(); const n = $('vinc').querySelector('[data-v="' + CSS.escape(b.dataset.v) + '"]'); if (n) n.focus(); });
+  window.addEventListener('resize', fiosSvg);
+  function visao(v) {
+    $('v-arv').hidden = v; $('v-vinc').hidden = !v;
+    $('ver-arv').setAttribute('aria-pressed', !v); $('ver-vinc').setAttribute('aria-pressed', v);
+    ['busca', 'so', 'abrir', 'fechar'].forEach(i => { $(i).hidden = v; });
+    if (v) desenharVinculos();
+  }
+  $('ver-arv').addEventListener('click', () => visao(false));
+  $('ver-vinc').addEventListener('click', () => visao(true));
+
   function mostrar(c) {
+    comp = c; selV = '';
+    if (!$('v-vinc').hidden) desenharVinculos();
     raiz = modelo(c);
     $('exemplo').hidden = !c.exemplo;
     const quando = c.coletadoEm ? ' Lida no PEC em ' + new Date(c.coletadoEm).toLocaleDateString('pt-BR') + '.' : '';
