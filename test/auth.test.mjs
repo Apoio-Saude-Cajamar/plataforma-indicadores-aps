@@ -220,7 +220,7 @@ test('composição: a extensão grava com a chave e o painel lê com a sessão',
   assert.equal((await nav.pedir('PUT', '/api/v1/composicao', { competencia: '2026-10', unidades: [] })).status, 401);
   assert.equal((await nav.pedir('GET', '/composicao')).status, 200);
   for (const p of ['/', '/notas', '/indicadores', '/lancamentos', '/lancamentos-vacinas', '/federal', '/federal-notas', '/estadual', '/municipal']) assert.equal((await nav.pedir('GET', p)).status, 200, p);
-  for (const p of ['/extensao', '/downloads/coletor-aps-v0.8.6.zip']) assert.notEqual((await nav.pedir('GET', p)).status, 200, p + ' só para administrador');
+  for (const p of ['/extensao', '/downloads/coletor-aps-v0.8.7.zip']) assert.notEqual((await nav.pedir('GET', p)).status, 200, p + ' só para administrador');
 });
 
 test('população: lê a estimativa mais recente do IBGE (com resposta simulada)', async () => {
@@ -359,4 +359,20 @@ test('lançamentos por formulário: gestor lança, leitor só consulta, o histó
   assert.equal(d.vigentes.length, 1); assert.equal(d.vigentes[0].valor, 0.2); assert.equal(d.historico.length, 2); assert.equal(d.vigentes[0].por, 'gestor.um');
   assert.equal((await (await leitor.pedir('GET', '/api/v1/lancamentos?tipo=vacina')).json()).vigentes.length, 1);
   assert.equal((await leitor.pedir('GET', '/api/v1/lancamentos')).status, 400);
+});
+
+test('recoleta do mesmo mês: vale a linha mais recente de cada indicador e equipe, sem apagar o que só a coleta anterior tinha', async () => {
+  const env = comPaginas(ambiente());
+  const H = { headers: { authorization: 'Bearer ' + CHAVES.TOKEN_COLETA } };
+  const n = navegador(env);
+  const enviar = async (id, quando, linhas) => {
+    assert.equal((await n.pedir('POST', '/api/v1/coletas', { id, competencia: '2026-10', tipo: 'completa', versaoExtensao: 't', iniciadoEm: quando }, H)).status, 201);
+    assert.equal((await n.pedir('PUT', `/api/v1/coletas/${id}/etapa`, { chave: 'unidade:UBS A', bloco: 'unidade', unidade: 'UBS A', status: 'ok', coletadoEm: quando, linhas }, H)).status, 200);
+  };
+  const L = (codigo, numerador) => ({ codigo, unidade: 'UBS A', equipe: 'EQ 1', numerador, denominador: 100 });
+  await enviar('c1', '2026-11-01T10:00:00.000Z', [L('C1', 40), L('B2', 30)]);
+  await enviar('c2', '2026-11-05T10:00:00.000Z', [L('C1', 55)]); // recoleta parcial: só o C1
+  const d = await (await n.pedir('GET', '/api/v1/dados?competencia=2026-10', undefined, { headers: { authorization: 'Bearer ' + CHAVES.TOKEN_COLETA } })).json();
+  const por = Object.fromEntries(d.indicadores.map(l => [l.codigo, l.numerador]));
+  assert.deepEqual(por, { C1: 55, B2: 30 });
 });

@@ -12,7 +12,7 @@ function montarREAL(porComp, ultimaColeta) {
   // Nota do desenho -> códigos da coleta e forma de cálculo.
   const FONTE = { C1: ['pct'], C2: ['pts'], C3: ['pts'], C4: ['pts'], C5: ['pts'], C6: ['pts'], C7: ['c7'],
     B1: ['pct'], B2: ['pct'], B3: ['pct'], B4: ['pct'], B5: ['pct'], B6: ['pct'], M1: ['raz'], M2: ['pct'],
-    CR1: ['pct'], CR2: ['pts'], CR3: ['pts'], CR4: ['pts'], 'CVAT-C': ['pct', 'CVAT-CAD'], 'CVAT-A': ['pct', 'CVAT-ACO'] };
+    'Q14.2.1': ['pct'], CR1: ['pct'], CR2: ['pts'], CR3: ['pts'], CR4: ['pts'], 'CVAT-C': ['pct', 'CVAT-CAD'], 'CVAT-A': ['pct', 'CVAT-ACO'] };
   const PESO_C7 = { A: 20, B: 30, C: 30, D: 20 };
   const codigos = cod => { const f = FONTE[cod]; return !f ? [] : f[0] === 'c7' ? ['C7-A', 'C7-B', 'C7-C', 'C7-D'] : [f[1] || cod]; };
   const porCod = {};

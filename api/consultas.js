@@ -21,16 +21,23 @@ export async function situacao(env, comp) {
 }
 
 const CONSULTAS_VIGENTES = {
+  // Por indicador, recorte, unidade e equipe vale a linha da coleta bem-sucedida mais recente. Assim uma recoleta
+  // do mesmo mês atualiza o que trouxe e não apaga o que só a coleta anterior tinha (unidade que falhou, indicador desmarcado).
   indicadores: `
     SELECT json_group_array(json_object(
-      'codigo', i.codigo, 'recorte', i.recorte, 'unidade', i.unidade, 'unidadeCnes', i.unidade_cnes,
-      'equipe', i.equipe, 'ine', i.ine, 'tipoEquipe', i.tipo_equipe,
-      'numerador', i.numerador, 'denominador', i.denominador, 'somaPontos', i.soma_pontos, 'valor', i.valor,
-      'excluidos', i.excluidos, 'itens', json(i.itens), 'extras', json(i.extras),
-      'coletadoEm', v.coletado_em, 'coletaId', i.coleta_id)) AS dados
-    FROM indicador_equipe i
-    JOIN etapa_vigente v ON v.coleta_id = i.coleta_id AND v.chave = i.etapa_chave
-    WHERE i.competencia = ?`,
+      'codigo', codigo, 'recorte', recorte, 'unidade', unidade, 'unidadeCnes', unidade_cnes,
+      'equipe', equipe, 'ine', ine, 'tipoEquipe', tipo_equipe,
+      'numerador', numerador, 'denominador', denominador, 'somaPontos', soma_pontos, 'valor', valor,
+      'excluidos', excluidos, 'itens', json(itens), 'extras', json(extras),
+      'coletadoEm', coletado_em, 'coletaId', coleta_id)) AS dados
+    FROM (
+      SELECT i.*, e.coletado_em AS coletado_em, ROW_NUMBER() OVER (
+        PARTITION BY i.codigo, i.recorte, i.unidade, i.equipe
+        ORDER BY e.coletado_em DESC, i.coleta_id DESC) AS ordem
+      FROM indicador_equipe i
+      JOIN etapa e ON e.coleta_id = i.coleta_id AND e.chave = i.etapa_chave
+      WHERE i.competencia = ? AND e.status = 'ok')
+    WHERE ordem = 1`,
   atendimentos: `
     SELECT json_group_array(json_object('unidade', c.unidade, 'equipe', c.equipe, 'cbo', c.cbo, 'cboCodigo', c.cbo_codigo,
       'grupoCBO', c.grupo_cbo, 'tipoAtendimento', c.tipo_atendimento, 'n', c.n)) AS dados
