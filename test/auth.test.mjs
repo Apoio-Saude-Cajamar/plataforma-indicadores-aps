@@ -219,8 +219,8 @@ test('composição: a extensão grava com a chave e o painel lê com a sessão',
   // a sessão não grava
   assert.equal((await nav.pedir('PUT', '/api/v1/composicao', { competencia: '2026-10', unidades: [] })).status, 401);
   assert.equal((await nav.pedir('GET', '/composicao')).status, 200);
-  for (const p of ['/', '/notas', '/indicadores', '/lancamentos', '/lancamentos-vacinas', '/federal', '/federal-notas', '/estadual', '/municipal']) assert.equal((await nav.pedir('GET', p)).status, 200, p);
-  for (const p of ['/extensao', '/downloads/coletor-aps-v0.8.7.zip']) assert.notEqual((await nav.pedir('GET', p)).status, 200, p + ' só para administrador');
+  for (const p of ['/', '/filas', '/notas', '/indicadores', '/lancamentos', '/lancamentos-vacinas', '/federal', '/federal-notas', '/estadual', '/municipal']) assert.equal((await nav.pedir('GET', p)).status, 200, p);
+  for (const p of ['/extensao', '/downloads/coletor-aps-v0.8.8.zip']) assert.notEqual((await nav.pedir('GET', p)).status, 200, p + ' só para administrador');
 });
 
 test('população: lê a estimativa mais recente do IBGE (com resposta simulada)', async () => {
@@ -375,4 +375,19 @@ test('recoleta do mesmo mês: vale a linha mais recente de cada indicador e equi
   const d = await (await n.pedir('GET', '/api/v1/dados?competencia=2026-10', undefined, { headers: { authorization: 'Bearer ' + CHAVES.TOKEN_COLETA } })).json();
   const por = Object.fromEntries(d.indicadores.map(l => [l.codigo, l.numerador]));
   assert.deepEqual(por, { C1: 55, B2: 30 });
+});
+
+test('filas e faltas: a extensão envia por profissional, a recoleta parcial não apaga, só admin e gestor leem', async () => {
+  const env = comPaginas(ambiente());
+  const H = { headers: { authorization: 'Bearer ' + CHAVES.TOKEN_COLETA } };
+  const n = navegador(env);
+  const P = (x) => Object.assign({ unidade: 'UBS A', equipe: 'EQ 1', cbo: 'MÉDICO DA ESTRATÉGIA DE SAÚDE DA FAMÍLIA - 225142', categoria: 'Médico', nome: 'Profissional Um' }, x);
+  assert.equal((await n.pedir('PUT', '/api/v1/filas', { competencia: '2026-10', profissionais: [P({ faltas: 10, atendimentos: 90 }), P({ nome: 'Fora', categoria: 'Dentista', faltas: 1 })] }, H)).status, 200);
+  assert.equal((await n.pedir('PUT', '/api/v1/filas', { competencia: '2026-10', profissionais: [P({ diasVaga: 12, proximaVaga: '2026-11-28', semVaga: false, agendaLidaEm: '2026-11-16T12:00:00.000Z' })] }, H)).status, 200);
+  const criar = async (login, perfil) => { const r = await admin(env, { login, nome: login, perfil }); env.DB.prepare('UPDATE usuario SET trocar_senha = 0').run(); const v = navegador(env); assert.equal((await v.pedir('POST', '/api/v1/auth/entrar', { login, senha: r.senhaProvisoria })).status, 200); return v; };
+  const gestor = await criar('gestor.fila', 'gestor'), leitor = await criar('leitor.fila', 'leitor');
+  assert.equal((await leitor.pedir('GET', '/api/v1/filas')).status, 403);
+  const d = await (await gestor.pedir('GET', '/api/v1/filas')).json();
+  assert.equal(d.profissionais.length, 1);
+  assert.deepEqual([d.profissionais[0].faltas, d.profissionais[0].atendimentos, d.profissionais[0].diasVaga], [10, 90, 12]);
 });

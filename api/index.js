@@ -28,6 +28,7 @@ import { situacao, dadosVigentes, competencias } from './consultas.js';
 import { gravarComposicao, lerComposicao } from './composicao.js';
 import { populacaoMunicipio } from './populacao.js';
 import { monitoramento } from './monitoramento.js';
+import { gravarFilas, lerFilas } from './filas.js';
 import { listarLancamentos, criarLancamento } from './lancamentos.js';
 import { listarChaves, criarChave, revogarChave, chaveGeradaValida } from './chaves.js';
 import { catalogoAdmin, salvarPublicacao, historico as historicoPublicacao, dadosPublicos } from './publicacao.js';
@@ -62,6 +63,9 @@ const ROTAS = [
   ['GET', /^\/chaves$/, 'usuarios', async (req, env) => json(await listarChaves(env))],
   ['POST', /^\/chaves$/, 'usuarios', async (req, env, m, url, quem) => json(await criarChave(req, env, quem), 201)],
   ['DELETE', /^\/chaves\/(\d+)$/, 'usuarios', async (req, env, m, url, quem) => json(await revogarChave(req, env, Number(m[1]), quem))],
+  ['PUT', /^\/filas$/, 'coleta', async (req, env) => json(await gravarFilas(env, await lerJson(req)))],
+  // Traz nomes de profissionais: só administrador e gestor.
+  ['GET', /^\/filas$/, 'lancar', async (req, env, m, url) => json(await lerFilas(env, url))],
   ['GET', /^\/lancamentos$/, 'leitura', async (req, env, m, url) => json(await listarLancamentos(env, url))],
   ['POST', /^\/lancamentos$/, 'lancar', async (req, env, m, url, quem) => json(await criarLancamento(req, env, quem), 201)],
   ['GET', /^\/publico\/dados$/, null, async (req, env, m, url) => dadosPublicos(env, url)],

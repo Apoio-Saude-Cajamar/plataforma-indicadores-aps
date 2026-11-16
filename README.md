@@ -231,3 +231,9 @@ Metas da PAS que não vêm do PEC e-SUS e as coberturas vacinais do Ministério 
 ## Dashboard de notas metodológicas (protótipo)
 
 `/notas` leva ao Painel a tela "E · Notas metodológicas" do canvas de desenho, com os dados reais da coleta. O arquivo `painel/notas.html` é gerado por `python3 scripts/gerar-notas.py` a partir de `desenho/Notas.dc.html`; a camada de dados fica em `painel/js/notas-real.js` e o motor de marcação em `painel/js/dc-mini.js`.
+
+## Filas e faltas (4º acompanhamento)
+
+`/filas` mostra, para médicos e enfermeiros da Atenção Primária, o absenteísmo (faltas ÷ atendimentos + faltas) e os dias até a próxima vaga na agenda do PEC, por unidade, equipe e profissional, mais um mapa "onde agir primeiro". A extensão (grupo "Filas e faltas") envia os totais por profissional para `PUT /api/v1/filas` (tabela `fila_profissional`, migration 0008); a leitura é restrita a administrador e gestor.
+
+Ideia guardada para depois: cruzar estes dados com indicadores de acesso, em novas abas deste acompanhamento (por exemplo, demanda espontânea), para chegar a soluções adequadas a cada contexto.

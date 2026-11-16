@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Filas e faltas · Painel APS</title>
+<link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#0E5E8C}a:hover{color:#08405F}
+button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #2F8FD8;outline-offset:2px}
+#aviso{font:16px/1.5 'Source Sans 3','Segoe UI',system-ui,sans-serif;max-width:640px;margin:48px auto;padding:0 24px;color:#14212B}
+</style>
+</head>
+<body>
+<div id="tela"><p id="aviso">Carregando filas e faltas…</p></div>
+<template id="modelo">
+<div style="min-height: 100vh; background: #F4F6F5; color: #14212B; font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif; font-size: 16px; line-height: 1.5">
+
+  <header style="background: #1F3C72; border-bottom: 1px solid #00A7E7; color: #FFFFFF">
+    <div style="max-width: 1280px; margin: 0 auto; padding: 12px 24px 0; display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <a href="/" aria-label="Voltar ao início do Painel APS" style="width: 40px; height: 40px; border-radius: 8px; background: #00A7E7; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; letter-spacing: .04em; text-decoration: none">APS</a>
+          <div style="display: flex; flex-direction: column; line-height: 1.2">
+            <span style="font-weight: 700; font-size: 17px">Filas e faltas</span>
+            <span style="font-size: 13px; color: rgba(255,255,255,.85)">Médicos e enfermeiros da Atenção Primária · Cajamar</span>
+          </div>
+        </div>
+        <span style="font-size: 13px; color: rgba(255,255,255,.85)">{{periodoTxt}}</span>
+      </div>
+      <nav aria-label="Visão" style="display: flex; flex-wrap: wrap; gap: 0 4px">
+        <template data-sc="for" list="{{abas}}" as="ab">
+          <button type="button" onClick="{{ab.escolher}}" aria-pressed="{{ab.pressionado}}" style="font: inherit; background: none; border: 0; border-bottom: 3px solid {{ab.borda}}; color: {{ab.cor}}; font-weight: {{ab.peso}}; padding: 10px 14px; min-height: 44px; cursor: pointer">{{ab.titulo}}</button>
+        </template>
+      </nav>
+    </div>
+  </header>
+
+  <div style="background: #FFFFFF; border-bottom: 1px solid #DCE2E0">
+    <div role="search" aria-label="Filtros" style="max-width: 1280px; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <label for="f-co" style="font-size: 13px; font-weight: 600; color: #33414C">Mês</label>
+        <select id="f-co" value="{{compSel}}" onChange="{{escolherComp}}" style="font: inherit; padding: 9px 12px; min-height: 44px; border: 1px solid #B9C4C9; border-radius: 8px; background: #FFFFFF">
+          <template data-sc="for" list="{{opcoesComp}}" as="c"><option value="{{c.id}}">{{c.rotulo}}</option></template>
+        </select>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <label for="f-un" style="font-size: 13px; font-weight: 600; color: #33414C">Unidade</label>
+        <select id="f-un" value="{{unidadeSel}}" onChange="{{escolherUnidade}}" style="font: inherit; padding: 9px 12px; min-height: 44px; border: 1px solid #B9C4C9; border-radius: 8px; background: #FFFFFF; max-width: 260px">
+          <option value="">Todas as unidades</option>
+          <template data-sc="for" list="{{opcoesUnidade}}" as="u"><option value="{{u.nome}}">{{u.nome}}</option></template>
+        </select>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <label for="f-eq" style="font-size: 13px; font-weight: 600; color: #33414C">Equipe</label>
+        <select id="f-eq" value="{{equipeSel}}" onChange="{{escolherEquipe}}" style="font: inherit; padding: 9px 12px; min-height: 44px; border: 1px solid #B9C4C9; border-radius: 8px; background: #FFFFFF; max-width: 240px">
+          <option value="">Todas as equipes</option>
+          <template data-sc="for" list="{{opcoesEquipe}}" as="e"><option value="{{e.nome}}">{{e.nome}}</option></template>
+        </select>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 13px; font-weight: 600; color: #33414C">Categoria</span>
+        <div role="group" aria-label="Categoria" style="display: flex; border: 1px solid #B9C4C9; border-radius: 8px; overflow: hidden">
+          <template data-sc="for" list="{{botoesCat}}" as="b">
+            <button type="button" aria-pressed="{{b.pressionado}}" onClick="{{b.escolher}}" style="font: inherit; min-height: 44px; padding: 0 14px; border: 0; cursor: pointer; background: {{b.fundo}}; color: {{b.cor}}; font-weight: {{b.peso}}">{{b.rotulo}}</button>
+          </template>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <label for="f-pr" style="font-size: 13px; font-weight: 600; color: #33414C">Profissional</label>
+        <select id="f-pr" value="{{profSel}}" onChange="{{escolherProf}}" style="font: inherit; padding: 9px 12px; min-height: 44px; border: 1px solid #B9C4C9; border-radius: 8px; background: #FFFFFF; max-width: 260px">
+          <option value="">Todos</option>
+          <template data-sc="for" list="{{opcoesProf}}" as="p"><option value="{{p.id}}">{{p.nome}}</option></template>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <main style="max-width: 1280px; margin: 0 auto; padding: 24px 24px 48px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; flex-direction: column; gap: 4px; max-width: 840px">
+      <h1 style="margin: 0; font-size: 30px; font-weight: 700; line-height: 1.15; color: #1F3C72">{{titulo}}</h1>
+      <p style="margin: 0; color: #566370">Quanto as pessoas faltam e quanto esperam por uma vaga. Absenteísmo = faltas ÷ (atendimentos + faltas). Próxima vaga = dias corridos até o primeiro dia com horário livre na agenda do PEC.</p>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 16px">
+      <template data-sc="for" list="{{resumo}}" as="r">
+        <div style="flex: 1 1 220px; background: #FFFFFF; border: 1px solid #DCE2E0; border-radius: 12px; padding: 16px 20px; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 13px; font-weight: 600; color: #566370">{{r.rotulo}}</span>
+          <span style="font-size: 30px; font-weight: 700; line-height: 1.15; color: {{r.cor}}">{{r.grande}}</span>
+          <span style="font-size: 14px; color: #566370">{{r.texto}}</span>
+        </div>
+      </template>
+    </div>
+
+    <template data-sc="if" value="{{abaLista}}">
+      <section aria-labelledby="t-lin" style="background: #FFFFFF; border: 1px solid #DCE2E0; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <h2 id="t-lin" style="margin: 0; font-size: 20px; font-weight: 700">Unidades, equipes e profissionais</h2>
+            <span style="font-size: 14px; color: #566370">Clique numa unidade para ver as equipes, e numa equipe para ver os profissionais.</span>
+          </div>
+          <div role="group" aria-label="Ordenar por" style="display: flex; border: 1px solid #B9C4C9; border-radius: 8px; overflow: hidden">
+            <template data-sc="for" list="{{botoesOrdem}}" as="b">
+              <button type="button" aria-pressed="{{b.pressionado}}" onClick="{{b.escolher}}" style="font: inherit; min-height: 44px; padding: 0 14px; border: 0; cursor: pointer; background: {{b.fundo}}; color: {{b.cor}}; font-weight: {{b.peso}}">{{b.rotulo}}</button>
+            </template>
+          </div>
+        </div>
+        <div style="overflow-x: auto">
+          <div style="min-width: 880px; display: flex; flex-direction: column">
+            <div style="display: grid; grid-template-columns: minmax(0, 290px) minmax(0, 1fr) 120px minmax(0, 1fr) 100px; gap: 16px; align-items: end; padding: 6px 8px; font-size: 13px; font-weight: 600; color: #33414C; border-bottom: 1px solid #DCE2E0">
+              <span>Unidade · equipe · profissional</span>
+              <div style="display: flex; justify-content: space-between"><span>Absenteísmo · 0%</span><span>meta {{metaTxt}}</span><span>50%</span></div>
+              <span style="text-align: right">Faltas ÷ agendados</span>
+              <div style="display: flex; justify-content: space-between"><span>Próxima vaga · hoje</span><span>15 dias</span><span>30</span><span>60 ou mais</span></div>
+              <span style="text-align: right">Espera</span>
+            </div>
+            <template data-sc="for" list="{{linhas}}" as="l">
+              <div style="display: grid; grid-template-columns: minmax(0, 290px) minmax(0, 1fr) 120px minmax(0, 1fr) 100px; gap: 16px; align-items: center; padding: {{l.pad}}; border-bottom: 1px solid #EEF1F0; background: {{l.fundo}}">
+                <div style="display: flex; flex-direction: column; min-width: 0; line-height: 1.3; padding-left: {{l.recuo}}">
+                  <template data-sc="if" value="{{l.abrivel}}">
+                    <button type="button" onClick="{{l.alternar}}" aria-expanded="{{l.expandido}}" style="font: inherit; color: inherit; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; font-weight: {{l.peso}}; min-height: 28px"><span aria-hidden="true" style="display: inline-block; width: 18px; color: #566370">{{l.seta}}</span>{{l.nome}}</button>
+                  </template>
+                  <template data-sc="if" value="{{l.folha}}">
+                    <span style="font-weight: 600; overflow-wrap: anywhere">{{l.nome}}</span>
+                  </template>
+                  <span style="font-size: 13px; color: #566370; padding-left: {{l.recuoSub}}">{{l.sub}}</span>
+                </div>
+                <div role="img" aria-label="{{l.descFaltas}}" style="position: relative; height: 22px">
+                  <div style="position: absolute; left: 0; right: 0; top: 7px; height: 8px; border-radius: 4px; overflow: hidden; display: flex">
+                    <div style="width: {{metaPos}}; background: #D3EBDD"></div><div style="flex: 1; background: #F6D5D1"></div>
+                  </div>
+                  <div style="position: absolute; left: 0; top: 7px; height: 8px; border-radius: 4px; width: {{l.faltasPos}}; background: {{l.faltasCor}}"></div>
+                  <div style="position: absolute; top: 1px; height: 20px; width: 2px; left: {{metaPos}}; background: #14212B"></div>
+                </div>
+                <div style="text-align: right; line-height: 1.25">
+                  <span style="font-weight: 700; font-variant-numeric: tabular-nums">{{l.faltasTxt}}</span><br>
+                  <span style="font-size: 13px; color: #566370; font-variant-numeric: tabular-nums">{{l.conta}}</span>
+                </div>
+                <div role="img" aria-label="{{l.descEspera}}" style="position: relative; height: 22px">
+                  <div style="position: absolute; left: 0; right: 0; top: 7px; height: 8px; border-radius: 4px; overflow: hidden; display: flex">
+                    <div style="width: 25%; background: #D3EBDD"></div><div style="width: 25%; background: #F8EBC6"></div><div style="flex: 1; background: #F6D5D1"></div>
+                  </div>
+                  <span style="position: absolute; top: 2px; left: {{l.esperaPos}}; margin-left: -9px; width: 18px; height: 18px; border-radius: {{l.esperaRaio}}; background: {{l.esperaCor}}; box-shadow: 0 0 0 2px #FFFFFF; opacity: {{l.esperaOp}}"></span>
+                </div>
+                <div style="text-align: right; line-height: 1.25">
+                  <span style="font-weight: 700; font-variant-numeric: tabular-nums">{{l.esperaTxt}}</span><br>
+                  <span style="font-size: 13px; color: #566370">{{l.esperaSub}}</span>
+                </div>
+              </div>
+            </template>
+            <template data-sc="if" value="{{semLinhas}}">
+              <p style="margin: 14px 8px; color: #566370">Nenhum profissional neste recorte. Troque os filtros.</p>
+            </template>
+          </div>
+        </div>
+        <p style="margin: 0; font-size: 13px; color: #566370">Traço preto: meta de absenteísmo. Na unidade e na equipe, o absenteísmo soma faltas e agendados de todos, e a espera é a mediana dos profissionais com agenda lida. Faixas de espera: até 15 dias, de 16 a 30 e acima de 30.</p>
+      </section>
+    </template>
+
+    <template data-sc="if" value="{{abaMapa}}">
+      <section aria-labelledby="t-quad" style="background: #FFFFFF; border: 1px solid #DCE2E0; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <h2 id="t-quad" style="margin: 0; font-size: 20px; font-weight: 700">Onde agir primeiro</h2>
+          <span style="font-size: 14px; color: #566370">Cada ponto numerado é um profissional; a lista ao lado diz quem é cada número. Clique num ponto ou num nome para destacar.</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+          <div style="flex: 3 1 520px; min-width: 0; display: flex; gap: 10px">
+            <div style="flex: none; width: 22px; display: flex; align-items: center; justify-content: center">
+              <span style="writing-mode: vertical-rl; transform: rotate(180deg); font-size: 13px; font-weight: 600; color: #33414C; white-space: nowrap">Dias até a próxima vaga (0 a 60 ou mais)</span>
+            </div>
+            <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+              <div style="position: relative; height: 460px; border-left: 1px solid #B9C4C9; border-bottom: 1px solid #B9C4C9; background: #FFFFFF">
+                <div style="position: absolute; left: {{metaPos}}; top: 0; height: 50%; right: 0; background: #FBF1EF"></div>
+                <div style="position: absolute; left: {{metaPos}}; top: 0; bottom: 0; width: 0; border-left: 2px dashed #14212B"></div>
+                <div style="position: absolute; top: 50%; left: 0; right: 0; height: 0; border-top: 2px dashed #8A979F"></div>
+                <span style="position: absolute; left: 8px; top: 6px; font-size: 13px; font-weight: 600; color: #6E4D00; max-width: 40%">Fila longa, poucas faltas: falta agenda</span>
+                <span style="position: absolute; right: 8px; top: 6px; font-size: 13px; font-weight: 700; color: #8E2318; text-align: right; max-width: 44%">Fila longa e muitas faltas: confirmar consultas e encaixar</span>
+                <span style="position: absolute; left: 8px; bottom: 6px; font-size: 13px; font-weight: 600; color: #1D5A3A; max-width: 40%">Vaga rápida e poucas faltas</span>
+                <span style="position: absolute; right: 8px; bottom: 6px; font-size: 13px; font-weight: 600; color: #6E4D00; text-align: right; max-width: 44%">Vaga rápida, muitas faltas</span>
+                <template data-sc="for" list="{{pontos}}" as="p">
+                  <button type="button" onClick="{{p.destacar}}" aria-pressed="{{p.ativo}}" aria-label="{{p.titulo}}" title="{{p.titulo}}" style="position: absolute; left: {{p.x}}; top: {{p.y}}; margin: {{p.margem}}; width: {{p.tam}}; height: {{p.tam}}; border-radius: {{p.raio}}; background: {{p.cor}}; color: #FFFFFF; border: 2px solid #FFFFFF; box-shadow: {{p.sombra}}; font: 700 11px/1 'Source Sans 3', sans-serif; padding: 0; cursor: pointer; opacity: {{p.op}}; z-index: {{p.z}}">{{p.n}}</button>
+                </template>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: #566370"><span>0%</span><span style="font-size: 13px; font-weight: 600; color: #33414C">Absenteísmo (meta {{metaTxt}})</span><span>50%</span></div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; color: #33414C">
+                <span style="display: flex; align-items: center; gap: 6px"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #0E5E8C"></span>Médico (círculo)</span>
+                <span style="display: flex; align-items: center; gap: 6px"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 3px; background: #B8641B"></span>Enfermeiro (quadrado)</span>
+                <span>{{semAgendaTxt}}</span>
+              </div>
+            </div>
+          </div>
+          <div style="flex: 1 1 300px; min-width: 0; max-height: 520px; overflow-y: auto; border: 1px solid #DCE2E0; border-radius: 8px">
+            <template data-sc="if" value="{{temDestaque}}">
+              <div style="padding: 12px 14px; background: #E7EEF3; border-bottom: 1px solid #DCE2E0; line-height: 1.35">
+                <span style="font-weight: 700">{{destaque.nome}}</span><br>
+                <span style="font-size: 14px; color: #33414C">{{destaque.sub}}</span><br>
+                <span style="font-size: 14px">{{destaque.valores}}</span>
+              </div>
+            </template>
+            <template data-sc="for" list="{{legenda}}" as="g">
+              <button type="button" onClick="{{g.destacar}}" aria-pressed="{{g.ativo}}" style="font: inherit; color: inherit; text-align: left; width: 100%; display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 7px 12px; min-height: 44px; border: 0; border-bottom: 1px solid #EEF1F0; background: {{g.fundo}}; cursor: pointer">
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: {{g.raio}}; background: {{g.cor}}; color: #FFFFFF; font-weight: 700; font-size: 12px">{{g.n}}</span>
+                <span style="min-width: 0; line-height: 1.25"><span style="font-weight: 600; overflow-wrap: anywhere">{{g.nome}}</span><br><span style="font-size: 12px; color: #566370">{{g.sub}}</span></span>
+                <span style="font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap">{{g.valores}}</span>
+              </button>
+            </template>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <section style="background: #FFFFFF; border: 1px solid #DCE2E0; border-radius: 12px; padding: 16px 20px; font-size: 14px; color: #33414C">
+      <b>Fontes.</b> Absenteísmo: relatórios de atendimentos e de absenteísmo do PEC e-SUS APS, coletados pela extensão. Próxima vaga: agenda de cada profissional com agenda ativa no PEC, na data da coleta. Entram só médicos e enfermeiros das unidades de Atenção Primária. O Painel guarda totais por profissional; nada de paciente. Esta tela é restrita a administradores e gestores.
+    </section>
+  </main>
+</div>
+</template>
+<script src="/js/dc-mini.js"></script>
+<script>
+let FILAS = null;
+const META = 19.59;
+class Filas extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { aba: 'lista', unidade: '', equipe: '', cat: '', prof: '', ordem: 'faltas', abertas: {}, destaque: '' };
+  }
+  renderVals() {
+    const st = this.state;
+    const num = (v, c) => v.toLocaleString('pt-BR', { minimumFractionDigits: c, maximumFractionDigits: c });
+    const MAXF = 50, MAXD = 60;
+    const posF = (v) => (Math.max(0, Math.min(1, (v || 0) / MAXF)) * 100).toFixed(2) + '%';
+    const posD = (v) => (Math.max(0, Math.min(1, v / MAXD)) * 100).toFixed(2) + '%';
+    const todos = FILAS.profissionais.map((p, i) => {
+      const f = p.faltas || 0, a = p.atendimentos || 0, temAg = !!p.agendaLidaEm;
+      return { id: String(i), un: p.unidade, eq: p.equipe || 'Sem equipe', cat: p.categoria, nome: p.nome, cbo: String(p.cbo || '').replace(/\s*-\s*\d+$/, ''), faltas: f, atend: a,
+        pct: f + a ? f / (f + a) * 100 : null, dias: temAg ? (p.semVaga ? 91 : p.diasVaga) : null, semVaga: temAg && !!p.semVaga };
+    });
+    const unidadeSel = todos.some((p) => p.un === st.unidade) ? st.unidade : '';
+    const doUn = todos.filter((p) => !unidadeSel || p.un === unidadeSel);
+    const equipes = Array.from(new Set(doUn.map((p) => p.eq))).sort((a, b) => a.localeCompare(b, 'pt'));
+    const equipeSel = equipes.indexOf(st.equipe) >= 0 ? st.equipe : '';
+    const antesProf = doUn.filter((p) => (!equipeSel || p.eq === equipeSel) && (!st.cat || p.cat === st.cat));
+    const profSel = antesProf.some((p) => p.id === st.prof) ? st.prof : '';
+    const sel = antesProf.filter((p) => !profSel || p.id === profSel);
+
+    const corFaltas = (v) => (v === null ? '#8A979F' : v <= META ? '#2F855A' : '#C0392B');
+    const corEspera = (d) => (d <= 15 ? '#2F855A' : d <= 30 ? '#B7791F' : '#C0392B');
+    const soma = (arr, k) => arr.reduce((t, p) => t + p[k], 0);
+    const mediana = (arr) => { if (!arr.length) return null; const o = arr.slice().sort((a, b) => a - b), m = Math.floor(o.length / 2); return o.length % 2 ? o[m] : Math.round((o[m - 1] + o[m]) / 2); };
+    const diasTxt = (d) => d === null ? '—' : d > 90 ? '90+ dias' : d + (d === 1 ? ' dia' : ' dias');
+    const agrega = (ps) => { const f = soma(ps, 'faltas'), a = soma(ps, 'atend'); return { faltas: f, atend: a, pct: f + a ? f / (f + a) * 100 : null, dias: mediana(ps.filter((p) => p.dias !== null).map((p) => p.dias)), n: ps.length }; };
+    const ordena = (arr) => arr.slice().sort((x, y) => st.ordem === 'espera' ? (y.dias === null ? -1 : y.dias) - (x.dias === null ? -1 : x.dias)
+      : st.ordem === 'nome' ? x.nome.localeCompare(y.nome, 'pt', { numeric: true }) : (y.pct === null ? -1 : y.pct) - (x.pct === null ? -1 : x.pct));
+    const linhaDe = (o, nivel, extra) => Object.assign({
+      nome: o.nome, sub: o.sub, recuo: nivel * 22 + 'px', recuoSub: extra && extra.abrivel ? '18px' : '0', pad: nivel === 2 ? '8px' : '10px 8px',
+      fundo: nivel === 0 ? '#F6F9FA' : 'transparent', peso: nivel === 0 ? 700 : 600, abrivel: false, folha: true, alternar: () => {}, expandido: 'false', seta: '',
+      faltasPos: posF(o.pct), faltasCor: corFaltas(o.pct), faltasTxt: o.pct === null ? '—' : num(o.pct, 1) + '%', conta: o.faltas + o.atend ? o.faltas + ' de ' + (o.faltas + o.atend) : 'sem agendados',
+      esperaPos: o.dias === null ? '0%' : posD(o.dias), esperaCor: o.dias === null ? '#8A979F' : corEspera(o.dias), esperaOp: o.dias === null ? 0 : 1, esperaRaio: '50%',
+      esperaTxt: diasTxt(o.dias), esperaSub: o.dias === null ? 'agenda não lida' : (extra && extra.grupo ? 'mediana' : ''),
+      descFaltas: o.nome + ': absenteísmo ' + (o.pct === null ? 'sem dados' : num(o.pct, 1) + '%, ' + o.faltas + ' faltas em ' + (o.faltas + o.atend) + ' agendados') + '; meta ' + num(META, 2) + '%',
+      descEspera: o.nome + ': ' + (o.dias === null ? 'agenda não lida' : 'próxima vaga em ' + diasTxt(o.dias))
+    }, extra || {});
+
+    // Unidade -> equipe -> profissional, abrindo por clique.
+    const linhas = [];
+    const abertas = st.abertas || {};
+    const alterna = (k) => () => { const o = { ...(this.state.abertas || {}) }; if (o[k]) delete o[k]; else o[k] = true; this.setState({ abertas: o }); };
+    const unidadesSel = Array.from(new Set(sel.map((p) => p.un)));
+    const grupos = ordena(unidadesSel.map((u) => Object.assign({ nome: u, ps: sel.filter((p) => p.un === u) }, agrega(sel.filter((p) => p.un === u)))));
+    grupos.forEach((g) => {
+      const ku = 'u|' + g.nome, abU = !!abertas[ku] || unidadesSel.length === 1;
+      const eqs = Array.from(new Set(g.ps.map((p) => p.eq)));
+      linhas.push(linhaDe({ ...g, sub: eqs.length + (eqs.length === 1 ? ' equipe' : ' equipes') + ' · ' + g.n + (g.n === 1 ? ' profissional' : ' profissionais') }, 0,
+        { abrivel: true, folha: false, grupo: true, alternar: alterna(ku), expandido: abU ? 'true' : 'false', seta: abU ? '▾' : '▸' }));
+      if (!abU) return;
+      ordena(eqs.map((e) => Object.assign({ nome: e, ps: g.ps.filter((p) => p.eq === e) }, agrega(g.ps.filter((p) => p.eq === e))))).forEach((e) => {
+        const ke = ku + '|' + e.nome, abE = !!abertas[ke] || eqs.length === 1 || !!equipeSel || !!profSel;
+        linhas.push(linhaDe({ ...e, sub: e.n + (e.n === 1 ? ' profissional' : ' profissionais') }, 1,
+          { abrivel: true, folha: false, grupo: true, alternar: alterna(ke), expandido: abE ? 'true' : 'false', seta: abE ? '▾' : '▸' }));
+        if (abE) ordena(e.ps).forEach((p) => linhas.push(linhaDe({ ...p, sub: p.cbo }, 2, { esperaRaio: p.cat === 'Médico' ? '50%' : '4px', fundo: p.pct !== null && p.pct > META && p.dias !== null && p.dias > 30 ? '#FBF1EF' : 'transparent' })));
+      });
+    });
+
+    const tot = agrega(sel);
+    const comAg = sel.filter((p) => p.dias !== null);
+    const criticos = sel.filter((p) => p.pct !== null && p.pct > META && p.dias !== null && p.dias > 30);
+    const resumo = [
+      { rotulo: 'Absenteísmo do recorte', grande: tot.pct === null ? '—' : num(tot.pct, 1) + '%', cor: corFaltas(tot.pct), texto: tot.faltas + ' faltas em ' + (tot.faltas + tot.atend) + ' agendados · meta ' + num(META, 2) + '%' },
+      { rotulo: 'Espera típica', grande: diasTxt(tot.dias), cor: '#14212B', texto: comAg.length ? 'mediana até a próxima vaga, em ' + comAg.length + ' agendas lidas' : 'nenhuma agenda lida neste recorte' },
+      { rotulo: 'Sem vaga em 30 dias', grande: comAg.filter((p) => p.dias > 30).length + ' de ' + comAg.length, cor: '#14212B', texto: 'profissionais com a agenda cheia além de um mês' },
+      { rotulo: 'Fila longa e muita falta', grande: String(criticos.length), cor: criticos.length ? '#C0392B' : '#2F855A', texto: criticos.length ? 'acima da meta de faltas e mais de 30 dias de espera' : 'nenhum profissional nessa situação' }
+    ];
+
+    // Mapa: só quem tem as duas medidas. Numeração do mais crítico (mais dias e mais faltas) para o menos.
+    const noMapa = sel.filter((p) => p.pct !== null && p.dias !== null).sort((a, b) => (b.dias / MAXD + b.pct / MAXF) - (a.dias / MAXD + a.pct / MAXF));
+    const destaqueId = noMapa.some((p) => p.id === st.destaque) ? st.destaque : '';
+    const corCat = (p) => (p.cat === 'Médico' ? '#0E5E8C' : '#B8641B');
+    const valores = (p) => num(p.pct, 1) + '% · ' + diasTxt(p.dias);
+    const destacar = (id) => () => this.setState({ destaque: this.state.destaque === id ? '' : id });
+    const pontos = noMapa.map((p, i) => { const at = p.id === destaqueId; return {
+      n: i + 1, x: posF(p.pct), y: ((1 - Math.min(1, p.dias / MAXD)) * 100).toFixed(2) + '%', cor: corCat(p), raio: p.cat === 'Médico' ? '50%' : '4px',
+      tam: at ? '30px' : '24px', margem: at ? '-15px 0 0 -15px' : '-12px 0 0 -12px', sombra: at ? '0 0 0 3px #14212B' : 'none', op: destaqueId && !at ? 0.35 : 1, z: at ? 3 : 1,
+      ativo: at ? 'true' : 'false', destacar: destacar(p.id), titulo: (i + 1) + ' · ' + p.nome + ' (' + p.eq + ', ' + p.un + '): ' + num(p.pct, 1) + '% de faltas, vaga em ' + diasTxt(p.dias) }; });
+    const legenda = noMapa.map((p, i) => ({ n: i + 1, nome: p.nome, sub: p.eq + ' · ' + p.un, valores: valores(p), cor: corCat(p), raio: p.cat === 'Médico' ? '50%' : '4px',
+      fundo: p.id === destaqueId ? '#E7EEF3' : '#FFFFFF', ativo: p.id === destaqueId ? 'true' : 'false', destacar: destacar(p.id) }));
+    const d = noMapa.find((p) => p.id === destaqueId);
+    const fora = sel.length - noMapa.length;
+
+    const botao = (ativo) => ({ pressionado: ativo ? 'true' : 'false', fundo: ativo ? '#14212B' : '#FFFFFF', cor: ativo ? '#FFFFFF' : '#14212B', peso: ativo ? 600 : 400 });
+    const mes = (c) => { const [a, m] = c.split('-'); return ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'][m - 1] + ' de ' + a; };
+    const lidas = FILAS.profissionais.map((p) => p.agendaLidaEm).filter(Boolean).sort();
+    return {
+      linhas, resumo, pontos, legenda, semLinhas: linhas.length === 0, metaPos: posF(META), metaTxt: num(META, 2) + '%',
+      abaLista: st.aba === 'lista', abaMapa: st.aba === 'mapa',
+      abas: [['lista', 'Unidades, equipes e profissionais'], ['mapa', 'Mapa: onde agir primeiro']].map(([id, titulo]) => ({ titulo, pressionado: st.aba === id ? 'true' : 'false',
+        borda: st.aba === id ? '#00A7E7' : 'transparent', cor: st.aba === id ? '#FFFFFF' : 'rgba(255,255,255,.85)', peso: st.aba === id ? 700 : 400, escolher: () => this.setState({ aba: id }) })),
+      temDestaque: !!d, destaque: d ? { nome: d.nome, sub: d.cbo + ' · ' + d.eq + ' · ' + d.un, valores: num(d.pct, 1) + '% de faltas (' + d.faltas + ' de ' + (d.faltas + d.atend) + ') · próxima vaga em ' + diasTxt(d.dias) } : {},
+      semAgendaTxt: fora ? fora + (fora === 1 ? ' profissional fica' : ' profissionais ficam') + ' fora do mapa por não ter as duas medidas.' : '',
+      periodoTxt: 'Faltas: ' + mes(FILAS.competencia) + (lidas.length ? ' · Agendas lidas em ' + new Date(lidas[lidas.length - 1]).toLocaleDateString('pt-BR') : ' · Agendas ainda não lidas'),
+      titulo: profSel ? sel[0].nome : equipeSel ? equipeSel + (unidadeSel ? ' · ' + unidadeSel : '') : unidadeSel || 'Onde as pessoas faltam e onde esperam mais?',
+      compSel: FILAS.competencia, opcoesComp: FILAS.competencias.map((c) => ({ id: c, rotulo: mes(c) })), escolherComp: (ev) => carregar(ev.target.value),
+      unidadeSel, equipeSel, profSel,
+      opcoesUnidade: Array.from(new Set(todos.map((p) => p.un))).sort((a, b) => a.localeCompare(b, 'pt')).map((nome) => ({ nome })),
+      opcoesEquipe: equipes.map((nome) => ({ nome })), opcoesProf: antesProf.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt')).map((p) => ({ id: p.id, nome: p.nome })),
+      botoesCat: [['', 'Todos'], ['Médico', 'Médicos'], ['Enfermeiro', 'Enfermeiros']].map(([id, rotulo]) => ({ rotulo, ...botao((st.cat || '') === id), escolher: () => this.setState({ cat: id, prof: '' }) })),
+      botoesOrdem: [['faltas', 'Mais faltas'], ['espera', 'Maior espera'], ['nome', 'Nome']].map(([id, rotulo]) => ({ rotulo, ...botao(st.ordem === id), escolher: () => this.setState({ ordem: id }) })),
+      escolherUnidade: (ev) => this.setState({ unidade: ev.target.value, equipe: '', prof: '' }),
+      escolherEquipe: (ev) => this.setState({ equipe: ev.target.value, prof: '' }),
+      escolherProf: (ev) => this.setState({ prof: ev.target.value })
+    };
+  }
+}
+let tela = null;
+async function carregar(comp) {
+  const aviso = (t) => { document.getElementById('tela').innerHTML = '<p id="aviso">' + t + ' <a href="/">Voltar ao início</a></p>'; tela = null; };
+  try {
+    const r = await fetch('/api/v1/filas' + (comp ? '?competencia=' + encodeURIComponent(comp) : ''), { credentials: 'same-origin' });
+    if (r.status === 401) { location.replace('/entrar'); return; }
+    if (r.status === 403) { aviso('Esta tela mostra dados por profissional e é restrita a administradores e gestores.'); return; }
+    if (!r.ok) throw 0;
+    const d = await r.json();
+    if (!d.profissionais.length) { aviso('Ainda não há dados de filas e faltas. Na extensão, marque "Filas e faltas" e rode a coleta no computador que acessa o PEC.'); return; }
+    FILAS = d;
+    if (tela) tela.setState({}); else tela = montarDC(document.getElementById('modelo'), Filas, document.getElementById('tela'), {});
+  } catch (e) { aviso('Não foi possível carregar. Recarregue a página.'); }
+}
+carregar();
+</script>
+</body>
+</html>
