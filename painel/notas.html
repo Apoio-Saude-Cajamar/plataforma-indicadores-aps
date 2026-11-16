@@ -1,0 +1,1078 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notas metodológicas · Painel APS</title>
+<link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&amp;family=Source+Sans+3:wght@400;600;700&amp;display=swap">
+<style>
+body{margin:0}
+button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #2F8FD8;outline-offset:2px}
+</style>
+<style>#aviso{font:16px/1.5 'Source Sans 3','Segoe UI',system-ui,sans-serif;max-width:640px;margin:48px auto;padding:0 24px;color:#14212B}#aviso a{color:#0E5E8C}</style>
+</head>
+<body>
+<!-- Gerado por scripts/gerar-notas.py a partir de desenho/Notas.dc.html. Não edite à mão. -->
+<div id="tela"><p id="aviso">Carregando os indicadores coletados…</p></div>
+<template id="modelo">
+<div style="min-height: 100vh; background: {{tPagina}}; color: {{tTexto}}; font-family: {{tFonte}}; font-weight: {{tPeso}}; font-size: {{tTam}}; line-height: 1.5; color-scheme: {{tEsquema}}">
+
+  <header style="background: {{tTopoFundo}}; color: {{tTopoTexto}}; border-bottom: {{tTopoBorda}}">
+    <div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px 0; display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <template data-sc="if" value="{{temSelo}}" hint-placeholder-val="{{true}}">
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: {{tSelo}}; color: {{tSeloTexto}}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; letter-spacing: .04em">APS</div>
+          </template>
+          <template data-sc="if" value="{{temAssinatura}}" hint-placeholder-val="{{false}}">
+            <div title="Espaço da assinatura oficial (brasão e Secretaria de Saúde), usada a partir do arquivo do manual, sem redesenhar" style="width: 112px; height: 40px; box-sizing: border-box; border: 1.5px dashed rgba(255,255,255,.6); border-radius: 6px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 10px; font-weight: 600; line-height: 1.25; color: rgba(255,255,255,.9)">assinatura<br>oficial</div>
+          </template>
+          <div style="display: flex; flex-direction: column; line-height: 1.25">
+            <span style="font-weight: {{tPesoForte}}; font-size: 17px">Notas metodológicas</span>
+            <span style="font-size: 13px; color: {{tTopoSuave}}">Cofinanciamento federal da APS · {{subtituloTopo}}</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px">
+          <span style="font-size: 12px; font-weight: 600; color: {{tRascunhoTexto}}; background: {{tRascunhoFundo}}; border-radius: 999px; padding: 3px 10px">Protótipo · dados reais do PEC</span>
+          <div role="group" aria-label="Tema" style="display: flex; border: 1px solid {{tTopoLinha}}; border-radius: 8px; overflow: hidden">
+            <template data-sc="for" list="{{temas}}" as="tm" hint-placeholder-count="3">
+              <button type="button" aria-pressed="{{tm.pressionado}}" onClick="{{tm.escolher}}" style="font: inherit; font-size: 13px; min-height: 34px; padding: 0 12px; border: 0; cursor: pointer; background: {{tm.fundo}}; color: {{tm.cor}}; font-weight: {{tm.peso}}">{{tm.rotulo}}</button>
+            </template>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Relatórios" style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 28px">
+        <template data-sc="for" list="{{relatorios}}" as="rl" hint-placeholder-count="4">
+          <button type="button" onClick="{{rl.escolher}}" aria-pressed="{{rl.pressionado}}" style="font: inherit; font-size: 16px; background: transparent; border: 0; border-bottom: 3px solid {{rl.borda}}; padding: 8px 0 9px; cursor: pointer; color: {{rl.cor}}; font-weight: {{rl.peso}}">{{rl.titulo}}</button>
+        </template>
+      </nav>
+    </div>
+  </header>
+
+  <div style="position: sticky; top: 0; z-index: 3; background: {{tPagina}}; border-bottom: 1px solid {{tBorda}}">
+    <div role="search" aria-label="Filtros" style="max-width: 1280px; margin: 0 auto; padding: 10px 24px; display: flex; align-items: center; gap: 10px">
+
+      <div role="group" aria-label="Tipo de intervalo" style="display: flex; border: 1px solid {{tControle}}; border-radius: 8px; overflow: hidden; background: {{tCartao}}">
+        <template data-sc="for" list="{{opcoesIntervalo}}" as="oi" hint-placeholder-count="2">
+          <button type="button" aria-pressed="{{oi.pressionado}}" onClick="{{oi.escolher}}" style="font: inherit; min-height: 42px; padding: 0 14px; border: 0; cursor: pointer; background: {{oi.fundo}}; color: {{oi.cor}}; font-weight: {{oi.peso}}">{{oi.rotulo}}</button>
+        </template>
+      </div>
+      <div style="position: relative">
+        <button type="button" onClick="{{abrirTempo}}" aria-expanded="{{tempoExp}}" aria-label="{{rotuloSelTempo}}: {{tituloTempo}}" title="{{tituloTempo}}" style="font: inherit; min-height: 44px; width: 220px; padding: 0 12px; border: 1px solid {{tempoBorda}}; border-radius: 8px; background: {{tCartao}}; color: {{tTexto}}; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left">
+          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{resumoTempo}}</span>
+          <span aria-hidden="true" style="font-size: 11px; color: {{tSuave}}">▾</span>
+        </button>
+        <template data-sc="if" value="{{painelTempo}}" hint-placeholder-val="{{false}}">
+          <div role="group" aria-label="{{rotuloSelTempo}}" style="position: absolute; top: calc(100% + 6px); left: 0; z-index: 5; width: {{larguraPainelTempo}}; box-sizing: border-box; padding: 12px; background: {{tCartao}}; border: 1px solid {{tBorda}}; border-radius: 10px; box-shadow: 0 10px 28px rgba(15, 30, 50, .16); display: flex; flex-direction: column; gap: 10px">
+            <template data-sc="if" value="{{temNavAno}}" hint-placeholder-val="{{true}}">
+              <div style="display: flex; align-items: center; justify-content: space-between">
+                <button type="button" onClick="{{anoAntes}}" aria-label="Ano anterior" style="font: inherit; width: 36px; height: 36px; border: 0; border-radius: 8px; background: transparent; color: {{tTexto}}; cursor: pointer; opacity: {{opAntes}}">‹</button>
+                <span style="font-weight: {{tPesoForte}}">{{anoPainel}}</span>
+                <button type="button" onClick="{{anoDepois}}" aria-label="Próximo ano" style="font: inherit; width: 36px; height: 36px; border: 0; border-radius: 8px; background: transparent; color: {{tTexto}}; cursor: pointer; opacity: {{opDepois}}">›</button>
+              </div>
+            </template>
+            <div style="display: grid; grid-template-columns: {{gradePainelTempo}}; gap: 6px">
+              <template data-sc="for" list="{{itensTempo}}" as="mm" hint-placeholder-count="12">
+                <button type="button" aria-pressed="{{mm.pressionado}}" aria-disabled="{{mm.inativo}}" onClick="{{mm.alternar}}" title="{{mm.titulo}}" style="font: inherit; font-size: 14px; min-height: 38px; padding: 4px 10px; border-radius: 8px; border: {{mm.borda}}; background: {{mm.fundo}}; color: {{mm.cor}}; font-weight: {{mm.peso}}; cursor: {{mm.cursor}}; opacity: {{mm.op}}; text-align: left; display: flex; align-items: center; justify-content: {{mm.alinha}}; gap: 8px">
+                  <span>{{mm.rot}}</span><span style="font-size: 12px; font-weight: 400; opacity: .8">{{mm.sub}}</span>
+                </button>
+              </template>
+            </div>
+            <button type="button" onClick="{{fecharPainelF}}" style="align-self: flex-end; font: inherit; font-size: 14px; min-height: 36px; padding: 0 14px; border: 1px solid {{tControle}}; border-radius: 8px; background: transparent; color: {{tTexto}}; cursor: pointer">Pronto</button>
+          </div>
+        </template>
+      </div>
+
+      <div role="group" aria-label="Visualização" style="display: flex; margin-left: 14px; border: 1px solid {{tControle}}; border-radius: 8px; overflow: hidden; background: {{tCartao}}">
+        <template data-sc="for" list="{{opcoesVisao}}" as="ov" hint-placeholder-count="3">
+          <button type="button" aria-pressed="{{ov.pressionado}}" onClick="{{ov.escolher}}" style="font: inherit; min-height: 42px; padding: 0 14px; border: 0; cursor: pointer; background: {{ov.fundo}}; color: {{ov.cor}}; font-weight: {{ov.peso}}">{{ov.rotulo}}</button>
+        </template>
+      </div>
+      <template data-sc="if" value="{{temLocais}}" hint-placeholder-val="{{false}}">
+        <div style="position: relative">
+          <button type="button" onClick="{{abrirLocais}}" aria-expanded="{{locaisExp}}" aria-label="{{rotuloSelLocais}}: {{tituloLocais}}" title="{{tituloLocais}}" style="font: inherit; min-height: 44px; width: 190px; padding: 0 12px; border: 1px solid {{locaisBorda}}; border-radius: 8px; background: {{tCartao}}; color: {{tTexto}}; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left">
+            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{resumoLocais}}</span>
+            <span aria-hidden="true" style="font-size: 11px; color: {{tSuave}}">▾</span>
+          </button>
+          <template data-sc="if" value="{{painelLocais}}" hint-placeholder-val="{{false}}">
+            <div role="group" aria-label="{{rotuloSelLocais}}" style="position: absolute; top: calc(100% + 6px); left: 0; z-index: 5; width: 360px; box-sizing: border-box; padding: 8px 12px 12px; background: {{tCartao}}; border: 1px solid {{tBorda}}; border-radius: 10px; box-shadow: 0 10px 28px rgba(15, 30, 50, .16); display: flex; flex-direction: column; gap: 8px">
+              <div style="max-height: 380px; overflow-y: auto; display: flex; flex-direction: column">
+                <template data-sc="for" list="{{itensLocais}}" as="li" hint-placeholder-count="11">
+                  <template data-sc="if" value="{{li.cab}}" hint-placeholder-val="{{false}}">
+                    <span style="font-size: 12px; font-weight: 600; color: {{tSuave}}; padding: 10px 0 2px">{{li.rotulo}}</span>
+                  </template>
+                  <template data-sc="if" value="{{li.item}}" hint-placeholder-val="{{true}}">
+                    <label style="display: flex; align-items: center; gap: 10px; min-height: 34px; cursor: pointer; font-size: 14px">
+                      <input type="checkbox" checked="{{li.marcado}}" onChange="{{li.alternar}}" style="width: 16px; height: 16px; margin: 0; flex: none; accent-color: {{tAtivoFundo}}">
+                      <span>{{li.rotulo}} <span style="color: {{tSuave}}">{{li.sub}}</span></span>
+                    </label>
+                  </template>
+                </template>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; border-top: 1px solid {{tDivisa}}; padding-top: 10px">
+                <span style="font-size: 13px; color: {{tSuave}}">{{contagemLocais}}</span>
+                <button type="button" onClick="{{fecharPainelF}}" style="font: inherit; font-size: 14px; min-height: 36px; padding: 0 14px; border: 1px solid {{tControle}}; border-radius: 8px; background: transparent; color: {{tTexto}}; cursor: pointer">Pronto</button>
+              </div>
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <label title="{{tituloComparar}}" style="display: flex; align-items: center; gap: 8px; min-height: 44px; margin-left: 14px; cursor: pointer">
+        <input type="checkbox" checked="{{rascComparar}}" onChange="{{alternarComparar}}" aria-label="{{tituloComparar}}" style="width: 18px; height: 18px; margin: 0; accent-color: {{tAtivoFundo}}">
+        <span>Comparar</span>
+      </label>
+
+      <button type="button" onClick="{{atualizar}}" aria-disabled="{{atualizarInativo}}" title="{{tituloAtualizar}}" style="font: inherit; margin-left: auto; min-height: 44px; padding: 0 18px; border-radius: 8px; border: 1px solid {{btnBorda}}; background: {{btnFundo}}; color: {{btnCor}}; font-weight: 600; cursor: {{btnCursor}}">Atualizar</button>
+    </div>
+  </div>
+
+  <main style="max-width: 1280px; margin: 0 auto; padding: 24px 24px 48px; display: flex; flex-direction: column; gap: 20px">
+
+    <div style="display: flex; flex-direction: column; gap: 4px; max-width: 980px">
+      <h1 style="margin: 0; font-size: 30px; font-weight: {{tPesoTitulo}}; line-height: 1.2; color: {{tTitulo}}">{{pergunta}}</h1>
+      <p style="margin: 0; color: {{tSuave}}">{{descricao}}</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px">
+      <template data-sc="for" list="{{resumo}}" as="r" hint-placeholder-count="3">
+        <div style="background: {{tCartao}}; border: 1px solid {{tBorda}}; border-radius: 12px; padding: 16px 20px; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 28px; font-weight: {{tPesoForte}}; line-height: 1.15; color: {{tTitulo}}; font-variant-numeric: tabular-nums">{{r.grande}}</span>
+          <span style="font-size: 15px; color: {{tSuave}}">{{r.texto}}</span>
+        </div>
+      </template>
+    </div>
+
+    <section aria-labelledby="t-lista" style="background: {{tCartao}}; border: 1px solid {{tBorda}}; border-radius: 12px; padding: 18px 20px 6px; display: flex; flex-direction: column">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 20px; padding-bottom: 12px">
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 480px">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <h2 id="t-lista" style="margin: 0; font-size: 20px; font-weight: {{tPesoForte}}; color: {{tTitulo}}">{{tituloLista}}</h2>
+            <template data-sc="if" value="{{temInfoLista}}" hint-placeholder-val="{{false}}">
+              <button type="button" onClick="{{abrirInfoLista}}" aria-expanded="{{infoListaExp}}" aria-label="De onde vem este número" title="Clique para ver a origem e a regra de contagem." style="font: italic 700 13px Georgia, serif; width: 22px; height: 22px; flex: none; border-radius: 50%; border: 1.5px solid {{tLink}}; color: {{tLink}}; background: transparent; padding: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center">i</button>
+            </template>
+          </div>
+          <span style="font-size: 14px; color: {{tSuave}}">{{comoLer}}</span>
+        </div>
+        <template data-sc="if" value="{{temEscolhaNota}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <label for="n-nota" style="font-size: 13px; font-weight: 600; color: {{tSuave}}">Nota</label>
+            <select id="n-nota" value="{{notaSel}}" onChange="{{escolherNota}}" style="font: inherit; padding: 9px 12px; min-height: 44px; border: 1px solid {{tControle}}; border-radius: 8px; background: {{tCartao}}; color: {{tTexto}}; min-width: 300px; max-width: 440px">
+              <template data-sc="for" list="{{gruposNota}}" as="gn" hint-placeholder-count="2">
+                <optgroup label="{{gn.rotulo}}">
+                  <template data-sc="for" list="{{gn.itens}}" as="it" hint-placeholder-count="3"><option value="{{it.cod}}">{{it.rotulo}}</option></template>
+                </optgroup>
+              </template>
+            </select>
+          </div>
+        </template>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+          <template data-sc="if" value="{{temAbrirTodas}}" hint-placeholder-val="{{false}}">
+            <button type="button" onClick="{{alternarTodas}}" style="font: inherit; min-height: 40px; padding: 0 14px; border: 1px solid {{tControle}}; border-radius: 8px; background: transparent; color: {{tTexto}}; cursor: pointer">{{rotuloAbrirTodas}}</button>
+          </template>
+          <template data-sc="if" value="{{temEscolhaNotas}}" hint-placeholder-val="{{true}}">
+            <button type="button" onClick="{{alternarPainel}}" aria-expanded="{{painelExp}}" style="font: inherit; min-height: 40px; padding: 0 14px; border: 1px solid {{tControle}}; border-radius: 8px; background: transparent; color: {{tTexto}}; cursor: pointer">{{rotuloPainel}}</button>
+          </template>
+        </div>
+      </div>
+      <template data-sc="if" value="{{mostraInfoLista}}" hint-placeholder-val="{{false}}">
+        <p style="margin: 0 0 12px; padding: 10px 14px; border-radius: 8px; background: {{tRealce}}; border: 1px solid {{tDivisa}}; font-size: 14px">{{infoListaTxt}}</p>
+      </template>
+      <template data-sc="if" value="{{painelAberto}}" hint-placeholder-val="{{false}}">
+        <div role="group" aria-label="Escolher as notas" style="margin-bottom: 14px; padding: 14px 16px; border: 1px solid {{tBorda}}; border-radius: 10px; background: {{tRealce}}; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px 24px">
+            <template data-sc="for" list="{{painelGrupos}}" as="pg" hint-placeholder-count="5">
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <label style="display: flex; align-items: center; gap: 8px; min-height: 32px; cursor: pointer; font-weight: {{tPesoForte}}">
+                  <input type="checkbox" checked="{{pg.marcado}}" onChange="{{pg.alternar}}" style="width: 18px; height: 18px; margin: 0; accent-color: {{tAtivoFundo}}">{{pg.titulo}}
+                  <span style="font-size: 13px; font-weight: 400; color: {{tSuave}}">{{pg.contagem}}</span>
+                </label>
+                <template data-sc="for" list="{{pg.itens}}" as="pi" hint-placeholder-count="4">
+                  <label style="display: flex; align-items: flex-start; gap: 8px; min-height: 28px; padding-left: 26px; cursor: pointer; font-size: 14px">
+                    <input type="checkbox" checked="{{pi.marcado}}" onChange="{{pi.alternar}}" style="width: 16px; height: 16px; margin: 3px 0 0; accent-color: {{tAtivoFundo}}">
+                    <span>{{pi.rotulo}} <span style="color: {{tSuave}}">{{pi.extra}}</span></span>
+                  </label>
+                </template>
+              </div>
+            </template>
+          </div>
+          <p style="margin: 0; font-size: 13px; color: {{tSuave}}">{{notaExcluidas}}</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px 12px">
+            <button type="button" onClick="{{mostrarTodas}}" style="font: inherit; min-height: 40px; padding: 0 14px; border: 1px solid {{tControle}}; border-radius: 8px; background: transparent; color: {{tTexto}}; cursor: pointer">Mostrar todas</button>
+            <button type="button" onClick="{{soColetadas}}" style="font: inherit; min-height: 40px; padding: 0 14px; border: 1px solid {{tControle}}; border-radius: 8px; background: transparent; color: {{tTexto}}; cursor: pointer">Só as já coletadas</button>
+            <button type="button" onClick="{{alternarPainel}}" style="font: inherit; min-height: 40px; padding: 0 16px; border: 0; border-radius: 8px; background: {{tAtivoFundo}}; color: {{tAtivoTexto}}; font-weight: 600; cursor: pointer">Pronto</button>
+          </div>
+        </div>
+      </template>
+      <template data-sc="if" value="{{temLinhas}}" hint-placeholder-val="{{true}}">
+      <div style="overflow-x: auto; margin: 0 -20px">
+        <div style="min-width: {{larguraMin}}; display: flex; flex-direction: column">
+          <div style="display: grid; grid-template-columns: {{grade}}; align-items: end; gap: {{gapGrade}}; padding: 0 20px 8px">
+            <span></span>
+            <span style="font-size: 13px; font-weight: 600; color: {{tSuave}}">{{rotuloNome}}</span>
+            <div style="position: relative; height: 18px">
+              <template data-sc="for" list="{{eixo}}" as="ex" hint-placeholder-count="3">
+                <span style="position: absolute; bottom: 0; left: {{ex.pos}}; transform: translateX({{ex.desloc}}); font-size: 12px; font-weight: 600; color: {{tSuave}}; white-space: nowrap">{{ex.txt}}</span>
+              </template>
+            </div>
+            <span style="font-size: 13px; font-weight: 600; color: {{tSuave}}; text-align: right">{{rotuloValor}}</span>
+            <template data-sc="if" value="{{temMesesCols}}" hint-placeholder-val="{{false}}">
+              <template data-sc="for" list="{{cabMeses}}" as="cm" hint-placeholder-count="4"><span title="{{cm.longo}}" style="font-size: 13px; font-weight: 600; color: {{tSuave}}; text-align: center; white-space: nowrap">{{cm.txt}}</span></template>
+              <template data-sc="if" value="{{temCaminho}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; font-weight: 600; color: {{tSuave}}">{{rotuloCaminho}}</span></template>
+            </template>
+            <template data-sc="if" value="{{temDeltaCol}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; font-weight: 600; color: {{tSuave}}">{{rotuloDelta}}</span></template>
+          </div>
+          <template data-sc="for" list="{{linhas}}" as="l" hint-placeholder-count="12">
+            <template data-sc="if" value="{{l.cab}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; padding: 18px 20px 6px 76px; border-top: 1px solid {{tBorda}}; font-size: 14px">
+                <span style="font-weight: {{tPesoForte}}; color: {{tTitulo}}">{{l.nome}}</span>
+                <span style="color: {{tSuave}}">{{l.sub}}</span>
+              </div>
+            </template>
+            <template data-sc="if" value="{{l.normal}}" hint-placeholder-val="{{true}}">
+              <div style="display: grid; grid-template-columns: {{grade}}; align-items: center; gap: {{gapGrade}}; padding: {{l.pad}}; border-top: {{l.borda}}; background: {{l.fundo}}">
+                <span style="font-size: 14px; color: {{tSuave}}; text-align: right; font-variant-numeric: tabular-nums">{{l.posicao}}</span>
+                <div style="display: flex; flex-direction: column; min-width: 0; padding-left: {{l.recuo}}">
+                  <div style="display: flex; align-items: flex-start; gap: 8px">
+                    <template data-sc="if" value="{{l.abrivel}}" hint-placeholder-val="{{false}}">
+                      <button type="button" onClick="{{l.alternar}}" aria-expanded="{{l.expandido}}" aria-label="{{l.rotuloAbrir}}" style="font: inherit; color: {{tTexto}}; font-weight: {{l.pesoNome}}; text-align: left; background: transparent; border: 0; padding: 4px 0; min-height: 32px; cursor: pointer; display: block; line-height: 1.3">{{l.nome}}<span aria-hidden="true" style="font-size: 12px; color: {{tLink}}; margin-left: 10px">{{l.seta}}</span></button>
+                    </template>
+                    <template data-sc="if" value="{{l.fixo}}" hint-placeholder-val="{{true}}">
+                      <span style="font-size: {{l.fonte}}; font-weight: {{l.pesoNome}}; color: {{l.corNome}}; line-height: 1.3">{{l.nome}}</span>
+                    </template>
+                    <template data-sc="if" value="{{l.temInfo}}" hint-placeholder-val="{{false}}">
+                      <button type="button" onClick="{{l.abrirInfo}}" aria-expanded="{{l.infoExp}}" aria-label="De onde vem este número" title="Clique para ver a origem e a regra da nota." style="font: italic 700 12px Georgia, serif; width: 20px; height: 20px; flex: none; margin-top: 1px; border-radius: 50%; border: 1.5px solid {{tLink}}; color: {{tLink}}; background: transparent; padding: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center">i</button>
+                    </template>
+                  </div>
+                  <span style="font-size: 13px; color: {{tSuave}}">{{l.sub}}</span>
+                </div>
+                <div style="position: relative; height: 34px" role="img" aria-label="{{l.descricao}}">
+                  <div style="position: absolute; left: 0; right: 0; top: {{trilhaTopo}}; height: {{trilha}}; border-radius: 999px; overflow: hidden; display: flex">
+                    <template data-sc="for" list="{{l.segmentos}}" as="sg" hint-placeholder-count="4"><div style="height: 100%; width: {{sg.largura}}; background: {{sg.cor}}"></div></template>
+                  </div>
+                  <div style="position: absolute; top: 3px; height: 28px; width: 2px; margin-left: -1px; left: {{l.refPos}}; background: {{tRefLinha}}; opacity: {{l.refOp}}"></div>
+                  <div style="position: absolute; top: 15px; height: 4px; border-radius: 2px; left: {{l.caudaEsq}}; width: {{l.caudaLarg}}; background: {{l.caudaCor}}"></div>
+                  <div style="position: absolute; box-sizing: border-box; top: 10px; left: {{l.projPos}}; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; border: 2px dashed {{l.projCor}}; opacity: {{l.projOp}}"></div>
+                  <div style="position: absolute; box-sizing: border-box; top: {{l.mTopo}}; left: {{l.posX}}; width: {{l.mTam}}; height: {{l.mTam}}; margin-left: {{l.mMargem}}; border-radius: {{l.mRaio}}; transform: rotate({{l.mGiro}}); background: {{l.mFundo}}; border: {{l.mBordaLarg}} solid {{l.mBorda}}; box-shadow: 0 0 0 1.5px {{l.mAnel}}"></div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2">
+                  <span style="font-size: {{l.vFonte}}; font-weight: {{tPesoForte}}; font-variant-numeric: tabular-nums">{{l.valor}}</span>
+                  <span style="font-size: 12px; font-weight: 600; color: {{l.deltaCor}}; font-variant-numeric: tabular-nums; white-space: nowrap">{{l.subValor}}</span>
+                </div>
+                <template data-sc="if" value="{{temMesesCols}}" hint-placeholder-val="{{false}}">
+                  <template data-sc="for" list="{{l.mesesCel}}" as="mc" hint-placeholder-count="4"><span role="img" title="{{mc.rotulo}}" aria-label="{{mc.rotulo}}" style="box-sizing: border-box; display: flex; align-items: center; justify-content: center; min-height: 32px; border-radius: 6px; background: {{mc.fundo}}; border: {{mc.borda}}; font-size: {{fonteCel}}; font-weight: 600; font-variant-numeric: tabular-nums; color: {{mc.cor}}">{{mc.txt}}</span></template>
+                  <template data-sc="if" value="{{temCaminho}}" hint-placeholder-val="{{false}}">
+                    <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                      <span style="align-self: flex-start; font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: {{l.caminhoFundo}}; color: {{tTexto}}; white-space: nowrap">{{l.caminho}}</span>
+                      <span style="font-size: 12px; color: {{tSuave}}; line-height: 1.3">{{l.caminhoSub}}</span>
+                    </div>
+                  </template>
+                </template>
+                <template data-sc="if" value="{{temDeltaCol}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; font-weight: 600; color: {{l.deltaCor}}; white-space: nowrap; font-variant-numeric: tabular-nums">{{l.delta}}</span></template>
+              </div>
+              <template data-sc="if" value="{{l.mostraInfo}}" hint-placeholder-val="{{false}}">
+                <p style="margin: 0; padding: 10px 20px 12px 76px; background: {{tRealce}}; border-top: 1px dashed {{tDivisa}}; font-size: 14px">{{l.infoTxt}}</p>
+              </template>
+            </template>
+          </template>
+        </div>
+      </div>
+      </template>
+      <template data-sc="if" value="{{semLinhas}}" hint-placeholder-val="{{false}}">
+        <p style="margin: 0 0 12px; padding: 16px; border: 1px dashed {{tControle}}; border-radius: 10px">{{textoVazio}}</p>
+      </template>
+      <template data-sc="if" value="{{temFora}}" hint-placeholder-val="{{false}}">
+        <p style="margin: 10px 0 2px; font-size: 13px; color: {{tSuave}}">{{foraTxt}}</p>
+      </template>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 12px 0 10px; margin-top: 8px; border-top: 1px solid {{tDivisa}}; font-size: 13px; color: {{tSuave}}; align-items: center">
+        <span style="display: flex; align-items: center; gap: 6px"><span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: {{mUnFundo}}; box-shadow: 0 0 0 1.5px {{mUnAnel}}"></span>{{legendaPonto}}</span>
+        <template data-sc="if" value="{{temLegendaRef}}" hint-placeholder-val="{{true}}"><span style="display: flex; align-items: center; gap: 6px"><span style="display: inline-block; width: 9px; height: 9px; background: {{mRefFundo}}; box-shadow: 0 0 0 1.5px {{mRefAnel}}; transform: rotate(45deg)"></span>{{legendaRef}}</span></template>
+        <template data-sc="if" value="{{temLegendaTraco}}" hint-placeholder-val="{{true}}"><span style="display: flex; align-items: center; gap: 6px"><span style="display: inline-block; width: 2px; height: 14px; background: {{tRefLinha}}"></span>{{legendaTraco}}</span></template>
+        <template data-sc="if" value="{{temLegendaProj}}" hint-placeholder-val="{{false}}"><span style="display: flex; align-items: center; gap: 6px"><span style="display: inline-block; box-sizing: border-box; width: 12px; height: 12px; border-radius: 50%; border: 2px dashed {{mUnAnel}}"></span>{{legendaProj}}</span></template>
+        <template data-sc="if" value="{{temLegendaCauda}}" hint-placeholder-val="{{false}}"><span>Cauda: mudança em relação a {{compTxt}} (<span style="color: {{tMelhorouTexto}}; font-weight: 600">azul melhorou</span>, <span style="color: {{tPiorouTexto}}; font-weight: 600">{{nomePiora}} piorou</span>)</span></template>
+        <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px">Fundo:
+          <template data-sc="for" list="{{legendaFaixas}}" as="lf" hint-placeholder-count="4"><span style="display: flex; align-items: center; gap: 5px"><span style="display: inline-block; width: 14px; height: 8px; border-radius: 4px; background: {{lf.cor}}"></span>{{lf.rot}}</span></template>
+        </span>
+        <span style="display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="font: italic 700 10px Georgia, serif; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid {{tLink}}; color: {{tLink}}; display: inline-flex; align-items: center; justify-content: center">i</span>origem e regra da nota</span>
+      </div>
+    </section>
+  </main>
+</div>
+</template>
+<script src="/js/dc-mini.js"></script>
+<script src="/js/notas-real.js"></script>
+<script>
+let REAL = null;
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // out/2026 = 2026 × 12 + 9 = 24321.
+    this.state = { tema: '', rel: 'geral', intervalo: 'mensal', meses: [REAL.atual], quads: [REAL.quadAtual], visao: 'municipio', unidades: [], equipes: [], comparar: false,
+      aplicado: null, painelF: '', atualizadoEm: '', nota: 'C4', aberta: '', abertas: {}, ocultas: {}, painel: false, info: '' };
+    this.state.aplicado = Component.pega(this.state);
+  }
+
+  // Filtros: o analista mexe à vontade e só o botão "Atualizar relatório" leva as escolhas para o relatório.
+  static chavesFiltro() { return ['intervalo', 'meses', 'quads', 'visao', 'unidades', 'equipes', 'comparar']; }
+  static pega(o) { const r = {}; Component.chavesFiltro().forEach((k) => { r[k] = o[k]; }); return r; }
+  static efetivo(o) {
+    const q = o.intervalo === 'quad', v = o.visao || 'municipio';
+    return JSON.stringify({ i: q ? 'quad' : 'mensal', t: q ? o.quads : o.meses, v, l: v === 'unidades' ? o.unidades : v === 'equipes' ? o.equipes : [], c: !!o.comparar });
+  }
+
+  renderVals() {
+    const aplicado = this.state.aplicado || Component.pega(this.state);
+    const sujo = Component.efetivo(this.state) !== Component.efetivo(aplicado);
+    return this.montar({ ...this.state, ...aplicado }, this.state, sujo, aplicado);
+  }
+
+  montar(st, dr, sujo, aplicado) {
+    // Temas: Claro (original), Personalizado (identidade visual de Cajamar) e Escuro.
+    const tema = st.tema || this.props.tema || 'claro';
+    const cj = this.props.principal ?? '#1F3C72';
+    const SANS = "'Source Sans 3', 'Segoe UI', system-ui, sans-serif";
+    const TEMAS = {
+      claro: {
+        tFonte: SANS, tPeso: 400, tTam: '16px', tPesoForte: 700, tPesoTitulo: 700, tEsquema: 'light',
+        tPagina: '#F4F6F5', tCartao: '#FFFFFF', tBorda: '#DCE2E0', tDivisa: '#E3E8E6', tTexto: '#14212B', tSuave: '#566370', tControle: '#B9C4C9',
+        tTopoFundo: '#FFFFFF', tTopoTexto: '#14212B', tTopoSuave: '#566370', tTopoBorda: '1px solid #DCE2E0', tTopoLinha: '#B9C4C9',
+        tSelo: '#0E5E8C', tSeloTexto: '#FFFFFF', tAba: '#0B3F5E', tAbaLinha: '#0E5E8C', tAbaInativa: '#33414C', tTitulo: '#14212B', tLink: '#0E5E8C',
+        tAtivoFundo: '#14212B', tAtivoTexto: '#FFFFFF', tRascunhoFundo: '#FBF0D3', tRascunhoTexto: '#6E4D00',
+        tRefFundo: '#E7EEF3', tRealce: '#F6F9FA', tRefLinha: '#33414C',
+        tMelhorou: '#1F6FB2', tPiorou: '#D9822B', tMelhorouTexto: '#1F5F99', tPiorouTexto: '#A35A12', nomePiora: 'laranja', tSobe: '#1D6B45', tDesce: '#A8322A', tSemMudanca: '#8A979F',
+        marca: { item: ['#0E5E8C', '#FFFFFF', '#0B3F5E'], ref: ['#0B3F5E', '#FFFFFF', '#0B3F5E'], filho: ['#FFFFFF', '#0E5E8C', '#FFFFFF'] },
+        tinta: { regular: '#F6D5D1', suficiente: '#F8EBC6', bom: '#DCEBC8', otimo: '#BFE0CC', neutro: '#E3E8E6' }, trilha: 8,
+        subtitulo: 'Cajamar', selo: true
+      },
+      personalizado: {
+        tFonte: "'Montserrat', 'Segoe UI', system-ui, sans-serif", tPeso: 500, tTam: '15px', tPesoForte: 700, tPesoTitulo: 800, tEsquema: 'light',
+        tPagina: '#FFFFFF', tCartao: '#FFFFFF', tBorda: '#D9E1EA', tDivisa: '#E6ECF2', tTexto: '#14213D', tSuave: '#46556A', tControle: '#A9B6C6',
+        tTopoFundo: cj, tTopoTexto: '#FFFFFF', tTopoSuave: 'rgba(255,255,255,.85)', tTopoBorda: '4px solid #00A7E7', tTopoLinha: 'rgba(255,255,255,.5)',
+        tSelo: '#00A7E7', tSeloTexto: '#FFFFFF', tAba: '#FFFFFF', tAbaLinha: '#00A7E7', tAbaInativa: 'rgba(255,255,255,.85)', tTitulo: cj, tLink: '#0A6F9E',
+        tAtivoFundo: cj, tAtivoTexto: '#FFFFFF', tRascunhoFundo: '#FFFFFF', tRascunhoTexto: cj,
+        tRefFundo: '#EAF2F8', tRealce: '#F6F9FC', tRefLinha: '#14213D',
+        tMelhorou: '#0A6F9E', tPiorou: '#DA0E2B', tMelhorouTexto: '#0A6F9E', tPiorouTexto: '#B0001E', nomePiora: 'vermelho', tSobe: '#0A6F9E', tDesce: '#B0001E', tSemMudanca: '#7C8896',
+        marca: { item: [cj, '#FFFFFF', cj], ref: ['#00A7E7', '#FFFFFF', cj], filho: ['#FFFFFF', cj, '#FFFFFF'] },
+        tinta: { regular: '#F6C9CE', suficiente: '#F7E4B2', bom: '#C9DCE8', otimo: '#94D2F0', neutro: '#DDE3EA' }, trilha: 8,
+        subtitulo: 'Prefeitura de Cajamar', selo: false
+      },
+      escuro: {
+        tFonte: SANS, tPeso: 400, tTam: '16px', tPesoForte: 700, tPesoTitulo: 700, tEsquema: 'dark',
+        tPagina: '#0E151C', tCartao: '#16202A', tBorda: '#2A3743', tDivisa: '#22303C', tTexto: '#E6EDF3', tSuave: '#A7B4C0', tControle: '#4B5D6E',
+        tTopoFundo: '#16202A', tTopoTexto: '#E6EDF3', tTopoSuave: '#A7B4C0', tTopoBorda: '1px solid #2A3743', tTopoLinha: '#4B5D6E',
+        tSelo: '#5AA9E0', tSeloTexto: '#0E151C', tAba: '#E6EDF3', tAbaLinha: '#5AA9E0', tAbaInativa: '#A7B4C0', tTitulo: '#E6EDF3', tLink: '#7CC0EE',
+        tAtivoFundo: '#E6EDF3', tAtivoTexto: '#0E151C', tRascunhoFundo: '#3A2F12', tRascunhoTexto: '#F3D27A',
+        tRefFundo: '#1C2B38', tRealce: '#1A2531', tRefLinha: '#C5D0DA',
+        tMelhorou: '#5AA9E0', tPiorou: '#F0904F', tMelhorouTexto: '#7CC0EE', tPiorouTexto: '#F2A673', nomePiora: 'laranja', tSobe: '#7AD39E', tDesce: '#F29A72', tSemMudanca: '#6B7A88',
+        marca: { item: ['#7CC0EE', '#16202A', '#7CC0EE'], ref: ['#E6EDF3', '#16202A', '#E6EDF3'], filho: ['#16202A', '#7CC0EE', '#16202A'] },
+        tinta: { regular: '#5E2F35', suficiente: '#5C4B22', bom: '#2F4D3B', otimo: '#2B6B50', neutro: '#2E3B48' }, trilha: 8,
+        subtitulo: 'Cajamar', selo: true
+      }
+    };
+    const T = TEMAS[tema] || TEMAS.claro;
+    const tinta = T.tinta;
+    const nomeF = { regular: 'Regular', suficiente: 'Suficiente', bom: 'Bom', otimo: 'Ótimo' };
+    const peso = { regular: 0, suficiente: 1, bom: 2, otimo: 3, neutro: 1.5 };
+    const num = (v, c) => v.toLocaleString('pt-BR', { minimumFractionDigits: c, maximumFractionDigits: c });
+    const sinal = (x, c) => (x > 0 ? '+' : x < 0 ? '−' : '') + num(Math.abs(x), c);
+    const hash = (s) => { let h = 7; for (let k = 0; k < s.length; k++) h = (h * 31 + s.charCodeAt(k)) % 9973; return h; };
+    const media = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
+    const juntar = (arr) => arr.length <= 1 ? (arr[0] || '') : arr.slice(0, -1).join(', ') + ' e ' + arr[arr.length - 1];
+
+    // Meses (ano × 12 + mês). Dados fictícios de jan/2025 a out/2026.
+    const ATUAL = REAL.atual, INICIO = REAL.inicio;
+    const ML = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+    const MLONGO = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+    const rotMes = (a) => ML[a % 12] + '/' + String(Math.floor(a / 12)).slice(2);
+    const rotMesLongo = (a) => MLONGO[a % 12] + ' de ' + Math.floor(a / 12);
+    const intervalo = (de, ate) => { const r = []; for (let a = de; a <= ate; a++) r.push(a); return r; };
+    const rotJanela = (ms) => ms.length === 1 ? rotMes(ms[0])
+      : (Math.floor(ms[0] / 12) === Math.floor(ms[ms.length - 1] / 12) ? ML[ms[0] % 12] : rotMes(ms[0])) + '–' + rotMes(ms[ms.length - 1]);
+    // Vários meses, contínuos ou não: "set–out/26", "jan, mar–abr/26 · nov/25".
+    const rotMeses = (ms) => {
+      if (!ms.length) return '';
+      if (ms[ms.length - 1] - ms[0] + 1 === ms.length) return rotJanela(ms);
+      const anos = [];
+      ms.forEach((a) => {
+        const y = Math.floor(a / 12);
+        let g = anos[anos.length - 1];
+        if (!g || g.y !== y) { g = { y, runs: [] }; anos.push(g); }
+        const r = g.runs[g.runs.length - 1];
+        if (r && r[1] === a - 1) r[1] = a; else g.runs.push([a, a]);
+      });
+      return anos.map((g) => juntar(g.runs.map((r) => r[0] === r[1] ? ML[r[0] % 12] : ML[r[0] % 12] + '–' + ML[r[1] % 12])) + '/' + String(g.y).slice(2)).join(' · ');
+    };
+
+    // Catálogo: as notas metodológicas do MS que se aplicam a Cajamar (eSF/eAP, eSB, eMulti e Consultório na Rua).
+    // Ficam de fora a Atenção Primária Prisional (P1 a P6) e a Saúde da Família Ribeirinha (R1 a R6).
+    // Valores fictícios, exceto C1 do município (coleta de outubro).
+    const F100 = [[0, 25, 'regular'], [25, 50, 'suficiente'], [50, 75, 'bom'], [75, 100, 'otimo']];
+    const TODOS = ['municipio', 'unidade', 'equipe'];
+    const nota = (o) => Object.assign({ min: 0, max: 100, d: 1, fmt: 1, un: '', f: F100, niveis: TODOS, tipos: ['eSF', 'eAP'], apura: 'media',
+      fonte: 'Origem: PEC, lista nominal da nota ' + o.cod + ' por equipe; a plataforma guarda só pontos e pessoas.' }, o);
+    let lista = [
+      nota({ g: 'qualidade', cod: 'C1', nome: 'Mais acesso', mun: 81.1, ant: 80.7, d: 0, un: '%', apura: 'razao', sentido: 'Ótimo entre 50% e 70% de demanda programada; acima de 70% volta a Regular.',
+        fonte: 'Origem: PEC, atendimentos de cada equipe separados em demanda programada e espontânea.',
+        f: [[0, 10, 'regular'], [10, 30, 'suficiente'], [30, 50, 'bom'], [50, 70, 'otimo'], [70, 100, 'regular']] }),
+      nota({ g: 'qualidade', cod: 'C2', nome: 'Cuidado no desenvolvimento infantil', mun: 46.3, ant: 47.0, idx: 0,
+        serie: [38.5, 39.0, 39.8, 40.1, 40.6, 40.9, 41.2, 42.8, 44.0, 45.1, 47.0, 46.3],
+        prat: [['A', '1ª consulta até 30 dias de vida', 20, .82], ['B', '9 ou mais consultas até 2 anos', 20, .41], ['C', '9 ou mais registros de peso e altura', 20, .38],
+               ['D', '2 visitas do ACS (até 30 dias e até 6 meses)', 20, .36], ['E', 'Vacinas completas', 20, .55]] }),
+      nota({ g: 'qualidade', cod: 'C3', nome: 'Cuidado na gestação e puerpério', mun: 58.9, ant: 61.2, idx: 1,
+        serie: [46.5, 47.9, 48.2, 49.0, 50.4, 51.1, 52.1, 54.6, 55.0, 57.3, 61.2, 58.9],
+        prat: [['A', '1ª consulta até a 12ª semana', 10, .71], ['B', '7 ou mais consultas', 9, .34], ['C', '7 ou mais aferições de pressão', 9, .39],
+               ['D', '7 ou mais registros de peso e altura', 9, .42], ['E', '3 visitas do ACS', 9, .58], ['F', 'dTpa a partir da 20ª semana', 9, .63],
+               ['G', 'Testes no 1º trimestre', 9, .76], ['H', 'Testes no 3º trimestre', 9, .45], ['I', 'Consulta no puerpério', 9, .55],
+               ['J', 'Visita do ACS no puerpério', 9, .47], ['K', 'Atendimento de saúde bucal', 9, .61]] }),
+      nota({ g: 'qualidade', cod: 'C4', nome: 'Cuidado da pessoa com diabetes', mun: 61.6, ant: 60.8, idx: 2,
+        serie: [50.2, 51.0, 51.9, 52.5, 53.8, 54.9, 55.8, 57.0, 58.4, 59.9, 60.8, 61.6],
+        prat: [['A', 'Consulta nos últimos 6 meses', 20, .78], ['B', 'Pressão nos últimos 6 meses', 15, .82], ['C', 'Peso e altura em 12 meses', 15, .64],
+               ['D', '2 visitas do ACS em 12 meses', 20, .48], ['E', 'Hemoglobina glicada em 12 meses', 15, .59], ['F', 'Avaliação dos pés em 12 meses', 15, .37]] }),
+      nota({ g: 'qualidade', cod: 'C5', nome: 'Cuidado da pessoa com hipertensão', mun: 65.2, ant: 64.5, idx: 3,
+        serie: [55.0, 55.8, 56.4, 57.1, 58.0, 59.2, 60.1, 61.4, 62.0, 63.8, 64.5, 65.2],
+        prat: [['A', 'Consulta nos últimos 6 meses', 25, .74], ['B', 'Pressão nos últimos 6 meses', 25, .80], ['C', 'Peso e altura em 12 meses', 25, .62], ['D', '2 visitas do ACS em 12 meses', 25, .45]] }),
+      nota({ g: 'qualidade', cod: 'C6', nome: 'Cuidado da pessoa idosa', mun: 57.4, ant: 55.1, idx: 4,
+        serie: [44.1, 44.8, 45.2, 46.0, 46.9, 47.8, 49.0, 50.6, 52.2, 53.9, 55.1, 57.4],
+        prat: [['A', 'Consulta em 12 meses', 25, .70], ['B', 'Peso e altura em 12 meses', 25, .58], ['C', '2 visitas do ACS em 12 meses', 25, .41], ['D', 'Vacina da gripe em 12 meses', 25, .61]] }),
+      nota({ g: 'qualidade', cod: 'C7', nome: 'Cuidado da mulher na prevenção do câncer', mun: 39.4, ant: 38.2, exemplo: true,
+        fonte: 'Origem: PEC, exames e consultas das mulheres do território (desde 2026 inclui o teste molecular de HPV).' }),
+      nota({ g: 'bucal', cod: 'B1', nome: 'Primeira consulta programada', mun: 0.92, ant: 0.88, max: 2, fmt: 2, un: '%', tipos: ['eSB'], exemplo: true, apura: 'razao',
+        fonte: 'Origem: PEC, primeiras consultas odontológicas programadas de cada equipe de saúde bucal (eSB 20h e 30h incluídas).', f: [[0, 0.25, 'regular'], [0.25, 0.75, 'suficiente'], [0.75, 1.25, 'bom'], [1.25, 2, 'otimo']] }),
+      nota({ g: 'bucal', cod: 'B2', nome: 'Tratamento concluído', mun: 48.0, ant: 45.5, un: '%', tipos: ['eSB'], exemplo: true, apura: 'razao',
+        fonte: 'Origem: PEC, tratamentos odontológicos concluídos pelas equipes de saúde bucal.' }),
+      nota({ g: 'bucal', cod: 'B3', nome: 'Taxa de exodontia', mun: 8.1, ant: 8.6, max: 20, d: 0, un: '%', tipos: ['eSB'], exemplo: true, apura: 'razao', sentido: 'Ótimo entre 3% e 10%; muito abaixo ou muito acima perde pontos.',
+        fonte: 'Origem: PEC, procedimentos odontológicos das equipes de saúde bucal (TSB entra no denominador desde 2026).', f: [[0, 3, 'regular'], [3, 10, 'otimo'], [10, 12, 'bom'], [12, 14, 'suficiente'], [14, 20, 'regular']] }),
+      nota({ g: 'bucal', cod: 'B4', nome: 'Escovação supervisionada em faixa etária escolar (6 a 12 anos)', mun: 0.31, ant: 0.18, max: 2, fmt: 2, un: '%', tipos: ['eSB'], exemplo: true, apura: 'razao',
+        fonte: 'Origem: PEC, atividades coletivas de escovação supervisionada.', f: [[0, 0.25, 'regular'], [0.25, 0.5, 'suficiente'], [0.5, 1, 'bom'], [1, 2, 'otimo']] }),
+      nota({ g: 'bucal', cod: 'B5', nome: 'Procedimentos odontológicos preventivos', mun: 71, ant: 73, d: 0, fmt: 0, un: '%', tipos: ['eSB'], exemplo: true, apura: 'razao', sentido: 'Ótimo entre 65% e 85%; acima de 85% volta a Regular.',
+        fonte: 'Origem: PEC, procedimentos odontológicos das equipes de saúde bucal.', f: [[0, 40, 'regular'], [40, 55, 'suficiente'], [55, 65, 'bom'], [65, 85, 'otimo'], [85, 100, 'regular']] }),
+      nota({ g: 'bucal', cod: 'B6', nome: 'Tratamento restaurador atraumático', mun: 4.2, ant: 3.9, max: 12, un: '%', tipos: ['eSB'], exemplo: true, apura: 'razao',
+        fonte: 'Origem: PEC, procedimentos restauradores das equipes de saúde bucal.', f: [[0, 3, 'regular'], [3, 6, 'suficiente'], [6, 8, 'bom'], [8, 12, 'otimo']] }),
+      nota({ g: 'emulti', cod: 'M1', nome: 'Média de atendimentos por pessoa pela eMulti', mun: 2.4, ant: 2.2, max: 4, niveis: ['municipio', 'equipe'], tipos: ['eMulti'], exemplo: true, apura: 'razao',
+        fonte: 'Origem: PEC, atendimentos das equipes eMulti nos últimos 4 meses (janela da nota revista em 2026).', f: [[0, 1, 'regular'], [1, 2, 'suficiente'], [2, 3, 'bom'], [3, 4, 'otimo']] }),
+      nota({ g: 'emulti', cod: 'M2', nome: 'Ações interprofissionais realizadas pela eMulti', mun: 1.8, ant: 1.6, max: 7, niveis: ['municipio', 'equipe'], tipos: ['eMulti'], exemplo: true, apura: 'razao',
+        fonte: 'Origem: PEC, ações registradas pelas equipes eMulti nos últimos 4 meses.', f: [[0, 1, 'regular'], [1, 2.5, 'suficiente'], [2.5, 5, 'bom'], [5, 7, 'otimo']] }),
+      nota({ g: 'ecr', cod: 'CR1', nome: 'Mais acesso à eCR', mun: 100, ant: 96, fmt: 0, niveis: ['municipio', 'equipe'], tipos: ['eCR'], exemplo: true, apura: 'razao',
+        fonte: 'Origem: PEC, atendimentos da equipe de Consultório na Rua.' }),
+      nota({ g: 'ecr', cod: 'CR2', nome: 'Cuidado na gestação', mun: 50, ant: 45, fmt: 0, niveis: ['municipio', 'equipe'], tipos: ['eCR'], exemplo: true,
+        fonte: 'Origem: PEC, gestantes acompanhadas pela equipe de Consultório na Rua.' }),
+      nota({ g: 'ecr', cod: 'CR3', nome: 'Rastreio de infecções sexualmente transmissíveis', mun: 62, ant: 58, fmt: 0, niveis: ['municipio', 'equipe'], tipos: ['eCR'], exemplo: true,
+        fonte: 'Origem: PEC, testes rápidos registrados pela equipe de Consultório na Rua.' }),
+      nota({ g: 'ecr', cod: 'CR4', nome: 'Cuidado da pessoa com tuberculose', mun: 40, ant: 40, fmt: 0, niveis: ['municipio', 'equipe'], tipos: ['eCR'], exemplo: true,
+        fonte: 'Origem: PEC, pessoas com tuberculose acompanhadas pela equipe de Consultório na Rua.' }),
+      nota({ g: 'vinculo', cod: 'CVAT-C', nome: 'Vínculo: dimensão cadastro', mun: 92.4, ant: 91.8, un: '%', f: null, exemplo: true, apura: 'foto',
+        fonte: 'Origem: PEC, cadastros individuais e domiciliares do território.' }),
+      nota({ g: 'vinculo', cod: 'CVAT-A', nome: 'Vínculo: dimensão acompanhamento', mun: 64.0, ant: 62.5, un: '%', f: null, exemplo: true,
+        fonte: 'Origem: PEC, acompanhamentos registrados das pessoas cadastradas.' })
+    ];
+    lista = REAL.ajustar(lista);
+    const N = {};
+    lista.forEach((n) => { N[n.cod] = n; });
+    const GRUPOS = [
+      { id: 'qualidade', titulo: 'eSF e eAP · qualidade do cuidado', sigla: 'C1 a C7', quem: 'equipes de Saúde da Família e de Atenção Primária', data: '23/09/2025' },
+      { id: 'bucal', titulo: 'Saúde bucal (eSB)', sigla: 'B1 a B6', quem: 'equipes de saúde bucal', data: '02/10/2026' },
+      { id: 'emulti', titulo: 'eMulti', sigla: 'M1 e M2', quem: 'equipes multiprofissionais', data: '01/07/2026' },
+      { id: 'ecr', titulo: 'Consultório na Rua (eCR)', sigla: 'CR1 a CR4', quem: 'equipe de Consultório na Rua', data: '02/10/2026' },
+      { id: 'vinculo', titulo: 'Vínculo e acompanhamento territorial', sigla: 'CVAT', quem: 'equipes eSF e eAP', data: '' }
+    ];
+    const G = {};
+    GRUPOS.forEach((g) => { G[g.id] = g; });
+    const pubGrupo = (g) => g.data ? 'notas do MS de ' + g.data : 'componente à parte (Nota Técnica nº 8/2026)';
+    const apuraTxt = (n) => n.apura === 'foto' ? ' No período, vale a foto do último mês.'
+      : n.apura === 'razao' ? ' No período, soma os numeradores e os denominadores de todos os meses e divide.'
+      : ' No período, a nota é a média dos meses' + (n.cod === 'C2' || n.cod === 'C3' ? ' com desfecho (regra da nota).' : ' (regra da nota).');
+    const refNota = (n) => G[n.g].data ? ' Regra: Nota metodológica ' + n.cod + ' do Ministério da Saúde, publicada em ' + G[n.g].data + '.'
+      : ' Regra: Nota Técnica nº 8/2026 do Ministério da Saúde (componente Vínculo e Acompanhamento Territorial, fora das notas metodológicas).';
+    const infoNota = (n) => 'Coletado do PEC e-SUS pela extensão. ' + n.fonte + apuraTxt(n) + refNota(n) + (REAL.ultima ? ' Última coleta: ' + REAL.ultima + '.' : '');
+
+    // Unidades, equipes e valores: dados reais da coleta (painel/js/notas-real.js).
+    const nomesUn = REAL.unidades;
+    const equipesDa = (u) => REAL.equipesDa(u);
+    const unidadeTem = (u, nn) => REAL.tem(nn, { u, e: '' });
+    const todasEquipes = REAL.todasEquipes();
+    const esc = (n) => (n.max - n.min) / 100;
+    const corta = (n, x) => +Math.max(n.min, Math.min(n.max, x)).toFixed(n.fmt);
+    const pessoas = (cod, u, e) => REAL.pessoas(N[cod], u, e);
+
+    // ===== INTERVALO: mensal (um ou mais meses) ou quadrimestral (um ou mais quadrimestres).
+    const QS = REAL.quads;
+    const qAno = (id) => +String(id).split('-')[0], qNum = (id) => +String(id).split('-')[1];
+    const qIdx = (id) => qAno(id) * 3 + qNum(id) - 1;
+    const qDe = (i) => Math.floor(i / 3) + '-' + (i % 3 + 1);
+    const mesesDoQ = (id) => { const b = qAno(id) * 12 + (qNum(id) - 1) * 4; return intervalo(b, b + 3); };
+    const normMeses = (arr) => Array.from(new Set((arr || []).map(Number).filter((a) => REAL.temMes(a)))).sort((x, y) => x - y);
+    const normQuads = (arr) => Array.from(new Set((arr || []).filter((id) => QS.indexOf(id) >= 0))).sort((x, y) => qIdx(x) - qIdx(y));
+    const rotQuads = (ids) => {
+      if (!ids.length) return '';
+      const anos = [];
+      ids.forEach((id) => { let g = anos[anos.length - 1]; if (!g || g.a !== qAno(id)) { g = { a: qAno(id), q: [] }; anos.push(g); } g.q.push(qNum(id) + 'º'); });
+      if (anos.length === 1) return juntar(anos[0].q) + (ids.length > 1 ? ' quadrimestres de ' : ' quadrimestre de ') + anos[0].a;
+      return 'quadrimestres ' + juntar(ids.map((id) => qNum(id) + 'º/' + qAno(id)));
+    };
+    // Comparação: o período anterior de mesmo tamanho (cada mês ou quadrimestre recua o tamanho da seleção).
+    const tempoDe = (ehQ, ms, qs) => {
+      if (ehQ ? !qs.length : !ms.length) return { blocos: [], periodo: [], mesesAnt: [], compOk: false, compTxt: '', perTxt: '', perCurto: '' };
+      let blocos, mesesAnt, compTxt, perTxt, perCurto;
+      if (ehQ) {
+        blocos = qs.map((id) => {
+          const todos = mesesDoQ(id), feitos = todos.filter((a) => REAL.temMes(a)), aberto = feitos.length < 4;
+          return { id, todos, meses: feitos, aberto, rot: qNum(id) + 'º/' + String(qAno(id)).slice(2),
+            longo: qNum(id) + 'º quadrimestre de ' + qAno(id) + (aberto ? ' (até agora: ' + rotJanela(feitos) + ')' : ' (' + rotJanela(todos) + ')') };
+        });
+        const span = qIdx(qs[qs.length - 1]) - qIdx(qs[0]) + 1;
+        const qAnt = qs.map((id) => qDe(qIdx(id) - span));
+        mesesAnt = [].concat(...qAnt.map(mesesDoQ));
+        compTxt = rotQuads(qAnt);
+        const ab = blocos.find((b) => b.aberto);
+        perTxt = rotQuads(qs) + (ab ? (qs.length > 1 ? ' (o ' + qNum(ab.id) + 'º de ' + qAno(ab.id) + ' até ' + rotMes(ab.meses[ab.meses.length - 1]) + ')' : ' (até agora: ' + rotJanela(ab.meses) + ')') : '');
+        perCurto = qs.length === 1 ? rotQuads(qs) : juntar(blocos.map((b) => b.rot)) + ' (quadrimestres)';
+      } else {
+        const mesmoAno = Math.floor(ms[0] / 12) === Math.floor(ms[ms.length - 1] / 12);
+        blocos = ms.map((a) => ({ id: String(a), todos: [a], meses: [a], aberto: false, rot: mesmoAno ? ML[a % 12] : rotMes(a), longo: rotMesLongo(a) }));
+        const span = ms[ms.length - 1] - ms[0] + 1;
+        mesesAnt = ms.map((a) => a - span);
+        compTxt = rotMeses(mesesAnt);
+        perTxt = ms.length === 1 ? rotMesLongo(ms[0]) : rotMeses(ms) + ' (' + ms.length + ' meses)';
+        perCurto = rotMeses(ms);
+      }
+      const periodo = [].concat(...blocos.map((b) => b.meses)).sort((x, y) => x - y);
+      return { blocos, periodo, mesesAnt, compOk: mesesAnt.length > 0 && mesesAnt[0] >= INICIO, compTxt, perTxt, perCurto };
+    };
+    const ehQuad = st.intervalo === 'quad';
+    let tp = tempoDe(ehQuad, normMeses(st.meses), normQuads(st.quads));
+    if (!tp.periodo.length) tp = tempoDe(ehQuad, [ATUAL], [REAL.quadAtual]);
+    const { blocos, periodo, mesesAnt, compOk, compTxt, perTxt, perCurto } = tp;
+    const temComp = !!st.comparar && compOk;
+
+    // ===== VISUALIZAÇÃO: município, unidades (uma ou mais) ou equipes (uma ou mais).
+    const locaisDe = (vs, us, es) => {
+      if (vs === 'unidades') return nomesUn.filter((u) => (us || []).indexOf(u) >= 0).map((u) => ({ id: u, u, e: '', nome: u, tipo: null, sub: '' }));
+      if (vs === 'equipes') return todasEquipes.filter((x) => (es || []).indexOf(x.id) >= 0).map((x) => ({ id: x.id, u: x.u, e: x.nome, nome: x.nome, tipo: x.tipo, sub: x.tipo + ' · ' + x.u }));
+      return [];
+    };
+    const MUN = { id: '', u: '', e: '', nome: 'Município', tipo: null, sub: '' };
+    let visao = ['unidades', 'equipes'].indexOf(st.visao) >= 0 ? st.visao : 'municipio';
+    let locais = locaisDe(visao, st.unidades, st.equipes);
+    if (!locais.length) { visao = 'municipio'; locais = [MUN]; }
+    const varios = locais.length > 1;
+    const quemPl = visao === 'unidades' ? 'unidades' : 'equipes';
+    const localNome = visao === 'municipio' ? 'Município' : varios ? locais.length + ' ' + quemPl : locais[0].nome;
+    const aplica0 = (nn, l) => !l.u ? true : !l.e ? (nn.niveis.indexOf('unidade') >= 0 && unidadeTem(l.u, nn)) : (nn.niveis.indexOf('equipe') >= 0 && nn.tipos.indexOf(l.tipo) >= 0);
+    const aplica = (nn, l) => aplica0(nn, l) && REAL.tem(nn, l);
+    const locaisDa = (nn) => locais.filter((l) => aplica(nn, l));
+    const motivoFora = (nn) => {
+      if (visao === 'municipio' || locaisDa(nn).length) return null;
+      if (visao === 'unidades') return nn.niveis.indexOf('unidade') < 0 ? 'medidas por equipe: escolha “Equipes”' : (varios ? 'nenhuma das unidades tem equipe ' : 'a unidade não tem equipe ') + nn.tipos.join(' ou ');
+      return nn.niveis.indexOf('equipe') < 0 ? 'medidas só no município' : 'só para equipes ' + nn.tipos.join(' ou ');
+    };
+    // Vários lugares juntos: cada um pesa pelo número de pessoas (no sistema real, soma de numeradores e denominadores).
+    const vL = (cod, l, ms) => REAL.valor(N[cod], [l], ms);
+    const vG = (cod, ls, ms) => REAL.valor(N[cod], ls, ms);
+
+    // Faixa, ordenação e régua.
+    const faixaDe = (n, v) => {
+      if (!n.f) return { k: 'neutro', rot: 'Sem faixa oficial' };
+      const s = n.f.find((s, k) => (k === 0 ? v >= s[0] : v > s[0]) && v <= s[1]) || n.f[n.f.length - 1];
+      return { k: s[2], rot: s[3] || nomeF[s[2]] };
+    };
+    const centroOtimo = (n) => { const s = (n.f || []).find((s) => s[2] === 'otimo'); return s ? (s[0] + s[1]) / 2 : (n.min + n.max) / 2; };
+    const score = (n, v) => n.d !== 0 ? v * n.d : peso[faixaDe(n, v).k] * 1000 - Math.abs(v - centroOtimo(n));
+    const mudanca = (n, v, a) => a === null || a === undefined ? 0 : (score(n, v) - score(n, a)) / esc(n);
+    const unidMedida = (nn) => nn.un === '%' ? ' p.p.' : nn.max <= 10 ? '' : ' pts';
+    const dominio = (n, vals) => {
+      const amp = n.max - n.min;
+      const passo = amp <= 2.5 ? 0.1 : amp <= 10 ? 0.5 : amp <= 50 ? 2 : 5;
+      let lo = Math.floor((Math.min.apply(null, vals) - passo) / passo) * passo;
+      let hi = Math.ceil((Math.max.apply(null, vals) + passo) / passo) * passo;
+      lo = Math.max(n.min, lo); hi = Math.min(n.max, hi);
+      if (hi - lo < passo * 4) { lo = Math.max(n.min, lo - passo * 2); hi = Math.min(n.max, hi + passo * 2); }
+      return [+lo.toFixed(2), +hi.toFixed(2), passo < 1 ? 1 : 0];
+    };
+    const segmentos = (n, lo, hi) => {
+      if (!n || !n.f) return [{ largura: '100%', cor: tinta.neutro }];
+      return n.f.map((s) => ({ a: Math.max(lo, s[0]), b: Math.min(hi, s[1]), k: s[2] })).filter((s) => s.b > s.a)
+        .map((s) => ({ largura: ((s.b - s.a) / (hi - lo) * 100).toFixed(2) + '%', cor: tinta[s.k] }));
+    };
+    const eixoDe = (n, lo, hi, casas) => {
+      const un = n.un === '%' ? '%' : '';
+      const marcas = [{ pos: '0%', desloc: '0', txt: num(lo, casas) + un }];
+      if (n.f) n.f.forEach((s, k) => {
+        if (k > 0 && s[0] > lo && s[0] < hi) marcas.push({ pos: ((s[0] - lo) / (hi - lo) * 100).toFixed(2) + '%', desloc: '-50%', txt: num(s[0], s[0] % 1 ? 2 : 0) + ' · ' + (s[3] || nomeF[s[2]]) });
+      });
+      marcas.push({ pos: '100%', desloc: '-100%', txt: num(hi, casas) + un });
+      return marcas;
+    };
+
+    const rel = ['geral', 'apoio', 'pontos', 'meses'].indexOf(st.rel) >= 0 ? st.rel : 'geral';
+
+    // Colunas de acompanhamento: os meses (ou quadrimestres) escolhidos lado a lado.
+    // Com um quadrimestre só, as colunas são os 4 meses dele e aparece o caminho até o fechamento.
+    let colunas = [], modo = '';
+    if (ehQuad && blocos.length === 1) {
+      modo = 'quadMeses';
+      colunas = blocos[0].todos.map((a) => ({ txt: ML[a % 12], meses: [a], futuro: !REAL.temMes(a), parcial: false, longo: rotMesLongo(a) }));
+    } else if (blocos.length > 1) {
+      modo = ehQuad ? 'quads' : 'meses';
+      colunas = blocos.slice(-12).map((b) => ({ txt: b.rot, meses: b.meses, futuro: false, parcial: b.aberto, longo: b.longo }));
+    }
+    const temMesesCols = (rel === 'geral' || rel === 'apoio') && colunas.length > 0;
+    const temCaminho = temMesesCols && modo === 'quadMeses';
+    const bQ = modo === 'quadMeses' ? blocos[0] : null;
+    const faltam = bQ ? bQ.todos.filter((a) => a > ATUAL) : [];
+    const quadAberto = temCaminho && faltam.length > 0;
+    const acompanhar = (cod, ls) => {
+      if (!temMesesCols || !ls.length) return null;
+      const nn = N[cod];
+      const vals = colunas.map((c) => (c.futuro ? null : vG(cod, ls, c.meses)));
+      const mesesCel = vals.map((v, i) => v === null
+        ? { txt: '—', fundo: 'transparent', borda: '1px dashed ' + T.tControle, cor: T.tSuave, rotulo: colunas[i].longo + ': ainda não fechou' }
+        : { txt: num(v, nn.fmt), fundo: tinta[faixaDe(nn, v).k], borda: colunas[i].parcial ? '1.5px dashed ' + T.tRefLinha : '1px solid transparent', cor: T.tTexto,
+            rotulo: colunas[i].longo + ': ' + num(v, nn.fmt) + nn.un + ' (' + faixaDe(nn, v).rot + ')' });
+      if (!temCaminho) return { mesesCel, proj: null, k: '', caminho: '', caminhoSub: '', caminhoFundo: 'transparent' };
+      const feitos = vals.filter((v) => v !== null);
+      const soma = feitos.reduce((t, v) => t + v, 0), ult = feitos[feitos.length - 1];
+      const proj = nn.apura === 'foto' ? ult : corta(nn, (soma + faltam.length * ult) / colunas.length);
+      const fp = faixaDe(nn, proj);
+      let sub = quadAberto ? 'no ritmo de ' + rotMes(ATUAL) : '';
+      if (quadAberto && nn.f && nn.d === 1 && nn.apura !== 'foto') {
+        const prox = nn.f.slice().sort((x, y) => x[0] - y[0]).find((f) => f[0] > proj + 1e-9);
+        if (prox) {
+          const precisa = (colunas.length * prox[0] - soma) / faltam.length, nomeProx = prox[3] || nomeF[prox[2]];
+          sub = precisa > nn.max ? nomeProx + ' fora de alcance neste quadrimestre'
+            : 'para ' + nomeProx + ': ' + (faltam.length === 1 ? num(precisa, nn.fmt) + nn.un + ' em ' + rotMes(faltam[0]) : 'média de ' + num(precisa, nn.fmt) + nn.un + ' em ' + rotJanela(faltam));
+        }
+      }
+      return {
+        mesesCel, proj, k: fp.k, caminhoSub: sub, caminhoFundo: tinta[fp.k],
+        caminho: nn.f ? (quadAberto ? 'Fecha em ' : 'Fechou em ') + fp.rot : (quadAberto ? 'Previsto: ' : 'Fechou em ') + num(proj, nn.fmt) + nn.un
+      };
+    };
+
+    const alternarInfo = (k) => () => this.setState({ info: this.state.info === k ? '' : k });
+    const linha = (o) => {
+      const lo = o.lo, hi = o.hi;
+      const pct = (x) => Math.max(0, Math.min(1, (x - lo) / (hi - lo))) * 100;
+      const temA = o.a !== null && o.a !== undefined;
+      const p = pct(o.v), pa = temA ? pct(o.a) : p;
+      const dif = temA ? o.v - o.a : 0;
+      let melhora = 0;
+      if (temA && dif !== 0) {
+        if (o.n && o.n.d === 0) { const s = score(o.n, o.v) - score(o.n, o.a); melhora = s > 0 ? 1 : s < 0 ? -1 : 0; }
+        else melhora = dif * (o.n ? o.n.d : 1) > 0 ? 1 : -1;
+      }
+      const tipo = o.tipo || 'item';
+      const tam = tipo === 'ref' ? 16 : tipo === 'filho' ? 12 : 18;
+      const mk = T.marca[tipo];
+      const fmt = o.fmt === undefined ? (o.n ? o.n.fmt : 1) : o.fmt;
+      const temRef = o.ref !== null && o.ref !== undefined;
+      const ac = o.acomp || null, temProj = !!ac && ac.proj !== null && ac.proj !== undefined;
+      return {
+        cab: false, normal: true,
+        posicao: o.posicao || '', nome: o.nome, sub: (o.sub || '') + (o.exemplo ? (o.sub ? ' · ' : '') + 'números de exemplo' : ''),
+        abrivel: !!o.alternar, fixo: !o.alternar, alternar: o.alternar || (() => {}), expandido: o.expandido ? 'true' : 'false', seta: o.expandido ? '▾' : '▸',
+        rotuloAbrir: o.rotuloAbrir || (o.nome + (o.expandido ? ': fechar equipes' : ': ver equipes')),
+        temInfo: !!o.info, abrirInfo: o.info ? alternarInfo(o.info) : (() => {}), infoExp: o.info && st.info === o.info ? 'true' : 'false',
+        mostraInfo: !!o.info && st.info === o.info, infoTxt: o.infoTxt || '',
+        fonte: tipo === 'filho' ? '14px' : T.tTam, pesoNome: tipo === 'ref' || o.destaque ? T.tPesoForte : T.tPeso, corNome: tipo === 'filho' ? T.tSuave : T.tTexto,
+        recuo: tipo === 'filho' ? '22px' : '0', pad: tipo === 'filho' ? '6px 20px' : '10px 20px',
+        borda: tipo === 'filho' ? '1px dashed ' + T.tDivisa : '1px solid ' + T.tDivisa,
+        fundo: tipo === 'ref' ? T.tRefFundo : (tipo === 'filho' || o.realce) ? T.tRealce : 'transparent',
+        segmentos: o.segmentos,
+        refPos: temRef ? pct(o.ref).toFixed(2) + '%' : '0%', refOp: !temRef || tipo === 'ref' ? 0 : 0.85,
+        caudaEsq: Math.min(p, pa).toFixed(2) + '%', caudaLarg: Math.abs(p - pa).toFixed(2) + '%',
+        caudaCor: melhora > 0 ? T.tMelhorou : melhora < 0 ? T.tPiorou : T.tSemMudanca,
+        posX: p.toFixed(2) + '%', mTam: tam + 'px', mMargem: (-tam / 2) + 'px', mTopo: (17 - tam / 2) + 'px',
+        mRaio: tipo === 'ref' ? '2px' : '50%', mGiro: tipo === 'ref' ? '45deg' : '0deg',
+        mFundo: mk[0], mBorda: mk[1], mAnel: mk[2], mBordaLarg: tipo === 'filho' ? '2.5px' : '3px',
+        valor: o.valorTxt || num(o.v, fmt) + (o.un || ''), vFonte: tipo === 'filho' ? '16px' : '18px',
+        delta: o.deltaTxt !== undefined ? o.deltaTxt : (!temA ? '—' : dif === 0 ? '=' : (dif > 0 ? '▲ ' : '▼ ') + num(Math.abs(dif), fmt)),
+        deltaCor: o.deltaCor || (melhora > 0 ? T.tSobe : melhora < 0 ? T.tDesce : T.tSuave),
+        descricao: o.nome + ': ' + (o.valorTxt || num(o.v, fmt) + (o.un || '')) + (temA ? '; em ' + compTxt + ', ' + num(o.a, fmt) + (o.un || '') : '')
+          + (temProj && quadAberto ? '; no ritmo atual, fecha em ' + num(ac.proj, fmt) + (o.un || '') : ''),
+        subValor: ac && temA ? (dif === 0 ? '=' : (dif > 0 ? '▲ ' : '▼ ') + num(Math.abs(dif), fmt)) : '',
+        mesesCel: ac ? ac.mesesCel : [], caminho: ac ? ac.caminho : '', caminhoSub: ac ? ac.caminhoSub : '',
+        caminhoFundo: ac ? ac.caminhoFundo : 'transparent',
+        projPos: temProj ? pct(ac.proj).toFixed(2) + '%' : '0%', projOp: temProj && quadAberto ? 1 : 0, projCor: mk[2]
+      };
+    };
+
+    // Notas na tela e por que alguma não aparece no recorte.
+    const visiveis = lista.map((n) => n.cod).filter((c) => !st.ocultas[c]);
+    const resumirCodigos = (cods, baseCods) => GRUPOS.map((g) => {
+      const doGrupo = cods.filter((c) => N[c].g === g.id);
+      if (!doGrupo.length) return '';
+      return doGrupo.length === baseCods.filter((c) => N[c].g === g.id).length && doGrupo.length >= 2 ? g.sigla : doGrupo.join(', ');
+    }).filter((x) => x).join(', ');
+    const descLocal = visao === 'municipio' ? 'o município' : varios ? 'as ' + locais.length + ' ' + quemPl + ' escolhidas' : visao === 'unidades' ? 'a ' + locais[0].nome : 'a equipe ' + locais[0].nome;
+
+    let linhas = [], resumo = [], eixo = [], tituloLista = '', comoLer = '', pergunta = '', descricao = '', foraTxt = '', infoListaTxt = '';
+    let rotuloNome = 'Nota', rotuloValor = 'Resultado', rotuloDelta = temComp ? 'vs ' + compTxt : '';
+    let legendaPonto = 'resultado do período', legendaRef = '', legendaTraco = '', gruposNota = [], cod = '';
+    let temAbrirTodas = false, rotuloAbrirTodas = '', alternarTodas = () => {};
+
+    if (rel === 'geral') {
+      const porMotivo = {};
+      visiveis.forEach((c) => { const m = motivoFora(N[c]); if (m) (porMotivo[m] = porMotivo[m] || []).push(c); });
+      foraTxt = Object.keys(porMotivo).length ? 'Não aparecem aqui: ' + Object.keys(porMotivo).map((m) => resumirCodigos(porMotivo[m], visiveis) + ' (' + m + ')').join('; ') + '.' : '';
+      const itens = visiveis.filter((c) => !motivoFora(N[c])).map((c) => {
+        const nn = N[c], ls = visao === 'municipio' ? [MUN] : locaisDa(nn), v = vG(c, ls, periodo);
+        return { c, nn, ls, v, a: temComp ? vG(c, ls, mesesAnt) : null, fx: faixaDe(nn, v), ac: acompanhar(c, ls) };
+      });
+      const multis = itens.filter((x) => x.ls.length > 1).map((x) => x.c);
+      const abertas = st.abertas || {};
+      const algumaAberta = multis.some((c) => abertas[c]);
+      const variosGrupos = GRUPOS.filter((g) => itens.some((x) => x.nn.g === g.id)).length > 1;
+      GRUPOS.forEach((g) => {
+        const doGrupo = itens.filter((x) => x.nn.g === g.id);
+        if (!doGrupo.length) return;
+        if (variosGrupos) linhas.push({ cab: true, normal: false, nome: g.titulo, sub: g.sigla + ' · ' + g.quem + ' · ' + pubGrupo(g) });
+        doGrupo.forEach((x) => {
+          const multi = x.ls.length > 1, aberta = multi && !!abertas[x.c];
+          const seg = segmentos(x.nn, x.nn.min, x.nn.max);
+          let sub = x.fx.rot + (quadAberto ? ' até agora' : '');
+          if (multi) {
+            const fxs = x.ls.map((l) => faixaDe(x.nn, vL(x.c, l, periodo)).k);
+            const cont = ['otimo', 'bom', 'suficiente', 'regular'].map((k) => [k, fxs.filter((f) => f === k).length]).filter((p) => p[1]).map((p) => p[1] + ' em ' + nomeF[p[0]]).join(', ');
+            sub = (x.nn.f ? sub + ' com as ' + x.ls.length + ' juntas' : 'as ' + x.ls.length + ' juntas') + (cont ? ' · ' + cont : '');
+          } else if (varios) sub += ' · só ' + x.ls[0].nome;
+          linhas.push(linha({ nome: x.nn.cod + ' · ' + x.nn.nome, sub, exemplo: x.nn.exemplo, info: 'n-' + x.c, infoTxt: infoNota(x.nn),
+            v: x.v, a: x.a, n: x.nn, lo: x.nn.min, hi: x.nn.max, ref: null, segmentos: seg, un: x.nn.un, acomp: x.ac, realce: aberta,
+            alternar: multi ? () => { const o = { ...(this.state.abertas || {}) }; if (o[x.c]) delete o[x.c]; else o[x.c] = true; this.setState({ abertas: o }); } : null,
+            expandido: aberta, rotuloAbrir: x.nn.cod + (aberta ? ': fechar ' : ': ver cada uma das ') + quemPl }));
+          if (aberta) x.ls.forEach((l) => {
+            const vl = vL(x.c, l, periodo);
+            linhas.push(linha({ tipo: 'filho', nome: l.nome, sub: (l.e ? l.sub + ' · ' : '') + faixaDe(x.nn, vl).rot, v: vl, a: temComp ? vL(x.c, l, mesesAnt) : null,
+              n: x.nn, lo: x.nn.min, hi: x.nn.max, ref: x.v, segmentos: seg, un: x.nn.un, acomp: acompanhar(x.c, [l]) }));
+          });
+        });
+      });
+      if (multis.length) {
+        const todas = multis.every((c) => abertas[c]);
+        temAbrirTodas = true;
+        rotuloAbrirTodas = todas ? 'Fechar todas as notas' : 'Abrir todas (ver cada ' + (visao === 'unidades' ? 'unidade' : 'equipe') + ')';
+        alternarTodas = () => { const o = {}; if (!todas) multis.forEach((c) => { o[c] = true; }); this.setState({ abertas: o }); };
+      }
+      const comF = itens.filter((x) => x.nn.f);
+      const bons = comF.filter((x) => x.fx.k === 'bom' || x.fx.k === 'otimo').length;
+      const regulares = itens.filter((x) => x.fx.k === 'regular').map((x) => x.c);
+      const pior = temComp ? itens.slice().sort((x, y) => mudanca(x.nn, x.v, x.a) - mudanca(y.nn, y.v, y.a))[0] : null;
+      const exemplos = itens.filter((x) => x.nn.exemplo).length;
+      if (itens.length) resumo = [
+        { grande: bons + ' de ' + comF.length, texto: 'notas em Bom ou Ótimo' + (varios ? ' (contando as ' + quemPl + ' juntas)' : '') },
+        { grande: regulares.length ? (regulares.length > 4 ? regulares.length + ' notas' : regulares.join(', ')) : 'nenhuma', texto: regulares.length ? 'em Regular' : 'nota em Regular' },
+        temComp
+          ? (pior && mudanca(pior.nn, pior.v, pior.a) < 0 ? { grande: pior.c + ' ' + sinal(pior.v - pior.a, pior.nn.fmt) + unidMedida(pior.nn), texto: 'maior piora em relação a ' + compTxt }
+            : { grande: 'nenhuma', texto: 'nota piorou em relação a ' + compTxt })
+          : varios ? { grande: locais.length + ' ' + quemPl, texto: 'contadas juntas em cada nota; clique numa nota para ver cada uma' }
+          : { grande: itens.length + ' notas', texto: exemplos ? 'na tela; ' + exemplos + ' com números de exemplo (a extensão ainda não coleta)' : 'na tela' }
+      ];
+      if (quadAberto && itens.length) resumo[2] = { grande: itens.filter((x) => x.nn.f && (x.ac.k === 'bom' || x.ac.k === 'otimo')).length + ' de ' + comF.length,
+        texto: 'devem fechar o quadrimestre em Bom ou Ótimo, se o ritmo de ' + rotMes(ATUAL) + ' continuar' };
+      eixo = [{ pos: '0%', desloc: '0', txt: 'cada nota na sua própria escala' }];
+      tituloLista = 'Notas · ' + localNome + ' · ' + perCurto;
+      comoLer = 'Cada nota é contada no período pela sua própria regra (veja no ⓘ). C1, B3 e B5 têm faixa dupla: passar do limite de cima também tira pontos.';
+      pergunta = 'Como ' + (varios ? 'estão ' : 'está ') + descLocal + '?';
+      descricao = 'As notas metodológicas do Ministério da Saúde que valem para Cajamar, em ' + perTxt + '.' + (varios ? ' Cada nota junta as ' + quemPl + ' escolhidas; clique na nota para ver cada uma.' : '');
+      if (algumaAberta) legendaTraco = 'as ' + quemPl + ' juntas';
+    }
+
+    if (rel === 'apoio' || rel === 'pontos' || rel === 'meses') {
+      // Notas que o relatório pode mostrar neste recorte.
+      const equipesDasUnidades = (nn) => todasEquipes.some((x) => locais.some((l) => l.u === x.u) && nn.tipos.indexOf(x.tipo) >= 0);
+      const aceita = (c) => {
+        const nn = N[c];
+        if (rel === 'pontos') return !!nn.prat && !motivoFora(nn);
+        if (rel === 'meses') return !motivoFora(nn);
+        if (visao === 'municipio') return true;
+        if (visao === 'equipes') return locaisDa(nn).length > 0;
+        return locaisDa(nn).length > 0 || (nn.niveis.indexOf('equipe') >= 0 && equipesDasUnidades(nn));
+      };
+      const candidatas = visiveis.filter(aceita);
+      cod = candidatas.indexOf(st.nota) >= 0 ? st.nota : candidatas.indexOf('C4') >= 0 ? 'C4' : (candidatas[0] || '');
+      gruposNota = GRUPOS.map((g) => ({ rotulo: g.titulo, itens: candidatas.filter((c) => N[c].g === g.id).map((c) => ({ cod: c, rotulo: c + ' · ' + N[c].nome + (N[c].exemplo ? ' (exemplo)' : '') })) })).filter((g) => g.itens.length);
+      if (rel === 'pontos') foraTxt = 'As boas práticas detalhadas existem nas notas C2 a C6, das equipes eSF e eAP.';
+    }
+
+    const n = cod ? N[cod] : null;
+    if (n && rel === 'apoio') {
+      const comp = (ls) => (temComp ? vG(cod, ls, mesesAnt) : null);
+      const lsN = visao === 'municipio' ? [] : locaisDa(n);
+      const temUn = n.niveis.indexOf('unidade') >= 0;
+      const daUnidade = (u) => equipesDa(u).filter((e) => n.tipos.indexOf(e.tipo) >= 0 && REAL.tem(n, { u, e: e.nome }))
+        .map((e) => ({ id: u + '|' + e.nome, u, e: e.nome, nome: e.nome, tipo: e.tipo, sub: e.tipo + ' · ' + num(pessoas(cod, u, e.nome), 0) + ' pessoas' }));
+      let refLs = [MUN], refNome = 'Município', porUnidade = false, itensLs = [], quemTxt = 'As equipes';
+      if (visao === 'municipio') {
+        refNome = 'Município (todas as unidades)';
+        if (temUn) { porUnidade = true; itensLs = nomesUn.filter((u) => unidadeTem(u, n)).map((u) => ({ id: u, u, e: '', nome: u, sub: '' })); quemTxt = 'As unidades'; }
+        else itensLs = [].concat(...nomesUn.map((u) => daUnidade(u).map((x) => ({ ...x, sub: x.tipo + ' · ' + u }))));
+      } else if (visao === 'unidades') {
+        if (temUn && lsN.length > 1) { porUnidade = true; itensLs = lsN; quemTxt = 'As ' + lsN.length + ' unidades escolhidas'; }
+        else if (temUn && lsN.length === 1) { refLs = lsN; refNome = lsN[0].nome + ' (todas as equipes)'; itensLs = daUnidade(lsN[0].u); quemTxt = 'As equipes da ' + lsN[0].nome; }
+        else { itensLs = [].concat(...locais.map((l) => daUnidade(l.u).map((x) => ({ ...x, sub: x.tipo + ' · ' + l.u })))); quemTxt = 'As equipes ' + n.tipos.join(' ou ') + ' das unidades escolhidas'; }
+      } else { itensLs = lsN; quemTxt = lsN.length > 1 ? 'As ' + lsN.length + ' equipes escolhidas' : 'A equipe escolhida'; }
+      let itens = itensLs.map((l) => ({ ...l, v: vL(cod, l, periodo), a: comp([l]), ac: acompanhar(cod, [l]) }));
+      itens = itens.slice().sort((x, y) => score(n, y.v) - score(n, x.v));
+      const refV = vG(cod, refLs, periodo), refA = comp(refLs), refAc = acompanhar(cod, refLs);
+      const filhos = porUnidade && st.aberta && itens.some((x) => x.u === st.aberta) ? daUnidade(st.aberta) : [];
+      const acFilhos = filhos.map((f) => acompanhar(cod, [f]));
+      const projs = [refAc].concat(itens.map((x) => x.ac), acFilhos).filter((x) => x && x.proj !== null).map((x) => x.proj);
+      const [lo, hi, casas] = dominio(n, [refV].concat(itens.map((x) => x.v), filhos.map((f) => vL(cod, f, periodo)), refA !== null ? [refA] : [], itens.filter((x) => x.a !== null).map((x) => x.a), projs));
+      const seg = segmentos(n, lo, hi);
+      eixo = eixoDe(n, lo, hi, casas);
+      linhas.push(linha({ tipo: 'ref', nome: refNome, v: refV, a: refA, n, lo, hi, ref: null, segmentos: seg, un: n.un, acomp: refAc }));
+      itens.forEach((x, k) => {
+        const aberta = porUnidade && st.aberta === x.u;
+        linhas.push(linha({ posicao: (k + 1) + 'º', nome: x.nome, sub: x.sub || '', v: x.v, a: x.a, n, lo, hi, ref: refV, segmentos: seg, un: n.un, realce: aberta, acomp: x.ac,
+          alternar: porUnidade ? () => this.setState({ aberta: this.state.aberta === x.u ? '' : x.u }) : null, expandido: aberta }));
+        if (aberta) filhos.forEach((f, j) => linhas.push(linha({ tipo: 'filho', nome: f.nome + ' · ' + f.tipo, v: vL(cod, f, periodo), a: null, n, lo, hi, ref: refV, segmentos: seg, un: n.un, deltaTxt: '', acomp: acFilhos[j] })));
+      });
+      const quem = porUnidade ? 'unidades' : 'equipes';
+      if (itens.length) {
+        const fx = itens.map((x) => faixaDe(n, x.v).k);
+        const melhor = itens[0], piorItem = itens[itens.length - 1];
+        const queda = temComp ? itens.slice().sort((x, y) => mudanca(n, x.v, x.a) - mudanca(n, y.v, y.a))[0] : null;
+        resumo = [
+          n.f ? { grande: fx.filter((k) => k === 'bom' || k === 'otimo').length + ' de ' + itens.length, texto: quem + ' em Bom ou Ótimo' }
+            : { grande: itens.filter((x) => score(n, x.v) >= score(n, refV)).length + ' de ' + itens.length, texto: quem + ' no resultado de referência ou melhor' },
+          itens.length > 1 ? { grande: num(Math.abs(melhor.v - piorItem.v), n.fmt) + unidMedida(n), texto: 'entre a melhor (' + num(melhor.v, n.fmt) + ') e a pior (' + num(piorItem.v, n.fmt) + ')' }
+            : { grande: '1 ' + (porUnidade ? 'unidade' : 'equipe'), texto: 'com esta nota neste recorte' },
+          temComp ? (queda && mudanca(n, queda.v, queda.a) < 0 ? { grande: sinal(queda.v - queda.a, n.fmt) + unidMedida(n), texto: 'maior piora: ' + queda.nome } : { grande: 'nenhuma', texto: 'piora em relação a ' + compTxt })
+            : { grande: piorItem.nome, texto: 'precisa de mais apoio nesta nota' }
+        ];
+        if (quadAberto) resumo[2] = { grande: itens.filter((x) => n.f ? (x.ac.k === 'bom' || x.ac.k === 'otimo') : score(n, x.ac.proj) >= score(n, refV)).length + ' de ' + itens.length,
+          texto: quem + ' devem fechar o quadrimestre em Bom ou Ótimo, se o ritmo de ' + rotMes(ATUAL) + ' continuar' };
+      }
+      tituloLista = n.cod + ' · ' + n.nome + ' · ' + perCurto;
+      comoLer = (n.sentido || (n.un === '%' ? 'Quanto maior, melhor.' : 'Quanto maior a nota, mais completo o cuidado.')) + ' Eixo ampliado de ' + num(lo, casas) + ' a ' + num(hi, casas) + '.'
+        + (porUnidade ? ' Clique numa unidade para ver as equipes.' : '');
+      infoListaTxt = infoNota(n);
+      pergunta = 'Quem precisa de apoio em ' + n.cod + '?';
+      descricao = quemTxt + ' no mesmo eixo, da melhor para a pior, em ' + perTxt + '.';
+      rotuloNome = porUnidade ? 'Unidade' : 'Equipe';
+      const refMun = refLs[0] === MUN;
+      legendaPonto = porUnidade ? 'unidade' : 'equipe'; legendaRef = refMun ? 'município' : 'unidade'; legendaTraco = refMun ? 'resultado do município' : 'resultado da unidade';
+    }
+
+    if (n && rel === 'pontos') {
+      const ls = visao === 'municipio' ? [MUN] : locaisDa(n);
+      const alvo = vG(cod, ls, periodo);
+      const fator = alvo / n.prat.reduce((s, p) => s + p[2] * p[3], 0);
+      const itens = n.prat.map((p) => { const pc = Math.min(1, p[3] * fator); return { letra: p[0], texto: p[1], w: p[2], pc, perdido: (1 - pc) * p[2] }; }).sort((x, y) => y.perdido - x.perdido);
+      eixo = [{ pos: '0%', desloc: '0', txt: '0%' }, { pos: '50%', desloc: '-50%', txt: '50%' }, { pos: '100%', desloc: '-100%', txt: '100%' }];
+      itens.forEach((x, k) => linhas.push(linha({ posicao: (k + 1) + 'º', nome: x.letra + ' · ' + x.texto, sub: 'vale ' + x.w + ' pontos', v: x.pc * 100, a: null, n: null,
+        lo: 0, hi: 100, ref: null, segmentos: [{ largura: '100%', cor: tinta.neutro }], fmt: 0, valorTxt: num(x.pc * 100, 0) + '%',
+        deltaTxt: '−' + num(x.perdido, 1) + ' pts', deltaCor: x.perdido >= 5 ? T.tDesce : T.tSuave })));
+      const perdidos = itens.reduce((s, x) => s + x.perdido, 0);
+      const maisCumprida = itens.slice().sort((x, y) => y.pc - x.pc)[0];
+      resumo = [
+        { grande: itens[0].letra + ' · −' + num(itens[0].perdido, 1) + ' pts', texto: 'a prática que mais tira pontos: ' + itens[0].texto.toLowerCase() },
+        { grande: maisCumprida.letra + ' · ' + num(maisCumprida.pc * 100, 0) + '%', texto: 'a mais cumprida: ' + maisCumprida.texto.toLowerCase() },
+        { grande: num(100 - perdidos, 1) + ' = 100 − ' + num(perdidos, 1), texto: 'nota de ' + cod + ' = 100 menos os pontos perdidos' }
+      ];
+      tituloLista = n.cod + ' · ' + n.nome + ' · ' + localNome + ' · ' + perCurto;
+      comoLer = 'Quantas pessoas cumpriram cada boa prática e quantos pontos se deixa de ganhar nela. Comece pelo topo.' + (ls.length > 1 ? ' Conta as ' + ls.length + ' ' + quemPl + ' juntas.' : '');
+      infoListaTxt = infoNota(n);
+      pergunta = 'Onde ' + descLocal + ' ' + (varios ? 'perdem' : 'perde') + ' pontos em ' + n.cod + '?';
+      descricao = 'As boas práticas da nota em ' + perTxt + ', da que mais tira pontos para a que menos tira.';
+      rotuloNome = 'Boa prática'; rotuloValor = 'Cumpriram'; rotuloDelta = 'Perde'; legendaPonto = '% de pessoas que cumpriram';
+    }
+
+    // Mês a mês: os meses do filtro (ou os 12 meses até o mês escolhido, se for um só), agrupados por quadrimestre.
+    let notaMesesTxt = '';
+    if (n && rel === 'meses') {
+      const ls = visao === 'municipio' ? [MUN] : locaisDa(n);
+      const meses = periodo.length >= 2 ? periodo : intervalo(Math.max(INICIO, periodo[0] - 11), periodo[0]);
+      notaMesesTxt = periodo.length >= 2 ? '' : ' Com um mês só no filtro, mostra os 12 meses até ' + rotMes(periodo[0]) + '.';
+      const serie = meses.map((a) => vG(cod, ls, [a]));
+      const [lo, hi, casas] = dominio(n, serie);
+      const seg = segmentos(n, lo, hi);
+      eixo = eixoDe(n, lo, hi, casas);
+      const grupos = [];
+      meses.forEach((a, i) => {
+        const chave = Math.floor(a / 12) + '-' + (Math.floor((a % 12) / 4) + 1);
+        if (!grupos.length || grupos[grupos.length - 1].chave !== chave) grupos.push({ chave, idx: [] });
+        grupos[grupos.length - 1].idx.push(i);
+      });
+      grupos.forEach((g) => {
+        const ms = g.idx.map((i) => meses[i]);
+        const vq = vG(cod, ls, ms);
+        const [ano, qq] = g.chave.split('-');
+        linhas.push(linha({ tipo: 'ref', nome: qq + 'º quadrimestre de ' + ano + (ms.length === 4 ? '' : ms[ms.length - 1] === ATUAL ? ' (até agora)' : ' (parte)'),
+          sub: 'contagem de ' + rotMeses(ms) + ' · ' + faixaDe(n, vq).rot, v: vq, a: null, n, lo, hi, ref: null, segmentos: seg, un: n.un, deltaTxt: '' }));
+        g.idx.forEach((i) => linhas.push(linha({ nome: rotMesLongo(meses[i]), v: serie[i], a: meses[i] > INICIO ? vG(cod, ls, [meses[i] - 1]) : null,
+          n, lo, hi, ref: null, segmentos: seg, un: n.un })));
+      });
+      const melhorI = serie.reduce((b, v, i) => (score(n, v) > score(n, serie[b]) ? i : b), 0);
+      const piorI = serie.reduce((b, v, i) => (score(n, v) < score(n, serie[b]) ? i : b), 0);
+      resumo = [
+        { grande: sinal(serie[serie.length - 1] - serie[0], n.fmt) + unidMedida(n), texto: 'de ' + rotMesLongo(meses[0]) + ' a ' + rotMesLongo(meses[meses.length - 1]) },
+        { grande: rotMes(meses[melhorI]) + ' · ' + num(serie[melhorI], n.fmt) + n.un, texto: 'melhor mês' },
+        { grande: rotMes(meses[piorI]) + ' · ' + num(serie[piorI], n.fmt) + n.un, texto: 'pior mês' }
+      ];
+      tituloLista = n.cod + ' · ' + n.nome + ' · ' + localNome;
+      comoLer = 'Cada mês mostra a mudança em relação ao mês anterior. As linhas de fundo destacado são a contagem de cada quadrimestre, pela regra da nota.' +
+        (cod === 'C2' || cod === 'C3' ? ' Na nota oficial, C2 e C3 usam só os meses com desfecho.' : '') + (ls.length > 1 ? ' Conta as ' + ls.length + ' ' + quemPl + ' juntas.' : '') + notaMesesTxt;
+      infoListaTxt = infoNota(n);
+      pergunta = 'Como ' + n.cod + ' andou mês a mês?';
+      descricao = 'De ' + rotMesLongo(meses[0]) + ' a ' + rotMesLongo(meses[meses.length - 1]) + ', ' + (visao === 'municipio' ? 'no município' : varios ? 'nas ' + quemPl + ' escolhidas' : visao === 'unidades' ? 'na ' + locais[0].nome : 'na equipe ' + locais[0].nome) + ', agrupados por quadrimestre.';
+      rotuloNome = 'Mês'; rotuloDelta = 'Mês anterior'; legendaPonto = 'mês'; legendaRef = 'contagem do quadrimestre';
+    }
+    if (rel !== 'geral' && !n) { pergunta = 'Nenhuma nota disponível neste recorte'; tituloLista = 'Nada para mostrar'; descricao = 'Troque a visualização ou escolha outras notas.'; }
+
+    if (temComp && (rel === 'geral' || rel === 'apoio')) descricao += ' Comparado com ' + compTxt + '.';
+    const temDelta = (temComp && rel !== 'pontos') || rel === 'pontos' || rel === 'meses';
+    const temDeltaCol = temDelta && !temMesesCols;
+    if (temMesesCols) {
+      rotuloValor = modo === 'quadMeses' ? (quadAberto ? 'Até agora' : 'Quadrimestre') : modo === 'quads' ? 'No conjunto' : 'No período';
+      comoLer += modo === 'quadMeses'
+        ? ' Os quadradinhos são os meses do quadrimestre, com a cor da faixa.' + (quadAberto ? ' O círculo tracejado na régua é onde a nota fecha se os próximos meses repetirem ' + rotMes(ATUAL) + '.' : '')
+        : ' Os quadradinhos são ' + (modo === 'quads' ? 'os quadrimestres escolhidos' : 'os meses escolhidos') + ', com a cor da faixa' + (blocos.length > 12 ? ' (os 12 últimos da seleção)' : '') + (blocos.some((b) => b.aberto) ? '; o de borda tracejada ainda está em andamento.' : '.');
+      if (temComp) comoLer += ' Embaixo do resultado, a mudança em relação a ' + compTxt + '.';
+    }
+
+    // ===== Controles dos filtros (rascunho, até clicar em "Atualizar").
+    const dEhQuad = dr.intervalo === 'quad';
+    const dMeses = normMeses(dr.meses), dQuads = normQuads(dr.quads);
+    const dVisao = ['unidades', 'equipes'].indexOf(dr.visao) >= 0 ? dr.visao : 'municipio';
+    const dLocais = locaisDe(dVisao, dr.unidades, dr.equipes);
+    const dTp = tempoDe(dEhQuad, dMeses, dQuads);
+    const tempoVazio = !dTp.periodo.length, locaisVazio = dVisao !== 'municipio' && !dLocais.length;
+    const valido = !tempoVazio && !locaisVazio, podeAtualizar = valido && sujo;
+    const painelF = ['tempo', 'locais'].indexOf(dr.painelF) >= 0 && !(dr.painelF === 'locais' && dVisao === 'municipio') ? dr.painelF : '';
+    const set = (o) => this.setState(o);
+    const ordenar = (k, arr) => {
+      if (k === 'meses') return normMeses(arr);
+      if (k === 'quads') return normQuads(arr);
+      if (k === 'unidades') return nomesUn.filter((u) => arr.indexOf(u) >= 0);
+      return todasEquipes.map((x) => x.id).filter((id) => arr.indexOf(id) >= 0);
+    };
+    const alternarEm = (k, v) => () => { const arr = (this.state[k] || []).slice(), i = arr.indexOf(v); if (i >= 0) arr.splice(i, 1); else arr.push(v); set({ [k]: ordenar(k, arr) }); };
+    const atualizar = () => {
+      if (!podeAtualizar) return;
+      const h = new Date();
+      set({ aplicado: Component.pega(this.state), painelF: '', aberta: '', abertas: {}, info: '',
+        atualizadoEm: String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0') });
+    };
+    const seg = (ativo) => ({ pressionado: ativo ? 'true' : 'false', fundo: ativo ? T.tAtivoFundo : 'transparent', cor: ativo ? T.tAtivoTexto : T.tTexto, peso: ativo ? 600 : 400 });
+    const chip = (ativo, inativo) => ({
+      pressionado: ativo ? 'true' : 'false', inativo: inativo ? 'true' : 'false',
+      fundo: ativo ? T.tAtivoFundo : T.tCartao, cor: ativo ? T.tAtivoTexto : T.tTexto,
+      borda: inativo ? '1px dashed ' + T.tControle : '1px solid ' + (ativo ? T.tAtivoFundo : T.tControle),
+      peso: ativo ? 600 : 400, cursor: inativo ? 'default' : 'pointer', op: inativo ? 0.5 : 1 });
+    // Menu de meses: um ano por vez (4 × 3). Menu de quadrimestres: lista, do mais recente ao mais antigo.
+    const anoPainel = dr.anoPainel === 2025 ? 2025 : 2026;
+    const itensTempo = dEhQuad
+      ? QS.slice().reverse().map((id) => {
+          const ms = mesesDoQ(id), aberto = ms.some((a) => a > ATUAL);
+          return { ...chip(dQuads.indexOf(id) >= 0, false), rot: qNum(id) + 'º quadrimestre de ' + qAno(id), sub: aberto ? 'em andamento' : rotJanela(ms), alinha: 'space-between',
+            titulo: qNum(id) + 'º quadrimestre de ' + qAno(id) + ' (' + rotJanela(ms) + ')', alternar: alternarEm('quads', id) };
+        })
+      : ML.map((m, k) => {
+          const a = anoPainel * 12 + k, fut = !REAL.temMes(a);
+          return { ...chip(dMeses.indexOf(a) >= 0, fut), rot: m, sub: '', alinha: 'center',
+            titulo: fut ? rotMesLongo(a) + ': sem coleta' : rotMesLongo(a), alternar: fut ? () => {} : alternarEm('meses', a) };
+        });
+    const resumoTempo = tempoVazio ? (dEhQuad ? 'Escolha quadrimestres' : 'Escolha meses')
+      : dEhQuad ? (dQuads.length === 1 ? qNum(dQuads[0]) + 'º quadrimestre ' + qAno(dQuads[0]) : dQuads.length + ' quadrimestres')
+      : dMeses.length === 1 ? rotMesLongo(dMeses[0])
+      : dMeses[dMeses.length - 1] - dMeses[0] + 1 === dMeses.length ? rotJanela(dMeses) : dMeses.length + ' meses';
+    const selUn = dr.unidades || [], selEq = dr.equipes || [];
+    const itensLocais = dVisao === 'unidades'
+      ? nomesUn.map((u) => ({ cab: false, item: true, rotulo: u, sub: '', marcado: selUn.indexOf(u) >= 0, alternar: alternarEm('unidades', u) }))
+      : [].concat(...nomesUn.map((u) => [{ cab: true, item: false, rotulo: u, sub: '', marcado: false, alternar: () => {} }]
+          .concat(equipesDa(u).map((e) => ({ cab: false, item: true, rotulo: e.nome, sub: e.tipo, marcado: selEq.indexOf(u + '|' + e.nome) >= 0, alternar: alternarEm('equipes', u + '|' + e.nome) })))));
+    const resumoLocais = !dLocais.length ? (dVisao === 'unidades' ? 'Escolha unidades' : 'Escolha equipes')
+      : dLocais.length === 1 ? dLocais[0].nome : dLocais.length + (dVisao === 'unidades' ? ' unidades' : ' equipes');
+
+    const { marca, tinta: _t, trilha, subtitulo, selo, ...tokens } = T;
+    const RELS = [['geral', 'Como estamos'], ['apoio', 'Quem precisa de apoio'], ['meses', 'Mês a mês']];
+    const ocultarVarios = (cods, ocultar) => { const o = { ...this.state.ocultas }; cods.forEach((c) => { if (ocultar) o[c] = true; else delete o[c]; }); this.setState({ ocultas: o }); };
+    const K = colunas.length, cw = K > 6 ? 54 : 60, gap = temMesesCols && K > 6 ? 10 : 16;
+
+    return {
+      ...tokens, linhas, resumo, eixo, tituloLista, comoLer, pergunta, descricao, rotuloNome, rotuloValor, rotuloDelta, temDelta,
+      compTxt: rel === 'meses' ? 'o mês anterior' : compTxt,
+      trilha: trilha + 'px', trilhaTopo: (17 - trilha / 2) + 'px', subtituloTopo: subtitulo, temSelo: selo, temAssinatura: !selo,
+      mUnFundo: marca.item[0], mUnAnel: marca.item[2], mRefFundo: marca.ref[0], mRefAnel: marca.ref[2],
+      grade: temMesesCols ? '40px minmax(0, 270px) minmax(150px, 1fr) 84px repeat(' + K + ', ' + cw + 'px)' + (temCaminho ? ' 210px' : '')
+        : temDeltaCol ? '40px minmax(0, 320px) minmax(0, 1fr) 84px 100px' : '40px minmax(0, 320px) minmax(0, 1fr) 84px',
+      gapGrade: gap + 'px', fonteCel: K > 6 ? '13px' : '14px',
+      larguraMin: temMesesCols ? (40 + 220 + 150 + 84 + K * cw + (temCaminho ? 210 : 0) + gap * (3 + K + (temCaminho ? 1 : 0)) + 40) + 'px' : '800px',
+      temMesesCols, temCaminho, temDeltaCol, rotuloCaminho: quadAberto ? 'Caminho até ' + rotMes(bQ.todos[3]) : 'Fechamento',
+      cabMeses: colunas.map((c) => ({ txt: c.txt, longo: c.longo })),
+      temLegendaProj: quadAberto, legendaProj: 'fechamento previsto no ritmo de ' + rotMes(ATUAL),
+      legendaPonto, legendaRef, legendaTraco, temLegendaRef: !!legendaRef, temLegendaTraco: !!legendaTraco, temLegendaCauda: (temComp && rel !== 'pontos') || rel === 'meses',
+      legendaFaixas: [{ rot: 'Regular', cor: tinta.regular }, { rot: 'Suficiente', cor: tinta.suficiente }, { rot: 'Bom', cor: tinta.bom }, { rot: 'Ótimo', cor: tinta.otimo }],
+      temas: [['claro', 'Claro'], ['personalizado', 'Personalizado'], ['escuro', 'Escuro']].map(([id, rotulo]) => ({ rotulo, pressionado: tema === id ? 'true' : 'false',
+        fundo: tema === id ? T.tTopoTexto : 'transparent', cor: tema === id ? T.tTopoFundo : T.tTopoTexto, peso: tema === id ? 600 : 400, escolher: () => this.setState({ tema: id }) })),
+      relatorios: RELS.map(([id, titulo]) => ({ titulo, pressionado: rel === id ? 'true' : 'false', borda: rel === id ? T.tAbaLinha : 'transparent', cor: rel === id ? T.tAba : T.tAbaInativa,
+        peso: rel === id ? 600 : 400, escolher: () => this.setState({ rel: id, info: '', painel: false }) })),
+
+      // Filtros
+      opcoesIntervalo: [['mensal', 'Mensal'], ['quad', 'Quadrimestral']].map(([id, rotulo]) => ({ ...seg((id === 'quad') === dEhQuad), rotulo,
+        escolher: () => set({ intervalo: id, painelF: 'tempo' }) })),
+      rotuloSelTempo: dEhQuad ? 'Quadrimestres' : 'Meses', resumoTempo, tituloTempo: tempoVazio ? resumoTempo : dEhQuad ? rotQuads(dQuads) : rotMeses(dMeses),
+      tempoBorda: tempoVazio ? T.tPiorou : T.tControle, tempoExp: painelF === 'tempo' ? 'true' : 'false',
+      abrirTempo: () => set({ painelF: this.state.painelF === 'tempo' ? '' : 'tempo' }),
+      painelTempo: painelF === 'tempo', itensTempo, larguraPainelTempo: dEhQuad ? '340px' : '280px', gradePainelTempo: dEhQuad ? '1fr' : 'repeat(4, 1fr)',
+      temNavAno: !dEhQuad, anoPainel, opAntes: anoPainel === 2025 ? 0.3 : 1, opDepois: anoPainel === 2026 ? 0.3 : 1,
+      anoAntes: () => set({ anoPainel: 2025 }), anoDepois: () => set({ anoPainel: 2026 }),
+      opcoesVisao: [['municipio', 'Município'], ['unidades', 'Unidades'], ['equipes', 'Equipes']].map(([id, rotulo]) => ({ ...seg(dVisao === id), rotulo,
+        escolher: () => set({ visao: id, painelF: id === 'municipio' ? (this.state.painelF === 'locais' ? '' : this.state.painelF) : 'locais' }) })),
+      temLocais: dVisao !== 'municipio', rotuloSelLocais: dVisao === 'unidades' ? 'Unidades' : 'Equipes', resumoLocais,
+      tituloLocais: dLocais.length ? dLocais.map((l) => l.nome).join(', ') : resumoLocais,
+      locaisBorda: locaisVazio ? T.tPiorou : T.tControle, locaisExp: painelF === 'locais' ? 'true' : 'false',
+      abrirLocais: () => set({ painelF: this.state.painelF === 'locais' ? '' : 'locais' }),
+      painelLocais: painelF === 'locais', itensLocais, contagemLocais: dLocais.length ? dLocais.length + (dLocais.length === 1 ? ' marcada' : ' marcadas') : 'Nenhuma marcada',
+      rascComparar: !!dr.comparar, alternarComparar: () => set({ comparar: !this.state.comparar }),
+      tituloComparar: 'Comparar com o período anterior' + (tempoVazio ? '' : dTp.compOk ? ' (' + dTp.compTxt + ')' : ' (sem dados antes de jan/25)'),
+      atualizar, atualizarInativo: podeAtualizar ? 'false' : 'true',
+      tituloAtualizar: !valido ? 'Escolha pelo menos ' + (tempoVazio ? (dEhQuad ? 'um quadrimestre' : 'um mês') : (dVisao === 'unidades' ? 'uma unidade' : 'uma equipe'))
+        : sujo ? 'Levar os filtros para o relatório' : 'O relatório já está com estes filtros',
+      btnFundo: podeAtualizar ? T.tAtivoFundo : 'transparent', btnCor: podeAtualizar ? T.tAtivoTexto : T.tSuave, btnBorda: podeAtualizar ? T.tAtivoFundo : T.tControle, btnCursor: podeAtualizar ? 'pointer' : 'default',
+      fecharPainelF: () => set({ painelF: '' }),
+
+      // Relatório
+      temEscolhaNota: rel !== 'geral' && gruposNota.length > 0, gruposNota, notaSel: cod, escolherNota: (ev) => this.setState({ nota: ev.target.value, info: '', aberta: '' }),
+      temAbrirTodas, rotuloAbrirTodas, alternarTodas,
+      temEscolhaNotas: rel === 'geral', painelAberto: rel === 'geral' && !!st.painel, painelExp: st.painel ? 'true' : 'false',
+      rotuloPainel: 'Escolher notas (' + visiveis.length + ' de ' + lista.length + ')', alternarPainel: () => this.setState({ painel: !this.state.painel }),
+      painelGrupos: GRUPOS.map((g) => {
+        const doGrupo = lista.filter((x) => x.g === g.id).map((x) => x.cod), vis = doGrupo.filter((c) => !st.ocultas[c]).length;
+        return { titulo: g.titulo, contagem: vis + ' de ' + doGrupo.length, marcado: vis === doGrupo.length, alternar: () => ocultarVarios(doGrupo, vis === doGrupo.length),
+          itens: doGrupo.map((c) => ({ rotulo: c + ' · ' + N[c].nome, extra: N[c].exemplo ? '(exemplo)' : '', marcado: !st.ocultas[c], alternar: () => ocultarVarios([c], !this.state.ocultas[c]) })) };
+      }),
+      notaExcluidas: 'Estão aqui todas as notas metodológicas do Ministério da Saúde para as equipes que Cajamar tem (eSF e eAP, saúde bucal, eMulti e Consultório na Rua), mais o componente Vínculo. Ficam de fora as da Atenção Primária Prisional (P1 a P6) e as da Saúde da Família Ribeirinha (R1 a R6).',
+      mostrarTodas: () => this.setState({ ocultas: {} }),
+      soColetadas: () => { const o = {}; lista.forEach((x) => { if (x.exemplo) o[x.cod] = true; }); this.setState({ ocultas: o }); },
+      temInfoLista: rel !== 'geral' && !!n, infoListaExp: st.info === 'lista' ? 'true' : 'false', mostraInfoLista: rel !== 'geral' && !!n && st.info === 'lista',
+      abrirInfoLista: alternarInfo('lista'), infoListaTxt,
+      temLinhas: linhas.length > 0, semLinhas: linhas.length === 0,
+      textoVazio: visiveis.length ? 'Nada neste recorte. Troque a visualização ou escolha outras notas.' : 'Nenhuma nota escolhida. Use “Escolher notas”.',
+      temFora: !!foraTxt, foraTxt
+    };
+  }
+}
+
+(async () => {
+  const aviso = (t) => { document.getElementById('tela').innerHTML = '<p id="aviso">' + t + ' <a href="/">Voltar ao início</a></p>'; };
+  try {
+    const r = await fetch('/api/v1/competencias', { credentials: 'same-origin' });
+    if (r.status === 401) { location.replace('/entrar'); return; }
+    if (!r.ok) throw 0;
+    const cs = ((await r.json()).competencias || []);
+    const porComp = {};
+    await Promise.all(cs.map(async (c) => { const d = await fetch('/api/v1/dados?competencia=' + c.competencia, { credentials: 'same-origin' }); if (d.ok) { const ls = (await d.json()).indicadores || []; if (ls.length) porComp[c.competencia] = ls; } }));
+    if (!Object.keys(porComp).length) { aviso('Ainda não há indicadores coletados. Rode a coleta pela extensão no computador que acessa o PEC.'); return; }
+    const ult = cs.map((c) => c.ultimaColetaEm).filter(Boolean).sort().pop();
+    REAL = montarREAL(porComp, ult ? new Date(ult).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '');
+    let tema = ''; try { tema = localStorage.getItem('painelaps.tema') || ''; } catch (e) {}
+    montarDC(document.getElementById('modelo'), Component, document.getElementById('tela'), { tema: tema || 'personalizado' });
+  } catch (e) { aviso('Não foi possível carregar os indicadores. Recarregue a página.'); }
+})();
+</script>
+</body>
+</html>

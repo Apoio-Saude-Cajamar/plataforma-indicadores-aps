@@ -227,3 +227,7 @@ O administrador gera em `/chaves` uma chave por computador (guardada só como ha
 ## Lançamentos por formulário
 
 Metas da PAS que não vêm do PEC e-SUS e as coberturas vacinais do Ministério são informadas em `/lancamentos` e `/lancamentos-vacinas` (administrador ou gestor lança; qualquer usuário consulta). Cada lançamento é guardado (tabela `lancamento`, migration 0007); o valor vigente de um item no mês é o mais recente. A tela de Indicadores municipais mostra o último lançamento e indica a fonte no (i).
+
+## Dashboard de notas metodológicas (protótipo)
+
+`/notas` leva ao Painel a tela "E · Notas metodológicas" do canvas de desenho, com os dados reais da coleta. O arquivo `painel/notas.html` é gerado por `python3 scripts/gerar-notas.py` a partir de `desenho/Notas.dc.html`; a camada de dados fica em `painel/js/notas-real.js` e o motor de marcação em `painel/js/dc-mini.js`.
