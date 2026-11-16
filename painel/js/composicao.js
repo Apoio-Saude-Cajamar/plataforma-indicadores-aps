@@ -95,7 +95,12 @@
     for (const u of c.unidades || []) {
       const U = { nome: u.nome, ref: [], apoio: [] };
       for (const e of u.equipes || []) {
-        if (e.tipo === 'EMULTI') { const m = multi.get(chave(e)) || { id: 'm:' + chave(e), e, unidades: [] }; m.unidades.push(u.nome); multi.set(chave(e), m); continue; }
+        if (e.tipo === 'EMULTI') {
+          // A mesma eMulti aparece em cada unidade onde tem lotação, com os vínculos daquela unidade: junta todos.
+          const m = multi.get(chave(e)) || { id: 'm:' + chave(e), e: Object.assign({}, e, { vinculadas: [] }), unidades: [] };
+          m.unidades.push(u.nome); (e.vinculadas || []).forEach(v => { if (m.e.vinculadas.indexOf(v) < 0) m.e.vinculadas.push(v); });
+          multi.set(chave(e), m); continue;
+        }
         const n = { id: 'e:' + u.nome + '|' + chave(e), e, unidade: u.nome };
         (e.tipo === 'ESF' || e.tipo === 'EAP' ? U.ref : U.apoio).push(n);
         if (!porNome.has(e.nome)) porNome.set(e.nome, n);
@@ -117,7 +122,7 @@
       + (n.cor ? '<span class="cor" style="background:' + n.cor + '"></span>' : '') + '<span class="chip">' + esc(TIPOS[n.e.tipo] || n.e.tipo) + '</span>' + esc(n.e.nome) + '</b><small>' + esc(extra) + '</small></button>';
     const nFios = id => G.fios.filter(f => f.de === id || f.para === id).length;
     const h = '<div class="col-m"><div><h2>eMulti · atendem várias unidades</h2></div>'
-      + (G.multi.length ? G.multi.map(m => { const us = new Set(G.fios.filter(f => f.de === m.id).map(f => f.para.slice(2).split('|')[0])); return cartao(m, plural(nFios(m.id), 'equipe vinculada', 'equipes vinculadas') + ' em ' + plural(us.size, 'unidade', 'unidades')); }).join('') : '<small style="color:var(--muted)">Nenhuma eMulti na composição.</small>') + '</div>'
+      + (G.multi.length ? G.multi.map(m => { const us = new Set(G.fios.filter(f => f.de === m.id).map(f => f.para.slice(2).split('|')[0])); const fora = m.e.vinculadas.length - nFios(m.id); return cartao(m, plural(nFios(m.id), 'equipe vinculada', 'equipes vinculadas') + ' em ' + plural(us.size, 'unidade', 'unidades') + ' · lotada em ' + plural(new Set(m.unidades).size, 'unidade', 'unidades') + (fora > 0 ? ' · ' + plural(fora, 'vínculo', 'vínculos') + ' com equipe fora desta composição' : '')); }).join('') : '<small style="color:var(--muted)">Nenhuma eMulti na composição.</small>') + '</div>'
       + '<div class="col-u">' + G.unidades.map(U => '<div class="u-box"><h2>' + esc(U.nome) + '</h2><div class="u-cols"><div>'
         + U.ref.map(n => { const ms = G.fios.filter(f => f.para === n.id && f.tipo === 'm').length; return cartao(n, ms ? plural(ms, 'eMulti vinculada', 'eMulti vinculadas') : 'sem eMulti vinculada'); }).join('') + '</div><div>'
         + U.apoio.map(n => cartao(n, (n.e.vinculadas || []).length ? 'referência: ' + n.e.vinculadas.join(', ') : 'sem equipe de referência no PEC')).join('') + '</div></div></div>').join('') + '</div>';
