@@ -436,3 +436,20 @@ test('estadual: gestor lança por quadrimestre, vale o mais recente, leitor só 
   assert.equal(d.vigentes[0].mediana, 88);
   assert.equal(d.historico.length, 2);
 });
+
+test('menu do usuário: meus registros para qualquer logado; histórico e estado do backup só para administrador', async () => {
+  const env = comPaginas(ambiente());
+  const n = navegador(env);
+  const criar = async (login, perfil) => { const u = await admin(env, { login, nome: login, perfil }); env.DB.prepare('UPDATE usuario SET trocar_senha = 0').run(); const v = navegador(env); assert.equal((await v.pedir('POST', '/api/v1/auth/entrar', { login, senha: u.senhaProvisoria })).status, 200); return v; };
+  const gestor = await criar('gestor.menu', 'gestor');
+  assert.equal((await n.pedir('GET', '/api/v1/meus-registros')).status, 401);
+  assert.equal((await gestor.pedir('GET', '/api/v1/meus-registros')).status, 200);
+  assert.equal((await gestor.pedir('GET', '/api/v1/registros')).status, 403);
+  assert.equal((await gestor.pedir('GET', '/api/v1/backups/estado')).status, 403);
+  const adm = await criar('adm.menu', 'admin');
+  const h = await (await adm.pedir('GET', '/api/v1/registros')).json();
+  assert.ok(Array.isArray(h.registros));
+  assert.ok(!JSON.stringify(h).includes('"ip"'));
+  const b = await (await adm.pedir('GET', '/api/v1/backups/estado')).json();
+  assert.ok(b.tabelas && typeof b.tabelas === 'object');
+});

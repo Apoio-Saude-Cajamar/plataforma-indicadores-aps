@@ -31,6 +31,7 @@ import { monitoramento } from './monitoramento.js';
 import { gravarFilas, gravarFilasHorario, lerFilas } from './filas.js';
 import { listarLancamentos, criarLancamento } from './lancamentos.js';
 import { listarEstadual, criarEstadual } from './estadual.js';
+import { meusRegistros, registros, estadoBackup } from './registros.js';
 import { listarChaves, criarChave, revogarChave, chaveGeradaValida } from './chaves.js';
 import { catalogoAdmin, salvarPublicacao, historico as historicoPublicacao, dadosPublicos } from './publicacao.js';
 import { comunicadosAtivos, marcarLido, listarComunicados, criarComunicado, alterarComunicado } from './comunicados.js';
@@ -69,6 +70,9 @@ const ROTAS = [
   // Traz nomes de profissionais: só administrador e gestor.
   ['GET', /^\/filas$/, 'lancar', async (req, env, m, url) => json(await lerFilas(env, url))],
   ['GET', /^\/lancamentos$/, 'leitura', async (req, env, m, url) => json(await listarLancamentos(env, url))],
+  ['GET', /^\/meus-registros$/, 'leitura', async (req, env, m, url, quem) => json(await meusRegistros(env, quem))],
+  ['GET', /^\/registros$/, 'usuarios', async (req, env) => json(await registros(env))],
+  ['GET', /^\/backups\/estado$/, 'usuarios', async (req, env) => json(await estadoBackup(env))],
   ['GET', /^\/estadual\/lancamentos$/, 'leitura', async (req, env) => json(await listarEstadual(env))],
   ['POST', /^\/estadual\/lancamentos$/, 'lancar', async (req, env, m, url, quem) => json(await criarEstadual(req, env, quem), 201)],
   ['POST', /^\/lancamentos$/, 'lancar', async (req, env, m, url, quem) => json(await criarLancamento(req, env, quem), 201)],
@@ -126,7 +130,7 @@ async function tratarApi(request, env, url) {
 
 // Páginas: só /entrar e os arquivos visuais são públicos; o resto exige login.
 const PUBLICAS = [/^\/entrar(\.html)?$/, /^\/css\//, /^\/img\//, /^\/js\/publico\//, /^\/publico(\.html)?$/, /^\/favicon\.(ico|svg)$/, /^\/robots\.txt$/];
-const SO_ADMIN = [/^\/usuarios(\.html)?$/, /^\/monitoramento(\.html)?$/, /^\/comunicados(\.html)?$/, /^\/extensao(\.html)?$/, /^\/publicacao(\.html)?$/, /^\/chaves(\.html)?$/, /^\/downloads\//];
+const SO_ADMIN = [/^\/usuarios(\.html)?$/, /^\/monitoramento(\.html)?$/, /^\/comunicados(\.html)?$/, /^\/extensao(\.html)?$/, /^\/publicacao(\.html)?$/, /^\/chaves(\.html)?$/, /^\/historico(\.html)?$/, /^\/backups(\.html)?$/, /^\/downloads\//];
 const SEGURANCA = {
   'x-frame-options': 'DENY', 'x-content-type-options': 'nosniff', 'referrer-policy': 'same-origin',
   'permissions-policy': 'camera=(), microphone=(), geolocation=()'

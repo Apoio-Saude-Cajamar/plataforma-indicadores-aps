@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meu perfil · Painel APS</title>
+<link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Montserrat,system-ui,sans-serif;color:#1B2340;background:#F4F7FB}
+a{color:inherit;text-decoration:none}
+a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #00A7E7;outline-offset:3px}
+header{background:#1F3C72;border-bottom:4px solid #00A7E7;color:#fff}
+.topo{max-width:1100px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.marca{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
+.barra-usuario{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#fff}
+.barra-usuario a,.barra-usuario button{color:inherit;font:inherit;background:none;border:1px solid rgba(255,255,255,.6);border-radius:99px;padding:5px 14px;cursor:pointer}
+main{max-width:1100px;margin:0 auto;padding:32px 32px 56px}
+.voltar{font-weight:600;color:#1F3C72;text-decoration:underline;font-size:14px}
+h1{margin:12px 0 8px;font-size:30px;font-weight:800;color:#1F3C72;line-height:1.2}
+.intro{margin:0 0 20px;font-size:15px;line-height:1.55;color:#4A5670;max-width:760px}
+.sel{display:flex;flex-wrap:wrap;gap:16px 18px;margin-bottom:20px}
+.sel label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em}
+.sel select{font:inherit;font-size:15px;font-weight:600;text-transform:none;letter-spacing:0;min-height:42px;padding:0 12px;border:2px solid #D5DCE8;border-radius:10px;background:#fff;color:#1B2340;min-width:150px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:24px}
+.card,.bloco{background:#fff;border:2px solid #D5DCE8;border-radius:14px;padding:18px 20px}
+.card small{display:block;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.card .v{font-size:34px;font-weight:800;color:#1F3C72;line-height:1.1}
+.card .s{font-size:13px;color:#4A5670;margin-top:6px;line-height:1.45}
+.pill{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px;margin-left:8px;vertical-align:middle}
+.c-o{background:#C7ECD9;color:#0F5A41}.c-b{background:#D9ECF8;color:#0B4F73}.c-s{background:#FBF0D3;color:#6E4700}.c-r{background:#F8D9DC;color:#8A1B2A}
+.up{color:#0F6B4F;font-weight:700}.dn{color:#A8222F;font-weight:700}
+.bloco{margin-bottom:20px}
+.bloco h2{margin:0 0 6px;font-size:19px;color:#1B2340}
+.bloco p.d{margin:0 0 14px;font-size:14px;color:#4A5670;line-height:1.5}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #E3E8F0;vertical-align:middle}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#4A5670}
+td.n,th.n{text-align:right;white-space:nowrap}
+.tab{overflow-x:auto}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:#4A5670;margin-top:12px}
+.leg em{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.k-o{background:#1C9C76}.k-b{background:#4FB3E8}.k-s{background:#F2C14E}.k-r{background:#E0525F}
+.nota{font-size:13px;color:#4A5670;line-height:1.55}
+.nota li{margin-bottom:6px}
+@media(max-width:600px){.topo{padding:14px 16px}main{padding:20px 16px 36px}h1{font-size:24px}.card .v{font-size:28px}}
+.pill.sit-Atingida{background:#C7ECD9;color:#0F5A41}.pill.sit-No{background:#D9ECF8;color:#0B4F73}.pill.sit-Crítica,.pill.sit-Não{background:#F8D9DC;color:#8A1B2A}.pill.sit-Sem{background:#E7EAF0;color:#3A4660}
+.pill{margin-left:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.chip{font:inherit;font-weight:700;font-size:14px;color:#1B2340;background:#fff;border:2px solid #D5DCE8;border-radius:99px;padding:7px 14px;cursor:pointer}
+.chip[aria-pressed=true]{background:#1F3C72;border-color:#1F3C72;color:#fff}
+details summary{cursor:pointer;color:#1F3C72;font-weight:600;font-size:13px}
+details p{margin:6px 0 0;font-size:13px;color:#4A5670;line-height:1.5;max-width:520px}
+tr.dir td{background:#F4F7FB;font-weight:800;color:#1F3C72;font-size:13px}
+td.m{min-width:230px}
+tr.eq td{font-size:13px;color:#4A5670}tr.un td{font-weight:700}
+.info{display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border-radius:50%;background:#D9ECF8;color:#0B4F73;font-size:12px;font-weight:800;cursor:help;margin-left:6px}
+.vazio{padding:18px;color:#4A5670;font-size:14px;line-height:1.55}
+button.ab{font:inherit;font-size:13px;font-weight:700;color:#1F3C72;background:none;border:0;cursor:pointer;text-decoration:underline;padding:0}
+</style>
+<link rel="stylesheet" href="/css/tema.css">
+<script src="/js/publico/tema.js"></script>
+<style>
+dl.perfil{display:grid;grid-template-columns:max-content 1fr;gap:10px 24px;margin:0;font-size:15px}
+dl.perfil dt{font-weight:700;color:#4A5670;font-size:12px;text-transform:uppercase;letter-spacing:.04em;align-self:center}dl.perfil dd{margin:0;font-weight:600}
+.busca{font:inherit;font-size:15px;font-weight:600;min-height:42px;padding:0 12px;border:2px solid #D5DCE8;border-radius:10px;background:#fff;color:#1B2340;min-width:260px}
+.ajuda h2{margin-top:26px}.ajuda li{margin-bottom:8px;line-height:1.55}
+html[data-tema=escuro] dl.perfil dt{color:#A7B4C0}html[data-tema=escuro] .busca{background:#0E151C;color:#E6EDF3;border-color:#4B5D6E}
+</style>
+</head><body>
+<header><div class="topo">
+ <a class="marca" href="/"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
+ <div id="barra"></div>
+</div></header>
+<main>
+ <a class="voltar" href="/">← Voltar aos acompanhamentos</a>
+
+ <h1>Meu perfil</h1>
+ <p class="intro">Seus dados de acesso ao Painel e as últimas ações registradas com o seu usuário.</p>
+ <section class="bloco"><h2>Dados de acesso</h2><dl class="perfil" id="dados"><dt>Carregando</dt><dd>…</dd></dl>
+  <p class="nota" id="trocar" hidden style="margin-top:14px"><a class="voltar" href="/trocar-senha">Trocar senha</a></p></section>
+ <section class="bloco"><h2>Minhas últimas ações</h2><p class="d">Lançamentos e alterações feitos por você (até 30). Senhas nunca são registradas.</p><div class="tab" id="acoes"></div></section>
+</main>
+<script src="/js/sessao.js"></script>
+<script>
+const $=id=>document.getElementById(id),esc=t=>String(t==null?'':t).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const quando=t=>t?new Date(t).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'';
+const ACAO=a=>String(a||'').replace(/_/g,' ');
+
+const PERFIL={admin:'Administrador',gestor:'Gestor',leitor:'Leitor'};
+(async()=>{
+ try{const r=await fetch('/api/v1/auth/eu',{credentials:'same-origin'});if(r.status===401){location.replace('/entrar');return}const u=(await r.json()).usuario;
+  $('dados').innerHTML='<dt>Nome</dt><dd>'+esc(u.nome)+'</dd><dt>Usuário</dt><dd>'+esc(u.login)+'</dd><dt>Perfil</dt><dd>'+esc(PERFIL[u.perfil]||u.perfil)+'</dd><dt>Entrada</dt><dd>'+(u.origem==='senha'?'Usuário e senha do Painel':'Login do Apoio')+'</dd>';
+  $('trocar').hidden=u.origem!=='senha';
+ }catch(e){$('dados').innerHTML='<dt>Erro</dt><dd>Não foi possível carregar. Recarregue a página.</dd>'}
+ try{const r=await fetch('/api/v1/meus-registros',{credentials:'same-origin'});const ls=(await r.json()).registros||[];
+  $('acoes').innerHTML=ls.length?'<table><thead><tr><th>Quando</th><th>Ação</th><th>Detalhe</th></tr></thead><tbody>'+ls.map(l=>'<tr><td>'+quando(l.quando)+'</td><td>'+esc(ACAO(l.acao))+'</td><td>'+esc(l.detalhe||'')+'</td></tr>').join('')+'</tbody></table>':'<p class="d">Nenhuma ação registrada ainda.</p>';
+ }catch(e){$('acoes').innerHTML='<p class="d">Não foi possível carregar as ações.</p>'}
+})();
+</script>
+</body>
+</html>

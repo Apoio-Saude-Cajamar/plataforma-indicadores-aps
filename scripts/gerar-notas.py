@@ -33,10 +33,10 @@ marc = troca(marc, '  <header style="background: {{tTopoFundo}}', '''  <div styl
             <a href="/lancamentos-vacinas" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Coberturas vacinais</a>
             <a href="/estadual#t-form" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Cofinanciamento estadual</a></div></details></template>
       </nav>
-      <template data-sc="if" value="{{temUsuario}}"><div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600">{{usuarioNome}}
-        <template data-sc="if" value="{{temAdmin}}"><a href="/usuarios" style="color: inherit; text-decoration: none; border: 1px solid rgba(255,255,255,.6); border-radius: 99px; padding: 5px 14px">Usuários</a></template>
-        <template data-sc="if" value="{{temSenha}}"><a href="/trocar-senha" style="color: inherit; text-decoration: none; border: 1px solid rgba(255,255,255,.6); border-radius: 99px; padding: 5px 14px">Senha</a></template>
-        <button type="button" onClick="{{sair}}" style="font: inherit; color: inherit; background: none; border: 1px solid rgba(255,255,255,.6); border-radius: 99px; padding: 5px 14px; cursor: pointer">Sair</button></div></template>
+      <template data-sc="if" value="{{temUsuario}}"><details style="position: relative; font-size: 13px; font-weight: 600"><summary style="list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,.6); border-radius: 99px; padding: 4px 12px 4px 4px; min-height: 36px"><span style="width: 26px; height: 26px; border-radius: 50%; background: #00A7E7; display: inline-grid; place-items: center; font-weight: 800">{{usuarioInicial}}</span>{{usuarioNome}} ▾</summary>
+        <div style="position: absolute; z-index: 30; right: 0; top: 100%; margin-top: 6px; min-width: 260px; background: #FFFFFF; color: #1B2340; border: 2px solid #D5DCE8; border-radius: 12px; padding: 6px; box-shadow: 0 8px 24px rgba(20,33,43,.18); display: flex; flex-direction: column; font-size: 14px">
+          <template data-sc="for" list="{{itensUsuario}}" as="iu"><a href="{{iu.href}}" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-weight: {{iu.peso}}">{{iu.txt}}</a></template>
+          <button type="button" onClick="{{sair}}" style="font: inherit; color: #1B2340; background: none; border: 0; border-top: 1px solid #E3E8F0; margin-top: 6px; text-align: left; padding: 10px 12px 8px; cursor: pointer">Sair</button></div></details></template>
     </div>
   </div>
   <header style="background: {{tTopoFundo}}''')
@@ -85,7 +85,7 @@ js = troca(js, "tTopoBorda: '4px solid #00A7E7'", "tTopoBorda: '1px solid #00A7E
 js = troca(js, "subtitulo: 'Prefeitura de Cajamar', selo: false", "subtitulo: 'Cajamar', selo: true")
 js = troca(js, "temSelo: selo, temAssinatura: !selo,", """temSelo: selo, temAssinatura: !selo,
       coletaTxt: REAL.ultima ? 'Dados do PEC e-SUS · coleta de ' + REAL.ultima : 'Dados do PEC e-SUS',
-      menuSite: MENU_SITE(), temLanc: !!USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor'), temAdmin: !!USUARIO && USUARIO.perfil === 'admin', temSenha: !!USUARIO && USUARIO.origem === 'senha', temUsuario: !!USUARIO, usuarioNome: USUARIO ? USUARIO.nome.split(' ')[0] : '',
+      menuSite: MENU_SITE(), temLanc: !!USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor'), itensUsuario: ITENS_USUARIO(), usuarioInicial: USUARIO ? USUARIO.nome.trim().charAt(0).toUpperCase() : '', temUsuario: !!USUARIO, usuarioNome: USUARIO ? USUARIO.nome.split(' ')[0] : '',
       sair: async () => { try { await fetch('/api/v1/auth/sair', { method: 'POST', credentials: 'same-origin' }); } finally { location.replace('/entrar'); } },""")
 helm = helm.replace('family=Montserrat:wght@400;500;600;700;800&amp;', '')
 helm += '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap">'
@@ -110,6 +110,14 @@ pagina = f'''<!doctype html>
 <script src="/js/notas-real.js"></script>
 <script>
 let REAL = null, USUARIO = null;
+const ITENS_USUARIO = () => {{
+  if (!USUARIO) return [];
+  const ls = [['/perfil', 'Meu perfil']];
+  if (USUARIO.origem === 'senha') ls.push(['/trocar-senha', 'Trocar senha']);
+  ls.push(['/ajuda', 'Ajuda e como ler os indicadores']);
+  if (USUARIO.perfil === 'admin') ls.push(['', 'Configurações'], ['/usuarios', 'Usuários'], ['/monitoramento', 'Monitoramento das coletas'], ['/comunicados', 'Comunicados'], ['/publicacao', 'Página pública'], ['/chaves', 'Chaves da extensão'], ['/extensao', 'Extensões do Chrome'], ['/historico', 'Histórico de acessos'], ['/backups', 'Backups']);
+  return ls.map(([href, txt]) => ({{ href: href || '#', txt, peso: href ? 600 : 800 }}));
+}};
 const MENU_SITE = () => [['/', 'Acompanhamentos'], ['/composicao', 'Composição']].concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas']] : []).map(([href, txt]) => ({{ href, txt }}));
 {js}
 (async () => {{
