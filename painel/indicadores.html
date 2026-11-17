@@ -103,6 +103,7 @@ button.ab{font:inherit;font-size:13px;font-weight:700;color:#1F3C72;background:n
  <div data-aba="ajuda" hidden><section class="bloco"><h2>Como ler</h2><ul class="nota">
   <li>Os conceitos são uma prévia calculada com os dados do PEC; o conceito oficial de cada equipe é o do Ministério da Saúde.</li>
   <li>Faixas usadas: boas práticas (C2 a C7) e Consultório na Rua (CR1 a CR4, notas metodológicas da SAPS), Ótimo acima de 75, Bom acima de 50, Suficiente acima de 25, Regular até 25, conforme os exemplos da NT nº 8/2026; vínculo (CVAT), Ótimo acima de 8,5, Bom de 7 a 8,5, Suficiente de 5 a 6,9, Regular abaixo de 5; M1, Ótimo acima de 3, Bom acima de 2, Suficiente acima de 1 (NT nº 43/2026).</li>
+  <li>O último grupo (acompanhamento municipal) reúne indicadores que o PEC fornece mas que não fazem parte das notas do cofinanciamento federal: absenteísmo, vínculo por equipe, pré-natal da macro e território.</li>
   <li>C1, B1, B3, B4, B5, B6 e M2 usam faixas lidas do desenho do dashboard, marcadas com asterisco (*): confirme com a nota técnica vigente. B2 aparece só com o resultado, sem conceito, por ainda não termos faixa definida.</li>
  </ul></section></div>
 </main>
@@ -110,12 +111,13 @@ button.ab{font:inherit;font-size:13px;font-weight:700;color:#1F3C72;background:n
 <script src="/js/catalogo-indicadores.js"></script>
 <script>
 const GRUPOS=[
- ['Mais acesso',['C1','Q14.2.1']],
- ['Cuidado ao longo da vida',['C2','C3','S20','S3','S4','C4','C5','C6','C7','C7-A','C7-B','C7-C','C7-D']],
- ['Vínculo e acompanhamento territorial',['CVAT','CVAT-CAD','CVAT-ACO','Q12.2','VINC6A12','TERR-ATU','TERR-COMP','TERR-VIS','TERR-FA']],
+ ['Mais acesso',['C1']],
+ ['Cuidado ao longo da vida',['C2','C3','C4','C5','C6','C7','C7-A','C7-B','C7-C','C7-D']],
+ ['Vínculo e acompanhamento territorial',['CVAT','CVAT-CAD','CVAT-ACO']],
  ['Odontologia',['B1','B2','B3','B4','B5','B6']],
  ['Equipes multiprofissionais',['M1','M2']],
- ['Consultório na Rua',['CR1','CR2','CR3','CR4']]];
+ ['Consultório na Rua',['CR1','CR2','CR3','CR4']],
+ ['Acompanhamento municipal (fora do cofinanciamento federal)',['Q14.2.1','Q12.2','S20','S3','S4','VINC6A12','TERR-ATU','TERR-COMP','TERR-VIS','TERR-FA']]];
 const NAO_SOMA_MESES=new Set(['C7','CVAT','M1','Q12.2','VINC6A12','TERR-ATU','TERR-COMP','TERR-VIS','TERR-FA','CVAT-CAD','CVAT-ACO','C7-A','C7-B','C7-C','C7-D','C2','C3','C4','C5','C6','S20','S3','S4','CR2','CR3','CR4']);
 const $=id=>document.getElementById(id);
 const esc=t=>String(t==null?'':t).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
