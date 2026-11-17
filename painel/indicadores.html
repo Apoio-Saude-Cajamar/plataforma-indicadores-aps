@@ -160,21 +160,24 @@ function painel(comps,un){
   +'<div class="card"><small>Cobertura da coleta</small><div class="v">'+uns.size+'</div><div class="s">unidade(s) e '+eqs.size+' equipe(s) com dados</div></div>'
   +'<div class="card"><small>Indicadores coletados</small><div class="v">'+cods.size+'</div><div class="s">códigos diferentes no mês</div></div>';
  let linhas='',tot={o:0,b:0,s:0,r:0};
- for(const cod of NOTAS){if(!grupoOk(cod))continue;const ls=linhasDe(cod,[ult],un);if(!ls.length)continue;const cat=(window.CATALOGO||{})[cod]||{nome:cod,tipo:''};
+ for(const [gn,gc] of GRUPOS){let sub='';
+ for(const cod of gc.filter(c=>NOTAS.includes(c))){if(!grupoOk(cod))continue;const ls=linhasDe(cod,[ult],un);if(!ls.length)continue;const cat=(window.CATALOGO||{})[cod]||{nome:cod,tipo:''};
   const m=agregar(ls,l=>l.unidade+' · '+l.equipe),c={o:0,b:0,s:0,r:0};let n=0,ne=0;
   [...m.values()].filter(g=>g.codigo===cod).forEach(g=>{ne++;const k=conceito(cod,resultado(g,cat.tipo));if(k){c[k]++;tot[k]++;n++}});
   const mun=agregar(ls,()=>'M').get(cod+'|M'),vm=mun?resultado(mun,cat.tipo):null,km=conceito(cod,vm);
   if(!passa(cod,vm))continue;
-  linhas+='<tr><td><b>'+esc(cod)+'</b> · '+esc(cat.nome)+'</td><td class="n">'+fmt(vm,cat.tipo)+(km?' <span class="pill '+PILL[km]+'">'+NOMEC[km]+'</span>'+aconf(cod):'')+'</td><td style="min-width:200px">'+(n?['o','b','s','r'].filter(k=>c[k]).map(k=>'<span class="pill '+PILL[k]+'" style="margin:0 6px 4px 0">'+c[k]+' '+NOMEC[k]+'</span>').join(''):'<span style="color:#4A5670;font-size:13px">sem faixa definida</span>')+'</td><td class="n">'+ne+'</td></tr>'}
+  sub+='<tr><td><b>'+esc(cod)+'</b> · '+esc(cat.nome)+'</td><td class="n">'+fmt(vm,cat.tipo)+(km?' <span class="pill '+PILL[km]+'">'+NOMEC[km]+'</span>'+aconf(cod):'')+'</td><td style="min-width:200px">'+(n?['o','b','s','r'].filter(k=>c[k]).map(k=>'<span class="pill '+PILL[k]+'" style="margin:0 6px 4px 0">'+c[k]+' '+NOMEC[k]+'</span>').join(''):'<span style="color:#4A5670;font-size:13px">sem faixa definida</span>')+'</td><td class="n">'+ne+'</td></tr>'}
+ if(sub)linhas+='<tr class="dir"><td colspan="4">'+esc(gn)+'</td></tr>'+sub}
  const nt=tot.o+tot.b+tot.s+tot.r;
- if(nt)h+='<div class="card"><small>Conceitos das equipes (prévia)</small><div class="v">'+nt+'</div><div class="s">'+['o','b','s','r'].filter(k=>tot[k]).map(k=>'<span class="pill '+PILL[k]+'" style="margin:0 4px 4px 0">'+tot[k]+' '+NOMEC[k]+'</span>').join('')+'<br>equipes, somando os indicadores com faixa</div></div>';
+ if(nt)h+='<div class="card"><small>Conceitos atribuídos (prévia)</small><div class="v">'+nt+'</div><div class="s">'+['o','b','s','r'].filter(k=>tot[k]).map(k=>'<span class="pill '+PILL[k]+'" style="margin:0 4px 4px 0">'+tot[k]+' '+NOMEC[k]+'</span>').join('')+'<br>combinações de equipe e indicador com faixa; o detalhe por grupo está abaixo</div></div>';
  $('cards').innerHTML=ult?h:'';
  $('visao').hidden=!linhas;$('conc').innerHTML=linhas?'<table><thead><tr><th>Indicador</th><th class="n">Município</th><th>Equipes por conceito</th><th class="n">Equipes com dado</th></tr></thead><tbody>'+linhas+'</tbody></table>':'';
  // Evolução: um valor do município por mês coletado (todos os meses disponíveis, não só o período).
  const meses=Object.keys(dados).sort();let ev='';
- if(meses.length>1){for(const [gn,cods2] of GRUPOS)for(const cod of cods2){if($('gr').value&&$('gr').value!==gn)continue;const cat=(window.CATALOGO||{})[cod];if(!cat||cat.tipo==='contagem'||/-/.test(cod))continue;
+ if(meses.length>1){for(const [gn,cods2] of GRUPOS){if($('gr').value&&$('gr').value!==gn)continue;let sub2='';for(const cod of cods2){const cat=(window.CATALOGO||{})[cod];if(!cat||cat.tipo==='contagem'||/-/.test(cod))continue;
    const vs=meses.map(c=>{const ls=linhasDe(cod,[c],un);const g=ls.length?agregar(ls,()=>'M').get(cod+'|M'):null;return g?resultado(g,cat.tipo):null});if(vs.every(v=>v==null))continue;
-   ev+='<tr><td><b>'+esc(cod)+'</b> · '+esc(cat.nome)+'</td>'+vs.map(v=>'<td class="n">'+(v==null?'–':fmt(v,cat.tipo))+'</td>').join('')+'</tr>'}}
+   sub2+='<tr><td><b>'+esc(cod)+'</b> · '+esc(cat.nome)+'</td>'+vs.map(v=>'<td class="n">'+(v==null?'–':fmt(v,cat.tipo))+'</td>').join('')+'</tr>'}
+  if(sub2)ev+='<tr class="dir"><td colspan="'+(meses.length+1)+'">'+esc(gn)+'</td></tr>'+sub2}}
  $('evol').hidden=!ev;$('evo').innerHTML=ev?'<table><thead><tr><th>Indicador</th>'+meses.map(c=>'<th class="n">'+mesNome(c)+'</th>').join('')+'</tr></thead><tbody>'+ev+'</tbody></table>':'';
 }
 function desenhar(){
