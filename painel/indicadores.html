@@ -120,6 +120,8 @@ const GRUPOS=[
  ['Acompanhamento municipal (fora do cofinanciamento federal)',['Q14.2.1','Q12.2','S20','S3','S4','VINC6A12','TERR-ATU','TERR-COMP','TERR-VIS','TERR-FA']]];
 const NAO_SOMA_MESES=new Set(['C7','CVAT','M1','Q12.2','VINC6A12','TERR-ATU','TERR-COMP','TERR-VIS','TERR-FA','CVAT-CAD','CVAT-ACO','C7-A','C7-B','C7-C','C7-D','C2','C3','C4','C5','C6','S20','S3','S4','CR2','CR3','CR4']);
 const $=id=>document.getElementById(id);
+// Subitens como C7-B têm nomes que já começam por "C7 · B:"; tira o prefixo repetido (o código aparece à esquerda).
+const nomeSem=(cod,n)=>{const b=cod.split('-')[0];const m=String(n).match(new RegExp('^'+b+' · (.*)$'));return m?(cod===b?n:m[1]):n};
 const esc=t=>String(t==null?'':t).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 const fmt=(v,tipo)=>v==null||isNaN(v)?'–':tipo==='percentual'?v.toFixed(1).replace('.',',')+'%':tipo==='contagem'?Math.round(v).toLocaleString('pt-BR'):v.toFixed(2).replace('.',',');
 const mesNome=c=>{const [a,m]=c.split('-');return ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][m-1]+'/'+a};
@@ -181,7 +183,7 @@ function painel(comps,un){
   [...m.values()].filter(g=>g.codigo===cod).forEach(g=>{ne++;const k=conceito(cod,resultado(g,cat.tipo));if(k){c[k]++;tot[k]++;n++}});
   const mun=agregar(ls,()=>'M').get(cod+'|M'),vm=mun?resultado(mun,cat.tipo):null,km=conceito(cod,vm);
   if(!passa(cod,vm))continue;
-  sub+='<tr><td><b>'+esc(cod)+'</b> · '+esc(cat.nome)+'</td><td class="n">'+fmt(vm,cat.tipo)+(km?' <span class="pill '+PILL[km]+'">'+NOMEC[km]+'</span>'+aconf(cod):'')+'</td><td style="min-width:200px">'+(n?['o','b','s','r'].filter(k=>c[k]).map(k=>'<span class="pill '+PILL[k]+'" style="margin:0 6px 4px 0">'+c[k]+' '+NOMEC[k]+'</span>').join(''):'<span style="color:#4A5670;font-size:13px">sem faixa definida</span>')+'</td><td class="n">'+ne+'</td></tr>'}
+  sub+='<tr><td><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+'</td><td class="n">'+fmt(vm,cat.tipo)+(km?' <span class="pill '+PILL[km]+'">'+NOMEC[km]+'</span>'+aconf(cod):'')+'</td><td style="min-width:200px">'+(n?['o','b','s','r'].filter(k=>c[k]).map(k=>'<span class="pill '+PILL[k]+'" style="margin:0 6px 4px 0">'+c[k]+' '+NOMEC[k]+'</span>').join(''):'<span style="color:#4A5670;font-size:13px">sem faixa definida</span>')+'</td><td class="n">'+ne+'</td></tr>'}
  if(sub)linhas+='<tr class="dir"><td colspan="4">'+esc(gn)+'</td></tr>'+sub}
  const nt=tot.o+tot.b+tot.s+tot.r;
  if(nt)h+='<div class="card cc"><small>Conceitos atribuídos (prévia) · '+nt+' combinações de equipe e indicador com faixa</small><div class="cg">'+['o','b','s','r'].map(k=>'<div class="ct '+PILL[k]+'"><b>'+(tot[k]||0)+'</b><span>'+NOMEC[k]+'</span><i>'+Math.round(100*(tot[k]||0)/nt)+'%</i></div>').join('')+'</div><div class="s">O detalhe por grupo e por equipe está na aba Detalhe e equipes.</div></div>';
@@ -191,7 +193,7 @@ function painel(comps,un){
  const meses=Object.keys(dados).sort();let ev='';
  if(meses.length>1){for(const [gn,cods2] of GRUPOS){if($('gr').value&&$('gr').value!==gn)continue;let sub2='';for(const cod of cods2){const cat=(window.CATALOGO||{})[cod];if(!cat||cat.tipo==='contagem'||/-/.test(cod))continue;
    const vs=meses.map(c=>{const ls=linhasDe(cod,[c],un);const g=ls.length?agregar(ls,()=>'M').get(cod+'|M'):null;return g?resultado(g,cat.tipo):null});if(vs.every(v=>v==null))continue;
-   sub2+='<tr><td><b>'+esc(cod)+'</b> · '+esc(cat.nome)+'</td>'+vs.map(v=>'<td class="n">'+(v==null?'–':fmt(v,cat.tipo))+'</td>').join('')+'</tr>'}
+   sub2+='<tr><td><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+'</td>'+vs.map(v=>'<td class="n">'+(v==null?'–':fmt(v,cat.tipo))+'</td>').join('')+'</tr>'}
   if(sub2)ev+='<tr class="dir"><td colspan="'+(meses.length+1)+'">'+esc(gn)+'</td></tr>'+sub2}}
  $('evol').hidden=!ev;$('evo').innerHTML=ev?'<table><thead><tr><th>Indicador</th>'+meses.map(c=>'<th class="n">'+mesNome(c)+'</th>').join('')+'</tr></thead><tbody>'+ev+'</tbody></table>':'';
 }
@@ -221,7 +223,7 @@ function desenhar(){
    const dica=(cat.margem||defTxt)?'<span class="info" title="'+esc(defTxt+(cat.margem?(cat.precisao==='piso'?'Piso: o valor real é igual ou maior. ':cat.precisao==='aproximado'?'Aproximado. ':'')+cat.margem:''))+'">i</span>':'';
    const obs=varios&&NAO_SOMA_MESES.has(cod)?' <small>('+mesNome(usar[0])+')</small>':'';
    const ab=abertos.has(cod);
-   corpo+='<tr class="un"><td>'+esc(cod)+' · '+esc(cat.nome)+dica+obs+'<br><button class="ab" data-c="'+esc(cod)+'" aria-expanded="'+ab+'">'+(ab?'Ocultar equipes':'Ver por equipe')+'</button></td><td class="n">'+(tot.direto!==undefined?'':Math.round(tot.num).toLocaleString('pt-BR'))+'</td><td class="n">'+(tot.direto!==undefined?'':Math.round(tot.den).toLocaleString('pt-BR'))+'</td><td class="n"><b>'+fmt(resultado(tot,cat.tipo),cat.tipo)+'</b>'+pc(cod,resultado(tot,cat.tipo))+'</td></tr>';
+   corpo+='<tr class="un"><td>'+esc(cod)+' · '+esc(nomeSem(cod,cat.nome))+dica+obs+'<br><button class="ab" data-c="'+esc(cod)+'" aria-expanded="'+ab+'">'+(ab?'Ocultar equipes':'Ver por equipe')+'</button></td><td class="n">'+(tot.direto!==undefined?'':Math.round(tot.num).toLocaleString('pt-BR'))+'</td><td class="n">'+(tot.direto!==undefined?'':Math.round(tot.den).toLocaleString('pt-BR'))+'</td><td class="n"><b>'+fmt(resultado(tot,cat.tipo),cat.tipo)+'</b>'+pc(cod,resultado(tot,cat.tipo))+'</td></tr>';
    if(ab){const m=agregar(ls,l=>l.unidade+' · '+l.equipe);[...m.values()].filter(g=>g.codigo===cod&&passa(cod,resultado(g,cat.tipo))).sort((a,b)=>a.rot.localeCompare(b.rot)).forEach(g=>{corpo+='<tr class="eq"><td>'+esc(g.rot)+'</td><td class="n">'+(g.direto!==undefined?'':Math.round(g.num).toLocaleString('pt-BR'))+'</td><td class="n">'+(g.direto!==undefined?'':Math.round(g.den).toLocaleString('pt-BR'))+'</td><td class="n">'+fmt(resultado(g,cat.tipo),cat.tipo)+pc(cod,resultado(g,cat.tipo))+'</td></tr>'});}
   }
   if(corpo)html+='<section class="bloco"><h2>'+esc(nome)+'</h2><div class="tab"><table><thead><tr><th>Indicador</th><th class="n">Numerador</th><th class="n">Denominador</th><th class="n">Resultado</th></tr></thead><tbody>'+corpo+'</tbody></table></div></section>';
