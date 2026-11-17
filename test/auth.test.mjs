@@ -468,7 +468,7 @@ test('menu do usuário: meus registros para qualquer logado; histórico e estado
 test('vacinas do PEC: troca as doses do mês, ignora vacina fora do cálculo e devolve só totais', async () => {
   const { gravarVacinasPec, lerVacinasPec } = await import('../api/estadual.js');
   const env = ambiente();
-  const d = (vacina, faixa, dose, n) => ({ vacina, imunobiologico: 'Vacina X', faixa, dose, n });
+  const d = (vacina, faixa, dose, n) => ({ vacina, imunobiologico: 'Vacina ' + vacina, faixa, dose, n });
   await gravarVacinasPec(env, { competencia: '2026-10', doses: [d('polio', 'Menos de 01 ano', '3ª DOSE', 140), d('gripe', 'Menos de 01 ano', '1ª DOSE', 5), d('penta', 'Menos de 01 ano', '3ª DOSE', 141)] });
   let r = await lerVacinasPec(env);
   assert.equal(r.doses.length, 2, 'vacina fora do cálculo não entra');
