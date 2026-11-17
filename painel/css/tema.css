@@ -49,3 +49,8 @@ html[data-tema=escuro] .msg.ok{color:#7AD39E}html[data-tema=escuro] .msg.er{colo
 html[data-tema=escuro] .up{color:#7AD39E}html[data-tema=escuro] .dn{color:#F29A72}
 html[data-tema=escuro] #aviso-adm{background:#3A2F12!important;border-color:#8A6A1F!important;color:#F3D27A!important}
 html[data-tema=escuro] .card .v{color:#E6EDF3}
+
+/* Páginas que usam as variáveis do painelaps.css (Composição, Usuários): o tema escolhido vale sobre o modo do sistema. */
+html[data-tema=claro],html[data-tema=personalizado]{color-scheme:light;--bg:#FFFFFF;--surface:#FFFFFF;--ink:#1B2340;--muted:#5A6478;--line:#D9E1EA;--field:#FFFFFF;--primary:#1F3C72;--primary-ink:#fff;--link:#1F3C72;--danger:#B3261E;--danger-bg:#FDECEA;--ok-bg:#E7F6EF;--ok:#14684F}
+html[data-tema=claro]{--bg:#F4F6F5}
+html[data-tema=escuro]{--bg:#0E151C;--surface:#16202A;--ink:#E6EDF3;--muted:#A7B4C0;--line:#2A3743;--field:#0E151C;--primary:#7CC0EE;--primary-ink:#0E151C;--link:#7CC0EE;--danger:#FF8C82;--danger-bg:#3A1F1E;--ok-bg:#173329;--ok:#7CE1C2}

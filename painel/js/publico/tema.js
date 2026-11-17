@@ -12,7 +12,7 @@
   };
   const ROTULO = { claro: 'Tema claro', personalizado: 'Tema personalizado (cores de Cajamar)', escuro: 'Tema escuro' };
   function montar() {
-    const topo = document.querySelector('header .topo');
+    const topo = document.querySelector('header .topo, header .w');
     if (!topo || topo.querySelector('.tema-aps')) return;
     const g = document.createElement('div');
     g.className = 'tema-aps'; g.setAttribute('role', 'group'); g.setAttribute('aria-label', 'Tema');

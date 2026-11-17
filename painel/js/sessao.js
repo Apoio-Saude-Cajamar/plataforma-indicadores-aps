@@ -73,7 +73,7 @@
 
   // Menu do cabeçalho (páginas com o cabeçalho padrão .topo): atalhos para as áreas e para os formulários de lançamento.
   function menu(u) {
-    const topo = document.querySelector('header .topo');
+    const topo = document.querySelector('header .topo, header .w');
     if (!topo || topo.querySelector('.menu-aps')) return;
     const gestor = u.perfil === 'admin' || u.perfil === 'gestor';
     const aqui = location.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/';
