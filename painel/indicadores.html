@@ -22,9 +22,9 @@ main{max-width:1100px;margin:0 auto;padding:32px 32px 56px}
 .voltar{font-weight:600;color:#1F3C72;text-decoration:underline;font-size:14px}
 h1{margin:12px 0 8px;font-size:30px;font-weight:800;color:#1F3C72;line-height:1.2}
 .intro{margin:0 0 20px;font-size:15px;line-height:1.55;color:#4A5670;max-width:760px}
-.sel{display:flex;flex-wrap:wrap;gap:16px 28px;margin-bottom:20px}
+.sel{display:flex;flex-wrap:wrap;gap:16px 18px;margin-bottom:20px}
 .sel label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em}
-.sel select{font:inherit;font-size:15px;font-weight:600;text-transform:none;letter-spacing:0;min-height:42px;padding:0 12px;border:2px solid #D5DCE8;border-radius:10px;background:#fff;color:#1B2340;min-width:180px}
+.sel select{font:inherit;font-size:15px;font-weight:600;text-transform:none;letter-spacing:0;min-height:42px;padding:0 12px;border:2px solid #D5DCE8;border-radius:10px;background:#fff;color:#1B2340;min-width:150px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:24px}
 .card,.bloco{background:#fff;border:2px solid #D5DCE8;border-radius:14px;padding:18px 20px}
 .card small{display:block;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
@@ -75,12 +75,14 @@ button.ab{font:inherit;font-size:13px;font-weight:700;color:#1F3C72;background:n
   <label>De<select id="de"></select></label>
   <label>Até<select id="ate"></select></label>
   <label>Unidade<select id="un"><option value="">Todas</option></select></label>
+  <label>Grupo<select id="gr"><option value="">Todos</option></select></label>
+  <label>Conceito<select id="co"><option value="">Todos</option><option value="o">Ótimo</option><option value="b">Bom</option><option value="s">Suficiente</option><option value="r">Regular</option><option value="n">Sem classificação</option></select></label>
  </div>
  <p class="nota" id="estado" role="status"></p>
  <p style="margin:0 0 18px"><a class="chip" href="/notas" style="display:inline-block;margin-right:8px;background:#1F3C72;border-color:#1F3C72;color:#fff">Abrir o dashboard</a></p>
  <div id="dash">
  <section class="cards" id="cards" aria-live="polite"></section>
- <section class="bloco" id="visao" hidden><h2>Equipes por conceito</h2><p class="d">Quantas equipes ficaram em cada conceito (Ótimo, Bom, Suficiente, Regular) no mês mais recente do período, nos indicadores cujas faixas temos confirmadas. É uma prévia com dados do PEC; o conceito oficial é o do Ministério.</p><div class="tab" id="conc"></div>
+ <section class="bloco" id="visao" hidden><h2>Resultado e conceito por indicador</h2><p class="d">Valor do município e quantas equipes ficaram em cada conceito (Ótimo, Bom, Suficiente, Regular) no mês mais recente do período. É uma prévia com dados do PEC; o conceito oficial é o do Ministério. * Faixa a confirmar com a nota técnica vigente.</p><div class="tab" id="conc"></div>
 </section>
  <section class="bloco" id="evol" hidden><h2>Evolução mensal no município</h2><p class="d">Resultado de cada mês coletado.</p><div class="tab" id="evo"></div></section>
  </div>
@@ -88,7 +90,7 @@ button.ab{font:inherit;font-size:13px;font-weight:700;color:#1F3C72;background:n
  <section class="bloco"><h2>Como ler</h2><ul class="nota">
   <li>Os conceitos são uma prévia calculada com os dados do PEC; o conceito oficial de cada equipe é o do Ministério da Saúde.</li>
   <li>Faixas usadas: boas práticas (C2 a C7), Ótimo acima de 75, Bom acima de 50, Suficiente acima de 25, Regular até 25, conforme os exemplos da NT nº 8/2026; vínculo (CVAT), Ótimo acima de 8,5, Bom de 7 a 8,5, Suficiente de 5 a 6,9, Regular abaixo de 5; M1, Ótimo acima de 3, Bom acima de 2, Suficiente acima de 1 (NT nº 43/2026).</li>
-  <li>C1, B1 a B6, M2 e Consultório na Rua aparecem só com o resultado, sem conceito, até confirmarmos as faixas nas notas vigentes de cada um.</li>
+  <li>C1, B1, B3, B4, B5, B6 e M2 usam faixas lidas do desenho do dashboard, marcadas com asterisco (*): confirme com a nota técnica vigente. B2 e Consultório na Rua (CR1 a CR4) aparecem só com o resultado, sem conceito, por ainda não termos faixas definidas.</li>
  </ul></section>
 </main>
 <script src="/js/sessao.js"></script>
@@ -132,13 +134,23 @@ function agregar(linhas,chave){
  return m;
 }
 // Faixas confirmadas: boas práticas C2 a C7 (0 a 100), vínculo CVAT (NT 8/2026) e M1 (NT 43/2026).
-const FAIXA={C2:'bp',C3:'bp',C4:'bp',C5:'bp',C6:'bp',C7:'bp',CVAT:'cvat',M1:'m1'};
+const FAIXA={C1:'x',C2:'bp',C3:'bp',C4:'bp',C5:'bp',C6:'bp',C7:'bp',CVAT:'cvat',B1:'x',B3:'x',B4:'x',B5:'x',B6:'x',M1:'m1',M2:'x'};
+// Faixas lidas do desenho do dashboard, ainda a confirmar com a nota técnica vigente: marcadas com asterisco na tela.
+const FAIXAX={C1:[[0,10,'r'],[10,30,'s'],[30,50,'b'],[50,70,'o'],[70,1e9,'r']],B1:[[0,.25,'r'],[.25,.75,'s'],[.75,1.25,'b'],[1.25,1e9,'o']],
+ B3:[[0,3,'r'],[3,10,'o'],[10,12,'b'],[12,14,'s'],[14,1e9,'r']],B4:[[0,.25,'r'],[.25,.5,'s'],[.5,1,'b'],[1,1e9,'o']],
+ B5:[[0,40,'r'],[40,55,'s'],[55,65,'b'],[65,85,'o'],[85,1e9,'r']],B6:[[0,3,'r'],[3,6,'s'],[6,8,'b'],[8,1e9,'o']],M2:[[0,1,'r'],[1,2.5,'s'],[2.5,5,'b'],[5,1e9,'o']]};
+const NOTAS=['C1','C2','C3','C4','C5','C6','C7','CVAT','B1','B2','B3','B4','B5','B6','M1','M2','CR1','CR2','CR3','CR4'];
+const grupoDe=cod=>(GRUPOS.find(g=>g[1].includes(cod))||[''])[0];
 function conceito(cod,v){if(v==null||isNaN(v))return null;const f=FAIXA[cod];
  if(f==='bp')return v>75?'o':v>50?'b':v>25?'s':'r';
  if(f==='cvat')return v>8.5?'o':v>=7?'b':v>=5?'s':'r';
- if(f==='m1')return v>3?'o':v>2?'b':v>1?'s':'r';return null}
+ if(f==='m1')return v>3?'o':v>2?'b':v>1?'s':'r';
+ if(f==='x'){const t=FAIXAX[cod].find(([a,b])=>v>=a&&v<b);return t?t[2]:null}return null}
 const NOMEC={o:'Ótimo',b:'Bom',s:'Suficiente',r:'Regular'},PILL={o:'c-o',b:'c-b',s:'c-s',r:'c-r'};
-const pc=(cod,v)=>{const k=conceito(cod,v);return k?' <span class="pill '+PILL[k]+'">'+NOMEC[k]+'</span>':''};
+const aconf=cod=>FAIXAX[cod]?'<abbr title="Faixa a confirmar com a nota técnica vigente" style="text-decoration:none;cursor:help">*</abbr>':'';
+const pc=(cod,v)=>{const k=conceito(cod,v);return k?' <span class="pill '+PILL[k]+'">'+NOMEC[k]+'</span>'+aconf(cod):''};
+const passa=(cod,v)=>{const f=$('co').value;if(!f)return true;const k=conceito(cod,v);return f==='n'?!k:k===f};
+const grupoOk=cod=>!$('gr').value||grupoDe(cod)===$('gr').value;
 function linhasDe(cod,comps,un){let ls=[];comps.forEach(c=>ls.push(...(dados[c]||[]).filter(l=>l.codigo===cod||(cod==='C7'&&/^C7-/.test(l.codigo))||(cod==='CVAT'&&/^CVAT-/.test(l.codigo)))));
  ls=ls.filter(l=>l.recorte!=='desfecho'||cod==='C2'||cod==='C3');return un?ls.filter(l=>l.unidade===un):ls}
 function painel(comps,un){
@@ -148,18 +160,19 @@ function painel(comps,un){
   +'<div class="card"><small>Cobertura da coleta</small><div class="v">'+uns.size+'</div><div class="s">unidade(s) e '+eqs.size+' equipe(s) com dados</div></div>'
   +'<div class="card"><small>Indicadores coletados</small><div class="v">'+cods.size+'</div><div class="s">códigos diferentes no mês</div></div>';
  let linhas='',tot={o:0,b:0,s:0,r:0};
- for(const cod of Object.keys(FAIXA)){const ls=linhasDe(cod,[ult],un);if(!ls.length)continue;const cat=(window.CATALOGO||{})[cod]||{nome:cod,tipo:''};
-  const m=agregar(ls,l=>l.unidade+' · '+l.equipe),c={o:0,b:0,s:0,r:0};let n=0;
-  [...m.values()].filter(g=>g.codigo===cod).forEach(g=>{const k=conceito(cod,resultado(g,cat.tipo));if(k){c[k]++;tot[k]++;n++}});
-  if(!n)continue;const mun=agregar(ls,()=>'M').get(cod+'|M'),vm=mun?resultado(mun,cat.tipo):null,km=conceito(cod,vm);
-  linhas+='<tr><td><b>'+esc(cod)+'</b> · '+esc(cat.nome)+'</td><td class="n">'+fmt(vm,cat.tipo)+(km?' <span class="pill '+PILL[km]+'">'+NOMEC[km]+'</span>':'')+'</td><td style="min-width:200px">'+['o','b','s','r'].filter(k=>c[k]).map(k=>'<span class="pill '+PILL[k]+'" style="margin:0 6px 4px 0">'+c[k]+' '+NOMEC[k]+'</span>').join('')+'</td><td class="n">'+n+'</td></tr>'}
+ for(const cod of NOTAS){if(!grupoOk(cod))continue;const ls=linhasDe(cod,[ult],un);if(!ls.length)continue;const cat=(window.CATALOGO||{})[cod]||{nome:cod,tipo:''};
+  const m=agregar(ls,l=>l.unidade+' · '+l.equipe),c={o:0,b:0,s:0,r:0};let n=0,ne=0;
+  [...m.values()].filter(g=>g.codigo===cod).forEach(g=>{ne++;const k=conceito(cod,resultado(g,cat.tipo));if(k){c[k]++;tot[k]++;n++}});
+  const mun=agregar(ls,()=>'M').get(cod+'|M'),vm=mun?resultado(mun,cat.tipo):null,km=conceito(cod,vm);
+  if(!passa(cod,vm))continue;
+  linhas+='<tr><td><b>'+esc(cod)+'</b> · '+esc(cat.nome)+'</td><td class="n">'+fmt(vm,cat.tipo)+(km?' <span class="pill '+PILL[km]+'">'+NOMEC[km]+'</span>'+aconf(cod):'')+'</td><td style="min-width:200px">'+(n?['o','b','s','r'].filter(k=>c[k]).map(k=>'<span class="pill '+PILL[k]+'" style="margin:0 6px 4px 0">'+c[k]+' '+NOMEC[k]+'</span>').join(''):'<span style="color:#4A5670;font-size:13px">sem faixa definida</span>')+'</td><td class="n">'+ne+'</td></tr>'}
  const nt=tot.o+tot.b+tot.s+tot.r;
  if(nt)h+='<div class="card"><small>Conceitos das equipes (prévia)</small><div class="v">'+nt+'</div><div class="s">'+['o','b','s','r'].filter(k=>tot[k]).map(k=>'<span class="pill '+PILL[k]+'" style="margin:0 4px 4px 0">'+tot[k]+' '+NOMEC[k]+'</span>').join('')+'<br>equipes, somando os indicadores com faixa</div></div>';
  $('cards').innerHTML=ult?h:'';
- $('visao').hidden=!linhas;$('conc').innerHTML=linhas?'<table><thead><tr><th>Indicador</th><th class="n">Município</th><th>Equipes por conceito</th><th class="n">Equipes</th></tr></thead><tbody>'+linhas+'</tbody></table>':'';
+ $('visao').hidden=!linhas;$('conc').innerHTML=linhas?'<table><thead><tr><th>Indicador</th><th class="n">Município</th><th>Equipes por conceito</th><th class="n">Equipes com dado</th></tr></thead><tbody>'+linhas+'</tbody></table>':'';
  // Evolução: um valor do município por mês coletado (todos os meses disponíveis, não só o período).
  const meses=Object.keys(dados).sort();let ev='';
- if(meses.length>1){for(const [,cods2] of GRUPOS)for(const cod of cods2){const cat=(window.CATALOGO||{})[cod];if(!cat||cat.tipo==='contagem'||/-/.test(cod))continue;
+ if(meses.length>1){for(const [gn,cods2] of GRUPOS)for(const cod of cods2){if($('gr').value&&$('gr').value!==gn)continue;const cat=(window.CATALOGO||{})[cod];if(!cat||cat.tipo==='contagem'||/-/.test(cod))continue;
    const vs=meses.map(c=>{const ls=linhasDe(cod,[c],un);const g=ls.length?agregar(ls,()=>'M').get(cod+'|M'):null;return g?resultado(g,cat.tipo):null});if(vs.every(v=>v==null))continue;
    ev+='<tr><td><b>'+esc(cod)+'</b> · '+esc(cat.nome)+'</td>'+vs.map(v=>'<td class="n">'+(v==null?'–':fmt(v,cat.tipo))+'</td>').join('')+'</tr>'}}
  $('evol').hidden=!ev;$('evo').innerHTML=ev?'<table><thead><tr><th>Indicador</th>'+meses.map(c=>'<th class="n">'+mesNome(c)+'</th>').join('')+'</tr></thead><tbody>'+ev+'</tbody></table>':'';
@@ -171,6 +184,7 @@ function desenhar(){
  painel(comps,un);
  let html='';let algum=false;
  for(const [nome,cods] of GRUPOS){
+  if($('gr').value&&$('gr').value!==nome)continue;
   let corpo='';
   for(const cod of cods){
    const cat=(window.CATALOGO||{})[cod]||{nome:cod,tipo:''};
@@ -183,13 +197,14 @@ function desenhar(){
    const pega=(m,r)=>m.get(cod+'|'+r);
    const tot=pega(agregar(ls,()=>un||'Município'),un||'Município');
    if(!tot)continue;
+   if(!passa(cod,resultado(tot,cat.tipo)))continue;
    algum=true;
    const defTxt=cat.numerador?'Numerador: '+cat.numerador+'. Denominador: '+cat.denominador+'. ':'';
    const dica=(cat.margem||defTxt)?'<span class="info" title="'+esc(defTxt+(cat.margem?(cat.precisao==='piso'?'Piso: o valor real é igual ou maior. ':cat.precisao==='aproximado'?'Aproximado. ':'')+cat.margem:''))+'">i</span>':'';
    const obs=varios&&NAO_SOMA_MESES.has(cod)?' <small>('+mesNome(usar[0])+')</small>':'';
    const ab=abertos.has(cod);
    corpo+='<tr class="un"><td>'+esc(cod)+' · '+esc(cat.nome)+dica+obs+'<br><button class="ab" data-c="'+esc(cod)+'" aria-expanded="'+ab+'">'+(ab?'Ocultar equipes':'Ver por equipe')+'</button></td><td class="n">'+(tot.direto!==undefined?'':Math.round(tot.num).toLocaleString('pt-BR'))+'</td><td class="n">'+(tot.direto!==undefined?'':Math.round(tot.den).toLocaleString('pt-BR'))+'</td><td class="n"><b>'+fmt(resultado(tot,cat.tipo),cat.tipo)+'</b>'+pc(cod,resultado(tot,cat.tipo))+'</td></tr>';
-   if(ab){const m=agregar(ls,l=>l.unidade+' · '+l.equipe);[...m.values()].filter(g=>g.codigo===cod).sort((a,b)=>a.rot.localeCompare(b.rot)).forEach(g=>{corpo+='<tr class="eq"><td>'+esc(g.rot)+'</td><td class="n">'+(g.direto!==undefined?'':Math.round(g.num).toLocaleString('pt-BR'))+'</td><td class="n">'+(g.direto!==undefined?'':Math.round(g.den).toLocaleString('pt-BR'))+'</td><td class="n">'+fmt(resultado(g,cat.tipo),cat.tipo)+pc(cod,resultado(g,cat.tipo))+'</td></tr>'});}
+   if(ab){const m=agregar(ls,l=>l.unidade+' · '+l.equipe);[...m.values()].filter(g=>g.codigo===cod&&passa(cod,resultado(g,cat.tipo))).sort((a,b)=>a.rot.localeCompare(b.rot)).forEach(g=>{corpo+='<tr class="eq"><td>'+esc(g.rot)+'</td><td class="n">'+(g.direto!==undefined?'':Math.round(g.num).toLocaleString('pt-BR'))+'</td><td class="n">'+(g.direto!==undefined?'':Math.round(g.den).toLocaleString('pt-BR'))+'</td><td class="n">'+fmt(resultado(g,cat.tipo),cat.tipo)+pc(cod,resultado(g,cat.tipo))+'</td></tr>'});}
   }
   if(corpo)html+='<section class="bloco"><h2>'+esc(nome)+'</h2><div class="tab"><table><thead><tr><th>Indicador</th><th class="n">Numerador</th><th class="n">Denominador</th><th class="n">Resultado</th></tr></thead><tbody>'+corpo+'</tbody></table></div></section>';
  }
@@ -210,7 +225,8 @@ async function carregar(){
   desenhar();
  }catch(e){$('grupos').innerHTML='<div class="bloco vazio">Não foi possível carregar os indicadores. Recarregue a página; se continuar, veja o Monitoramento das coletas.</div>'}
 }
-['de','ate','un'].forEach(i=>$(i).addEventListener('change',()=>{if($('de').value>$('ate').value)$('ate').value=$('de').value;desenhar()}));
+$('gr').innerHTML='<option value="">Todos</option>'+GRUPOS.map(g=>'<option>'+esc(g[0])+'</option>').join('');
+['de','ate','un','gr','co'].forEach(i=>$(i).addEventListener('change',()=>{if($('de').value>$('ate').value)$('ate').value=$('de').value;desenhar()}));
 carregar();
 </script>
 </body>
