@@ -51,6 +51,7 @@
     nav.innerHTML = a('/', 'Acompanhamentos') + a('/composicao', 'Composição') + (gestor ? a('/filas', 'Filas e faltas') : '') + lanc;
     const alvo = topo.querySelector('#barra');
     topo.insertBefore(nav, alvo || null);
+    const tm = topo.querySelector('.tema-aps'); if (tm) topo.insertBefore(tm, alvo || null);
     document.addEventListener('click', e => { const d = nav.querySelector('details[open]'); if (d && !d.contains(e.target)) d.removeAttribute('open'); });
   }
 
