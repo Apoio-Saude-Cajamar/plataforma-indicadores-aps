@@ -25,7 +25,7 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
       <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
         <div style="display: flex; align-items: center; gap: 12px">
           <template data-sc="if" value="{{temSelo}}" hint-placeholder-val="{{true}}">
-            <div style="width: 40px; height: 40px; border-radius: 8px; background: {{tSelo}}; color: {{tSeloTexto}}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; letter-spacing: .04em">APS</div>
+            <a href="/" aria-label="Voltar ao início do Painel APS" style="width: 40px; height: 40px; border-radius: 8px; background: {{tSelo}}; color: {{tSeloTexto}}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; letter-spacing: .04em; text-decoration: none">APS</a>
           </template>
           <template data-sc="if" value="{{temAssinatura}}" hint-placeholder-val="{{false}}">
             <div title="Espaço da assinatura oficial (brasão e Secretaria de Saúde), usada a partir do arquivo do manual, sem redesenhar" style="width: 112px; height: 40px; box-sizing: border-box; border: 1.5px dashed rgba(255,255,255,.6); border-radius: 6px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 10px; font-weight: 600; line-height: 1.25; color: rgba(255,255,255,.9)">assinatura<br>oficial</div>
@@ -36,7 +36,12 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
           </div>
         </div>
         <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px">
-          <span style="font-size: 12px; font-weight: 600; color: {{tRascunhoTexto}}; background: {{tRascunhoFundo}}; border-radius: 999px; padding: 3px 10px">Protótipo · dados reais do PEC</span>
+          <span style="font-size: 12px; font-weight: 600; color: {{tRascunhoTexto}}; background: {{tRascunhoFundo}}; border-radius: 999px; padding: 3px 10px">{{coletaTxt}}</span>
+          <nav aria-label="Áreas do Painel" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0 4px; font-size: 14px">
+            <template data-sc="for" list="{{menuSite}}" as="ms"><a href="{{ms.href}}" style="color: inherit; text-decoration: none; padding: 8px 10px; min-height: 36px; display: inline-flex; align-items: center; border-radius: 8px; font-weight: {{ms.peso}}">{{ms.txt}}</a></template>
+          </nav>
+          <template data-sc="if" value="{{temUsuario}}"><span style="font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px">{{usuarioNome}}
+            <button type="button" onClick="{{sair}}" style="font: inherit; font-size: 13px; color: inherit; background: none; border: 1px solid {{tTopoLinha}}; border-radius: 999px; padding: 4px 12px; cursor: pointer">Sair</button></span></template>
           <div role="group" aria-label="Tema" style="display: flex; border: 1px solid {{tTopoLinha}}; border-radius: 8px; overflow: hidden">
             <template data-sc="for" list="{{temas}}" as="tm" hint-placeholder-count="3">
               <button type="button" aria-pressed="{{tm.pressionado}}" onClick="{{tm.escolher}}" style="font: inherit; font-size: 13px; min-height: 34px; padding: 0 12px; border: 0; cursor: pointer; background: {{tm.fundo}}; color: {{tm.cor}}; font-weight: {{tm.peso}}">{{tm.rotulo}}</button>
@@ -306,7 +311,8 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
 <script src="/js/catalogo-indicadores.js"></script>
 <script src="/js/notas-real.js"></script>
 <script>
-let REAL = null;
+let REAL = null, USUARIO = null;
+const MENU_SITE = () => [['/', 'Acompanhamentos'], ['/composicao', 'Composição']].concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas'], ['/lancamentos', 'Lançamentos']] : []).map(([href, txt]) => ({ href, txt, peso: 600 }));
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -997,6 +1003,9 @@ class Component extends DCLogic {
       ...tokens, linhas, resumo, eixo, tituloLista, comoLer, pergunta, descricao, rotuloNome, rotuloValor, rotuloDelta, temDelta,
       compTxt: rel === 'meses' ? 'o mês anterior' : compTxt,
       trilha: trilha + 'px', trilhaTopo: (17 - trilha / 2) + 'px', subtituloTopo: subtitulo, temSelo: selo, temAssinatura: !selo,
+      coletaTxt: REAL.ultima ? 'Dados do PEC e-SUS · coleta de ' + REAL.ultima : 'Dados do PEC e-SUS',
+      menuSite: MENU_SITE(), temUsuario: !!USUARIO, usuarioNome: USUARIO ? USUARIO.nome.split(' ')[0] : '',
+      sair: async () => { try { await fetch('/api/v1/auth/sair', { method: 'POST', credentials: 'same-origin' }); } finally { location.replace('/entrar'); } },
       mUnFundo: marca.item[0], mUnAnel: marca.item[2], mRefFundo: marca.ref[0], mRefAnel: marca.ref[2],
       grade: temMesesCols ? '40px minmax(0, 270px) minmax(150px, 1fr) 84px repeat(' + K + ', ' + cw + 'px)' + (temCaminho ? ' 210px' : '')
         : temDeltaCol ? '40px minmax(0, 320px) minmax(0, 1fr) 84px 100px' : '40px minmax(0, 320px) minmax(0, 1fr) 84px',
@@ -1068,6 +1077,7 @@ class Component extends DCLogic {
     const porComp = {};
     await Promise.all(cs.map(async (c) => { const d = await fetch('/api/v1/dados?competencia=' + c.competencia, { credentials: 'same-origin' }); if (d.ok) { const ls = (await d.json()).indicadores || []; if (ls.length) porComp[c.competencia] = ls; } }));
     if (!Object.keys(porComp).length) { aviso('Ainda não há indicadores coletados. Rode a coleta pela extensão no computador que acessa o PEC.'); return; }
+    try { const e = await fetch('/api/v1/auth/eu', { credentials: 'same-origin' }); if (e.ok) USUARIO = (await e.json()).usuario || null; } catch (_) {}
     const ult = cs.map((c) => c.ultimaColetaEm).filter(Boolean).sort().pop();
     REAL = montarREAL(porComp, ult ? new Date(ult).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '');
     let tema = ''; try { tema = localStorage.getItem('painelaps.tema') || ''; } catch (e) {}
