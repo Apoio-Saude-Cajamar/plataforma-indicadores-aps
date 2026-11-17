@@ -84,20 +84,22 @@
         + '.menu-aps a,.menu-aps summary{color:#fff;text-decoration:none;padding:8px 12px;border-radius:99px;cursor:pointer;list-style:none;min-height:36px;display:inline-flex;align-items:center}'
         + '.menu-aps summary::-webkit-details-marker{display:none}'
         + '.menu-aps a:hover,.menu-aps summary:hover{background:rgba(255,255,255,.14)}'
-        + '.menu-aps a[aria-current=page]{background:rgba(255,255,255,.22)}'
+        + '.menu-aps a[aria-current=page],.menu-aps summary[aria-current=page],.menu-aps details[open]>summary{background:rgba(255,255,255,.22)}'
         + '.menu-aps a:focus-visible,.menu-aps summary:focus-visible{outline:3px solid #00A7E7;outline-offset:2px}'
         + '.menu-aps details{position:relative}.menu-aps details>div{position:absolute;z-index:20;top:100%;left:0;min-width:230px;margin-top:6px;background:#fff;border:2px solid #D5DCE8;border-radius:12px;padding:6px;box-shadow:0 8px 24px rgba(20,33,43,.18);display:flex;flex-direction:column}'
         + '.menu-aps details>div a{color:#1B2340;border-radius:8px;white-space:nowrap}.menu-aps details>div a:hover{background:#E7EEF3}.menu-aps details>div a[aria-current=page]{background:#D9ECF8}';
       document.head.appendChild(st);
     }
     const lanc = gestor ? '<details><summary>Lançamentos ▾</summary><div>' + a('/lancamentos', 'Metas do PAS') + a('/lancamentos-vacinas', 'Coberturas vacinais') + '<a href="/estadual#t-form">Cofinanciamento estadual</a></div></details>' : '';
+    const ACOMP = ['/', '/indicadores', '/notas', '/estadual', '/municipal'];
+    const acomp = '<details><summary' + (ACOMP.includes(aqui) ? ' aria-current="page"' : '') + '>Acompanhamentos ▾</summary><div>' + a('/', 'Visão geral') + a('/indicadores', 'Federal · indicadores') + a('/notas', 'Federal · dashboard') + a('/estadual', 'Estadual') + a('/municipal', 'Municipal') + '</div></details>';
     const nav = document.createElement('nav');
     nav.className = 'menu-aps'; nav.setAttribute('aria-label', 'Áreas do Painel');
-    nav.innerHTML = a('/', 'Acompanhamentos') + a('/composicao', 'Composição') + (gestor ? a('/filas', 'Filas e faltas') : '') + lanc;
+    nav.innerHTML = acomp + a('/composicao', 'Composição') + (gestor ? a('/filas', 'Filas e faltas') : '') + lanc;
     const alvo = topo.querySelector('#barra');
     topo.insertBefore(nav, alvo || null);
     const tm = topo.querySelector('.tema-aps'); if (tm) topo.insertBefore(tm, alvo || null);
-    document.addEventListener('click', e => { const d = nav.querySelector('details[open]'); if (d && !d.contains(e.target)) d.removeAttribute('open'); });
+    document.addEventListener('click', e => { nav.querySelectorAll('details[open]').forEach(d => { if (!d.contains(e.target)) d.removeAttribute('open'); }); });
   }
 
   // Comunicados internos: faixa no topo até a pessoa marcar "Entendi".
