@@ -79,7 +79,7 @@ td.n,th.n{text-align:right;white-space:nowrap}
   <div class="nota" id="msg" aria-live="polite"></div>
   <div class="nova" id="nova" hidden><b>Copie agora e cole no painel da extensão. Não será mostrada de novo.</b><code id="valor"></code><button class="btn2" id="copiar" type="button">Copiar</button></div>
  </section>
- <section class="bloco"><h2>Chaves criadas</h2><div class="tab"><table><thead><tr><th>Nome</th><th>Início</th><th>Criada em</th><th>Último uso</th><th>Validade</th><th>Situação</th><th></th></tr></thead><tbody id="lista"><tr><td colspan="7">Carregando…</td></tr></tbody></table></div></section>
+ <section class="bloco"><h2>Chaves criadas</h2><p class="nota">Revogue a chave que deixou de ser usada e, depois, exclua para tirá-la da lista. A exclusão fica registrada no histórico de acessos. <button class="btn2" id="limpar" type="button">Excluir todas as inativas</button></p><div class="tab"><table><thead><tr><th>Nome</th><th>Início</th><th>Criada em</th><th>Último uso</th><th>Validade</th><th>Situação</th><th></th></tr></thead><tbody id="lista"><tr><td colspan="7">Carregando…</td></tr></tbody></table></div></section>
 </main>
 <script src="/js/sessao.js"></script>
 <script>
@@ -88,14 +88,18 @@ const dt=v=>v?new Date(v).toLocaleString('pt-BR'):'—';
 async function carregar(){
  try{const r=await fetch('/api/v1/chaves',{credentials:'same-origin'});if(!r.ok)throw 0;const d=await r.json();
   $('#lista').innerHTML=d.chaves.length?d.chaves.map(c=>{const venc=c.expiraEm&&c.expiraEm<new Date().toISOString();const sit=c.revogadaEm?'Revogada':venc?'Vencida':'Ativa';
-   return '<tr><td>'+esc(c.nome)+'</td><td>'+esc(c.prefixo)+'…</td><td>'+dt(c.criadaEm)+'</td><td>'+dt(c.ultimoUso)+'</td><td>'+(c.expiraEm?dt(c.expiraEm):'sem validade')+'</td><td>'+sit+'</td><td>'+(sit=='Ativa'?'<button class="btn2" data-r="'+c.id+'">Revogar</button>':'')+'</td></tr>'}).join(''):'<tr><td colspan="7">Nenhuma chave criada.</td></tr>';
+   return '<tr><td>'+esc(c.nome)+'</td><td>'+esc(c.prefixo)+'…</td><td>'+dt(c.criadaEm)+'</td><td>'+dt(c.ultimoUso)+'</td><td>'+(c.expiraEm?dt(c.expiraEm):'sem validade')+'</td><td>'+sit+'</td><td>'+(sit=='Ativa'?'<button class="btn2" data-r="'+c.id+'">Revogar</button>':'<button class="btn2" data-x="'+c.id+'" data-n="'+esc(c.nome)+'">Excluir</button>')+'</td></tr>'}).join(''):'<tr><td colspan="7">Nenhuma chave criada.</td></tr>';
  }catch{$('#lista').innerHTML='<tr><td colspan="7">Não foi possível carregar.</td></tr>'}}
 $('#gerar').addEventListener('click',async()=>{$('#msg').textContent='';
  try{const r=await fetch('/api/v1/chaves',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({nome:$('#nome').value,dias:$('#dias').value||null})});
   const d=await r.json();if(!r.ok)throw new Error(d.erro||'Falha');$('#valor').textContent=d.chave;$('#nova').hidden=false;$('#nome').value='';$('#dias').value='';carregar();}catch(e){$('#msg').textContent=e.message}});
 $('#copiar').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('#valor').textContent);$('#msg').textContent='Copiada.'}catch{$('#msg').textContent='Selecione e copie manualmente.'}});
-$('#lista').addEventListener('click',async e=>{const b=e.target.closest('[data-r]');if(!b)return;if(!confirm('Revogar esta chave? A extensão que a usa deixará de enviar dados.'))return;
+$('#lista').addEventListener('click',async e=>{const x=e.target.closest('[data-x]');if(x){if(!confirm('Excluir de vez a chave "'+x.dataset.n+'"? O registro dela some da lista e não dá para desfazer. A extensão que ainda a use já não envia dados.'))return;
+ const r=await fetch('/api/v1/chaves/'+x.dataset.x+'/excluir',{method:'DELETE',credentials:'same-origin'});if(r.ok)carregar();else alert('Não foi possível excluir.');return}
+ const b=e.target.closest('[data-r]');if(!b)return;if(!confirm('Revogar esta chave? A extensão que a usa deixará de enviar dados.'))return;
  const r=await fetch('/api/v1/chaves/'+b.dataset.r,{method:'DELETE',credentials:'same-origin'});if(r.ok){$('#nova').hidden=true;carregar()}});
+$('#limpar').addEventListener('click',async()=>{if(!confirm('Excluir de vez todas as chaves revogadas ou vencidas? Não dá para desfazer. As chaves ativas não são afetadas.'))return;
+ const r=await fetch('/api/v1/chaves/inativas',{method:'DELETE',credentials:'same-origin'});if(r.ok){const d=await r.json();$('#nova').hidden=true;carregar();alert(d.excluidas+' chave(s) excluída(s).')}else alert('Não foi possível excluir.')});
 carregar();
 </script>
 </body>

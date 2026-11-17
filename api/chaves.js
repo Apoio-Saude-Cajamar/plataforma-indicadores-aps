@@ -41,6 +41,23 @@ export async function revogarChave(req, env, id, adminId) {
   return { ok: true };
 }
 
+// Exclusão definitiva: só de chave já revogada ou vencida (uma chave ativa precisa ser revogada antes). Fica o registro no histórico de acessos.
+const INATIVA = "(revogada_em IS NOT NULL OR (expira_em IS NOT NULL AND expira_em < ?))";
+export async function excluirChave(req, env, id, adminId) {
+  const l = await env.DB.prepare('SELECT id, nome, prefixo, revogada_em AS rev, expira_em AS exp FROM chave_coleta WHERE id = ?').bind(id).first();
+  if (!l) throw new ErroHttp(404, 'Chave não encontrada.');
+  if (!l.rev && !(l.exp && l.exp < agora())) throw new ErroHttp(409, 'Esta chave ainda está ativa. Revogue antes de excluir.');
+  await env.DB.prepare('DELETE FROM chave_coleta WHERE id = ?').bind(id).run();
+  if (adminId) await registrar(env, adminId, 'chave_coleta_excluida', `${id} ${l.prefixo}… ${l.nome}`.slice(0, 120), req);
+  return { ok: true };
+}
+
+export async function excluirChavesInativas(req, env, adminId) {
+  const r = await env.DB.prepare(`DELETE FROM chave_coleta WHERE ${INATIVA}`).bind(agora()).run();
+  if (adminId) await registrar(env, adminId, 'chave_coleta_excluida', `${r.meta.changes} chave(s) inativa(s)`, req);
+  return { excluidas: r.meta.changes };
+}
+
 // Confere a chave do cabeçalho Authorization. Devolve true se for uma chave gerada, válida e não revogada.
 export async function chaveGeradaValida(request, env) {
   const cab = request.headers.get('authorization') || '';

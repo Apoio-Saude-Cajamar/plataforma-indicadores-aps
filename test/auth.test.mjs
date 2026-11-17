@@ -349,7 +349,17 @@ test('chaves de coleta: admin gera, a chave só envia coleta, revogação vale n
   assert.equal(l.chaves.length, 1);
   assert.ok(l.chaves[0].ultimoUso, 'registra o último uso');
   assert.ok(!JSON.stringify(l).includes(c.chave.slice(3)) && !('hash' in l.chaves[0]));
+  assert.equal((await ana.pedir('DELETE', '/api/v1/chaves/' + c.id + '/excluir')).status, 409, 'chave ativa não se exclui: revogue antes');
   assert.equal((await ana.pedir('DELETE', '/api/v1/chaves/' + c.id)).status, 200);
+  assert.equal((await leo.pedir('DELETE', '/api/v1/chaves/' + c.id + '/excluir')).status, 403);
+  assert.equal((await ana.pedir('DELETE', '/api/v1/chaves/' + c.id + '/excluir')).status, 200, 'revogada pode ser excluída');
+  assert.equal((await (await ana.pedir('GET', '/api/v1/chaves')).json()).chaves.length, 0);
+  assert.equal((await ana.pedir('DELETE', '/api/v1/chaves/' + c.id + '/excluir')).status, 404);
+  const c2 = await (await ana.pedir('POST', '/api/v1/chaves', { nome: 'Outro PC' })).json();
+  const c3 = await (await ana.pedir('POST', '/api/v1/chaves', { nome: 'PC antigo' })).json();
+  await ana.pedir('DELETE', '/api/v1/chaves/' + c3.id);
+  assert.equal((await (await ana.pedir('DELETE', '/api/v1/chaves/inativas')).json()).excluidas, 1);
+  assert.deepEqual((await (await ana.pedir('GET', '/api/v1/chaves')).json()).chaves.map(x => x.nome), ['Outro PC'], 'a ativa continua');
   assert.equal((await com(c.chave, 'POST', '/api/v1/coletas', { id: 'c3', competencia: '2026-10' })).status, 401, 'revogada');
   assert.equal((await ana.pedir('GET', '/chaves')).status, 200);
   assert.notEqual((await leo.pedir('GET', '/chaves')).status, 200);

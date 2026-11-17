@@ -32,7 +32,7 @@ import { gravarFilas, gravarFilasHorario, lerFilas } from './filas.js';
 import { listarLancamentos, criarLancamento } from './lancamentos.js';
 import { listarEstadual, criarEstadual, gravarVacinasPec, lerVacinasPec } from './estadual.js';
 import { meusRegistros, registros, estadoBackup } from './registros.js';
-import { listarChaves, criarChave, revogarChave, chaveGeradaValida } from './chaves.js';
+import { listarChaves, criarChave, revogarChave, excluirChave, excluirChavesInativas, chaveGeradaValida } from './chaves.js';
 import { catalogoAdmin, salvarPublicacao, historico as historicoPublicacao, dadosPublicos } from './publicacao.js';
 import { comunicadosAtivos, marcarLido, listarComunicados, criarComunicado, alterarComunicado } from './comunicados.js';
 import { manifesto, paginaTabela, iniciarRestauracao, restaurarParte, concluirRestauracao } from './backup.js';
@@ -64,6 +64,8 @@ const ROTAS = [
 
   ['GET', /^\/chaves$/, 'usuarios', async (req, env) => json(await listarChaves(env))],
   ['POST', /^\/chaves$/, 'usuarios', async (req, env, m, url, quem) => json(await criarChave(req, env, quem), 201)],
+  ['DELETE', /^\/chaves\/inativas$/, 'usuarios', async (req, env, m, url, quem) => json(await excluirChavesInativas(req, env, quem))],
+  ['DELETE', /^\/chaves\/(\d+)\/excluir$/, 'usuarios', async (req, env, m, url, quem) => json(await excluirChave(req, env, Number(m[1]), quem))],
   ['DELETE', /^\/chaves\/(\d+)$/, 'usuarios', async (req, env, m, url, quem) => json(await revogarChave(req, env, Number(m[1]), quem))],
   ['PUT', /^\/filas$/, 'coleta', async (req, env) => json(await gravarFilas(env, await lerJson(req)))],
   ['PUT', /^\/filas\/horarios$/, 'coleta', async (req, env) => json(await gravarFilasHorario(env, await lerJson(req)))],
