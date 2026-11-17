@@ -40,3 +40,15 @@ test('nota: soma ponderada e ponto extra', () => {
   const parcial = [{ peso: 1.3, pct: 1 }, { peso: 0.8, pct: null }];
   assert.equal(R.nota(parcial, false).completo, false);
 });
+
+test('estimativa de vacina pelo PEC: doses acumuladas de janeiro ao fim do quadrimestre sobre a população-alvo', async () => {
+  await import('../painel/js/estadual-regras.js');
+  const R = globalThis.ESTADUAL_REGRAS;
+  const linhas = [];
+  for (let m = 1; m <= 4; m++) linhas.push({ competencia: '2026-0' + m, vacina: 'polio', faixa: 'Menos de 01 ano', dose: '3ª DOSE', n: 50 }, { competencia: '2026-0' + m, vacina: 'polio', faixa: 'Menos de 01 ano', dose: '1ª DOSE', n: 60 }, { competencia: '2026-0' + m, vacina: 'polio', faixa: '01 ano', dose: '3ª DOSE', n: 9 });
+  const e = R.estimativa('polio', linhas, '2026-Q1', 250);
+  assert.equal(e.doses, 200); assert.equal(e.meses, 4); assert.equal(e.completo, true); assert.equal(e.cobertura, 80);
+  assert.equal(R.estimativa('polio', linhas, '2026-Q2', 250).completo, false, 'faltam os meses de maio a agosto');
+  assert.equal(R.estimativa('polio', linhas, '2025-Q1', 250), null, 'sem meses do ano');
+  assert.equal(R.estimativa('polio', linhas, '2026-Q1', null).cobertura, null, 'sem população-alvo');
+});

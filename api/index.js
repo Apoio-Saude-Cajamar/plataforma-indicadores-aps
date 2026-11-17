@@ -30,7 +30,7 @@ import { populacaoMunicipio } from './populacao.js';
 import { monitoramento } from './monitoramento.js';
 import { gravarFilas, gravarFilasHorario, lerFilas } from './filas.js';
 import { listarLancamentos, criarLancamento } from './lancamentos.js';
-import { listarEstadual, criarEstadual } from './estadual.js';
+import { listarEstadual, criarEstadual, gravarVacinasPec, lerVacinasPec } from './estadual.js';
 import { meusRegistros, registros, estadoBackup } from './registros.js';
 import { listarChaves, criarChave, revogarChave, chaveGeradaValida } from './chaves.js';
 import { catalogoAdmin, salvarPublicacao, historico as historicoPublicacao, dadosPublicos } from './publicacao.js';
@@ -73,6 +73,8 @@ const ROTAS = [
   ['GET', /^\/meus-registros$/, 'leitura', async (req, env, m, url, quem) => json(await meusRegistros(env, quem))],
   ['GET', /^\/registros$/, 'usuarios', async (req, env) => json(await registros(env))],
   ['GET', /^\/backups\/estado$/, 'usuarios', async (req, env) => json(await estadoBackup(env))],
+  ['PUT', /^\/vacinas-pec$/, 'coleta', async (req, env) => json(await gravarVacinasPec(env, await lerJson(req)))],
+  ['GET', /^\/vacinas-pec$/, 'leitura', async (req, env) => json(await lerVacinasPec(env))],
   ['GET', /^\/estadual\/lancamentos$/, 'leitura', async (req, env) => json(await listarEstadual(env))],
   ['POST', /^\/estadual\/lancamentos$/, 'lancar', async (req, env, m, url, quem) => json(await criarEstadual(req, env, quem), 201)],
   ['POST', /^\/lancamentos$/, 'lancar', async (req, env, m, url, quem) => json(await criarLancamento(req, env, quem), 201)],

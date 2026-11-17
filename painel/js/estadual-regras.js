@@ -75,6 +75,32 @@
     const extra = semObitoMaterno === true && !todos100 ? 0.1 : 0;
     return { base: soma / 10, extra, final: Math.min(1, soma / 10 + extra), pesoLancado, completo: ok.length === resultados.length };
   }
-  const API = { POP, TETO_ESF, ITENS, vacina, cobertura, esf, internacoes, sifilis, liraa, mortalidade, pontuar, nota };
+  // Estimativa de cobertura a partir das doses do relatório de vacinação do PEC (só aproximada: a oficial vem do Estado).
+  // Doses acumuladas de janeiro até o fim do quadrimestre ÷ população-alvo lançada para o ano. A faixa etária é a da data da aplicação.
+  const DEF = {
+    polio: { faixas: ['Menos de 01 ano'], dose: /^3ª DOSE$/, alvo: 'alvo_menor1' },
+    penta: { faixas: ['Menos de 01 ano'], dose: /^3ª DOSE$/, alvo: 'alvo_menor1' },
+    pneumo: { faixas: ['Menos de 01 ano'], dose: /^2ª DOSE$/, alvo: 'alvo_menor1' },
+    triplice: { faixas: ['01 ano'], dose: /^1ª DOSE$/, alvo: 'alvo_1ano' },
+    hpv: { faixas: ['05 a 09 anos', '10 a 14 anos'], dose: /^(ÚNICA|2ª DOSE)$/, alvo: 'alvo_hpv' }
+  };
+  const FIM_Q = { 1: 4, 2: 8, 3: 12 };
+  // linhas: [{ competencia 'AAAA-MM', vacina, faixa, dose, n }]; alvo: população-alvo (número) ou null.
+  function estimativa(id, linhas, periodo, alvo) {
+    const d = DEF[id], m = /^(\d{4})-Q([1-3])$/.exec(String(periodo || ''));
+    if (!d || !m) return null;
+    const ano = m[1], fim = FIM_Q[m[2]], esperados = fim;
+    const meses = new Set();
+    let doses = 0;
+    for (const l of linhas || []) {
+      const [a, mm] = String(l.competencia).split('-');
+      if (a !== ano || Number(mm) > fim) continue;
+      meses.add(mm);
+      if (l.vacina === id && d.faixas.includes(l.faixa) && d.dose.test(l.dose)) doses += l.n;
+    }
+    if (!meses.size) return null;
+    return { doses, meses: meses.size, esperados, completo: meses.size >= esperados, cobertura: num(alvo) && alvo > 0 ? doses / alvo * 100 : null };
+  }
+  const API = { estimativa, DEF, POP, TETO_ESF, ITENS, vacina, cobertura, esf, internacoes, sifilis, liraa, mortalidade, pontuar, nota };
   if (typeof module !== 'undefined' && module.exports) module.exports = API; else raiz.ESTADUAL_REGRAS = API;
 })(typeof window !== 'undefined' ? window : globalThis);

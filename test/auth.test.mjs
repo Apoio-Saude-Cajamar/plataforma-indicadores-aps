@@ -220,7 +220,7 @@ test('composição: a extensão grava com a chave e o painel lê com a sessão',
   assert.equal((await nav.pedir('PUT', '/api/v1/composicao', { competencia: '2026-10', unidades: [] })).status, 401);
   assert.equal((await nav.pedir('GET', '/composicao')).status, 200);
   for (const p of ['/', '/filas', '/notas', '/indicadores', '/lancamentos', '/lancamentos-vacinas', '/federal', '/federal-notas', '/estadual', '/municipal']) assert.equal((await nav.pedir('GET', p)).status, 200, p);
-  for (const p of ['/extensao', '/downloads/coletor-aps-v0.9.1.zip']) assert.notEqual((await nav.pedir('GET', p)).status, 200, p + ' só para administrador');
+  for (const p of ['/extensao', '/downloads/coletor-aps-v0.9.2.zip']) assert.notEqual((await nav.pedir('GET', p)).status, 200, p + ' só para administrador');
 });
 
 test('população: lê a estimativa mais recente do IBGE (com resposta simulada)', async () => {
@@ -463,4 +463,17 @@ test('menu do usuário: meus registros para qualquer logado; histórico e estado
   assert.ok(!JSON.stringify(h).includes('"ip"'));
   const b = await (await adm.pedir('GET', '/api/v1/backups/estado')).json();
   assert.ok(b.tabelas && typeof b.tabelas === 'object');
+});
+
+test('vacinas do PEC: troca as doses do mês, ignora vacina fora do cálculo e devolve só totais', async () => {
+  const { gravarVacinasPec, lerVacinasPec } = await import('../api/estadual.js');
+  const env = ambiente();
+  const d = (vacina, faixa, dose, n) => ({ vacina, imunobiologico: 'Vacina X', faixa, dose, n });
+  await gravarVacinasPec(env, { competencia: '2026-10', doses: [d('polio', 'Menos de 01 ano', '3ª DOSE', 140), d('gripe', 'Menos de 01 ano', '1ª DOSE', 5), d('penta', 'Menos de 01 ano', '3ª DOSE', 141)] });
+  let r = await lerVacinasPec(env);
+  assert.equal(r.doses.length, 2, 'vacina fora do cálculo não entra');
+  await gravarVacinasPec(env, { competencia: '2026-10', doses: [d('polio', 'Menos de 01 ano', '3ª DOSE', 150)] });
+  r = await lerVacinasPec(env);
+  assert.deepEqual(r.doses.map(x => [x.vacina, x.n]), [['polio', 150]], 'recoleta do mês troca as doses');
+  assert.deepEqual(Object.keys(r.doses[0]).sort(), ['competencia', 'dose', 'faixa', 'n', 'vacina']);
 });
