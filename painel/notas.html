@@ -22,7 +22,7 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
 <div style="min-height: 100vh; background: {{tPagina}}; color: {{tTexto}}; font-family: {{tFonte}}; font-weight: {{tPeso}}; font-size: {{tTam}}; line-height: 1.5; color-scheme: {{tEsquema}}">
 
   <div style="background: #1F3C72; border-bottom: 4px solid #00A7E7; color: #FFFFFF; font-family: 'Montserrat', system-ui, sans-serif">
-    <div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+    <div style="max-width: 1100px; margin: 0 auto; padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
       <a href="/" style="display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 19px; color: #FFFFFF; text-decoration: none"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
       <nav aria-label="Áreas do Painel" style="display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; font-weight: 600; font-size: 14px">
         <template data-sc="for" list="{{menuSite}}" as="ms"><a href="{{ms.href}}" style="color: #FFFFFF; text-decoration: none; padding: 8px 12px; min-height: 36px; display: inline-flex; align-items: center; border-radius: 99px">{{ms.txt}}</a></template>
@@ -32,6 +32,7 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
             <a href="/lancamentos-vacinas" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Coberturas vacinais</a>
             <a href="/estadual#t-form" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Cofinanciamento estadual</a></div></details></template>
       </nav>
+      <div role="group" aria-label="Tema" style="display: inline-flex; align-items: center; gap: 2px; padding: 2px; border: 1px solid rgba(255,255,255,.35); border-radius: 99px"><button type="button" onClick="{{tClaro}}" aria-pressed="{{pClaro}}" title="Tema claro" aria-label="Tema claro" style="all: unset; box-sizing: border-box; width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; cursor: pointer; color: #FFFFFF; opacity: {{pClaroOp}}; background: {{pClaroBg}}"><span aria-hidden="true" style="font-size: 15px; line-height: 1">☀</span></button><button type="button" onClick="{{tPers}}" aria-pressed="{{pPers}}" title="Tema personalizado (cores de Cajamar)" aria-label="Tema personalizado (cores de Cajamar)" style="all: unset; box-sizing: border-box; width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; cursor: pointer; color: #FFFFFF; opacity: {{pPersOp}}; background: {{pPersBg}}"><span aria-hidden="true" style="font-size: 15px; line-height: 1">◐</span></button><button type="button" onClick="{{tEsc}}" aria-pressed="{{pEsc}}" title="Tema escuro" aria-label="Tema escuro" style="all: unset; box-sizing: border-box; width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; cursor: pointer; color: #FFFFFF; opacity: {{pEscOp}}; background: {{pEscBg}}"><span aria-hidden="true" style="font-size: 15px; line-height: 1">☾</span></button></div>
       <template data-sc="if" value="{{temUsuario}}"><details style="position: relative; font-size: 13px; font-weight: 600"><summary style="list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,.6); border-radius: 99px; padding: 4px 12px 4px 4px; min-height: 36px"><span style="width: 26px; height: 26px; border-radius: 50%; background: #00A7E7; display: inline-grid; place-items: center; font-weight: 800">{{usuarioInicial}}</span>{{usuarioNome}} ▾</summary>
         <div style="position: absolute; z-index: 30; right: 0; top: 100%; margin-top: 6px; min-width: 260px; background: #FFFFFF; color: #1B2340; border: 2px solid #D5DCE8; border-radius: 12px; padding: 6px; box-shadow: 0 8px 24px rgba(20,33,43,.18); display: flex; flex-direction: column; font-size: 14px">
           <template data-sc="for" list="{{itensUsuario}}" as="iu"><a href="{{iu.href}}" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-weight: {{iu.peso}}">{{iu.txt}}</a></template>
@@ -49,11 +50,7 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
         </div>
         <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px">
           <span style="font-size: 12px; font-weight: 600; color: {{tRascunhoTexto}}; background: {{tRascunhoFundo}}; border-radius: 999px; padding: 3px 10px">{{coletaTxt}}</span>
-          <div role="group" aria-label="Tema" style="display: flex; border: 1px solid {{tTopoLinha}}; border-radius: 8px; overflow: hidden">
-            <template data-sc="for" list="{{temas}}" as="tm" hint-placeholder-count="3">
-              <button type="button" aria-pressed="{{tm.pressionado}}" onClick="{{tm.escolher}}" style="font: inherit; font-size: 13px; min-height: 34px; padding: 0 12px; border: 0; cursor: pointer; background: {{tm.fundo}}; color: {{tm.cor}}; font-weight: {{tm.peso}}">{{tm.rotulo}}</button>
-            </template>
-          </div>
+          
         </div>
       </div>
       <nav aria-label="Relatórios" style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 28px">
@@ -1018,6 +1015,7 @@ class Component extends DCLogic {
       ...tokens, linhas, resumo, eixo, tituloLista, comoLer, pergunta, descricao, rotuloNome, rotuloValor, rotuloDelta, temDelta,
       compTxt: rel === 'meses' ? 'o mês anterior' : compTxt,
       trilha: trilha + 'px', trilhaTopo: (17 - trilha / 2) + 'px', subtituloTopo: subtitulo, temSelo: selo, temAssinatura: !selo,
+      ...(() => { const ch = (id) => () => { try { localStorage.setItem('painelaps.tema', id); } catch (_) {} this.setState({ tema: id }); }; const ps = (id) => tema === id; return { tClaro: ch('claro'), tPers: ch('personalizado'), tEsc: ch('escuro'), pClaro: ps('claro') ? 'true' : 'false', pPers: ps('personalizado') ? 'true' : 'false', pEsc: ps('escuro') ? 'true' : 'false', pClaroOp: ps('claro') ? 1 : .75, pPersOp: ps('personalizado') ? 1 : .75, pEscOp: ps('escuro') ? 1 : .75, pClaroBg: ps('claro') ? 'rgba(255,255,255,.26)' : 'transparent', pPersBg: ps('personalizado') ? 'rgba(255,255,255,.26)' : 'transparent', pEscBg: ps('escuro') ? 'rgba(255,255,255,.26)' : 'transparent' }; })(),
       coletaTxt: REAL.ultima ? 'Dados do PEC e-SUS · coleta de ' + REAL.ultima : 'Dados do PEC e-SUS',
       menuSite: MENU_SITE(), temLanc: !!USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor'), itensUsuario: ITENS_USUARIO(), usuarioInicial: USUARIO ? USUARIO.nome.trim().charAt(0).toUpperCase() : '', temUsuario: !!USUARIO, usuarioNome: USUARIO ? USUARIO.nome.split(' ')[0] : '',
       sair: async () => { try { await fetch('/api/v1/auth/sair', { method: 'POST', credentials: 'same-origin' }); } finally { location.replace('/entrar'); } },

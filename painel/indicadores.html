@@ -30,6 +30,8 @@ h1{margin:12px 0 8px;font-size:30px;font-weight:800;color:#1F3C72;line-height:1.
 .card small{display:block;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
 .card .v{font-size:34px;font-weight:800;color:#1F3C72;line-height:1.1}
 .card .s{font-size:13px;color:#4A5670;margin-top:6px;line-height:1.45}
+.card.cc{grid-column:1/-1}.cg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px}.ct{border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}.ct b{font-size:30px;line-height:1.1}.ct span{font-weight:700;font-size:14px}.ct i{font-style:normal;font-size:13px;opacity:.8}
+.cards .card:not(.cc){align-self:start}@media(max-width:600px){.cg{grid-template-columns:repeat(2,1fr)}}
 .pill{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px;margin-left:8px;vertical-align:middle}
 .c-o{background:#C7ECD9;color:#0F5A41}.c-b{background:#D9ECF8;color:#0B4F73}.c-s{background:#FBF0D3;color:#6E4700}.c-r{background:#F8D9DC;color:#8A1B2A}
 .up{color:#0F6B4F;font-weight:700}.dn{color:#A8222F;font-weight:700}
@@ -181,7 +183,7 @@ function painel(comps,un){
   sub+='<tr><td><b>'+esc(cod)+'</b> · '+esc(cat.nome)+'</td><td class="n">'+fmt(vm,cat.tipo)+(km?' <span class="pill '+PILL[km]+'">'+NOMEC[km]+'</span>'+aconf(cod):'')+'</td><td style="min-width:200px">'+(n?['o','b','s','r'].filter(k=>c[k]).map(k=>'<span class="pill '+PILL[k]+'" style="margin:0 6px 4px 0">'+c[k]+' '+NOMEC[k]+'</span>').join(''):'<span style="color:#4A5670;font-size:13px">sem faixa definida</span>')+'</td><td class="n">'+ne+'</td></tr>'}
  if(sub)linhas+='<tr class="dir"><td colspan="4">'+esc(gn)+'</td></tr>'+sub}
  const nt=tot.o+tot.b+tot.s+tot.r;
- if(nt)h+='<div class="card"><small>Conceitos atribuídos (prévia)</small><div class="v">'+nt+'</div><div class="s">'+['o','b','s','r'].filter(k=>tot[k]).map(k=>'<span class="pill '+PILL[k]+'" style="margin:0 4px 4px 0">'+tot[k]+' '+NOMEC[k]+'</span>').join('')+'<br>combinações de equipe e indicador com faixa; o detalhe por grupo está na aba Detalhe e equipes</div></div>';
+ if(nt)h+='<div class="card cc"><small>Conceitos atribuídos (prévia) · '+nt+' combinações de equipe e indicador com faixa</small><div class="cg">'+['o','b','s','r'].map(k=>'<div class="ct '+PILL[k]+'"><b>'+(tot[k]||0)+'</b><span>'+NOMEC[k]+'</span><i>'+Math.round(100*(tot[k]||0)/nt)+'%</i></div>').join('')+'</div><div class="s">O detalhe por grupo e por equipe está na aba Detalhe e equipes.</div></div>';
  $('cards').innerHTML=ult?h:'';
  $('visao').hidden=!linhas;$('conc').innerHTML=linhas?'<table><thead><tr><th>Indicador</th><th class="n">Município</th><th>Equipes por conceito</th><th class="n">Equipes com dado</th></tr></thead><tbody>'+linhas+'</tbody></table>':'';
  // Evolução: um valor do município por mês coletado (todos os meses disponíveis, não só o período).
