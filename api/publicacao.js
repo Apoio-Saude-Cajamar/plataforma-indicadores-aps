@@ -60,7 +60,8 @@ export function montarCatalogo(d) {
   cats.push({ id: 'vivo-estadual', grupo: 'Ao vivo · atualiza sozinho', nome: 'Cofinanciamento estadual (IGM SUS Paulista)', tipo: 'vivo', itens: [{ id: 'vivo:estadual', rotulo: 'Nota e pontos por indicador, do município', linhas: [] }] });
   cats.push({ id: 'vivo-filas', grupo: 'Ao vivo · atualiza sozinho', nome: 'Filas e faltas por unidade, equipe e especialidade', tipo: 'vivo', itens: [
     { id: 'vivo:filas:Médico', rotulo: 'Médicos (sem nomes; só totais por equipe e especialidade)', linhas: [] },
-    { id: 'vivo:filas:Enfermeiro', rotulo: 'Enfermeiros (sem nomes; só totais por equipe e especialidade)', linhas: [] }] });
+    { id: 'vivo:filas:Enfermeiro', rotulo: 'Enfermeiros (sem nomes; só totais por equipe e especialidade)', linhas: [] },
+    { id: 'vivo:filas:min3', rotulo: 'Proteção: ocultar linhas com menos de 3 profissionais (evita identificar uma pessoa pelo total)', linhas: [] }] });
   return cats;
 }
 
@@ -126,7 +127,7 @@ async function vivoEstadual(env) {
   return { lancamentos: vigentes.map(l => pick(l, ['item', 'periodo', 'valor', 'anterior', 'mediana', 'quartil', 'quartilAnt'])) };
 }
 
-async function vivoFilas(env, categorias) {
+async function vivoFilas(env, categorias, minimo) {
   if (!categorias.length) return null;
   try {
     const comp = (await env.DB.prepare('SELECT MAX(competencia) AS c FROM fila_profissional').first())?.c;
@@ -135,7 +136,7 @@ async function vivoFilas(env, categorias) {
     const { results } = await env.DB.prepare(`SELECT unidade AS u, equipe AS e, categoria AS cat, cbo, COUNT(*) AS prof, SUM(faltas) AS f, SUM(atendimentos) AS a,
         SUM(CASE WHEN agenda_lida_em IS NOT NULL THEN 1 ELSE 0 END) AS lidas, AVG(CASE WHEN agenda_lida_em IS NOT NULL AND sem_vaga = 0 THEN dias_vaga END) AS dias,
         SUM(CASE WHEN sem_vaga = 1 THEN 1 ELSE 0 END) AS semVaga
-      FROM fila_profissional WHERE competencia = ? AND categoria IN (${marcas}) GROUP BY unidade, equipe, categoria, cbo ORDER BY unidade, equipe, categoria, cbo`).bind(comp, ...categorias).all();
+      FROM fila_profissional WHERE competencia = ? AND categoria IN (${marcas}) GROUP BY unidade, equipe, categoria, cbo HAVING COUNT(*) >= ${minimo} ORDER BY unidade, equipe, categoria, cbo`).bind(comp, ...categorias).all();
     return { competencia: comp, linhas: results };
   } catch { return null; }
 }
@@ -147,7 +148,7 @@ export async function dadosPublicos(env, url) {
   if (m.has('vivo:federal')) vivos.federal = await vivoFederal(env);
   if (m.has('vivo:estadual')) vivos.estadual = await vivoEstadual(env);
   const catsFilas = ['Médico', 'Enfermeiro'].filter(c => m.has('vivo:filas:' + c));
-  if (catsFilas.length) vivos.filas = await vivoFilas(env, catsFilas);
+  if (catsFilas.length) vivos.filas = await vivoFilas(env, catsFilas, m.has('vivo:filas:min3') ? 3 : 1);
   const saida = cats.filter(c => c.tipo !== 'vivo').map(c => ({ id: c.id, grupo: c.grupo, nome: c.nome, tipo: c.tipo, itens: c.itens.filter(i => m.has(i.id)).map(i => ({ id: i.id, rotulo: i.rotulo, linhas: i.linhas })) })).filter(c => c.itens.length);
   const r = json({ geradoEm: agora(), fonte: 'Painel APS de Cajamar (totais agregados)', categorias: saida, vivos });
   r.headers.set('cache-control', 'public, max-age=300');

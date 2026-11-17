@@ -108,9 +108,13 @@ function federal(F){
   const q=$('#f-eq').value;
   const m=new Map();
   F.linhas.filter(l=>(un?l.u===un:l.u!=='Município')&&(!q||l.e===q)).forEach(l=>{const g=m.get(l.c)||{c:l.c,n:0,d:0,p:0};g.n+=l.n;g.d+=l.d;g.p+=l.p;m.set(l.c,g)});
-  const lin=[...m.values()].filter(g=>cat[g.c]&&cat[g.c].tipo!=='contagem'&&!/-/.test(g.c)).sort((a,b)=>a.c.localeCompare(b.c,'pt',{numeric:true}));
-  const res=(g,t)=>t==='pontos'?(g.d?g.p/g.d:null):t==='percentual'?(g.d?100*g.n/g.d:null):t==='razao'?(g.d?g.n/g.d:null):null;
-  $('#f-tab').innerHTML=lin.length?'<table><thead><tr><th>Indicador</th><th class="n">Numerador</th><th class="n">Denominador</th><th class="n">Resultado</th></tr></thead><tbody>'+lin.map(g=>{const c=cat[g.c],v=res(g,c.tipo);return '<tr><td><b>'+esc(g.c)+'</b> · '+esc(c.nome)+'</td><td class="n">'+num(g.n)+'</td><td class="n">'+num(g.d)+'</td><td class="n">'+(v==null?'—':num(v)+(c.tipo==='percentual'?'%':''))+'</td></tr>'}).join('')+'</tbody></table>':'<p class="nota">Sem dados para esta escolha.</p>';
+  // C7 (itens A a D, pesos 20/30/30/20) e CVAT (escores de cadastro e acompanhamento) são notas compostas, como no painel interno.
+  if(['A','B','C','D'].some(x=>m.get('C7-'+x))){let n=0;[['A',20],['B',30],['C',30],['D',20]].forEach(([x,pe])=>{const g=m.get('C7-'+x);if(g&&g.d)n+=g.n/g.d*pe});m.set('C7',{c:'C7',direto:n})}
+  const cad=m.get('CVAT-CAD'),aco=m.get('CVAT-ACO');
+  if(cad&&aco){const f=(v,e)=>v>85?e[0]:v>=65?e[1]:v>=45?e[2]:e[3];const ic=cad.d?100*cad.n/cad.d:0,ia=aco.d?100*aco.n/aco.d:0;m.set('CVAT',{c:'CVAT',direto:f(ic,[3,2.25,1.5,.75])+f(ia,[7,5.25,3.5,1.75])})}
+  const lin=[...m.values()].filter(g=>cat[g.c]&&cat[g.c].tipo!=='contagem'&&(g.direto!==undefined||!/-/.test(g.c))).sort((a,b)=>a.c.localeCompare(b.c,'pt',{numeric:true}));
+  const res=(g,t)=>g.direto!==undefined?g.direto:t==='pontos'?(g.d?g.p/g.d:null):t==='percentual'?(g.d?100*g.n/g.d:null):t==='razao'?(g.d?g.n/g.d:null):null;
+  $('#f-tab').innerHTML=lin.length?'<table><thead><tr><th>Indicador</th><th class="n">Numerador</th><th class="n">Denominador</th><th class="n">Resultado</th></tr></thead><tbody>'+lin.map(g=>{const c=cat[g.c],v=res(g,c.tipo);return '<tr><td><b>'+esc(g.c)+'</b> · '+esc(c.nome)+'</td><td class="n">'+(g.direto!==undefined?'—':num(g.n))+'</td><td class="n">'+(g.direto!==undefined?'—':num(g.d))+'</td><td class="n">'+(v==null?'—':num(v)+(c.tipo==='percentual'?'%':''))+'</td></tr>'}).join('')+'</tbody></table>':'<p class="nota">Sem dados para esta escolha.</p>';
  };
  $('#f-un').addEventListener('change',()=>{$('#f-eq').value='';des()});$('#f-eq').addEventListener('change',des);des();
 }

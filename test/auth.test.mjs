@@ -320,11 +320,13 @@ test('página pública: tudo privado por padrão, só o admin autoriza, só camp
   assert.deepEqual(vd.vivos.filas.linhas.map(l => l.cat), ['Médico']);
   assert.equal(vd.vivos.filas.linhas[0].f, 5);
   assert.equal(vd.vivos.federal, undefined);
+  assert.equal((await ana.pedir('PUT', '/api/v1/publicacao', { itens: ['vivo:filas:Médico', 'vivo:filas:min3'], confirmo: true })).status, 200);
+  assert.deepEqual((await (await anon.pedir('GET', '/api/v1/publico/dados')).json()).vivos.filas.linhas, [], 'mínimo de 3 oculta equipe com 1 profissional');
   await ana.pedir('PUT', '/api/v1/publicacao', { itens: [], confirmo: true });
   d = await (await anon.pedir('GET', '/api/v1/publico/dados')).json();
   assert.deepEqual(d.categorias, [], 'revogação imediata');
   const h = await (await ana.pedir('GET', '/api/v1/publicacao/historico')).json();
-  assert.equal(h.historico.length, 3);
+  assert.equal(h.historico.length, 4);
 });
 
 test('chaves de coleta: admin gera, a chave só envia coleta, revogação vale na hora, nada do hash vaza', async () => {
