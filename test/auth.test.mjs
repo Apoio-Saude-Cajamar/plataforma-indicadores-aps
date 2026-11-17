@@ -311,11 +311,20 @@ test('página pública: tudo privado por padrão, só o admin autoriza, só camp
   assert.ok(!/"resp"|"obs"|pendencias/.test(txt), 'sem responsável nem observações');
   assert.equal((await anon.pedir('GET', '/publico')).status, 200);
   assert.equal((await anon.pedir('GET', '/publicacao')).status, 302);
+  // Itens ao vivo: o administrador liga só médicos; enfermeiros e nomes não aparecem.
+  await env.DB.prepare(`INSERT INTO fila_profissional (competencia, unidade, equipe, cbo, categoria, nome, faltas, atendimentos, atualizado_em) VALUES ('2026-10','UBS A','EQ 1','Médico - 1','Médico','Dr. Sigiloso',5,45,'x'), ('2026-10','UBS A','EQ 1','Enfermeiro - 2','Enfermeiro','Enf. Sigilosa',2,48,'x')`).run();
+  assert.equal((await ana.pedir('PUT', '/api/v1/publicacao', { itens: ['vivo:filas:Médico'], confirmo: true })).status, 200);
+  const vivo = await (await anon.pedir('GET', '/api/v1/publico/dados')).text();
+  assert.ok(!/Sigil/.test(vivo), 'sem nomes de profissionais');
+  const vd = JSON.parse(vivo);
+  assert.deepEqual(vd.vivos.filas.linhas.map(l => l.cat), ['Médico']);
+  assert.equal(vd.vivos.filas.linhas[0].f, 5);
+  assert.equal(vd.vivos.federal, undefined);
   await ana.pedir('PUT', '/api/v1/publicacao', { itens: [], confirmo: true });
   d = await (await anon.pedir('GET', '/api/v1/publico/dados')).json();
   assert.deepEqual(d.categorias, [], 'revogação imediata');
   const h = await (await ana.pedir('GET', '/api/v1/publicacao/historico')).json();
-  assert.equal(h.historico.length, 2);
+  assert.equal(h.historico.length, 3);
 });
 
 test('chaves de coleta: admin gera, a chave só envia coleta, revogação vale na hora, nada do hash vaza', async () => {

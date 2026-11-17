@@ -71,9 +71,11 @@ td.n,th.n{text-align:right;white-space:nowrap}
 <header><div class="topo"><span class="marca"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS · Cajamar</span></span></div></header>
 <main>
  <h1>Indicadores da Atenção Primária</h1>
- <p class="intro">Totais agregados da Atenção Primária à Saúde de Cajamar, divulgados pela Secretaria de Saúde. Não há dados de pacientes nem de profissionais. <span id="quando"></span></p>
+ <p class="intro">Totais agregados da Atenção Primária à Saúde de Cajamar, divulgados pela Secretaria de Saúde. Não há dados de pacientes nem nomes de profissionais. <span id="quando"></span></p>
  <div id="conteudo" aria-live="polite">Carregando…</div>
 </main>
+<script src="/js/catalogo-indicadores.js"></script>
+<script src="/js/estadual-regras.js"></script>
 <script>
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const pct=v=>v==null?'—':(v*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
@@ -84,13 +86,64 @@ const T={
  conceito:{c:['Quadrimestre','Equipe','Indicador','Ótimo','Bom','Suficiente','Regular'],l:i=>i.linhas.map(x=>[x.q,x.eq,x.nome,x.o,x.b,x.s,x.r])},
  final:{c:['Quadrimestre','Equipe','Ótimo','Bom','Suficiente','Regular'],l:i=>i.linhas.map(x=>[x.q,x.eq,x.o,x.b,x.s,x.r])}
 };
+const mesN=c=>{const [a,m]=String(c).split('-');return ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][m-1]+'/'+a};
+const sel=(id,rot,ops)=>'<label>'+rot+'<select id="'+id+'">'+ops.map(o=>'<option value="'+esc(o[0])+'">'+esc(o[1])+'</option>').join('')+'</select></label>';
+function vivos(v){
+ const alvo=$('#vivos');let h='';
+ if(v.federal)h+='<section class="bloco" id="s-fed"><div class="nota"><b>Cofinanciamento federal · PEC e-SUS</b></div><h2>Indicadores por unidade e equipe</h2><p class="d">Mês: '+mesN(v.federal.competencia)+'. Resultado calculado dos totais coletados; o conceito oficial é o do Ministério da Saúde.</p><div class="sel" id="f-sel"></div><div class="tab" id="f-tab"></div></section>';
+ if(v.estadual)h+='<section class="bloco" id="s-est"></section>';
+ if(v.filas&&v.filas.linhas.length)h+='<section class="bloco" id="s-fil"><div class="nota"><b>Filas e faltas</b></div><h2>Absenteísmo e espera por vaga</h2><p class="d">Mês: '+mesN(v.filas.competencia)+'. Totais por equipe e especialidade, sem nomes de profissionais.</p><div class="sel" id="q-sel"></div><div class="tab" id="q-tab"></div></section>';
+ alvo.innerHTML=h;
+ if(v.federal)federal(v.federal);
+ if(v.estadual)estadual(v.estadual);
+ if(v.filas&&v.filas.linhas.length)filas(v.filas);
+}
+function federal(F){
+ const cat=window.CATALOGO||{};const uns=[...new Set(F.linhas.map(l=>l.u).filter(u=>u&&u!=='Município'))].sort();
+ $('#f-sel').innerHTML=sel('f-un','Unidade',[['','Município (todas)']].concat(uns.map(u=>[u,u])))+sel('f-eq','Equipe',[['','Todas']]);
+ const des=()=>{
+  const un=$('#f-un').value,eq=$('#f-eq').value;
+  const eqs=[...new Set(F.linhas.filter(l=>!un||l.u===un).map(l=>l.e).filter(Boolean))].sort();
+  const ant=$('#f-eq').value;$('#f-eq').innerHTML='<option value="">Todas</option>'+eqs.map(e=>'<option'+(e===ant?' selected':'')+'>'+esc(e)+'</option>').join('');
+  const q=$('#f-eq').value;
+  const m=new Map();
+  F.linhas.filter(l=>(un?l.u===un:l.u!=='Município')&&(!q||l.e===q)).forEach(l=>{const g=m.get(l.c)||{c:l.c,n:0,d:0,p:0};g.n+=l.n;g.d+=l.d;g.p+=l.p;m.set(l.c,g)});
+  const lin=[...m.values()].filter(g=>cat[g.c]&&cat[g.c].tipo!=='contagem'&&!/-/.test(g.c)).sort((a,b)=>a.c.localeCompare(b.c,'pt',{numeric:true}));
+  const res=(g,t)=>t==='pontos'?(g.d?g.p/g.d:null):t==='percentual'?(g.d?100*g.n/g.d:null):t==='razao'?(g.d?g.n/g.d:null):null;
+  $('#f-tab').innerHTML=lin.length?'<table><thead><tr><th>Indicador</th><th class="n">Numerador</th><th class="n">Denominador</th><th class="n">Resultado</th></tr></thead><tbody>'+lin.map(g=>{const c=cat[g.c],v=res(g,c.tipo);return '<tr><td><b>'+esc(g.c)+'</b> · '+esc(c.nome)+'</td><td class="n">'+num(g.n)+'</td><td class="n">'+num(g.d)+'</td><td class="n">'+(v==null?'—':num(v)+(c.tipo==='percentual'?'%':''))+'</td></tr>'}).join('')+'</tbody></table>':'<p class="nota">Sem dados para esta escolha.</p>';
+ };
+ $('#f-un').addEventListener('change',()=>{$('#f-eq').value='';des()});$('#f-eq').addEventListener('change',des);des();
+}
+function estadual(E){
+ const R=window.ESTADUAL_REGRAS;const el=$('#s-est');if(!R){el.remove();return}
+ const PARC=[{p:'2025-Q3',ant:'2025-Q2'},{p:'2026-Q1',ant:'2025-Q3'},{p:'2026-Q2',ant:'2026-Q1'}];
+ const L=E.lancamentos,vig=(i,p)=>L.find(l=>l.item===i&&l.periodo===p)||null;
+ const P=[...PARC].reverse().find(x=>L.some(l=>l.periodo===x.p));if(!P){el.remove();return}
+ const NQ=p=>{const [a,q]=p.split('-Q');return q+'º quadrimestre de '+a};
+ const linhas=R.ITENS.map(it=>{const l=vig(it.id,P.p),a=vig(it.id,P.ant);
+  const d={valor:l?l.valor:null,anterior:l&&l.anterior!=null?l.anterior:(a?a.valor:null),mediana:l?l.mediana:null,quartil:l?l.quartil:null,quartilAnt:l&&l.quartilAnt!=null?l.quartilAnt:(a?a.quartil:null)};
+  if(it.tipo==='esf'){d.nEsf=l?l.valor:null;d.valor=d.nEsf}
+  return {it,r:R.pontuar(it,d,R.POP)}});
+ const ob=vig('obito_materno',P.p);const nota=R.nota(linhas.map(x=>({peso:x.it.peso,pct:x.r.pct})),ob?ob.valor===0:undefined);
+ el.innerHTML='<div class="nota"><b>Cofinanciamento estadual · IGM SUS Paulista</b></div><h2>Nota da parte variável: '+num(nota.final*100)+'%</h2><p class="d">'+NQ(P.p)+', comparado com o '+NQ(P.ant)+'. Indicadores sem dado lançado ainda não contam pontos. O valor oficial é o da Secretaria de Estado da Saúde.</p><div class="tab"><table><thead><tr><th>Indicador</th><th class="n">Peso</th><th class="n">Resultado</th><th class="n">Pontos</th></tr></thead><tbody>'+linhas.map(x=>'<tr><td>'+esc(x.it.nome)+'</td><td class="n">'+num(x.it.peso)+'</td><td class="n">'+(x.r.pct==null?'sem dado':Math.round(x.r.pct*100)+'%')+'</td><td class="n">'+(x.r.pct==null?'—':num(x.it.peso*x.r.pct))+'</td></tr>').join('')+'</tbody></table></div>';
+}
+function filas(Q){
+ const uns=[...new Set(Q.linhas.map(l=>l.u))].sort(),cats=[...new Set(Q.linhas.map(l=>l.cat))];
+ $('#q-sel').innerHTML=sel('q-un','Unidade',[['','Todas']].concat(uns.map(u=>[u,u])))+(cats.length>1?sel('q-ct','Categoria',[['','Médicos e enfermeiros']].concat(cats.map(c=>[c,c+'s']))):'');
+ const des=()=>{const un=$('#q-un').value,ct=$('#q-ct')?$('#q-ct').value:'';
+  const l=Q.linhas.filter(x=>(!un||x.u===un)&&(!ct||x.cat===ct));
+  $('#q-tab').innerHTML=l.length?'<table><thead><tr><th>Unidade · equipe</th><th>Categoria</th><th>Especialidade</th><th class="n">Faltas</th><th class="n">Atendimentos</th><th class="n">% de faltas</th><th class="n">Dias até a vaga</th></tr></thead><tbody>'+l.map(x=>{const t=(x.f||0)+(x.a||0);return '<tr><td>'+esc(x.u)+(x.e?' · '+esc(x.e):'')+'</td><td>'+esc(x.cat)+'</td><td>'+esc(String(x.cbo||'').replace(/\s*-\s*\d+$/,''))+'</td><td class="n">'+num(x.f)+'</td><td class="n">'+num(x.a)+'</td><td class="n">'+(t?num(100*(x.f||0)/t)+'%':'—')+'</td><td class="n">'+(x.lidas?(x.semVaga&&x.semVaga===x.lidas?'sem vaga':x.dias==null?'—':num(x.dias)):'—')+'</td></tr>'}).join('')+'</tbody></table>':'<p class="nota">Sem dados para esta escolha.</p>';};
+ $('#q-un').addEventListener('change',des);if($('#q-ct'))$('#q-ct').addEventListener('change',des);des();
+}
 (async()=>{try{
  const r=await fetch('/api/v1/publico/dados');if(!r.ok)throw 0;const d=await r.json();
  $('#quando').textContent='Atualizado em '+new Date(d.geradoEm).toLocaleDateString('pt-BR')+'.';
- if(!d.categorias.length){$('#conteudo').innerHTML='<section class="bloco">Nenhum indicador foi publicado ainda.</section>';return}
+ const vv=d.vivos||{};
+ if(!d.categorias.length&&!Object.keys(vv).length){$('#conteudo').innerHTML='<section class="bloco">Nenhum indicador foi publicado ainda.</section>';return}
  $('#conteudo').innerHTML=d.categorias.map(c=>{const t=T[c.tipo];if(!t)return '';
   const linhas=c.itens.flatMap(i=>t.l(i).map(r=>'<tr>'+r.map(x=>'<td>'+esc(x)+'</td>').join('')+'</tr>')).join('');
-  return '<section class="bloco"><div class="nota"><b>'+esc(c.grupo)+'</b></div><h2>'+esc(c.nome)+'</h2><div class="tab"><table><thead><tr>'+t.c.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+linhas+'</tbody></table></div></section>'}).join('');
+  return '<section class="bloco"><div class="nota"><b>'+esc(c.grupo)+'</b></div><h2>'+esc(c.nome)+'</h2><div class="tab"><table><thead><tr>'+t.c.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+linhas+'</tbody></table></div></section>'}).join('')+'<div id="vivos"></div>';
+ vivos(vv);
  }catch{$('#conteudo').textContent='Não foi possível carregar os indicadores agora.'}})();
 </script>
 </body>

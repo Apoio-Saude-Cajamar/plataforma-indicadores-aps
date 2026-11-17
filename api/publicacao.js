@@ -2,6 +2,8 @@
 // Só itens do catálogo (campos permitidos, sem observações, responsáveis nem pendências) podem ser públicos.
 import { ErroHttp, agora, lerJson, json } from './util.js';
 import { registrar } from './auth.js';
+import { competencias, dadosVigentes } from './consultas.js';
+import { listarEstadual } from './estadual.js';
 
 const FONTES = [
   { arq: '/js/dados-municipal.js', chave: 'MUNICIPAL' }
@@ -53,6 +55,12 @@ export function montarCatalogo(d) {
     }
     cats.push({ id: 'federal-final', grupo: 'Federal · Siaps', nome: 'Classificação final', tipo: 'final', itens: [...porComp].map(([comp, linhas]) => ({ id: 'federal:final:' + comp, rotulo: comp, linhas })) });
   }
+  // Dados que vêm do PEC e dos lançamentos e se atualizam sozinhos. Cada item liga ou desliga uma parte; nada aqui traz nomes de pessoas.
+  cats.push({ id: 'vivo-pec', grupo: 'Ao vivo · atualiza sozinho', nome: 'Cofinanciamento federal (PEC e-SUS)', tipo: 'vivo', itens: [{ id: 'vivo:federal', rotulo: 'Indicadores por unidade e equipe, do mês mais recente', linhas: [] }] });
+  cats.push({ id: 'vivo-estadual', grupo: 'Ao vivo · atualiza sozinho', nome: 'Cofinanciamento estadual (IGM SUS Paulista)', tipo: 'vivo', itens: [{ id: 'vivo:estadual', rotulo: 'Nota e pontos por indicador, do município', linhas: [] }] });
+  cats.push({ id: 'vivo-filas', grupo: 'Ao vivo · atualiza sozinho', nome: 'Filas e faltas por unidade, equipe e especialidade', tipo: 'vivo', itens: [
+    { id: 'vivo:filas:Médico', rotulo: 'Médicos (sem nomes; só totais por equipe e especialidade)', linhas: [] },
+    { id: 'vivo:filas:Enfermeiro', rotulo: 'Enfermeiros (sem nomes; só totais por equipe e especialidade)', linhas: [] }] });
   return cats;
 }
 
@@ -98,11 +106,50 @@ export async function historico(env) {
 }
 
 // Público (sem senha): só o que está marcado, só com os campos permitidos.
+async function vivoFederal(env) {
+  const comp = (await competencias(env)).competencias[0]?.competencia;
+  if (!comp) return null;
+  const ind = JSON.parse(await dadosVigentes(env, comp)).indicadores || [];
+  const agg = new Map();
+  for (const l of ind) {
+    if (!l.codigo || (l.recorte === 'desfecho' && l.codigo !== 'C2' && l.codigo !== 'C3')) continue;
+    const k = [l.codigo, l.unidade || '', l.equipe || ''].join('|');
+    const g = agg.get(k) || { c: l.codigo, u: l.unidade || '', e: l.equipe || '', n: 0, d: 0, p: 0 };
+    g.n += l.numerador || 0; g.d += l.denominador || 0; g.p += l.somaPontos || 0;
+    agg.set(k, g);
+  }
+  return { competencia: comp, linhas: [...agg.values()] };
+}
+
+async function vivoEstadual(env) {
+  const { vigentes } = await listarEstadual(env);
+  return { lancamentos: vigentes.map(l => pick(l, ['item', 'periodo', 'valor', 'anterior', 'mediana', 'quartil', 'quartilAnt'])) };
+}
+
+async function vivoFilas(env, categorias) {
+  if (!categorias.length) return null;
+  try {
+    const comp = (await env.DB.prepare('SELECT MAX(competencia) AS c FROM fila_profissional').first())?.c;
+    if (!comp) return null;
+    const marcas = categorias.map(() => '?').join(',');
+    const { results } = await env.DB.prepare(`SELECT unidade AS u, equipe AS e, categoria AS cat, cbo, COUNT(*) AS prof, SUM(faltas) AS f, SUM(atendimentos) AS a,
+        SUM(CASE WHEN agenda_lida_em IS NOT NULL THEN 1 ELSE 0 END) AS lidas, AVG(CASE WHEN agenda_lida_em IS NOT NULL AND sem_vaga = 0 THEN dias_vaga END) AS dias,
+        SUM(CASE WHEN sem_vaga = 1 THEN 1 ELSE 0 END) AS semVaga
+      FROM fila_profissional WHERE competencia = ? AND categoria IN (${marcas}) GROUP BY unidade, equipe, categoria, cbo ORDER BY unidade, equipe, categoria, cbo`).bind(comp, ...categorias).all();
+    return { competencia: comp, linhas: results };
+  } catch { return null; }
+}
+
 export async function dadosPublicos(env, url) {
   const m = await marcados(env);
   const cats = montarCatalogo(await carregar(env, url));
-  const saida = cats.map(c => ({ id: c.id, grupo: c.grupo, nome: c.nome, tipo: c.tipo, itens: c.itens.filter(i => m.has(i.id)).map(i => ({ id: i.id, rotulo: i.rotulo, linhas: i.linhas })) })).filter(c => c.itens.length);
-  const r = json({ geradoEm: agora(), fonte: 'Painel APS de Cajamar (totais agregados)', categorias: saida });
+  const vivos = {};
+  if (m.has('vivo:federal')) vivos.federal = await vivoFederal(env);
+  if (m.has('vivo:estadual')) vivos.estadual = await vivoEstadual(env);
+  const catsFilas = ['Médico', 'Enfermeiro'].filter(c => m.has('vivo:filas:' + c));
+  if (catsFilas.length) vivos.filas = await vivoFilas(env, catsFilas);
+  const saida = cats.filter(c => c.tipo !== 'vivo').map(c => ({ id: c.id, grupo: c.grupo, nome: c.nome, tipo: c.tipo, itens: c.itens.filter(i => m.has(i.id)).map(i => ({ id: i.id, rotulo: i.rotulo, linhas: i.linhas })) })).filter(c => c.itens.length);
+  const r = json({ geradoEm: agora(), fonte: 'Painel APS de Cajamar (totais agregados)', categorias: saida, vivos });
   r.headers.set('cache-control', 'public, max-age=300');
   return r;
 }
