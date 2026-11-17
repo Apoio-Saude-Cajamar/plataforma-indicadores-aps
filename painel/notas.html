@@ -12,6 +12,7 @@
 body{margin:0}
 button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #2F8FD8;outline-offset:2px}
 </style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap">
 <style>#aviso{font:16px/1.5 'Source Sans 3','Segoe UI',system-ui,sans-serif;max-width:640px;margin:48px auto;padding:0 24px;color:#14212B}#aviso a{color:#0E5E8C}</style>
 </head>
 <body>
@@ -20,16 +21,27 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
 <template id="modelo">
 <div style="min-height: 100vh; background: {{tPagina}}; color: {{tTexto}}; font-family: {{tFonte}}; font-weight: {{tPeso}}; font-size: {{tTam}}; line-height: 1.5; color-scheme: {{tEsquema}}">
 
+  <div style="background: #1F3C72; border-bottom: 4px solid #00A7E7; color: #FFFFFF; font-family: 'Montserrat', system-ui, sans-serif">
+    <div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+      <a href="/" style="display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 19px; color: #FFFFFF; text-decoration: none"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
+      <nav aria-label="Áreas do Painel" style="display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; font-weight: 600; font-size: 14px">
+        <template data-sc="for" list="{{menuSite}}" as="ms"><a href="{{ms.href}}" style="color: #FFFFFF; text-decoration: none; padding: 8px 12px; min-height: 36px; display: inline-flex; align-items: center; border-radius: 99px">{{ms.txt}}</a></template>
+        <template data-sc="if" value="{{temLanc}}"><details style="position: relative"><summary style="color: #FFFFFF; padding: 8px 12px; min-height: 36px; display: inline-flex; align-items: center; border-radius: 99px; cursor: pointer; list-style: none">Lançamentos ▾</summary>
+          <div style="position: absolute; z-index: 20; top: 100%; left: 0; min-width: 230px; margin-top: 6px; background: #FFFFFF; border: 2px solid #D5DCE8; border-radius: 12px; padding: 6px; box-shadow: 0 8px 24px rgba(20,33,43,.18); display: flex; flex-direction: column">
+            <a href="/lancamentos" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Metas do PAS</a>
+            <a href="/lancamentos-vacinas" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Coberturas vacinais</a>
+            <a href="/estadual#t-form" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Cofinanciamento estadual</a></div></details></template>
+      </nav>
+      <template data-sc="if" value="{{temUsuario}}"><div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600">{{usuarioNome}}
+        <template data-sc="if" value="{{temAdmin}}"><a href="/usuarios" style="color: inherit; text-decoration: none; border: 1px solid rgba(255,255,255,.6); border-radius: 99px; padding: 5px 14px">Usuários</a></template>
+        <template data-sc="if" value="{{temSenha}}"><a href="/trocar-senha" style="color: inherit; text-decoration: none; border: 1px solid rgba(255,255,255,.6); border-radius: 99px; padding: 5px 14px">Senha</a></template>
+        <button type="button" onClick="{{sair}}" style="font: inherit; color: inherit; background: none; border: 1px solid rgba(255,255,255,.6); border-radius: 99px; padding: 5px 14px; cursor: pointer">Sair</button></div></template>
+    </div>
+  </div>
   <header style="background: {{tTopoFundo}}; color: {{tTopoTexto}}; border-bottom: {{tTopoBorda}}">
     <div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px 0; display: flex; flex-direction: column; gap: 8px">
       <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
         <div style="display: flex; align-items: center; gap: 12px">
-          <template data-sc="if" value="{{temSelo}}" hint-placeholder-val="{{true}}">
-            <a href="/" aria-label="Voltar ao início do Painel APS" style="width: 40px; height: 40px; border-radius: 8px; background: {{tSelo}}; color: {{tSeloTexto}}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; letter-spacing: .04em; text-decoration: none">APS</a>
-          </template>
-          <template data-sc="if" value="{{temAssinatura}}" hint-placeholder-val="{{false}}">
-            <div title="Espaço da assinatura oficial (brasão e Secretaria de Saúde), usada a partir do arquivo do manual, sem redesenhar" style="width: 112px; height: 40px; box-sizing: border-box; border: 1.5px dashed rgba(255,255,255,.6); border-radius: 6px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 10px; font-weight: 600; line-height: 1.25; color: rgba(255,255,255,.9)">assinatura<br>oficial</div>
-          </template>
           <div style="display: flex; flex-direction: column; line-height: 1.25">
             <span style="font-weight: {{tPesoForte}}; font-size: 17px">Notas metodológicas</span>
             <span style="font-size: 13px; color: {{tTopoSuave}}">Cofinanciamento federal da APS · {{subtituloTopo}}</span>
@@ -37,11 +49,6 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
         </div>
         <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px">
           <span style="font-size: 12px; font-weight: 600; color: {{tRascunhoTexto}}; background: {{tRascunhoFundo}}; border-radius: 999px; padding: 3px 10px">{{coletaTxt}}</span>
-          <nav aria-label="Áreas do Painel" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0 4px; font-size: 14px">
-            <template data-sc="for" list="{{menuSite}}" as="ms"><a href="{{ms.href}}" style="color: inherit; text-decoration: none; padding: 8px 10px; min-height: 36px; display: inline-flex; align-items: center; border-radius: 8px; font-weight: {{ms.peso}}">{{ms.txt}}</a></template>
-          </nav>
-          <template data-sc="if" value="{{temUsuario}}"><span style="font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px">{{usuarioNome}}
-            <button type="button" onClick="{{sair}}" style="font: inherit; font-size: 13px; color: inherit; background: none; border: 1px solid {{tTopoLinha}}; border-radius: 999px; padding: 4px 12px; cursor: pointer">Sair</button></span></template>
           <div role="group" aria-label="Tema" style="display: flex; border: 1px solid {{tTopoLinha}}; border-radius: 8px; overflow: hidden">
             <template data-sc="for" list="{{temas}}" as="tm" hint-placeholder-count="3">
               <button type="button" aria-pressed="{{tm.pressionado}}" onClick="{{tm.escolher}}" style="font: inherit; font-size: 13px; min-height: 34px; padding: 0 12px; border: 0; cursor: pointer; background: {{tm.fundo}}; color: {{tm.cor}}; font-weight: {{tm.peso}}">{{tm.rotulo}}</button>
@@ -312,7 +319,7 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
 <script src="/js/notas-real.js"></script>
 <script>
 let REAL = null, USUARIO = null;
-const MENU_SITE = () => [['/', 'Acompanhamentos'], ['/composicao', 'Composição']].concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas'], ['/lancamentos', 'Lançamentos']] : []).map(([href, txt]) => ({ href, txt, peso: 600 }));
+const MENU_SITE = () => [['/', 'Acompanhamentos'], ['/composicao', 'Composição']].concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas']] : []).map(([href, txt]) => ({ href, txt }));
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -1004,7 +1011,7 @@ class Component extends DCLogic {
       compTxt: rel === 'meses' ? 'o mês anterior' : compTxt,
       trilha: trilha + 'px', trilhaTopo: (17 - trilha / 2) + 'px', subtituloTopo: subtitulo, temSelo: selo, temAssinatura: !selo,
       coletaTxt: REAL.ultima ? 'Dados do PEC e-SUS · coleta de ' + REAL.ultima : 'Dados do PEC e-SUS',
-      menuSite: MENU_SITE(), temUsuario: !!USUARIO, usuarioNome: USUARIO ? USUARIO.nome.split(' ')[0] : '',
+      menuSite: MENU_SITE(), temLanc: !!USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor'), temAdmin: !!USUARIO && USUARIO.perfil === 'admin', temSenha: !!USUARIO && USUARIO.origem === 'senha', temUsuario: !!USUARIO, usuarioNome: USUARIO ? USUARIO.nome.split(' ')[0] : '',
       sair: async () => { try { await fetch('/api/v1/auth/sair', { method: 'POST', credentials: 'same-origin' }); } finally { location.replace('/entrar'); } },
       mUnFundo: marca.item[0], mUnAnel: marca.item[2], mRefFundo: marca.ref[0], mRefAnel: marca.ref[2],
       grade: temMesesCols ? '40px minmax(0, 270px) minmax(150px, 1fr) 84px repeat(' + K + ', ' + cw + 'px)' + (temCaminho ? ' 210px' : '')

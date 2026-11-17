@@ -21,12 +21,27 @@ marc = troca(marc, 'Rascunho · valores fictícios', '{{coletaTxt}}')
 # Cabeçalho da página oficial: o selo "APS" volta ao início do Painel e entra o menu do Painel com o usuário.
 marc = troca(marc, '<div style="width: 40px; height: 40px; border-radius: 8px; background: {{tSelo}}; color: {{tSeloTexto}}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; letter-spacing: .04em">APS</div>',
   '<a href="/" aria-label="Voltar ao início do Painel APS" style="width: 40px; height: 40px; border-radius: 8px; background: {{tSelo}}; color: {{tSeloTexto}}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; letter-spacing: .04em; text-decoration: none">APS</a>')
-marc = troca(marc, '<div role="group" aria-label="Tema"', '''<nav aria-label="Áreas do Painel" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0 4px; font-size: 14px">
-            <template data-sc="for" list="{{menuSite}}" as="ms"><a href="{{ms.href}}" style="color: inherit; text-decoration: none; padding: 8px 10px; min-height: 36px; display: inline-flex; align-items: center; border-radius: 8px; font-weight: {{ms.peso}}">{{ms.txt}}</a></template>
-          </nav>
-          <template data-sc="if" value="{{temUsuario}}"><span style="font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px">{{usuarioNome}}
-            <button type="button" onClick="{{sair}}" style="font: inherit; font-size: 13px; color: inherit; background: none; border: 1px solid {{tTopoLinha}}; border-radius: 999px; padding: 4px 12px; cursor: pointer">Sair</button></span></template>
-          <div role="group" aria-label="Tema"''')
+# Barra do Painel (a mesma das demais páginas) acima do cabeçalho próprio das notas; o selo "APS" sai, pois a barra já traz o logo.
+marc = troca(marc, '  <header style="background: {{tTopoFundo}}', '''  <div style="background: #1F3C72; border-bottom: 4px solid #00A7E7; color: #FFFFFF; font-family: 'Montserrat', system-ui, sans-serif">
+    <div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+      <a href="/" style="display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 19px; color: #FFFFFF; text-decoration: none"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
+      <nav aria-label="Áreas do Painel" style="display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; font-weight: 600; font-size: 14px">
+        <template data-sc="for" list="{{menuSite}}" as="ms"><a href="{{ms.href}}" style="color: #FFFFFF; text-decoration: none; padding: 8px 12px; min-height: 36px; display: inline-flex; align-items: center; border-radius: 99px">{{ms.txt}}</a></template>
+        <template data-sc="if" value="{{temLanc}}"><details style="position: relative"><summary style="color: #FFFFFF; padding: 8px 12px; min-height: 36px; display: inline-flex; align-items: center; border-radius: 99px; cursor: pointer; list-style: none">Lançamentos ▾</summary>
+          <div style="position: absolute; z-index: 20; top: 100%; left: 0; min-width: 230px; margin-top: 6px; background: #FFFFFF; border: 2px solid #D5DCE8; border-radius: 12px; padding: 6px; box-shadow: 0 8px 24px rgba(20,33,43,.18); display: flex; flex-direction: column">
+            <a href="/lancamentos" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Metas do PAS</a>
+            <a href="/lancamentos-vacinas" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Coberturas vacinais</a>
+            <a href="/estadual#t-form" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Cofinanciamento estadual</a></div></details></template>
+      </nav>
+      <template data-sc="if" value="{{temUsuario}}"><div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600">{{usuarioNome}}
+        <template data-sc="if" value="{{temAdmin}}"><a href="/usuarios" style="color: inherit; text-decoration: none; border: 1px solid rgba(255,255,255,.6); border-radius: 99px; padding: 5px 14px">Usuários</a></template>
+        <template data-sc="if" value="{{temSenha}}"><a href="/trocar-senha" style="color: inherit; text-decoration: none; border: 1px solid rgba(255,255,255,.6); border-radius: 99px; padding: 5px 14px">Senha</a></template>
+        <button type="button" onClick="{{sair}}" style="font: inherit; color: inherit; background: none; border: 1px solid rgba(255,255,255,.6); border-radius: 99px; padding: 5px 14px; cursor: pointer">Sair</button></div></template>
+    </div>
+  </div>
+  <header style="background: {{tTopoFundo}}''')
+marc = re.sub(r'<template data-sc="if" value="\{\{temSelo\}\}".*?</template>\s*', '', marc, count=1, flags=re.S)
+marc = re.sub(r'<template data-sc="if" value="\{\{temAssinatura\}\}".*?</template>\s*', '', marc, count=1, flags=re.S)
 
 js = troca(js, "intervalo: 'quad', meses: [24321], quads: ['2026-3']", "intervalo: 'mensal', meses: [REAL.atual], quads: [REAL.quadAtual]")
 js = troca(js, 'const ATUAL = 2026 * 12 + 9, INICIO = 2025 * 12;', 'const ATUAL = REAL.atual, INICIO = REAL.inicio;')
@@ -70,9 +85,10 @@ js = troca(js, "tTopoBorda: '4px solid #00A7E7'", "tTopoBorda: '1px solid #00A7E
 js = troca(js, "subtitulo: 'Prefeitura de Cajamar', selo: false", "subtitulo: 'Cajamar', selo: true")
 js = troca(js, "temSelo: selo, temAssinatura: !selo,", """temSelo: selo, temAssinatura: !selo,
       coletaTxt: REAL.ultima ? 'Dados do PEC e-SUS · coleta de ' + REAL.ultima : 'Dados do PEC e-SUS',
-      menuSite: MENU_SITE(), temUsuario: !!USUARIO, usuarioNome: USUARIO ? USUARIO.nome.split(' ')[0] : '',
+      menuSite: MENU_SITE(), temLanc: !!USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor'), temAdmin: !!USUARIO && USUARIO.perfil === 'admin', temSenha: !!USUARIO && USUARIO.origem === 'senha', temUsuario: !!USUARIO, usuarioNome: USUARIO ? USUARIO.nome.split(' ')[0] : '',
       sair: async () => { try { await fetch('/api/v1/auth/sair', { method: 'POST', credentials: 'same-origin' }); } finally { location.replace('/entrar'); } },""")
 helm = helm.replace('family=Montserrat:wght@400;500;600;700;800&amp;', '')
+helm += '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap">'
 
 
 pagina = f'''<!doctype html>
@@ -94,7 +110,7 @@ pagina = f'''<!doctype html>
 <script src="/js/notas-real.js"></script>
 <script>
 let REAL = null, USUARIO = null;
-const MENU_SITE = () => [['/', 'Acompanhamentos'], ['/composicao', 'Composição']].concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas'], ['/lancamentos', 'Lançamentos']] : []).map(([href, txt]) => ({{ href, txt, peso: 600 }}));
+const MENU_SITE = () => [['/', 'Acompanhamentos'], ['/composicao', 'Composição']].concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas']] : []).map(([href, txt]) => ({{ href, txt }}));
 {js}
 (async () => {{
   const aviso = (t) => {{ document.getElementById('tela').innerHTML = '<p id="aviso">' + t + ' <a href="/">Voltar ao início</a></p>'; }};
