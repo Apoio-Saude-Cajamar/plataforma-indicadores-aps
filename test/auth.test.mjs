@@ -220,7 +220,7 @@ test('composição: a extensão grava com a chave e o painel lê com a sessão',
   assert.equal((await nav.pedir('PUT', '/api/v1/composicao', { competencia: '2026-10', unidades: [] })).status, 401);
   assert.equal((await nav.pedir('GET', '/composicao')).status, 200);
   for (const p of ['/', '/filas', '/notas', '/indicadores', '/lancamentos', '/lancamentos-vacinas', '/federal', '/federal-notas', '/estadual', '/municipal']) assert.equal((await nav.pedir('GET', p)).status, 200, p);
-  for (const p of ['/extensao', '/downloads/coletor-aps-v0.9.0.zip']) assert.notEqual((await nav.pedir('GET', p)).status, 200, p + ' só para administrador');
+  for (const p of ['/extensao', '/downloads/coletor-aps-v0.9.1.zip']) assert.notEqual((await nav.pedir('GET', p)).status, 200, p + ' só para administrador');
 });
 
 test('população: lê a estimativa mais recente do IBGE (com resposta simulada)', async () => {
@@ -390,4 +390,29 @@ test('filas e faltas: a extensão envia por profissional, a recoleta parcial nã
   const d = await (await gestor.pedir('GET', '/api/v1/filas')).json();
   assert.equal(d.profissionais.length, 1);
   assert.deepEqual([d.profissionais[0].faltas, d.profissionais[0].atendimentos, d.profissionais[0].diasVaga], [10, 90, 12]);
+});
+
+test('faltas por horário: a extensão envia a grade por profissional, grade inválida fica de fora, só admin e gestor leem', async () => {
+  const env = comPaginas(ambiente());
+  const H = { headers: { authorization: 'Bearer ' + CHAVES.TOKEN_COLETA } };
+  const n = navegador(env);
+  const P = (x) => Object.assign({ unidade: 'UBS A', equipe: 'EQ 1', cbo: 'MÉDICO DA ESTRATÉGIA DE SAÚDE DA FAMÍLIA - 225142', categoria: 'Médico', nome: 'Profissional Um' }, x);
+  const r = await n.pedir('PUT', '/api/v1/filas/horarios', { competencia: '2026-10', profissionais: [
+    P({ grade: { 1: { 8: [10, 7, 3], 9: [5, 5, 0] }, 9: { 8: [1, 1, 0] }, 2: { 30: [1, 1, 0], 10: [2, 2, 2] } } }),
+    P({ nome: 'Sem grade', grade: {} }), P({ nome: 'Fora', categoria: 'Dentista', grade: { 1: { 8: [1, 1, 0] } } })] }, H);
+  assert.equal(r.status, 200);
+  assert.equal((await r.json()).gravados, 1);
+  assert.equal((await n.pedir('PUT', '/api/v1/filas/horarios', { competencia: '2026-10', profissionais: [] })).status, 401);
+  const criar = async (login, perfil) => { const u = await admin(env, { login, nome: login, perfil }); env.DB.prepare('UPDATE usuario SET trocar_senha = 0').run(); const v = navegador(env); assert.equal((await v.pedir('POST', '/api/v1/auth/entrar', { login, senha: u.senhaProvisoria })).status, 200); return v; };
+  const gestor = await criar('gestor.hora', 'gestor'), leitor = await criar('leitor.hora', 'leitor');
+  assert.equal((await leitor.pedir('GET', '/api/v1/filas')).status, 403);
+  const d = await (await gestor.pedir('GET', '/api/v1/filas')).json();
+  assert.deepEqual(d.competencias, ['2026-10']);
+  assert.equal(d.profissionais.length, 0);
+  assert.equal(d.horarios.length, 1);
+  assert.deepEqual(d.horarios[0].grade, { 1: { 8: [10, 7, 3], 9: [5, 5, 0] } });
+  // A recoleta troca a grade do profissional.
+  assert.equal((await n.pedir('PUT', '/api/v1/filas/horarios', { competencia: '2026-10', profissionais: [P({ grade: { 3: { 14: [4, 2, 1] } } })] }, H)).status, 200);
+  const d2 = await (await gestor.pedir('GET', '/api/v1/filas')).json();
+  assert.deepEqual(d2.horarios[0].grade, { 3: { 14: [4, 2, 1] } });
 });

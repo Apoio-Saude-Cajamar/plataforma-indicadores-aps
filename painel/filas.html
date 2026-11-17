@@ -213,8 +213,55 @@ button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #2F8
       </section>
     </template>
 
+    <template data-sc="if" value="{{abaHorario}}">
+      <section aria-labelledby="t-hor" style="background: #FFFFFF; border: 1px solid #DCE2E0; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <h2 id="t-hor" style="margin: 0; font-size: 20px; font-weight: 700">Faltas por dia da semana e horário</h2>
+            <span style="font-size: 14px; color: #566370">{{horResumo}}</span>
+          </div>
+          <div role="group" aria-label="Medida" style="display: flex; border: 1px solid #B9C4C9; border-radius: 8px; overflow: hidden">
+            <template data-sc="for" list="{{botoesMedida}}" as="b">
+              <button type="button" aria-pressed="{{b.pressionado}}" onClick="{{b.escolher}}" style="font: inherit; min-height: 44px; padding: 0 14px; border: 0; cursor: pointer; background: {{b.fundo}}; color: {{b.cor}}; font-weight: {{b.peso}}">{{b.rotulo}}</button>
+            </template>
+          </div>
+        </div>
+        <template data-sc="if" value="{{horSem}}">
+          <p style="margin: 0; padding: 16px; background: #F4F6F5; border-radius: 8px; color: #33414C">{{horSemTxt}}</p>
+        </template>
+        <template data-sc="if" value="{{horTem}}">
+          <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+            <div style="flex: 3 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+              <div style="display: grid; grid-template-columns: 56px repeat({{horCols}}, minmax(0, 1fr)); gap: 2px">
+                <template data-sc="for" list="{{celulas}}" as="c">
+                  <div title="{{c.titulo}}" style="background: {{c.fundo}}; color: {{c.cor}}; font-weight: {{c.peso}}; font-size: {{c.tam}}; min-height: {{c.alt}}; display: flex; align-items: center; justify-content: {{c.alinha}}; padding: 0 6px; border-radius: 3px; font-variant-numeric: tabular-nums; background-image: {{c.textura}}">{{c.txt}}</div>
+                </template>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: 13px; color: #33414C">
+                <span style="font-weight: 600">{{legTitulo}}</span>
+                <span style="display: flex; align-items: center; gap: 6px"><span>{{legMin}}</span>
+                  <span style="display: inline-block; width: 160px; height: 12px; border-radius: 3px; background: linear-gradient(90deg, #E3EEF9, #2F6FB3, #0B2F5B)"></span><span>{{legMax}}</span></span>
+                <span style="display: flex; align-items: center; gap: 6px"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 3px; background-color: #FFFFFF; background-image: repeating-linear-gradient(45deg, #B9C4C9 0 2px, transparent 2px 6px); border: 1px solid #B9C4C9"></span>menos de {{horMinimo}} agendamentos: pouco para concluir</span>
+              </div>
+            </div>
+            <div style="flex: 1 1 280px; min-width: 0; border: 1px solid #DCE2E0; border-radius: 8px; overflow: hidden">
+              <div style="padding: 10px 14px; background: #E7EEF3; font-weight: 700">Horários com mais faltas</div>
+              <table style="width: 100%; border-collapse: collapse; font-size: 14px">
+                <thead><tr style="text-align: left; color: #566370"><th style="padding: 6px 14px; font-weight: 600">Dia e hora</th><th style="padding: 6px 8px; font-weight: 600; text-align: right">Faltas</th><th style="padding: 6px 14px; font-weight: 600; text-align: right">Taxa</th></tr></thead>
+                <tbody>
+                  <template data-sc="for" list="{{topo}}" as="t">
+                    <tr style="border-top: 1px solid #EEF1F0"><td style="padding: 7px 14px">{{t.quando}}</td><td style="padding: 7px 8px; text-align: right; font-variant-numeric: tabular-nums">{{t.faltas}} de {{t.base}}</td><td style="padding: 7px 14px; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums">{{t.taxa}}</td></tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </template>
+      </section>
+    </template>
+
     <section style="background: #FFFFFF; border: 1px solid #DCE2E0; border-radius: 12px; padding: 16px 20px; font-size: 14px; color: #33414C">
-      <b>Fontes.</b> Absenteísmo: relatórios de atendimentos e de absenteísmo do PEC e-SUS APS, coletados pela extensão. Próxima vaga: agenda de cada profissional com agenda ativa no PEC, na data da coleta. Entram só médicos e enfermeiros das unidades de Atenção Primária. O Painel guarda totais por profissional; nada de paciente. Esta tela é restrita a administradores e gestores.
+      <b>Fontes.</b> Absenteísmo: relatórios de atendimentos e de absenteísmo do PEC e-SUS APS, coletados pela extensão. Próxima vaga: agenda de cada profissional com agenda ativa no PEC, na data da coleta. Faltas por horário: agendamentos do mês de cada profissional (reservas de horário ficam de fora), somados por dia da semana e hora. Entram só médicos e enfermeiros das unidades de Atenção Primária. O Painel guarda totais por profissional; nada de paciente. Esta tela é restrita a administradores e gestores.
     </section>
   </main>
 </div>
@@ -226,7 +273,7 @@ const META = 19.59;
 class Filas extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { aba: 'lista', unidade: '', equipe: '', cat: '', prof: '', ordem: 'faltas', abertas: {}, destaque: '' };
+    this.state = { aba: 'lista', unidade: '', equipe: '', cat: '', prof: '', ordem: 'faltas', abertas: {}, destaque: '', medida: 'taxa' };
   }
   renderVals() {
     const st = this.state;
@@ -310,13 +357,64 @@ class Filas extends DCLogic {
     const d = noMapa.find((p) => p.id === destaqueId);
     const fora = sel.length - noMapa.length;
 
+    // Faltas por horário: soma a grade dia da semana × hora dos profissionais do recorte (os mesmos filtros das outras abas).
+    const MINIMO = 5, DIAS = ['', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'], DIAS_LONGO = ['', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'];
+    const chaveP = (un, eq, nome) => un + '|' + (eq || 'Sem equipe') + '|' + nome;
+    const nosel = new Set(sel.map((p) => chaveP(p.un, p.eq, p.nome)));
+    const celH = {};
+    let profsH = 0;
+    (FILAS.horarios || []).forEach((h) => {
+      if (!nosel.has(chaveP(h.unidade, h.equipe, h.nome))) return;
+      profsH++;
+      Object.keys(h.grade || {}).forEach((d) => Object.keys(h.grade[d]).forEach((hr) => {
+        const v = h.grade[d][hr], c = (celH[d + '|' + hr] = celH[d + '|' + hr] || { d: +d, h: +hr, ag: 0, at: 0, fa: 0 });
+        c.ag += v[0]; c.at += v[1]; c.fa += v[2];
+      }));
+    });
+    const cels = Object.values(celH).map((c) => Object.assign(c, { base: c.at + c.fa, taxa: c.at + c.fa ? c.fa / (c.at + c.fa) * 100 : null }));
+    const horTem = cels.length > 0;
+    const horas = horTem ? Array.from({ length: Math.max(...cels.map((c) => c.h)) - Math.min(...cels.map((c) => c.h)) + 1 }, (_, i) => Math.min(...cels.map((c) => c.h)) + i) : [];
+    const dias = horTem ? [1, 2, 3, 4, 5, 6].concat(cels.some((c) => c.d === 7 && c.ag) ? [7] : []) : [];
+    const porTaxa = st.medida === 'taxa';
+    const valorC = (c) => (porTaxa ? c.taxa : c.fa);
+    const usaveis = cels.filter((c) => (porTaxa ? c.base >= MINIMO : c.fa > 0));
+    const vmax = Math.max(1, ...usaveis.map(valorC));
+    const RAMPA = ['#E3EEF9', '#BCD6EE', '#8FBAE0', '#5F98CF', '#2F6FB3', '#1B4F8C', '#0B2F5B'];
+    const faixa = (v) => RAMPA[Math.min(RAMPA.length - 1, Math.floor(v / vmax * RAMPA.length))];
+    const hh = (n) => String(n).padStart(2, '0') + 'h';
+    const celulas = [];
+    if (horTem) {
+      celulas.push({ txt: '', fundo: 'transparent', cor: '#566370', peso: 600, tam: '13px', alt: '24px', alinha: 'flex-start', textura: 'none', titulo: '' });
+      dias.forEach((d) => celulas.push({ txt: DIAS[d], titulo: DIAS_LONGO[d], fundo: 'transparent', cor: '#33414C', peso: 600, tam: '13px', alt: '24px', alinha: 'center', textura: 'none' }));
+      horas.forEach((hr) => {
+        celulas.push({ txt: hh(hr), titulo: '', fundo: 'transparent', cor: '#33414C', peso: 600, tam: '13px', alt: '38px', alinha: 'flex-start', textura: 'none' });
+        dias.forEach((d) => {
+          const c = celH[d + '|' + hr], quando = DIAS_LONGO[d] + ', ' + hh(hr);
+          if (!c || !c.ag) { celulas.push({ txt: '', titulo: quando + ': sem agenda', fundo: '#F4F6F5', cor: '#8A979F', peso: 400, tam: '13px', alt: '38px', alinha: 'center', textura: 'none' }); return; }
+          const poucos = c.base < MINIMO, sem = !porTaxa && !c.fa;
+          const titulo = quando + ': ' + (c.base ? c.fa + ' faltas em ' + c.base + ' agendamentos (' + num(c.taxa, 1) + '%)' : 'nenhum agendamento já decidido') + ' · ' + profsH + (profsH === 1 ? ' profissional' : ' profissionais') + ' no recorte' + (poucos ? ' · poucos agendamentos para concluir' : '');
+          if ((porTaxa && poucos) || sem) { celulas.push({ txt: porTaxa ? '·' : '0', titulo, fundo: '#FFFFFF', cor: '#566370', peso: 400, tam: '13px', alt: '38px', alinha: 'center', textura: porTaxa ? 'repeating-linear-gradient(45deg, #D5DCE0 0 2px, transparent 2px 6px)' : 'none' }); return; }
+          const v = valorC(c), f = faixa(v), escuro = RAMPA.indexOf(f) >= 3;
+          celulas.push({ txt: porTaxa ? num(v, 0) + '%' : String(v), titulo, fundo: f, cor: escuro ? '#FFFFFF' : '#14212B', peso: 600, tam: '13px', alt: '38px', alinha: 'center', textura: 'none' });
+        });
+      });
+    }
+    const topo = cels.filter((c) => c.fa > 0 && c.base >= MINIMO).sort((a, b) => porTaxa ? b.taxa - a.taxa || b.fa - a.fa : b.fa - a.fa || b.taxa - a.taxa).slice(0, 8)
+      .map((c) => ({ quando: DIAS_LONGO[c.d] + ', ' + hh(c.h), faltas: c.fa, base: c.base, taxa: num(c.taxa, 1) + '%' }));
+    const totH = cels.reduce((t, c) => ({ fa: t.fa + c.fa, base: t.base + c.base }), { fa: 0, base: 0 });
+
     const botao = (ativo) => ({ pressionado: ativo ? 'true' : 'false', fundo: ativo ? '#14212B' : '#FFFFFF', cor: ativo ? '#FFFFFF' : '#14212B', peso: ativo ? 600 : 400 });
     const mes = (c) => { const [a, m] = c.split('-'); return ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'][m - 1] + ' de ' + a; };
     const lidas = FILAS.profissionais.map((p) => p.agendaLidaEm).filter(Boolean).sort();
     return {
       linhas, resumo, pontos, legenda, semLinhas: linhas.length === 0, metaPos: posF(META), metaTxt: num(META, 2) + '%',
       abaLista: st.aba === 'lista', abaMapa: st.aba === 'mapa',
-      abas: [['lista', 'Unidades, equipes e profissionais'], ['mapa', 'Mapa: onde agir primeiro']].map(([id, titulo]) => ({ titulo, pressionado: st.aba === id ? 'true' : 'false',
+      abaHorario: st.aba === 'horario', horTem, horSem: !horTem, horCols: dias.length, celulas, topo, horMinimo: MINIMO,
+      horSemTxt: (FILAS.horarios || []).length ? 'Nenhum profissional deste recorte tem agenda lida no mês.' : 'Ainda não há grade de horários. Na extensão (versão 0.9.1 ou mais nova), marque "Faltas por horário" junto de "Filas e faltas" e rode a coleta.',
+      horResumo: horTem ? totH.fa + ' faltas em ' + totH.base + ' agendamentos já decididos (' + (totH.base ? num(totH.fa / totH.base * 100, 1) : '0') + '%), de ' + profsH + (profsH === 1 ? ' profissional' : ' profissionais') + '. Passe o mouse sobre uma célula para ver os números.' : 'Agendamentos do mês de cada profissional, somados por dia da semana e hora.',
+      legTitulo: porTaxa ? 'Taxa de faltas' : 'Número de faltas', legMin: porTaxa ? '0%' : '1', legMax: porTaxa ? num(vmax, 0) + '%' : String(Math.round(vmax)),
+      botoesMedida: [['taxa', 'Taxa de faltas'], ['faltas', 'Número de faltas']].map(([id, rotulo]) => ({ rotulo, ...botao(st.medida === id), escolher: () => this.setState({ medida: id }) })),
+      abas: [['lista', 'Unidades, equipes e profissionais'], ['mapa', 'Mapa: onde agir primeiro'], ['horario', 'Faltas por horário']].map(([id, titulo]) => ({ titulo, pressionado: st.aba === id ? 'true' : 'false',
         borda: st.aba === id ? '#00A7E7' : 'transparent', cor: st.aba === id ? '#FFFFFF' : 'rgba(255,255,255,.85)', peso: st.aba === id ? 700 : 400, escolher: () => this.setState({ aba: id }) })),
       temDestaque: !!d, destaque: d ? { nome: d.nome, sub: d.cbo + ' · ' + d.eq + ' · ' + d.un, valores: num(d.pct, 1) + '% de faltas (' + d.faltas + ' de ' + (d.faltas + d.atend) + ') · próxima vaga em ' + diasTxt(d.dias) } : {},
       semAgendaTxt: fora ? fora + (fora === 1 ? ' profissional fica' : ' profissionais ficam') + ' fora do mapa por não ter as duas medidas.' : '',
