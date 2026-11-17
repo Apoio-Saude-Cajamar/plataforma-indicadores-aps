@@ -187,7 +187,8 @@ function desenhar(){
    const tot=pega(agregar(ls,()=>un||'Município'),un||'Município');
    if(!tot)continue;
    algum=true;
-   const dica=cat.margem?'<span class="info" title="'+esc((cat.precisao==='piso'?'Piso: o valor real é igual ou maior. ':cat.precisao==='aproximado'?'Aproximado. ':'')+cat.margem)+'">i</span>':'';
+   const defTxt=cat.numerador?'Numerador: '+cat.numerador+'. Denominador: '+cat.denominador+'. ':'';
+   const dica=(cat.margem||defTxt)?'<span class="info" title="'+esc(defTxt+(cat.margem?(cat.precisao==='piso'?'Piso: o valor real é igual ou maior. ':cat.precisao==='aproximado'?'Aproximado. ':'')+cat.margem:''))+'">i</span>':'';
    const obs=varios&&NAO_SOMA_MESES.has(cod)?' <small>('+mesNome(usar[0])+')</small>':'';
    const ab=abertos.has(cod);
    corpo+='<tr class="un"><td>'+esc(cod)+' · '+esc(cat.nome)+dica+obs+'<br><button class="ab" data-c="'+esc(cod)+'" aria-expanded="'+ab+'">'+(ab?'Ocultar equipes':'Ver por equipe')+'</button></td><td class="n">'+(tot.direto!==undefined?'':Math.round(tot.num).toLocaleString('pt-BR'))+'</td><td class="n">'+(tot.direto!==undefined?'':Math.round(tot.den).toLocaleString('pt-BR'))+'</td><td class="n"><b>'+fmt(resultado(tot,cat.tipo),cat.tipo)+'</b></td></tr>';

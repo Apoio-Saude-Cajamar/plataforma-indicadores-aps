@@ -59,7 +59,8 @@ function montarREAL(porComp, ultimaColeta) {
     calculo(n, ls, ms) {
       let com = ms.filter(a => escolhe(n.cod, ls, [a]).length);
       if (!com.length) com = meses.filter(a => escolhe(n.cod, ls, [a]).length);
-      if (!com.length) return '';
+      const cat0 = (window.CATALOGO || {})[n.cod] || {};
+      if (!com.length) return cat0.numerador ? ' Numerador: ' + cat0.numerador + '. Denominador: ' + cat0.denominador + '.' : '';
       const nf = (v, c) => v.toLocaleString('pt-BR', { minimumFractionDigits: c || 0, maximumFractionDigits: c || 0 });
       const S = (arr, c) => arr.reduce((t, l) => t + l[c], 0);
       const k = FONTE[n.cod][0];
@@ -75,7 +76,9 @@ function montarREAL(porComp, ultimaColeta) {
       if (com.length === 1 || n.apura === 'foto') t = conta(escolhe(n.cod, ls, [com[com.length - 1]])) + (com.length > 1 ? ' (foto de ' + mesTxt(com[com.length - 1]) + ')' : '');
       else if (n.apura === 'razao') t = conta(escolhe(n.cod, ls, com)) + ' (soma de ' + com.length + ' meses)';
       else t = 'média de ' + com.length + ' meses: ' + com.map(a => mesTxt(a) + ' ' + nf(calcula(n.cod, escolhe(n.cod, ls, [a])) || 0, n.fmt)).join('; ') + ' = ' + nf(R.valor(n, ls, ms), n.fmt);
-      return ' Conta deste recorte: ' + t + '.';
+      const cat = (window.CATALOGO || {})[n.cod] || {};
+      const def = cat.numerador ? ' Numerador: ' + cat.numerador + '. Denominador: ' + cat.denominador + '.' : '';
+      return def + ' Conta deste recorte: ' + t + '.';
     },
     pessoas(n, u, e) { const rs = escolhe(n.cod, [{ u, e }], [R.atual]); return Math.round(rs.reduce((t, l) => t + l.den, 0)); },
     // Fica só o que a coleta trouxe; nada de números de exemplo.

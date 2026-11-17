@@ -77,6 +77,7 @@ pagina = f'''<!doctype html>
 <div id="tela"><p id="aviso">Carregando os indicadores coletados…</p></div>
 <template id="modelo">{marc}</template>
 <script src="/js/dc-mini.js"></script>
+<script src="/js/catalogo-indicadores.js"></script>
 <script src="/js/notas-real.js"></script>
 <script>
 let REAL = null;

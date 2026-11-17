@@ -75,3 +75,38 @@ var CATALOGO = {
                formula: '(atendimentos individuais + participações em atividades coletivas) ÷ pessoas diferentes atendidas, nos últimos 4 meses até o mês da coleta (NT 43/2026)',
                precisao: 'aproximado', margem: 'Pessoas diferentes vêm da lista de atendimentos do PEC e dos participantes das atividades. Atendimentos lançados só em ficha CDS não mostram a pessoa: foram estimados com a mesma proporção de pessoas por atendimento. A faixa vai do caso em que todos são pessoas já contadas (média maior) ao caso em que todos são pessoas novas (média menor). Só entram os CBOs da eMulti listados na NT 43/2026. Faixas: Ótimo > 3; Bom > 2 e ≤ 3; Suficiente > 1 e ≤ 2; Regular ≤ 1.' }
 };
+
+// Numerador e denominador de cada indicador, para o balão (i). Texto fixo; os totais do recorte aparecem na "Conta deste recorte".
+var DEFINICAO = {
+  'Q14.2.1': ['faltas (não compareceu e não aguardou) nas agendas da equipe', 'atendimentos realizados + faltas'],
+  'C1':   ['atendimentos individuais de consulta agendada e de programada/cuidado continuado (CBOs e equipes eSF/eAP da Nota C1)', 'atendimentos individuais dos mesmos CBOs e equipes, de todos os tipos de atendimento'],
+  'C2':   ['soma dos pontos das crianças com até 2 anos (20 pontos por item cumprido: A 1ª consulta até 30 dias, B 9 ou mais consultas, C 9 ou mais medições de peso e altura, D duas visitas no prazo, E vacinas do esquema)', 'crianças com até 2 anos vinculadas à equipe (nota = soma dos pontos ÷ crianças)'],
+  'C3':   ['soma dos pontos das gestantes e puérperas (10 pontos no item A e 9 em cada item de B a K)', 'gestantes e puérperas vinculadas à equipe (gestação até 294 dias e puerpério até 42 dias depois)'],
+  'S20':  ['soma dos pontos das gestantes e puérperas (igual à C3)', 'gestantes e puérperas vinculadas à equipe'],
+  'S3':   ['gestantes com 7 ou mais consultas de pré-natal', 'gestantes vinculadas à equipe'],
+  'S4':   ['gestantes com exame de sífilis no 1º e no 3º trimestres', 'gestantes vinculadas à equipe'],
+  'C4':   ['soma dos pontos das pessoas com diabetes (20 pontos nos itens A e D; 15 em B, C, E e F)', 'pessoas com diabetes vinculadas à equipe (nota = soma dos pontos ÷ pessoas)'],
+  'C5':   ['soma dos pontos das pessoas com hipertensão (25 pontos por item cumprido, A a D)', 'pessoas com hipertensão vinculadas à equipe (nota = soma dos pontos ÷ pessoas)'],
+  'C6':   ['soma dos pontos das pessoas idosas (25 pontos por item: consulta médica ou de enfermagem em 12 meses, peso e altura, duas visitas, vacina de influenza)', 'pessoas idosas vinculadas à equipe (nota = soma dos pontos ÷ pessoas)'],
+  'C7':   ['cada item da nota: pessoas que cumpriram o item (A colo do útero, B vacina HPV, C saúde sexual e reprodutiva, D mamografia)', 'cada item: pessoas da faixa etária do item; nota = A×20 + B×30 + C×30 + D×20'],
+  'C7-A': ['mulheres de 25 a 64 anos com exame de colo do útero solicitado ou avaliado em 36 meses', 'pessoas de 25 a 64 anos'],
+  'C7-B': ['meninas de 9 a 14 anos com ao menos uma dose de HPV', 'meninas de 9 a 14 anos'],
+  'C7-C': ['pessoas de 14 a 69 anos com código CIAP/CID da nota e atendimento médico ou de enfermagem em 12 meses', 'pessoas de 14 a 69 anos'],
+  'C7-D': ['pessoas de 50 a 69 anos com mamografia solicitada, realizada ou avaliada em 24 meses', 'pessoas de 50 a 69 anos'],
+  'CVAT': ['escore do cadastro (até 3) + escore do acompanhamento (até 7)', 'cada escore = soma ponderada ÷ parâmetro da equipe'],
+  'CVAT-CAD': ['pessoas com cadastro individual atualizado em 24 meses (peso 0,75) + domicílios atualizados (peso 0,75)', 'parâmetro de pessoas da equipe'],
+  'CVAT-ACO': ['pessoas com 2 tipos de contato em 12 meses, ponderadas pelo perfil (pesos 1,0; 1,2; 1,3; 2,5)', 'parâmetro de pessoas da equipe'],
+  'CR1':  ['pessoas identificadas na eCR com atendimento de médico, enfermeiro ou dentista nos últimos 6 meses', 'pessoas identificadas na eCR nos últimos 12 meses'],
+  'CR2':  ['soma dos pontos das gestantes da eCR (A 30, B 20, C 20, D 20, E 10)', 'gestantes da eCR (nota = soma dos pontos ÷ gestantes)'],
+  'CR3':  ['soma dos pontos: 25 por teste de sífilis, HIV, hepatite B e hepatite C em 12 meses', 'pessoas identificadas na eCR em 12 meses'],
+  'CR4':  ['soma dos pontos das pessoas com tuberculose (itens A a D)', 'pessoas com tuberculose (CID A15 a A17) na eCR'],
+  'B1':   ['primeiras consultas odontológicas programáticas', 'pessoas vinculadas à eSF/eAP de referência da eSB'],
+  'B2':   ['tratamentos odontológicos concluídos', 'primeiras consultas odontológicas programáticas'],
+  'B3':   ['exodontias de dente permanente', 'procedimentos preventivos, curativos e exodontias (códigos da Nota B3)'],
+  'B4':   ['crianças de 6 a 12 anos nas escovações supervisionadas com cirurgião-dentista da APS', 'crianças de 6 a 12 anos vinculadas à eSF/eAP de referência'],
+  'B5':   ['procedimentos odontológicos preventivos', 'procedimentos individuais (códigos da Nota B5)'],
+  'B6':   ['tratamentos restauradores atraumáticos (TRA, 0307010074)', 'procedimentos restauradores sem amálgama (códigos da Nota B6)'],
+  'M1':   ['atendimentos individuais (agenda) + participações em atividades coletivas dos profissionais da eMulti, nos últimos 4 meses', 'pessoas diferentes atendidas ou participantes, nos mesmos 4 meses'],
+  'M2':   ['atendimentos individuais compartilhados + atividades coletivas com 2 ou mais profissionais', 'atendimentos individuais + atividades coletivas da eMulti']
+};
+Object.keys(DEFINICAO).forEach(function (c) { if (CATALOGO[c]) { CATALOGO[c].numerador = DEFINICAO[c][0]; CATALOGO[c].denominador = DEFINICAO[c][1]; } });
