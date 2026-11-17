@@ -87,6 +87,10 @@ function montarREAL(porComp, ultimaColeta) {
         const o = Object.assign({}, n); delete o.exemplo; delete o.prat; delete o.mun; delete o.ant; delete o.serie;
         if (o.cod === 'M2') Object.assign(o, { max: 100, un: '%', fmt: 1, f: [[0, 1, 'regular'], [1, 2.5, 'suficiente'], [2.5, 5, 'bom'], [5, 100, 'otimo']],
           sentido: 'Percentual de ações compartilhadas. As faixas da NT 44/2026 (1; 2,5; 5) foram lidas como percentual: confira com a referência técnica.' });
+        // CVAT: a régua do índice (0 a 100) segue a NT 30/2025: Regular < 45, Suficiente 45 a 65, Bom 65 a 85, Ótimo > 85.
+        // Satisfação (Meu SUS Digital) fica fora, por decisão da gestão: os escores são os da nota, sem o bônus.
+        if (o.cod === 'CVAT-C' || o.cod === 'CVAT-A') Object.assign(o, { max: 100, un: '%', fmt: 1, f: [[0, 45, 'regular'], [45, 65, 'suficiente'], [65, 85, 'bom'], [85, 100, 'otimo']],
+          sentido: o.cod === 'CVAT-C' ? 'Índice de cadastro (0 a 100). Escore da nota: Ótimo 3,00; Bom 2,25; Suficiente 1,50; Regular 0,75.' : 'Índice de acompanhamento (0 a 100), sem o bônus de satisfação. Escore da nota: Ótimo 7,00; Bom 5,25; Suficiente 3,50; Regular 1,75.' });
         return o;
       });
     }
