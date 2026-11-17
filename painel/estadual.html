@@ -33,6 +33,24 @@ table{border-collapse:collapse;width:100%;font-size:14px}
 th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #D5DCE8;vertical-align:top}
 th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#4A5670}
 td:nth-child(2){white-space:nowrap}
+.bloco.largo{max-width:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.chip{font:inherit;font-weight:700;font-size:14px;color:#1B2340;background:#fff;border:2px solid #D5DCE8;border-radius:99px;padding:7px 14px;cursor:pointer;min-height:40px}
+.chip[aria-pressed=true]{background:#1F3C72;border-color:#1F3C72;color:#fff}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:6px 0 4px}
+.card{background:#F4F7FB;border:2px solid #D5DCE8;border-radius:12px;padding:14px 16px}
+.card small{display:block;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.card .v{font-size:30px;font-weight:800;color:#1F3C72;line-height:1.1}.card .s{font-size:13px;color:#4A5670;margin-top:4px;line-height:1.4}
+td.n,th.n{text-align:right;white-space:nowrap}
+.pill.p100{background:#C7ECD9;color:#0F5A41}.pill.p75,.pill.p50{background:#FBF0D3;color:#6E4700}.pill.p25,.pill.p0{background:#F8D9DC;color:#8A1B2A}.pill.pn{background:#E7EAF0;color:#3A4660}
+td small{display:block;color:#4A5670;font-size:12px;line-height:1.4;margin-top:2px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px 18px;align-items:end;margin-top:12px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em}
+.form select,.form input{font:inherit;font-size:15px;font-weight:600;min-height:42px;padding:0 12px;border:2px solid #D5DCE8;border-radius:10px;background:#fff;color:#1B2340;text-transform:none;letter-spacing:0;width:100%}
+.form .largo{grid-column:1/-1}
+.btn{font:inherit;font-weight:700;font-size:15px;min-height:42px;padding:0 22px;border-radius:10px;border:0;background:#1F3C72;color:#fff;cursor:pointer}
+.msg{font-size:14px;font-weight:600;margin:12px 0 0}.msg.ok{color:#0F6B4F}.msg.er{color:#A8222F}
+details.regras summary{cursor:pointer;font-weight:700;color:#1F3C72;font-size:16px;margin:22px 0 0;max-width:900px}
 </style>
 </head>
 <body>
@@ -42,9 +60,37 @@ td:nth-child(2){white-space:nowrap}
 </div></header>
 <main>
  <p><a href="/" style="font-weight:600;color:#1F3C72;text-decoration:underline">← Voltar aos acompanhamentos</a></p>
- <h1>Cofinanciamento estadual <span class="pill dev" style="vertical-align:middle">Em desenvolvimento</span></h1>
+ <h1>Cofinanciamento estadual <span class="pill ok" style="vertical-align:middle">Calculado</span></h1>
  <p class="intro" style="max-width:760px">Incentivo à Gestão Municipal do SUS Paulista (IGM SUS Paulista). As regras de 2026 vêm da Deliberação CIB 150/2025 (republicada em 09/01/2026), que atualizou a Deliberação CIB 117/2023 porque o Ministério da Saúde descontinuou indicadores do Previne Brasil. Pagamento fundo a fundo em três parcelas: maio, setembro e dezembro.</p>
 
+
+ <section class="bloco largo" aria-labelledby="t-calc">
+  <h2 id="t-calc">Nota da parte variável de Cajamar</h2>
+  <p class="nota" style="margin:0">Cada parcela avalia um quadrimestre e o compara com o anterior. A cobertura da eSF vem da composição das equipes no PEC; os demais indicadores são lançados no formulário abaixo, com o dado oficial. População considerada: 100.000 habitantes.</p>
+  <div class="chips" id="parcelas" role="group" aria-label="Parcela"></div>
+  <div class="cards" id="cards"></div>
+  <div class="tab" style="margin-top:14px"><table id="tab"></table></div>
+  <p class="nota" id="nota-calc"></p>
+ </section>
+
+ <section class="bloco largo" aria-labelledby="t-form">
+  <h2 id="t-form">Lançar um valor</h2>
+  <p class="nota" style="margin:0">Cada lançamento fica no histórico; para corrigir, lance de novo o mesmo indicador e quadrimestre. A mediana e a média estaduais saem do painel de desempenho da SES-SP (nies.saude.sp.gov.br). Se o período anterior já foi lançado, o "anterior" é buscado dele.</p>
+  <form class="form" id="f" novalidate>
+   <label class="largo">Indicador<select id="item"></select></label>
+   <label>Quadrimestre avaliado<select id="per"></select></label>
+   <label id="l-valor"><span id="r-valor">Valor</span><input type="text" inputmode="decimal" id="valor" autocomplete="off"></label>
+   <label id="l-ant"><span id="r-ant">Anterior (opcional)</span><input type="text" inputmode="decimal" id="ant" autocomplete="off"></label>
+   <label id="l-med"><span id="r-med">Mediana estadual</span><input type="text" inputmode="decimal" id="med" autocomplete="off"></label>
+   <label id="l-q"><span>Quartil atual (1 a 4)</span><input type="text" inputmode="numeric" id="q" autocomplete="off"></label>
+   <label id="l-qa"><span>Quartil anterior (1 a 4)</span><input type="text" inputmode="numeric" id="qa" autocomplete="off"></label>
+   <label class="largo">Observação (opcional)<input type="text" id="obs" maxlength="500"></label>
+   <div><button class="btn" type="submit">Lançar</button></div>
+  </form>
+  <p class="msg" id="msg" role="status"></p>
+ </section>
+
+ <details class="regras"><summary>Como o valor é formado e as regras de 2026</summary>
  <div class="bloco"><h2>Como o valor é formado</h2>
   <ul>
    <li><b>Parte fixa:</b> cinco critérios (população, IPRS-riqueza, pobreza no CadÚnico, receita de impostos per capita e cobertura da ESF) dão de 0 a 4 pontos cada. A soma define o valor por habitante, de R$ 15 a R$ 40. Em 2026 a classificação de 2023 é mantida, sem atualização.</li>
@@ -88,8 +134,98 @@ td:nth-child(2){white-space:nowrap}
   <p class="nota">Falta a classificação de Cajamar na parte fixa e a população TCU para converter a nota em reais. O painel de desempenho da SES-SP (nies.saude.sp.gov.br) mostra o resultado oficial por município.</p>
  </div>
 
+ </details>
  <p class="nota" style="max-width:900px;margin-top:18px">Fontes: Deliberação CIB 150/2025 (republicação de 09/01/2026) e COSEMS-SP. Resumo para planejamento; os valores oficiais valem sobre este texto.</p>
 </main>
 <script src="/js/sessao.js"></script>
+<script src="/js/estadual-regras.js"></script>
+<script>
+const R=window.ESTADUAL_REGRAS,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PARCELAS=[{n:'1ª · maio',p:'2025-Q3',ant:'2025-Q2'},{n:'2ª · setembro',p:'2026-Q1',ant:'2025-Q3'},{n:'3ª · dezembro',p:'2026-Q2',ant:'2026-Q1'}];
+const PERIODOS=['2025-Q2'].concat(PARCELAS.map(x=>x.p));
+const NOMEQ=p=>{const [a,q]=p.split('-Q');return q+'º quadrimestre de '+a};
+const fmt=(v,c=1)=>v==null?'—':v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:c});
+let LANC=[],NESF=null,parcela=PARCELAS[2],ERRO=false;
+const vig=(item,per)=>LANC.find(l=>l.item===item&&l.periodo===per)||null;
+function dados(it,P){
+  const l=vig(it.id,P.p),ant=vig(it.id,P.ant);
+  const d={valor:l?l.valor:null,anterior:l&&l.anterior!=null?l.anterior:(ant?ant.valor:null),mediana:l?l.mediana:null,quartil:l?l.quartil:null,quartilAnt:l&&l.quartilAnt!=null?l.quartilAnt:(ant?ant.quartil:null),origem:l?'lançamento':null};
+  if(it.id==='mortalidade'&&l&&l.anterior==null&&ant){d.anterior=ant.valor}
+  if(it.tipo==='esf'){d.nEsf=l?l.valor:NESF;d.origem=l?'lançamento':(NESF!=null?'PEC (composição)':null);d.valor=d.nEsf}
+  return d;
+}
+function calcular(){
+  const linhas=R.ITENS.map(it=>{const d=dados(it,parcela),r=R.pontuar(it,d,R.POP);return {it,d,r}});
+  const res=linhas.map(x=>({peso:x.it.peso,pct:x.r.pct}));
+  const ob=vig('obito_materno',parcela.p);
+  return {linhas,res,nota:R.nota(res,ob?ob.valor===0:undefined),ob};
+}
+function pill(p){if(p===null)return '<span class="pill pn">sem dado</span>';const k=Math.round(p*100);return '<span class="pill p'+k+'">'+k+'%</span>'}
+function mostra(it,d){
+  if(it.tipo==='esf')return d.nEsf==null?'—':fmt(d.nEsf,0)+' eSF · '+fmt(R.cobertura(d.nEsf,R.POP),1)+'%';
+  if(it.tipo==='liraa')return d.valor==null?'—':(d.valor?'realizado':'não realizado');
+  if(it.tipo==='mortalidade')return d.valor==null?'—':fmt(d.valor,2)+' ('+(d.quartil||'?')+'º quartil)';
+  return d.valor==null?'—':fmt(d.valor,2)+'%';
+}
+function ref(it,d){
+  if(it.tipo==='esf')return '—';
+  if(it.tipo==='liraa'||it.tipo==='sifilis')return '—';
+  if(it.tipo==='mortalidade')return d.anterior==null?'—':fmt(d.anterior,2)+' ('+(d.quartilAnt||'?')+'º quartil)';
+  const a=d.anterior==null?'—':fmt(d.anterior,2)+'%';
+  return it.tipo==='internacoes'?'média estadual: '+(d.mediana==null?'—':fmt(d.mediana,2)):a+(d.mediana!=null?' · mediana '+fmt(d.mediana,2)+'%':'');
+}
+function dica(x){
+  const {it,d,r}=x;
+  if(it.tipo==='esf'&&d.nEsf!=null){const c=R.cobertura(d.nEsf,R.POP),preciso=Math.ceil(0.7*R.POP/R.TETO_ESF);return r.motivo+(c<70?' Faltam '+(preciso-d.nEsf)+' eSF para 70%.':'')}
+  return r.motivo;
+}
+function desenhar(){
+  $('parcelas').innerHTML=PARCELAS.map(P=>'<button type="button" class="chip" aria-pressed="'+(P===parcela)+'" data-p="'+P.p+'">'+P.n+'</button>').join('');
+  document.querySelectorAll('#parcelas .chip').forEach(b=>b.addEventListener('click',()=>{parcela=PARCELAS.find(x=>x.p===b.dataset.p);desenhar()}));
+  if(ERRO){$('cards').innerHTML='';$('tab').innerHTML='<tbody><tr><td>Não foi possível carregar os lançamentos. Recarregue a página.</td></tr></tbody>';return}
+  const c=calcular(),pontos=c.res.reduce((t,r)=>t+(r.pct===null?0:r.peso*r.pct),0),pend=c.linhas.filter(x=>x.r.pct===null),pesoPend=pend.reduce((t,x)=>t+x.it.peso,0);
+  const n=c.linhas.length-pend.length;
+  $('cards').innerHTML=
+   '<div class="card"><small>Nota da parte variável</small><div class="v">'+fmt(c.nota.final*100,1)+'%</div><div class="s">'+fmt(pontos,2)+' de 10 pontos'+(c.nota.extra?' + 10 pontos percentuais do ponto extra (sem óbito materno)':'')+'</div></div>'+
+   '<div class="card"><small>Indicadores com dado</small><div class="v">'+n+' de '+c.linhas.length+'</div><div class="s">'+(pend.length?'Faltam lançar: peso '+fmt(pesoPend,1)+' de 10. Máximo possível agora: '+fmt(Math.min(100,(pontos+pesoPend)*10),0)+'%.':'Todos os indicadores têm dado.')+'</div></div>'+
+   '<div class="card"><small>Período avaliado</small><div class="v" style="font-size:20px">'+NOMEQ(parcela.p)+'</div><div class="s">Comparado com o '+NOMEQ(parcela.ant)+'. Pagamento em '+parcela.n.split(' · ')[1]+'.</div></div>';
+  $('tab').innerHTML='<thead><tr><th>Indicador</th><th class="n">Peso</th><th>Valor</th><th>Comparação</th><th>Resultado</th><th class="n">Pontos</th></tr></thead><tbody>'+
+   c.linhas.map(x=>'<tr><td>'+esc(x.it.nome)+(x.d.origem?'<small>Origem: '+esc(x.d.origem)+'</small>':'')+'</td><td class="n">'+fmt(x.it.peso,1)+'</td><td>'+mostra(x.it,x.d)+'</td><td>'+ref(x.it,x.d)+'</td><td>'+pill(x.r.pct)+'<small>'+esc(dica(x))+'</small></td><td class="n">'+(x.r.pct===null?'—':fmt(x.it.peso*x.r.pct,2))+'</td></tr>').join('')+
+   '<tr><td><b>Óbito materno no ano</b><small>Ponto extra: sem óbito materno, soma 10 pontos percentuais, se algum indicador não chegou a 100%.</small></td><td class="n">—</td><td colspan="4">'+(c.ob?(c.ob.valor===0?'sem óbito materno informado':'com óbito materno informado'):'não lançado')+'</td></tr></tbody>';
+  $('nota-calc').textContent='A nota é a soma de peso × percentual de cada indicador, dividida por 10, aplicada sobre a parte variável (50% do incentivo em 2026). Os percentuais por faixa seguem a CIB 117/2023, mantida pela CIB 150/2025; os valores oficiais valem sobre este cálculo.';
+}
+// Formulário: mostra só os campos de cada indicador.
+const ITEM_FORM=R.ITENS.concat([{id:'obito_materno',nome:'Óbito materno no ano (1 = houve, 0 = não houve)',tipo:'materno'}]);
+$('item').innerHTML=ITEM_FORM.map(i=>'<option value="'+i.id+'">'+esc(i.nome)+'</option>').join('');
+$('per').innerHTML=PARCELAS.map(P=>'<option value="'+P.p+'">'+NOMEQ(P.p)+' ('+P.n+')</option>').join('');
+$('per').value=PARCELAS[2].p;
+function campos(){
+  const it=ITEM_FORM.find(i=>i.id===$('item').value),t=it.tipo,mostrar=(id,v)=>{$(id).style.display=v?'':'none'};
+  mostrar('l-ant',t==='vacina'||t==='mortalidade');mostrar('l-med',t==='vacina'||t==='internacoes');mostrar('l-q',t==='mortalidade');mostrar('l-qa',t==='mortalidade');
+  $('r-valor').textContent=t==='esf'?'Média de eSF no quadrimestre (opcional: a composição do PEC é usada se ficar vazio)':t==='liraa'?'Realizado? (1 = sim, 0 = não)':t==='materno'?'Houve óbito materno? (1 = sim, 0 = não)':t==='mortalidade'?'Taxa da janela atual':t==='internacoes'?'Valor do município':'Valor (em %)';
+  $('r-ant').textContent=t==='mortalidade'?'Taxa da janela anterior':'Anterior (opcional)';
+  $('r-med').textContent=t==='internacoes'?'Média estadual':'Mediana estadual';
+}
+$('item').addEventListener('change',campos);campos();
+const nv=v=>{v=String(v).trim().replace('%','').replace(',','.');return v===''?null:Number(v)};
+$('f').addEventListener('submit',async e=>{e.preventDefault();const m=$('msg');m.className='msg';m.textContent='';
+ const corpo={item:$('item').value,periodo:$('per').value,valor:nv($('valor').value),anterior:nv($('ant').value),mediana:nv($('med').value),quartil:nv($('q').value),quartilAnt:nv($('qa').value),obs:$('obs').value};
+ if(corpo.valor===null||!isFinite(corpo.valor)||corpo.valor<0){m.className='msg er';m.textContent='Informe o valor em número, igual ou maior que zero.';$('valor').focus();return}
+ try{const r=await fetch('/api/v1/estadual/lancamentos',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(corpo)});
+  if(r.status===403){m.className='msg er';m.textContent='Seu perfil só permite consulta. Peça a um administrador ou gestor para lançar.';return}
+  if(!r.ok){const j=await r.json().catch(()=>({}));m.className='msg er';m.textContent=j.erro||j.mensagem||'Não foi possível lançar. Tente de novo.';return}
+  m.className='msg ok';m.textContent='Lançado.';['valor','ant','med','q','qa','obs'].forEach(i=>$(i).value='');await carregar()}
+ catch(_){m.className='msg er';m.textContent='Sem conexão com o Painel. Tente de novo.'}});
+async function carregar(){
+  try{
+    const [a,b]=await Promise.all([fetch('/api/v1/estadual/lancamentos',{credentials:'same-origin'}),fetch('/api/v1/composicao',{credentials:'same-origin'})]);
+    if(a.status===401){location.replace('/entrar');return}
+    if(a.ok){LANC=(await a.json()).vigentes;ERRO=false}else ERRO=true;
+    if(b.ok){const c=(await b.json()).composicao;NESF=c?(c.unidades||[]).reduce((t,u)=>t+(u.equipes||[]).filter(e=>e.tipo==='ESF').length,0):null}
+  }catch(_){ERRO=true}
+  desenhar();
+}
+carregar();
+</script>
 </body>
 </html>

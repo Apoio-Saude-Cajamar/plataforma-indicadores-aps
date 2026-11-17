@@ -30,6 +30,7 @@ import { populacaoMunicipio } from './populacao.js';
 import { monitoramento } from './monitoramento.js';
 import { gravarFilas, gravarFilasHorario, lerFilas } from './filas.js';
 import { listarLancamentos, criarLancamento } from './lancamentos.js';
+import { listarEstadual, criarEstadual } from './estadual.js';
 import { listarChaves, criarChave, revogarChave, chaveGeradaValida } from './chaves.js';
 import { catalogoAdmin, salvarPublicacao, historico as historicoPublicacao, dadosPublicos } from './publicacao.js';
 import { comunicadosAtivos, marcarLido, listarComunicados, criarComunicado, alterarComunicado } from './comunicados.js';
@@ -68,6 +69,8 @@ const ROTAS = [
   // Traz nomes de profissionais: só administrador e gestor.
   ['GET', /^\/filas$/, 'lancar', async (req, env, m, url) => json(await lerFilas(env, url))],
   ['GET', /^\/lancamentos$/, 'leitura', async (req, env, m, url) => json(await listarLancamentos(env, url))],
+  ['GET', /^\/estadual\/lancamentos$/, 'leitura', async (req, env) => json(await listarEstadual(env))],
+  ['POST', /^\/estadual\/lancamentos$/, 'lancar', async (req, env, m, url, quem) => json(await criarEstadual(req, env, quem), 201)],
   ['POST', /^\/lancamentos$/, 'lancar', async (req, env, m, url, quem) => json(await criarLancamento(req, env, quem), 201)],
   ['GET', /^\/publico\/dados$/, null, async (req, env, m, url) => dadosPublicos(env, url)],
   ['GET', /^\/publicacao$/, 'usuarios', async (req, env, m, url) => json(await catalogoAdmin(env, url))],

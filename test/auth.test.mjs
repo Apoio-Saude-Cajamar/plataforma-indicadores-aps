@@ -416,3 +416,23 @@ test('faltas por horário: a extensão envia a grade por profissional, grade inv
   const d2 = await (await gestor.pedir('GET', '/api/v1/filas')).json();
   assert.deepEqual(d2.horarios[0].grade, { 3: { 14: [4, 2, 1] } });
 });
+
+test('estadual: gestor lança por quadrimestre, vale o mais recente, leitor só consulta', async () => {
+  const env = comPaginas(ambiente());
+  const n = navegador(env);
+  const criar = async (login, perfil) => { const u = await admin(env, { login, nome: login, perfil }); env.DB.prepare('UPDATE usuario SET trocar_senha = 0').run(); const v = navegador(env); assert.equal((await v.pedir('POST', '/api/v1/auth/entrar', { login, senha: u.senhaProvisoria })).status, 200); return v; };
+  const gestor = await criar('gestor.est', 'gestor'), leitor = await criar('leitor.est', 'leitor');
+  assert.equal((await n.pedir('GET', '/api/v1/estadual/lancamentos')).status, 401);
+  const L = { item: 'polio', periodo: '2026-Q1', valor: 97.5, anterior: 96, mediana: 88 };
+  assert.equal((await leitor.pedir('POST', '/api/v1/estadual/lancamentos', L)).status, 403);
+  assert.equal((await gestor.pedir('POST', '/api/v1/estadual/lancamentos', L)).status, 201);
+  assert.equal((await gestor.pedir('POST', '/api/v1/estadual/lancamentos', Object.assign({}, L, { valor: 98 }))).status, 201);
+  assert.equal((await gestor.pedir('POST', '/api/v1/estadual/lancamentos', { item: 'x', periodo: '2026-Q1', valor: 1 })).status, 400);
+  assert.equal((await gestor.pedir('POST', '/api/v1/estadual/lancamentos', { item: 'polio', periodo: '2026-Q4', valor: 1 })).status, 400);
+  assert.equal((await gestor.pedir('POST', '/api/v1/estadual/lancamentos', { item: 'mortalidade', periodo: '2026-Q1', valor: 5, quartil: 9 })).status, 400);
+  const d = await (await leitor.pedir('GET', '/api/v1/estadual/lancamentos')).json();
+  assert.equal(d.vigentes.length, 1);
+  assert.equal(d.vigentes[0].valor, 98);
+  assert.equal(d.vigentes[0].mediana, 88);
+  assert.equal(d.historico.length, 2);
+});
