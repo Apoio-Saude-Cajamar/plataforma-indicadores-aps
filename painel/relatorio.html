@@ -41,6 +41,8 @@ main{max-width:1100px;margin:0 auto;padding:24px 32px 24px}
 #doc th{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#4A5670;background:#F4F7FB}
 #doc td.n,#doc th.n{text-align:right;white-space:nowrap}
 #doc tr{break-inside:avoid}
+#doc table{table-layout:auto}#doc table.un th,#doc table.un td{padding:5px 5px;font-size:11.5px}#doc table.un td:first-child{white-space:normal;min-width:120px}
+#doc{overflow-x:auto}
 #doc small{display:block;color:#4A5670;font-size:11px}
 #doc .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:8px 0 6px}
 #doc .card{border:1px solid #D5DCE8;border-radius:8px;padding:8px 12px}
@@ -130,10 +132,16 @@ function secFederal(comp,un){
     const uns=[...new Set((dados[comp]||[]).map(l=>l.unidade).filter(u=>u&&u!=='Município'))].sort();
     if(uns.length>1){
       const cods=NOTAS.filter(c=>linhasDe(c,[comp],'').length);
-      let t='<table class="csv"><thead><tr><th>Indicador</th>'+uns.map(u=>'<th class="n">'+esc(u.replace(/^(UBS|ESF|Psf|Usf|Posto de Saude)\s+/i,''))+'</th>').join('')+'</tr></thead><tbody>';
-      for(const cod of cods){const cat=(window.CATALOGO||{})[cod]||{tipo:''};const ls=linhasDe(cod,[comp],'');const m=agregar(ls,l=>l.unidade);
-        t+='<tr><td><b>'+esc(cod)+'</b></td>'+uns.map(u=>{const g=m.get(cod+'|'+u);const v=g?resultado(g,cat.tipo):null;const k=conceito(cod,v);return '<td class="n">'+fmt(v,cat.tipo)+(k?' <span class="cc k-'+k+'">'+NOMEC[k].charAt(0)+'</span>':'')+'</td>'}).join('')+'</tr>'}
-      h+='<h3>Resultado por unidade</h3>'+t+'</tbody></table><p><small>Conceito: O = ótimo, B = bom, S = suficiente, R = regular.</small></p>';
+      // Unidades nas linhas e indicadores nas colunas, em blocos de até 10 colunas: cabe na folha, impressa ou na tela.
+      const nomeCurto=u=>u.replace(/^(UBS|ESF|Psf|Usf|Posto de Saude)\s+(Enf(?:ermeiro)?\.?\s+|Dra?\s+|Vereador\s+)?/i,'');
+      let t='';
+      for(let i=0;i<cods.length;i+=10){
+        const bloco=cods.slice(i,i+10);
+        t+='<table class="csv un"><thead><tr><th>Unidade</th>'+bloco.map(c=>'<th class="n">'+esc(c)+'</th>').join('')+'</tr></thead><tbody>'
+         +uns.map(u=>'<tr><td>'+esc(nomeCurto(u))+'</td>'+bloco.map(cod=>{const cat=(window.CATALOGO||{})[cod]||{tipo:''};const g=agregar(linhasDe(cod,[comp],''),l=>l.unidade).get(cod+'|'+u);const v=g?resultado(g,cat.tipo):null;const k=conceito(cod,v);
+            return '<td class="n">'+fmt(v,cat.tipo)+(k?' <span class="cc k-'+k+'">'+NOMEC[k].charAt(0)+'</span>':'')+'</td>'}).join('')+'</tr>').join('')+'</tbody></table>';
+      }
+      h+='<h3>Resultado por unidade</h3>'+t+'<p><small>Conceito: O = ótimo, B = bom, S = suficiente, R = regular. Colunas vazias de conceito: indicador sem faixa definida.</small></p>';
     }
   }
   return h;
