@@ -56,16 +56,26 @@ main{max-width:1100px;margin:0 auto;padding:24px 32px 24px}
 #doc .reg{display:grid;grid-template-columns:minmax(150px,1fr) minmax(220px,1.6fr);gap:4px 18px;align-items:center;padding:9px 0;border-bottom:1px solid #E3E8F0;break-inside:avoid}
 #doc .reg .nm{font-size:12.5px;line-height:1.3}#doc .reg .nm b{color:#1F3C72}
 #doc .reg .vl{font-size:12px;margin-top:2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.rg{position:relative;height:16px;border-radius:4px;display:flex;overflow:visible;margin:6px 0 16px}
-.rg .sg{height:100%}.rg .sg:first-child{border-radius:4px 0 0 4px}.rg .sg:last-child{border-radius:0 4px 4px 0}
+.rg{position:relative;height:16px;box-shadow:0 0 0 1px rgba(20,33,43,.45);border-radius:4px;display:flex;overflow:visible;margin:6px 0 16px}
+.rg .sg{height:100%}.rg .sg{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#14212B;overflow:hidden;white-space:nowrap;border-right:1px solid rgba(20,33,43,.45)}
+.sg.k-r,.leg i.k-r{background:#F1B3B3}
+.sg.k-s,.leg i.k-s{background:#F5DC9B repeating-linear-gradient(45deg,rgba(20,33,43,.38) 0 1px,transparent 1px 5px)}
+.sg.k-b,.leg i.k-b{background:#A9D3EE repeating-linear-gradient(90deg,rgba(20,33,43,.38) 0 1px,transparent 1px 4px)}
+.sg.k-o,.leg i.k-o{background:#9ED8B8 radial-gradient(rgba(20,33,43,.55) 1px,transparent 1.3px) 0 0/5px 5px}
+@media print{.sg.k-r,.leg i.k-r{background-color:#fff!important}.sg.k-s,.leg i.k-s{background-color:#e6e6e6!important}.sg.k-b,.leg i.k-b{background-color:#bdbdbd!important}.sg.k-o,.leg i.k-o{background-color:#8c8c8c!important}.sg.k-o{color:#fff}.leg i{border:1px solid #555}}
+.rg .sg:first-child{border-radius:4px 0 0 4px}.rg .sg:last-child{border-radius:0 4px 4px 0}
 .rg .tk{position:absolute;top:18px;transform:translateX(-50%);font-size:9.5px;color:#4A5670;white-space:nowrap}
-.rg .eq{position:absolute;top:3px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:#33414C;border:2px solid #fff;opacity:.8;box-sizing:content-box;margin-top:-2px}
+.rg .rng{position:absolute;left:0;top:5px;height:6px;border-radius:3px;background:rgba(20,33,43,.55)}
+.rg .rf{position:absolute;top:-3px;width:10px;height:22px;margin-left:-5px;background:#fff;border:3px solid #1F3C72;border-radius:3px;box-sizing:border-box}
+.pag{margin-top:6px}.pag>h2:first-child{margin-top:22px}
+.eqcab{border-left:6px solid #00A7E7;padding:2px 0 2px 12px;margin:22px 0 8px}.eqcab h2{margin:0;border:0;padding:0;font-size:20px}.eqcab small{font-size:12px}
 .rg .mn{position:absolute;top:-3px;width:14px;height:22px;margin-left:-7px;background:#1F3C72;border:2px solid #fff;border-radius:3px;box-shadow:0 0 0 1px #1F3C72}
 .leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11px;color:#4A5670;margin:4px 0 10px}.leg i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
 .bar{position:relative;height:10px;background:#EEF1F5;border-radius:5px;min-width:90px}.bar>span{position:absolute;left:0;top:0;bottom:0;border-radius:5px}.bar>em{position:absolute;top:-3px;bottom:-3px;width:2px;background:#14212B}
 .so-csv{display:none}
 @media(max-width:700px){main{padding:16px}#doc{padding:18px}}
 @media print{
+  .pag+.pag{break-before:page}.pag>h2:first-child{margin-top:0}
   @page{margin:14mm 12mm 16mm;@bottom-left{content:"Painel APS · Cajamar";font-size:9px;color:#4A5670}@bottom-right{content:"Página " counter(page) " de " counter(pages);font-size:9px;color:#4A5670}}
   #doc,#doc *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   body{background:#fff}header.topo-site,.ferr,.dica,#rodape-aps,.menu-aps{display:none!important}
@@ -86,7 +96,8 @@ main{max-width:1100px;margin:0 auto;padding:24px 32px 24px}
   <label>Relatório<select id="tipo">
    <option value="geral">Visão geral</option>
    <option value="federal">Federal (indicadores)</option>
-   <option value="regua">Federal · gráfico com réguas</option>
+   <option value="regua">Federal · réguas (uma página por grupo)</option>
+   <option value="equipes">Por equipe (uma página por equipe)</option>
    <option value="estadual">Estadual (IGM SUS Paulista)</option>
    <option value="municipal">Acompanhamento municipal</option>
    <option value="absenteismo">Absenteísmo e filas</option>
@@ -95,6 +106,7 @@ main{max-width:1100px;margin:0 auto;padding:24px 32px 24px}
   <label>Competência<select id="comp"></select></label>
   <label id="lbUn">Unidade<select id="un"><option value="">Todas</option></select></label>
   <label>Folha<select id="orient"><option value="retrato">Retrato</option><option value="paisagem">Paisagem (horizontal)</option></select></label>
+  <label id="lbEq">Equipe<select id="eq"><option value="">Todas</option></select></label>
   <label id="lbParcela">Parcela estadual<select id="parcela"></select></label>
   <div class="acoes"><button class="btn" id="imprimir" type="button">Imprimir / salvar em PDF</button><button class="btn sec" id="csv" type="button">Baixar CSV</button></div>
  </div>
@@ -110,7 +122,7 @@ main{max-width:1100px;margin:0 auto;padding:24px 32px 24px}
 const $=id=>document.getElementById(id);
 let dados={},ABS={},LANC=[],VAC=[],NESF=null,parcela=PARCELAS[2],ERRO=false,USUARIO=null,FILAS=null,COMPS=[];
 const Q14=19.59;
-const TITULOS={geral:'Visão geral da Atenção Primária',federal:'Cofinanciamento federal · indicadores',regua:'Cofinanciamento federal · gráfico com réguas',estadual:'Cofinanciamento estadual · IGM SUS Paulista',municipal:'Acompanhamento municipal',absenteismo:'Absenteísmo e filas',completo:'Relatório completo da Atenção Primária'};
+const TITULOS={geral:'Visão geral da Atenção Primária',federal:'Cofinanciamento federal · indicadores',regua:'Cofinanciamento federal · gráfico com réguas',equipes:'Relatório por equipe · cofinanciamento federal',estadual:'Cofinanciamento estadual · IGM SUS Paulista',municipal:'Acompanhamento municipal',absenteismo:'Absenteísmo e filas',completo:'Relatório completo da Atenção Primária'};
 const PERFIL={admin:'administrador',gestor:'gestor',leitor:'leitor'};
 const num=(v,c=1)=>v==null||isNaN(v)?'—':v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:c});
 const pct=v=>v==null?'—':num(v,1)+'%';
@@ -178,29 +190,30 @@ function faixasDe(cod){
   if(t==='x'&&FAIXAX[cod])return FAIXAX[cod].map(x=>x.slice());
   return null;
 }
-function reguaHtml(cod,vm,vals){
+function reguaHtml(cod,vm,o){
+  o=o||{};const vals=(o.vals||[]).filter(v=>v!=null),ref=o.ref;
   const f=faixasDe(cod);if(!f||vm==null)return '';
-  const todos=[vm].concat(vals.filter(v=>v!=null));
+  const todos=[vm].concat(vals);
   const lo=f[0][0];let hi=f[f.length-1][1];
   // Faixa aberta (sem teto): a régua acaba em 2,5 vezes o início dela (no máximo 100 nos percentuais); valores maiores ficam no fim da régua.
   const aberta=hi>=1e8;
   if(aberta){const base=f[f.length-1][0];hi=base*2.5;if((FAIXAX[cod]&&cod!=='B1'&&cod!=='B4'))hi=Math.min(100,hi)}
   const pos=v=>Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100));
   const seg=f.map(x=>({a:Math.max(lo,x[0]),b:Math.min(hi,x[1]),k:x[2]})).filter(x=>x.b>x.a);
-  let h='<div class="rg" role="img" aria-label="Régua do indicador '+esc(cod)+' com o valor do município e das equipes">'
-   +seg.map(x=>'<div class="sg" style="width:'+((x.b-x.a)/(hi-lo)*100).toFixed(2)+'%;background:'+COR[x.k]+'"></div>').join('');
+  let h='<div class="rg" role="img" aria-label="Régua do indicador '+esc(cod)+'">'
+   +seg.map(x=>'<div class="sg k-'+x.k+'" style="width:'+((x.b-x.a)/(hi-lo)*100).toFixed(2)+'%">'+((x.b-x.a)/(hi-lo)>.14?NOMEC[x.k]:((x.b-x.a)/(hi-lo)>.05?NOMEC[x.k][0]:''))+'</div>').join('');
   let marcas=[lo].concat(seg.slice(1).map(x=>x.a),[hi]);
-  // sem rótulos colados: descarta o que ficar a menos de 7% do anterior (o último sempre fica)
-  marcas=marcas.filter((m,i)=>i===0||i===marcas.length-1||(pos(m)-pos(marcas[i-1])>=7&&pos(hi)-pos(m)>=7)||false);
+  marcas=marcas.filter((m,i)=>i===0||i===marcas.length-1||(pos(m)-pos(marcas[i-1])>=7&&pos(hi)-pos(m)>=7));
   h+=marcas.map((m,i)=>'<span class="tk" style="left:'+pos(m).toFixed(2)+'%;'+(i===0?'transform:none':i===marcas.length-1?'transform:translateX(-100%)':'')+'">'+num(m,m%1?2:0)+(aberta&&i===marcas.length-1?'+':'')+'</span>').join('');
-  h+=vals.filter(v=>v!=null).map(v=>'<i class="eq" style="left:'+pos(v).toFixed(2)+'%"></i>').join('');
+  if(vals.length>1){const mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);h+='<i class="rng" style="left:'+pos(mn).toFixed(2)+'%;width:'+Math.max(0.8,pos(mx)-pos(mn)).toFixed(2)+'%"></i>'}
+  if(ref!=null)h+='<i class="rf" style="left:'+pos(ref).toFixed(2)+'%"></i>';
   h+='<i class="mn" style="left:'+pos(vm).toFixed(2)+'%"></i></div>';
   return h;
 }
+const legRegua=(eqs)=>'<div class="leg"><span><i class="k-r"></i>Regular</span><span><i class="k-s"></i>Suficiente</span><span><i class="k-b"></i>Bom</span><span><i class="k-o"></i>Ótimo</span>'+(eqs?'<span><i style="background:#1F3C72"></i>Município</span><span><i style="background:rgba(20,33,43,.55);height:6px;vertical-align:2px"></i>Variação entre as equipes (menor a maior)</span>':'<span><i style="background:#1F3C72"></i>Esta equipe</span><span><i style="background:#fff;border:3px solid #1F3C72;box-sizing:border-box"></i>Município (referência)</span>')+'</div>';
+// Régua do município, uma página por grupo de indicadores; a faixa escura mostra de onde a onde as equipes variam.
 function secRegua(comp,un){
-  let h='<h2>Cofinanciamento federal · réguas</h2><p>Cada régua mostra as faixas de conceito do indicador. O marcador azul é o município'+(un?' (recorte: '+esc(un)+')':'')+'; cada ponto cinza é uma equipe, para ver a dispersão. Só aparecem os indicadores com faixa definida.</p>'
-   +'<div class="leg"><span><i style="background:'+COR.r+'"></i>Regular</span><span><i style="background:'+COR.s+'"></i>Suficiente</span><span><i style="background:'+COR.b+'"></i>Bom</span><span><i style="background:'+COR.o+'"></i>Ótimo</span><span><i style="background:#1F3C72"></i>Município</span><span><i style="background:#33414C;border-radius:50%"></i>Equipe</span></div>';
-  let corpo='',csvl='',n=0;
+  let out='',csvl='',n=0,primeiro=true;
   for(const [gn,gc] of GRUPOS.slice(0,-1)){
     let sub='';
     for(const cod of gc){
@@ -209,18 +222,58 @@ function secRegua(comp,un){
       const cat=(window.CATALOGO||{})[cod]||{nome:cod,tipo:''};
       const mun=agregar(ls,()=>'M').get(cod+'|M');if(!mun)continue;
       const vm=resultado(mun,cat.tipo),km=conceito(cod,vm);
-      const eqs=[...agregar(ls,l=>l.unidade+' · '+l.equipe).values()].filter(g=>g.codigo===cod).map(g=>resultado(g,cat.tipo));
-      const reg=reguaHtml(cod,vm,eqs);if(!reg)continue;
+      const eqs=[...agregar(ls,l=>l.unidade+' · '+l.equipe).values()].filter(g=>g.codigo===cod).map(g=>resultado(g,cat.tipo)).filter(v=>v!=null);
+      const reg=reguaHtml(cod,vm,{vals:eqs});if(!reg)continue;
       n++;
-      sub+='<div class="reg"><div class="nm"><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+'<div class="vl"><b>'+fmt(vm,cat.tipo)+'</b>'+kpill(km)+(FAIXAX[cod]?'*':'')+'<span>'+eqs.filter(v=>v!=null).length+' equipe(s)</span></div></div><div>'+reg+'</div></div>';
-      csvl+='<tr><td>'+esc(cod)+'</td><td>'+esc(nomeSem(cod,cat.nome))+'</td><td>'+fmt(vm,cat.tipo)+'</td><td>'+(km?NOMEC[km]:'')+'</td><td>'+eqs.filter(v=>v!=null).map(v=>fmt(v,cat.tipo)).join(' | ')+'</td></tr>';
+      const faixa=eqs.length>1?'<span>equipes: de '+fmt(Math.min.apply(null,eqs),cat.tipo)+' a '+fmt(Math.max.apply(null,eqs),cat.tipo)+' ('+eqs.length+')</span>':'<span>'+eqs.length+' equipe(s)</span>';
+      sub+='<div class="reg"><div class="nm"><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+'<div class="vl"><b>'+fmt(vm,cat.tipo)+'</b>'+kpill(km)+(FAIXAX[cod]?'*':'')+faixa+'</div></div><div>'+reg+'</div></div>';
+      csvl+='<tr><td>'+esc(gn)+'</td><td>'+esc(cod)+'</td><td>'+esc(nomeSem(cod,cat.nome))+'</td><td>'+fmt(vm,cat.tipo)+'</td><td>'+(km?NOMEC[km]:'')+'</td><td>'+eqs.map(v=>fmt(v,cat.tipo)).join(' | ')+'</td></tr>';
     }
-    if(sub)corpo+='<h3>'+esc(gn)+'</h3>'+sub;
+    if(sub){out+='<section class="pag"><h2>'+(primeiro?'Cofinanciamento federal · réguas · ':'')+esc(gn)+'</h2>'+(primeiro?'<p>Cada régua mostra as faixas de conceito do indicador. O marcador azul é o município'+(un?' (recorte: '+esc(un)+')':'')+' e a faixa escura mostra de onde a onde as equipes variam. Só aparecem os indicadores com faixa definida; cada grupo começa numa página.</p>':'')+legRegua(true)+sub+'</section>';primeiro=false}
   }
-  if(!n)return h+'<p class="vazio">Sem indicadores com faixa definida nesta competência.</p>';
-  h+=corpo+'<table class="csv so-csv"><thead><tr><th>Código</th><th>Indicador</th><th>Município</th><th>Conceito</th><th>Equipes</th></tr></thead><tbody>'+csvl+'</tbody></table>';
-  if(Object.keys(FAIXAX).some(c=>faixasDe(c)&&(dados[comp]||[]).some(l=>l.codigo===c)))h+='<p><small>* Faixa lida do desenho do dashboard, ainda a confirmar com a nota técnica vigente.</small></p>';
-  return h;
+  if(!n)return '<h2>Cofinanciamento federal · réguas</h2><p class="vazio">Sem indicadores com faixa definida nesta competência.</p>';
+  out+='<table class="csv so-csv"><thead><tr><th>Grupo</th><th>Código</th><th>Indicador</th><th>Município</th><th>Conceito</th><th>Equipes</th></tr></thead><tbody>'+csvl+'</tbody></table>';
+  if(Object.keys(FAIXAX).some(c=>faixasDe(c)&&(dados[comp]||[]).some(l=>l.codigo===c)))out+='<p><small>* Faixa lida do desenho do dashboard, ainda a confirmar com a nota técnica vigente.</small></p>';
+  return out;
+}
+// Um relatório por equipe, todos no mesmo documento: cada equipe começa numa página.
+const soltaEq=e=>!e||e==='Município'||/^sem equipe$/i.test(e);
+function equipesDe(comp,un){
+  const m=new Map();
+  for(const l of (dados[comp]||[])){if(!l.unidade||l.unidade==='Município'||soltaEq(l.equipe))continue;if(un&&l.unidade!==un)continue;const k=l.unidade+'|'+l.equipe;if(!m.has(k))m.set(k,{u:l.unidade,e:l.equipe,tipo:l.tipoEquipe||''})}
+  return [...m.values()].sort((a,b)=>a.u.localeCompare(b.u,'pt')||a.e.localeCompare(b.e,'pt'));
+}
+function secEquipes(comp,un,eqSel){
+  let lista=equipesDe(comp,un);
+  if(eqSel)lista=lista.filter(x=>x.u+'|'+x.e===eqSel);
+  if(!lista.length)return '<h2>Relatório por equipe</h2><p class="vazio">Sem equipes com dados nesta competência.</p>';
+  let out='',csvl='',primeiro=true;
+  for(const t of lista){
+    const doTime=cod=>linhasDe(cod,[comp],t.u).filter(l=>l.equipe===t.e);
+    const doMun=cod=>linhasDe(cod,[comp],'');
+    let corpo='';
+    for(const [gn,gc] of GRUPOS){
+      let reg='',tab='';
+      for(const cod of gc){
+        const ls=doTime(cod);if(!ls.length)continue;
+        const cat=(window.CATALOGO||{})[cod]||{nome:cod,tipo:''};
+        const g=agregar(ls,()=>'T').get(cod+'|T');if(!g)continue;
+        const v=resultado(g,cat.tipo),k=conceito(cod,v);
+        const gm=agregar(doMun(cod),()=>'M').get(cod+'|M'),vm=gm?resultado(gm,cat.tipo):null;
+        const direto=g.direto!==undefined,nu=direto?'—':num(cat.tipo==='pontos'?g.pts:g.num,0),de=direto?'—':num(g.den,0);
+        csvl+='<tr><td>'+esc(t.u)+'</td><td>'+esc(t.e)+'</td><td>'+esc(cod)+'</td><td>'+esc(nomeSem(cod,cat.nome))+'</td><td>'+nu+'</td><td>'+de+'</td><td>'+fmt(v,cat.tipo)+'</td><td>'+(k?NOMEC[k]:'')+'</td><td>'+fmt(vm,cat.tipo)+'</td></tr>';
+        const r=faixasDe(cod)?reguaHtml(cod,v,{ref:vm}):'';
+        if(r)reg+='<div class="reg"><div class="nm"><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+'<div class="vl"><b>'+fmt(v,cat.tipo)+'</b>'+kpill(k)+(FAIXAX[cod]?'*':'')+'<span>município: '+fmt(vm,cat.tipo)+'</span></div></div><div>'+r+'</div></div>';
+        else tab+='<tr><td><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+'</td><td class="n">'+nu+'</td><td class="n">'+de+'</td><td class="n"><b>'+fmt(v,cat.tipo)+'</b></td><td class="n">'+fmt(vm,cat.tipo)+'</td></tr>';
+      }
+      if(reg||tab)corpo+='<h3>'+esc(gn)+'</h3>'+reg+(tab?'<table><thead><tr><th>Indicador sem régua</th><th class="n">Numerador (ou pontos)</th><th class="n">Denominador</th><th class="n">Resultado</th><th class="n">Município</th></tr></thead><tbody>'+tab+'</tbody></table>':'');
+    }
+    out+='<section class="pag"><div class="eqcab"><small>'+esc(t.u)+(t.tipo?' · '+esc(t.tipo):'')+'</small><h2>'+esc(t.e)+'</h2></div>'+(primeiro?'<p>Uma página por equipe. O marcador azul é a equipe; o contorno é o município, para comparar. Faixas de conceito: regular, suficiente, bom e ótimo.</p>':'')+legRegua(false)+(corpo||'<p class="vazio">Sem indicadores nesta competência.</p>')+'</section>';
+    primeiro=false;
+  }
+  out+='<table class="csv so-csv"><thead><tr><th>Unidade</th><th>Equipe</th><th>Código</th><th>Indicador</th><th>Numerador (ou pontos)</th><th>Denominador</th><th>Resultado</th><th>Conceito</th><th>Município</th></tr></thead><tbody>'+csvl+'</tbody></table>';
+  out+='<p><small>* Faixa lida do desenho do dashboard, ainda a confirmar com a nota técnica vigente. Indicadores sem faixa definida (como a B2) aparecem na tabela, sem régua.</small></p>';
+  return out;
 }
 const barra=(v,max,meta,cor)=>v==null?'—':'<div class="bar"><span style="width:'+Math.min(100,v/max*100).toFixed(1)+'%;background:'+cor+'"></span>'+(meta!=null?'<em style="left:'+Math.min(100,meta/max*100).toFixed(1)+'%"></em>':'')+'</div>';
 
@@ -301,12 +354,15 @@ function desenhar(){
   $('pagina').textContent='@page{size:A4 '+($('orient').value==='paisagem'?'landscape':'portrait')+'}';
   $('lbParcela').hidden=!(tipo==='estadual'||tipo==='completo'||tipo==='geral');
   $('lbUn').hidden=(tipo==='estadual');
+  $('lbEq').hidden=(tipo!=='equipes');
+  if(tipo==='equipes'){const atual=$('eq').value;const l=equipesDe(comp,un);$('eq').innerHTML='<option value="">Todas ('+l.length+')</option>'+l.map(x=>'<option value="'+esc(x.u+'|'+x.e)+'">'+esc(x.u+' · '+x.e)+'</option>').join('');$('eq').value=l.some(x=>x.u+'|'+x.e===atual)?atual:''}
   if(!comp){$('doc').innerHTML='<p class="vazio">Ainda não há competências coletadas.</p>';return}
   const quando=new Date();
   let corpo='';
   if(tipo==='geral')corpo=secGeral(comp,un);
   if(tipo==='federal'||tipo==='completo')corpo+=(tipo==='completo'?secGeral(comp,un):'')+secFederal(comp,un);
   if(tipo==='regua'||tipo==='completo')corpo+=secRegua(comp,un);
+  if(tipo==='equipes')corpo+=secEquipes(comp,un,$('eq').value);
   if(tipo==='estadual'||tipo==='completo')corpo+=secEstadual();
   if(tipo==='municipal'||tipo==='completo')corpo+=secMunicipal(comp,un);
   if(tipo==='absenteismo'||tipo==='completo')corpo+=secAbsenteismo(comp,un);
@@ -357,7 +413,7 @@ async function iniciar(){
     for(let i=PARCELAS.length-1;i>=0;i--){if(LANC.some(l=>l.periodo===PARCELAS[i].p)){parcela=PARCELAS[i];$('parcela').value=String(i);break}}
   }catch(_){ERRO=true}
   await carregarComp($('comp').value);desenhar();
-  $('tipo').onchange=()=>desenhar();$('orient').onchange=()=>desenhar();$('un').onchange=()=>desenhar();
+  $('tipo').onchange=()=>{$('eq').value='';desenhar()};$('eq').onchange=()=>desenhar();$('orient').onchange=()=>desenhar();$('un').onchange=()=>{$('eq').value='';desenhar()};
   $('comp').onchange=async()=>{await carregarComp($('comp').value);desenhar()};
   $('parcela').onchange=()=>{parcela=PARCELAS[+$('parcela').value];desenhar()};
   $('imprimir').onclick=()=>{registrar('pdf');window.print()};
