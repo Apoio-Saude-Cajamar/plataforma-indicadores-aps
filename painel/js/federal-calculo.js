@@ -1,8 +1,7 @@
 // Cálculo do cofinanciamento federal (agregação, conceitos e faixas). Usado pela tela /indicadores e pelo relatório /relatorio.
 // Usa a variável global `dados` (competência -> linhas) declarada pela página.
 const GRUPOS=[
- ['Mais acesso',['C1']],
- ['Cuidado ao longo da vida',['C2','C3','C4','C5','C6','C7','C7-A','C7-B','C7-C','C7-D']],
+ ['eSF e eAP · C1 a C7 (mais acesso e cuidado ao longo da vida)',['C1','C2','C3','C4','C5','C6','C7','C7-A','C7-B','C7-C','C7-D']],
  ['Vínculo e acompanhamento territorial',['CVAT','CVAT-CAD','CVAT-ACO']],
  ['Odontologia',['B1','B2','B3','B4','B5','B6']],
  ['Equipes multiprofissionais',['M1','M2']],

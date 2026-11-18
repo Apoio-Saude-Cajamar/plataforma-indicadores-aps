@@ -139,7 +139,7 @@ function tabelaCods(cods,comp,un,comEquipes){
 function secFederal(comp,un){
   let h='<h2>Cofinanciamento federal</h2><p>Indicadores das notas metodológicas do Ministério da Saúde, a partir dos totais coletados do PEC e-SUS no mês. O conceito é uma prévia para acompanhar as equipes; o resultado oficial é o do Ministério.</p>';
   let algum=false;
-  for(const [gn,gc] of GRUPOS.slice(0,6)){const t=tabelaCods(gc,comp,un,true);if(t){algum=true;h+='<h3>'+esc(gn)+'</h3>'+t}}
+  for(const [gn,gc] of GRUPOS.slice(0,-1)){const t=tabelaCods(gc,comp,un,true);if(t){algum=true;h+='<h3>'+esc(gn)+'</h3>'+t}}
   if(!algum)h+='<p class="vazio">Sem indicadores coletados nesta competência.</p>';
   if(Object.keys(FAIXAX).some(c=>(dados[comp]||[]).some(l=>l.codigo===c)))h+='<p><small>* Faixa lida do desenho do dashboard, ainda a confirmar com a nota técnica vigente.</small></p>';
   // por unidade
@@ -163,7 +163,7 @@ function secFederal(comp,un){
   return h;
 }
 function secMunicipal(comp,un){
-  const g=GRUPOS[6];const t=tabelaCods(g[1],comp,un,false);
+  const g=GRUPOS[GRUPOS.length-1];const t=tabelaCods(g[1],comp,un,false);
   return '<h2>Acompanhamento municipal</h2><p>Indicadores acompanhados pelo município, fora do cofinanciamento federal.</p>'+(t||'<p class="vazio">Sem dados coletados nesta competência.</p>');
 }
 
@@ -201,7 +201,7 @@ function secRegua(comp,un){
   let h='<h2>Cofinanciamento federal · réguas</h2><p>Cada régua mostra as faixas de conceito do indicador. O marcador azul é o município'+(un?' (recorte: '+esc(un)+')':'')+'; cada ponto cinza é uma equipe, para ver a dispersão. Só aparecem os indicadores com faixa definida.</p>'
    +'<div class="leg"><span><i style="background:'+COR.r+'"></i>Regular</span><span><i style="background:'+COR.s+'"></i>Suficiente</span><span><i style="background:'+COR.b+'"></i>Bom</span><span><i style="background:'+COR.o+'"></i>Ótimo</span><span><i style="background:#1F3C72"></i>Município</span><span><i style="background:#33414C;border-radius:50%"></i>Equipe</span></div>';
   let corpo='',csvl='',n=0;
-  for(const [gn,gc] of GRUPOS.slice(0,6)){
+  for(const [gn,gc] of GRUPOS.slice(0,-1)){
     let sub='';
     for(const cod of gc){
       if(!faixasDe(cod))continue;
