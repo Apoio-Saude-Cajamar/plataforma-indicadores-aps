@@ -304,6 +304,7 @@ button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #2F8
 </div>
 </template>
 <script src="/js/dc-mini.js"></script>
+<script src="/js/rodape.js"></script>
 <script>
 let FILAS = null, USUARIO = null, ACESSO = {};
 const ITENS_USUARIO = () => {
@@ -314,7 +315,7 @@ const ITENS_USUARIO = () => {
   if (USUARIO.perfil === 'admin') ls.push(['', 'Configurações'], ['/usuarios', 'Usuários'], ['/monitoramento', 'Monitoramento das coletas'], ['/comunicados', 'Comunicados'], ['/publicacao', 'Página pública'], ['/chaves', 'Chaves da extensão'], ['/extensao', 'Extensões do Chrome'], ['/historico', 'Histórico de acessos'], ['/backups', 'Backups']);
   return ls.map(([href, txt]) => ({ href: href || '#', txt, peso: href ? 600 : 800 }));
 };
-const MENU_SITE = () => [['/', 'Acompanhamentos'], ['/composicao', 'Composição']].concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas']] : []).map(([href, txt]) => ({ href, txt }));
+const MENU_SITE = () => [['/', 'Acompanhamentos'], ['/composicao', 'Composição'], ['/coleta', 'Como coletamos']].concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas']] : []).map(([href, txt]) => ({ href, txt }));
 const META = 19.59;
 class Filas extends DCLogic {
   constructor(props) {

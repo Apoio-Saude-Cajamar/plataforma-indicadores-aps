@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync, existsSync } from 'node:fs';
 import worker from '../api/index.js';
 import { ambiente, CHAVES } from './d1-local.mjs';
 
@@ -220,7 +221,7 @@ test('composição: a extensão grava com a chave e o painel lê com a sessão',
   assert.equal((await nav.pedir('PUT', '/api/v1/composicao', { competencia: '2026-10', unidades: [] })).status, 401);
   assert.equal((await nav.pedir('GET', '/composicao')).status, 200);
   for (const p of ['/', '/filas', '/notas', '/indicadores', '/lancamentos', '/lancamentos-vacinas', '/federal', '/federal-notas', '/estadual', '/municipal']) assert.equal((await nav.pedir('GET', p)).status, 200, p);
-  for (const p of ['/extensao', '/downloads/coletor-aps-v0.9.2.zip']) assert.notEqual((await nav.pedir('GET', p)).status, 200, p + ' só para administrador');
+  for (const p of ['/extensao', '/downloads/coletor-aps-v0.9.3.zip']) assert.notEqual((await nav.pedir('GET', p)).status, 200, p + ' só para administrador');
 });
 
 test('população: lê a estimativa mais recente do IBGE (com resposta simulada)', async () => {
@@ -502,4 +503,13 @@ test('composição: "substituir" troca o mês inteiro', async () => {
   await put({ competencia: '2026-10', unidades: [un('Z')], substituir: true });
   r = JSON.parse((await env.DB.prepare('SELECT dados FROM composicao').first()).dados);
   assert.deepEqual(r.unidades.map(u => u.nome), ['Z']);
+});
+
+test('Como coletamos: página fechada para quem não entrou e texto igual ao da extensão', async () => {
+  const env = comPaginas(ambiente());
+  const r = await worker.fetch(new Request(BASE + '/coleta'), env);
+  assert.ok([301, 302, 303, 307, 308, 401].includes(r.status), 'status ' + r.status);
+  const painel = readFileSync(new URL('../painel/js/extracao.js', import.meta.url), 'utf8');
+  const ext = new URL('../../coletor-aps/shared/extracao.js', import.meta.url);
+  if (existsSync(ext)) assert.equal(painel, readFileSync(ext, 'utf8'), 'extracao.js diferente entre extensão e Painel');
 });

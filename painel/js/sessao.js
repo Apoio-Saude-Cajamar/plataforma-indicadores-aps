@@ -1,6 +1,7 @@
 // Barra do usuário logado (nome, Usuários para administradores, Trocar senha e Sair).
 // Coloca a barra no elemento #barra; se não houver, cria um ao final do cabeçalho.
 (function () {
+  if (!window.__rodapeAps) { window.__rodapeAps = 1; var rs = document.createElement('script'); rs.src = '/js/rodape.js'; document.body ? document.body.appendChild(rs) : document.addEventListener('DOMContentLoaded', function () { document.body.appendChild(rs); }); }
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   fetch('/api/v1/auth/eu', { credentials: 'same-origin' }).then(r => r.ok ? r.json() : null).then(d => {
     if (!d || !d.usuario) return;
