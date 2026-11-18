@@ -2,7 +2,6 @@
 // Usa as variáveis globais LANC, VAC, NESF e parcela, declaradas pela página; as regras vêm de estadual-regras.js.
 const R=window.ESTADUAL_REGRAS;
 const PARCELAS=[{n:'1ª · maio',p:'2025-Q3',ant:'2025-Q2'},{n:'2ª · setembro',p:'2026-Q1',ant:'2025-Q3'},{n:'3ª · dezembro',p:'2026-Q2',ant:'2026-Q1'}];
-const PERIODOS=['2025-Q2'].concat(PARCELAS.map(x=>x.p));
 const NOMEQ=p=>{const [a,q]=p.split('-Q');return q+'º quadrimestre de '+a};
 const fmtE=(v,c=1)=>v==null?'—':v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:c});
 const vig=(item,per)=>LANC.find(l=>l.item===item&&l.periodo===per)||null;

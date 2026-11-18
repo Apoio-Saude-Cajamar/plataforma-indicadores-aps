@@ -237,3 +237,7 @@ Metas da PAS que não vêm do PEC e-SUS e as coberturas vacinais do Ministério 
 `/filas` mostra, para médicos e enfermeiros da Atenção Primária, o absenteísmo (faltas ÷ atendimentos + faltas) e os dias até a próxima vaga na agenda do PEC, por unidade, equipe e profissional, mais um mapa "onde agir primeiro". A extensão (grupo "Filas e faltas") envia os totais por profissional para `PUT /api/v1/filas` (tabela `fila_profissional`, migration 0008); a leitura é restrita a administrador e gestor.
 
 Ideia guardada para depois: cruzar estes dados com indicadores de acesso, em novas abas deste acompanhamento (por exemplo, demanda espontânea), para chegar a soluções adequadas a cada contexto.
+
+## Relatórios (`/relatorio`)
+
+Documento padrão emitido pelo próprio painel, para imprimir ou salvar em PDF e para baixar em CSV. Tipos: visão geral, federal (indicadores e réguas), estadual, municipal, absenteísmo e filas, completo, **por unidade**, **por equipe** e **agrupado** (município, unidades ou equipes consolidadas somando numeradores e denominadores). O botão **Emitir em lote (PDF)** gera, sem mostrar na tela, um dossiê para cada item (todos, unidades escolhidas ou equipes escolhidas); cada unidade ou equipe começa em página nova, com o nome em destaque no topo de todas as suas páginas. Os conceitos das réguas têm textura própria para ler em impressão preto e branco. Só entram totais; nunca nomes de pacientes nem de profissionais. Cada emissão é registrada (`POST /relatorios/emissao`, tipo, competência, formato e recorte) no histórico de quem emitiu.
