@@ -6,7 +6,30 @@ const LIMITE = 2 * 1024 * 1024;
 export async function gravarComposicao(env, corpo) {
   const comp = competencia(corpo.competencia);
   if (!Array.isArray(corpo.unidades)) throw new ErroHttp(400, 'Faltou a lista de unidades.');
-  const dados = JSON.stringify({ resumo: corpo.resumo || null, alertas: corpo.alertas || [], unidades: corpo.unidades, versaoExtensao: corpo.versaoExtensao || null });
+  // Uma coleta parcial (só algumas unidades) não apaga as unidades já recebidas do mesmo mês: elas se juntam por nome.
+  // "substituir: true" troca o mês inteiro.
+  let unidades = corpo.unidades;
+  let resumo = corpo.resumo || null;
+  let alertas = corpo.alertas || [];
+  if (!corpo.substituir) {
+    const antes = await env.DB.prepare('SELECT dados FROM composicao WHERE competencia = ?').bind(comp).first();
+    const ant = antes ? JSON.parse(antes.dados) : null;
+    if (ant && Array.isArray(ant.unidades)) {
+      const novas = new Set(corpo.unidades.map(u => u.nome));
+      const mantidas = ant.unidades.filter(u => !novas.has(u.nome));
+      if (mantidas.length) {
+        unidades = [...mantidas, ...corpo.unidades].sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt'));
+        resumo = {
+          unidades: unidades.length,
+          equipes: unidades.reduce((n, u) => n + (u.equipes || []).length, 0),
+          lotacoes: unidades.reduce((n, u) => n + (Number(u.lotacoesLidas) || 0), 0),
+          alertas: unidades.reduce((n, u) => n + (u.alertas || []).length, 0)
+        };
+        alertas = corpo.alertas || ant.alertas || [];
+      }
+    }
+  }
+  const dados = JSON.stringify({ resumo, alertas, unidades, versaoExtensao: corpo.versaoExtensao || null });
   if (dados.length > LIMITE) throw new ErroHttp(413, 'Composição grande demais.');
   const coletado = dataIso(corpo.coletadoEm || agora(), 'coletadoEm');
   await env.DB.prepare(`INSERT INTO composicao (competencia, coletado_em, recebido_em, dados) VALUES (?, ?, ?, ?)

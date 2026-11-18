@@ -213,7 +213,7 @@ test('composição: a extensão grava com a chave e o painel lê com a sessão',
   await nav.pedir('POST', '/api/v1/auth/entrar', { login: 'dora', senha: 'Painel#Forte2026' });
   let d = await (await nav.pedir('GET', '/api/v1/composicao')).json();
   assert.deepEqual(d.competencias, ['2026-10', '2026-09']);
-  assert.equal(d.composicao.unidades[0].nome, 'U2', 'vale o último envio da competência');
+  assert.deepEqual(d.composicao.unidades.map(u => u.nome), ['U1', 'U2'], 'envio parcial junta as unidades do mês');
   d = await (await nav.pedir('GET', '/api/v1/composicao?competencia=2026-09')).json();
   assert.equal(d.composicao.unidades[0].nome, 'U0');
   // a sessão não grava
@@ -486,4 +486,20 @@ test('vacinas do PEC: troca as doses do mês, ignora vacina fora do cálculo e d
   r = await lerVacinasPec(env);
   assert.deepEqual(r.doses.map(x => [x.vacina, x.n]), [['polio', 150]], 'recoleta do mês troca as doses');
   assert.deepEqual(Object.keys(r.doses[0]).sort(), ['competencia', 'dose', 'faixa', 'n', 'vacina']);
+});
+
+test('composição: "substituir" troca o mês inteiro', async () => {
+  const env = ambiente();
+  const put = corpo => worker.fetch(new Request(BASE + '/api/v1/composicao', { method: 'PUT',
+    headers: { 'content-type': 'application/json', authorization: 'Bearer ' + CHAVES.TOKEN_COLETA }, body: JSON.stringify(corpo) }), env);
+  const un = nome => ({ nome, equipes: [{ nome: 'Eq', profissionais: [] }], alertas: [], lotacoesLidas: 5 });
+  await put({ competencia: '2026-10', unidades: [un('A'), un('B')] });
+  await put({ competencia: '2026-10', unidades: [un('C')] });
+  let r = JSON.parse((await env.DB.prepare('SELECT dados FROM composicao').first()).dados);
+  assert.deepEqual(r.unidades.map(u => u.nome), ['A', 'B', 'C']);
+  assert.equal(r.resumo.unidades, 3);
+  assert.equal(r.resumo.lotacoes, 15);
+  await put({ competencia: '2026-10', unidades: [un('Z')], substituir: true });
+  r = JSON.parse((await env.DB.prepare('SELECT dados FROM composicao').first()).dados);
+  assert.deepEqual(r.unidades.map(u => u.nome), ['Z']);
 });
