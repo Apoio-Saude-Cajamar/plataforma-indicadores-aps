@@ -41,6 +41,7 @@ import { situacao, dadosVigentes, competencias } from './consultas.js';
 import { gravarComposicao, lerComposicao } from './composicao.js';
 import { populacaoMunicipio } from './populacao.js';
 import { monitoramento } from './monitoramento.js';
+import { pendencias } from './pendencias.js';
 import { gravarFilas, gravarFilasHorario, lerFilas } from './filas.js';
 import { listarLancamentos, criarLancamento } from './lancamentos.js';
 import { listarEstadual, criarEstadual, gravarVacinasPec, lerVacinasPec } from './estadual.js';
@@ -145,6 +146,7 @@ const ROTAS = [
     'usuarios',
     async (req, env, m, url, quem) => json(await alterarComunicado(req, env, Number(m[1]), quem)),
   ],
+  ['GET', /^\/pendencias$/, 'leitura', async (req, env, m, url) => json(await pendencias(env, url.searchParams.get('competencia')))],
   ['GET', /^\/monitoramento$/, 'usuarios', async (req, env) => json(await monitoramento(env))],
   ['GET', /^\/populacao$/, 'leitura', async (req, env) => json(await populacaoMunicipio(env))],
 

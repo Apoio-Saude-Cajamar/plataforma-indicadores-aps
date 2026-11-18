@@ -256,6 +256,31 @@ test('monitoramento: só administrador; avisa quando não há coleta e quando a 
   assert.equal((await nav.pedir('GET', '/monitoramento')).status, 200);
 });
 
+test('pendências: exige login, aponta unidade sem composição e valor acima do denominador', async () => {
+  const { analisar } = await import('../api/pendencias.js');
+  const l = (unidade, codigo, numerador, denominador) => ({ unidade, codigo, numerador, denominador, soma_pontos: null });
+  const r = analisar({
+    linhas: [l('U1', 'C1', 5, 10), l('U1', 'C2', 5, 10), l('U2', 'C1', 12, 10), l('U3', 'C1', 1, 10), l('U3', 'C2', 1, 10)],
+    filas: { U1: 3 }, agenda: { U1: 3 }, horario: { U1: 3 },
+    composicaoUnidades: ['U1', 'U3'], temComposicao: true, comps: ['2026-10'], comp: '2026-10', agora: Date.UTC(2026, 10, 3),
+  });
+  const textos = r.achados.map((a) => a.unidade + '|' + a.tema);
+  assert.ok(textos.includes('U2|Valores suspeitos'));
+  assert.ok(textos.includes('U2|Composição'));
+  assert.ok(textos.includes('U2|Indicadores ausentes'));
+  assert.ok(!textos.some((x) => x.startsWith('U1|Valores')));
+  const env = comPaginas(ambiente());
+  assert.equal((await navegador(env).pedir('GET', '/api/v1/pendencias')).status, 401);
+  await admin(env, { login: 'ana', nome: 'Ana', senha: 'Painel#Forte2026', perfil: 'admin' });
+  await env.DB.prepare('UPDATE usuario SET trocar_senha = 0').run();
+  const nav = navegador(env);
+  await nav.pedir('POST', '/api/v1/auth/entrar', { login: 'ana', senha: 'Painel#Forte2026' });
+  const resp = await nav.pedir('GET', '/api/v1/pendencias');
+  assert.equal(resp.status, 200);
+  assert.ok(Array.isArray((await resp.json()).achados));
+  assert.equal((await nav.pedir('GET', '/pendencias')).status, 200);
+});
+
 test('comunicados: administrador publica, usuário vê e marca "Entendi", público respeitado', async () => {
   const env = comPaginas(ambiente());
   await admin(env, { login: 'ana', nome: 'Ana', senha: 'Painel#Forte2026', perfil: 'admin' });

@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pendências da coleta · Painel APS</title>
+    <link rel="icon" href="/img/painelaps.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Montserrat, system-ui, sans-serif;
+        color: #1b2340;
+        background: #f4f7fb;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      a:focus-visible,
+      button:focus-visible,
+      select:focus-visible {
+        outline: 3px solid #00a7e7;
+        outline-offset: 3px;
+      }
+      header {
+        background: #1f3c72;
+        border-bottom: 4px solid #00a7e7;
+        color: #fff;
+      }
+      .topo {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 14px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .marca {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+        font-size: 19px;
+      }
+      .barra-usuario {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #fff;
+      }
+      .barra-usuario a,
+      .barra-usuario button {
+        color: inherit;
+        font: inherit;
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 99px;
+        padding: 5px 14px;
+        cursor: pointer;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 32px 56px;
+      }
+      .voltar {
+        font-weight: 600;
+        color: #1f3c72;
+        text-decoration: underline;
+        font-size: 14px;
+      }
+      h1 {
+        margin: 12px 0 8px;
+        font-size: 30px;
+        font-weight: 800;
+        color: #1f3c72;
+        line-height: 1.2;
+      }
+      .intro {
+        margin: 0 0 20px;
+        font-size: 15px;
+        line-height: 1.55;
+        color: #4a5670;
+        max-width: 760px;
+      }
+      .sel {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px 28px;
+        margin-bottom: 20px;
+      }
+      .sel label {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #4a5670;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .sel select {
+        font: inherit;
+        font-size: 15px;
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: 0;
+        min-height: 42px;
+        padding: 0 12px;
+        border: 2px solid #d5dce8;
+        border-radius: 10px;
+        background: #fff;
+        color: #1b2340;
+        min-width: 180px;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .card,
+      .bloco {
+        background: #fff;
+        border: 2px solid #d5dce8;
+        border-radius: 14px;
+        padding: 18px 20px;
+      }
+      .card small {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: #4a5670;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 6px;
+      }
+      .card .v {
+        font-size: 34px;
+        font-weight: 800;
+        color: #1f3c72;
+        line-height: 1.1;
+      }
+      .card .s {
+        font-size: 13px;
+        color: #4a5670;
+        margin-top: 6px;
+        line-height: 1.45;
+      }
+      .pill {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 99px;
+        padding: 3px 10px;
+        margin-left: 8px;
+        vertical-align: middle;
+      }
+      .c-o {
+        background: #c7ecd9;
+        color: #0f5a41;
+      }
+      .c-b {
+        background: #d9ecf8;
+        color: #0b4f73;
+      }
+      .c-s {
+        background: #fbf0d3;
+        color: #6e4700;
+      }
+      .c-r {
+        background: #f8d9dc;
+        color: #8a1b2a;
+      }
+      .up {
+        color: #0f6b4f;
+        font-weight: 700;
+      }
+      .dn {
+        color: #a8222f;
+        font-weight: 700;
+      }
+      .bloco {
+        margin-bottom: 20px;
+      }
+      .bloco h2 {
+        margin: 0 0 6px;
+        font-size: 19px;
+        color: #1b2340;
+      }
+      .bloco p.d {
+        margin: 0 0 14px;
+        font-size: 14px;
+        color: #4a5670;
+        line-height: 1.5;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 14px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 9px 10px;
+        border-bottom: 1px solid #e3e8f0;
+        vertical-align: middle;
+      }
+      th {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #4a5670;
+      }
+      td.n,
+      th.n {
+        text-align: right;
+        white-space: nowrap;
+      }
+      .tab {
+        overflow-x: auto;
+      }
+      .barra {
+        display: flex;
+        height: 16px;
+        border-radius: 5px;
+        overflow: hidden;
+        min-width: 140px;
+        background: #e3e8f0;
+      }
+      .barra i {
+        display: block;
+        height: 100%;
+      }
+      .leg {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+        font-size: 13px;
+        color: #4a5670;
+        margin-top: 12px;
+      }
+      .leg em {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        margin-right: 6px;
+        vertical-align: -1px;
+      }
+      .k-o {
+        background: #1c9c76;
+      }
+      .k-b {
+        background: #4fb3e8;
+      }
+      .k-s {
+        background: #f2c14e;
+      }
+      .k-r {
+        background: #e0525f;
+      }
+      .nota {
+        font-size: 13px;
+        color: #4a5670;
+        line-height: 1.55;
+      }
+      .nota li {
+        margin-bottom: 6px;
+      }
+      .mini {
+        display: inline-block;
+        height: 10px;
+        border-radius: 3px;
+        background: #1f3c72;
+        vertical-align: middle;
+        margin-right: 8px;
+      }
+      @media (max-width: 600px) {
+        .topo {
+          padding: 14px 16px;
+        }
+        main {
+          padding: 20px 16px 36px;
+        }
+        h1 {
+          font-size: 24px;
+        }
+        .card .v {
+          font-size: 28px;
+        }
+      }
+      .item {
+        display: flex;
+        gap: 14px;
+        padding: 14px 0;
+        border-bottom: 1px solid #e3e8f0;
+      }
+      .item:last-child {
+        border-bottom: 0;
+      }
+      .dot {
+        flex: 0 0 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-top: 6px;
+      }
+      .d-erro {
+        background: #e0525f;
+      }
+      .d-atencao {
+        background: #f2c14e;
+      }
+      .d-ok {
+        background: #1c9c76;
+      }
+      .item b {
+        display: block;
+        font-size: 16px;
+      }
+      .item small {
+        display: block;
+        color: #4a5670;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-weight: 700;
+      }
+      .item p {
+        margin: 4px 0 0;
+        color: #4a5670;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .item ul {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        color: #4a5670;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .pill.sit-Atingida {
+        background: #c7ecd9;
+        color: #0f5a41;
+      }
+      .pill.sit-No {
+        background: #fbf0d3;
+        color: #6e4700;
+      }
+      .pill.sit-Crítica {
+        background: #f8d9dc;
+        color: #8a1b2a;
+      }
+      .pill {
+        margin-left: 0;
+        font-size: 14px;
+        padding: 5px 12px;
+      }
+      .resumo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+      .btn2 {
+        font: inherit;
+        font-weight: 700;
+        font-size: 14px;
+        color: #1f3c72;
+        border: 2px solid #1f3c72;
+        background: #fff;
+        border-radius: 10px;
+        padding: 8px 16px;
+        cursor: pointer;
+      }
+      .sel {
+        margin-bottom: 16px;
+      }
+      .tag {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 99px;
+        padding: 2px 10px;
+        margin-right: 8px;
+      }
+      .t-erro {
+        background: #f8d9dc;
+        color: #8a1b2a;
+      }
+      .t-atencao {
+        background: #fbf0d3;
+        color: #6e4700;
+      }
+      .t-info {
+        background: #d9ecf8;
+        color: #0b4f73;
+      }
+      .ach {
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+        padding: 8px 0;
+        border-top: 1px solid #e3e8f1;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+      .ach:first-of-type {
+        border-top: 0;
+      }
+      .ach b {
+        font-weight: 700;
+      }
+      .un h3 {
+        margin: 16px 0 4px;
+        font-size: 16px;
+        color: #1f3c72;
+      }
+    </style>
+    <link rel="stylesheet" href="/css/tema.css" />
+    <script src="/js/publico/tema.js"></script>
+    <script src="/js/util.js"></script>
+  </head>
+  <body>
+    <header>
+      <div class="topo">
+        <a class="marca" href="/"><img src="/img/painelaps.svg" alt="" width="34" height="34" /><span>Painel APS</span></a>
+        <div id="barra"></div>
+      </div>
+    </header>
+    <main>
+      <a class="voltar" href="/">← Voltar aos acompanhamentos</a>
+      <h1>Pendências da coleta</h1>
+      <p class="intro">
+        Mostra, por unidade, o que ficou faltando ou parece estranho nos dados que já chegaram ao Painel: indicadores ausentes, valores
+        acima de 100%, agendas, grades de horário e composição. Só aparecem contagens e nomes de unidades.
+      </p>
+      <div class="sel">
+        <label>Competência<select id="comp"></select></label>
+      </div>
+      <div class="cards" id="cards"></div>
+      <section class="bloco" id="lista" aria-live="polite">Carregando…</section>
+    </main>
+    <script src="/js/sessao.js"></script>
+    <script>
+      const $ = (s) => document.querySelector(s);
+      const NOME = { erro: 'Pendente', atencao: 'Conferir', info: 'Informação' };
+      async function carregar() {
+        $('#lista').textContent = 'Carregando…';
+        try {
+          const q = $('#comp').value ? '?competencia=' + encodeURIComponent($('#comp').value) : '';
+          const r = await fetch('/api/v1/pendencias' + q, { credentials: 'same-origin' });
+          if (!r.ok) throw 0;
+          const d = await r.json();
+          if (!$('#comp').options.length)
+            $('#comp').innerHTML =
+              d.competencias.map((c) => '<option>' + esc(c) + '</option>').join('') || '<option>' + esc(d.competencia) + '</option>';
+          $('#comp').value = d.competencia;
+          $('#cards').innerHTML = [
+            ['Unidades analisadas', d.unidades, ''],
+            ['Pendências', d.totais.erro, 'Falta dado ou a coleta não chegou'],
+            ['Para conferir', d.totais.atencao, 'Dado ausente ou suspeito'],
+            ['Informações', d.totais.info, 'Esperado ou opcional'],
+          ]
+            .map(
+              (c) =>
+                '<div class="card"><small>' + c[0] + '</small><div class="v">' + c[1] + '</div><div class="s">' + c[2] + '</div></div>',
+            )
+            .join('');
+          if (!d.achados.length) return void ($('#lista').textContent = 'Nada pendente nesta competência.');
+          const por = {};
+          d.achados.forEach((a) => (por[a.unidade] = por[a.unidade] || []).push(a));
+          $('#lista').innerHTML = Object.keys(por)
+            .map(
+              (u) =>
+                '<div class="un"><h3>' +
+                esc(u) +
+                '</h3>' +
+                por[u]
+                  .map(
+                    (a) =>
+                      '<div class="ach"><span class="tag t-' +
+                      a.nivel +
+                      '">' +
+                      NOME[a.nivel] +
+                      '</span><span><b>' +
+                      esc(a.tema) +
+                      ':</b> ' +
+                      esc(a.texto) +
+                      '</span></div>',
+                  )
+                  .join('') +
+                '</div>',
+            )
+            .join('');
+        } catch {
+          $('#lista').textContent = 'Não foi possível carregar as pendências agora.';
+        }
+      }
+      $('#comp').addEventListener('change', carregar);
+      carregar();
+    </script>
+  </body>
+</html>

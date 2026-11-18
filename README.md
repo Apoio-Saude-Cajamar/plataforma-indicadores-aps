@@ -214,6 +214,10 @@ Os testes usam o SQLite embutido no Node para imitar o D1 (`test/d1-local.mjs`).
 
 O administrador publica avisos em `/comunicados` (título, texto, destinatários, importância e período opcional). Cada usuário vê uma faixa no topo das páginas até marcar "Entendi"; o administrador vê quantos já leram. Requer a migração `migrations/0004_comunicados.sql`.
 
+## Pendências da coleta
+
+`/pendencias` (gestor e administrador) e `GET /api/v1/pendencias?competencia=AAAA-MM` conferem, só com os dados já gravados, o que falta ou parece estranho: unidade sem indicadores, indicadores ausentes na maioria das unidades, numerador maior que o denominador, filas/agendas/horários e composição por unidade, e se a coleta do mês anterior já chegou (atenção a partir do primeiro dia útil, pendência após o dia 10). As regras ficam em `api/pendencias.js` (`analisar`, função pura testada). Só saem contagens e nomes de unidades.
+
 ## Monitoramento das coletas
 
 `/monitoramento` (só administradores) confere se a coleta do PEC e a composição chegaram no prazo (`MONITOR_DIAS`, padrão 40), quais etapas falharam e o que a extensão não identificou. Quando há problema, a tela inicial mostra um aviso aos administradores.
