@@ -1,56 +1,277 @@
 /* Temas das páginas padrão do Painel APS. "Personalizado" é o visual original e não precisa de regras;
    Claro e Escuro só trocam cores, sem mudar fonte, tamanhos nem estrutura. A escolha vale para todas as páginas. */
-.tema-aps{display:inline-flex;align-items:center;gap:2px;padding:2px;border:1px solid rgba(255,255,255,.35);border-radius:99px}
-.tema-aps button{all:unset;box-sizing:border-box;width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;cursor:pointer;color:inherit;opacity:.75}
-.tema-aps button:hover{opacity:1;background:rgba(255,255,255,.16)}
-.tema-aps button[aria-pressed=true]{opacity:1;background:rgba(255,255,255,.26)}
-.tema-aps button:focus-visible{outline:3px solid #00A7E7;outline-offset:1px}
-.tema-aps svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tema-aps {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 99px;
+}
+.tema-aps button {
+  all: unset;
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.75;
+}
+.tema-aps button:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.16);
+}
+.tema-aps button[aria-pressed='true'] {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.26);
+}
+.tema-aps button:focus-visible {
+  outline: 3px solid #00a7e7;
+  outline-offset: 1px;
+}
+.tema-aps svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 
 /* ---------- Claro ---------- */
-html[data-tema=claro] body{background:#F4F6F5;color:#14212B}
-html[data-tema=claro] header{background:#FFFFFF;color:#14212B;border-bottom:1px solid #DCE2E0}
-html[data-tema=claro] header .barra-usuario,html[data-tema=claro] header .menu-aps a,html[data-tema=claro] header .menu-aps summary,html[data-tema=claro] header .marca{color:#14212B}
-html[data-tema=claro] header .barra-usuario a,html[data-tema=claro] header .barra-usuario button,html[data-tema=claro] .tema-aps{border-color:#B9C4C9}
-html[data-tema=claro] .menu-aps a:hover,html[data-tema=claro] .menu-aps summary:hover,html[data-tema=claro] .tema-aps button:hover{background:#E7EEF3}
-html[data-tema=claro] .menu-aps a[aria-current=page],html[data-tema=claro] .tema-aps button[aria-pressed=true]{background:#D9E4EC}
-html[data-tema=claro] h1,html[data-tema=claro] .voltar,html[data-tema=claro] .ferr a{color:#0B3F5E}
+html[data-tema='claro'] body {
+  background: #f4f6f5;
+  color: #14212b;
+}
+html[data-tema='claro'] header {
+  background: #ffffff;
+  color: #14212b;
+  border-bottom: 1px solid #dce2e0;
+}
+html[data-tema='claro'] header .barra-usuario,
+html[data-tema='claro'] header .menu-aps a,
+html[data-tema='claro'] header .menu-aps summary,
+html[data-tema='claro'] header .marca {
+  color: #14212b;
+}
+html[data-tema='claro'] header .barra-usuario a,
+html[data-tema='claro'] header .barra-usuario button,
+html[data-tema='claro'] .tema-aps {
+  border-color: #b9c4c9;
+}
+html[data-tema='claro'] .menu-aps a:hover,
+html[data-tema='claro'] .menu-aps summary:hover,
+html[data-tema='claro'] .tema-aps button:hover {
+  background: #e7eef3;
+}
+html[data-tema='claro'] .menu-aps a[aria-current='page'],
+html[data-tema='claro'] .tema-aps button[aria-pressed='true'] {
+  background: #d9e4ec;
+}
+html[data-tema='claro'] h1,
+html[data-tema='claro'] .voltar,
+html[data-tema='claro'] .ferr a {
+  color: #0b3f5e;
+}
 
 /* ---------- Escuro ---------- */
-html[data-tema=escuro]{color-scheme:dark}
-html[data-tema=escuro] body{background:#0E151C;color:#E6EDF3}
-html[data-tema=escuro] header{background:#16202A;border-bottom:4px solid #5AA9E0;color:#E6EDF3}
-html[data-tema=escuro] h1,html[data-tema=escuro] .bloco h2,html[data-tema=escuro] .card .v,html[data-tema=escuro] tr.dir td,html[data-tema=escuro] .ferr b{color:#E6EDF3}
-html[data-tema=escuro] .voltar,html[data-tema=escuro] .ferr a,html[data-tema=escuro] main details summary,html[data-tema=escuro] button.ab,html[data-tema=escuro] .intro a,html[data-tema=escuro] .nota a{color:#7CC0EE}
-html[data-tema=escuro] .intro,html[data-tema=escuro] .nota,html[data-tema=escuro] .ferr,html[data-tema=escuro] .txt span.d,html[data-tema=escuro] .card small,html[data-tema=escuro] .card .s,html[data-tema=escuro] .bloco p.d,html[data-tema=escuro] th,html[data-tema=escuro] .vazio,html[data-tema=escuro] tr.eq td,html[data-tema=escuro] details p,html[data-tema=escuro] .sel label,html[data-tema=escuro] .form label{color:#A7B4C0}
-html[data-tema=escuro] .card,html[data-tema=escuro] .bloco,html[data-tema=escuro] .linha{background:#16202A;border-color:#2A3743}
-html[data-tema=escuro] .card{background:#1A2531}
-html[data-tema=escuro] .linha:hover{border-color:#5AA9E0;box-shadow:0 8px 24px rgba(0,0,0,.4)}
-html[data-tema=escuro] th,html[data-tema=escuro] td{border-bottom-color:#22303C}
-html[data-tema=escuro] tr.dir td{background:#1C2B38}
-html[data-tema=escuro] select,html[data-tema=escuro] input,html[data-tema=escuro] textarea{background:#0E151C;color:#E6EDF3;border-color:#4B5D6E}
-html[data-tema=escuro] .chip{background:#16202A;color:#E6EDF3;border-color:#4B5D6E}
-html[data-tema=escuro] .chip[aria-pressed=true]{background:#E6EDF3;color:#0E151C;border-color:#E6EDF3}
-html[data-tema=escuro] .btn.p,html[data-tema=escuro] .btn:not(.s):not(.p){background:#5AA9E0;color:#0E151C}
-html[data-tema=escuro] .btn.p svg{stroke:#0E151C}
-html[data-tema=escuro] .btn.s{color:#7CC0EE;border-color:#7CC0EE}
-html[data-tema=escuro] .info{background:#1C2B38;color:#7CC0EE}
-html[data-tema=escuro] .pill.c-o,html[data-tema=escuro] .ok{background:#1F4D3C;color:#9BE3C0}
-html[data-tema=escuro] .pill.c-b{background:#1C3A52;color:#9CCDF2}
-html[data-tema=escuro] .pill.c-s,html[data-tema=escuro] .dev,html[data-tema=escuro] .pill.p75,html[data-tema=escuro] .pill.p50{background:#4A3C14;color:#F3D27A}
-html[data-tema=escuro] .pill.c-r,html[data-tema=escuro] .pill.p25,html[data-tema=escuro] .pill.p0{background:#5E2F35;color:#F5B5BC}
-html[data-tema=escuro] .pill.p100{background:#1F4D3C;color:#9BE3C0}
-html[data-tema=escuro] .pill.pn,html[data-tema=escuro] .cfg{background:#2E3B48;color:#C5D0DA}
-html[data-tema=escuro] .menu-aps details>div{background:#16202A;border-color:#2A3743}
-html[data-tema=escuro] .menu-aps details>div a{color:#E6EDF3}
-html[data-tema=escuro] .menu-aps details>div a:hover{background:#22303C}
-html[data-tema=escuro] .menu-aps details>div a[aria-current=page]{background:#1C2B38}
-html[data-tema=escuro] .msg.ok{color:#7AD39E}html[data-tema=escuro] .msg.er{color:#F29A72}
-html[data-tema=escuro] .up{color:#7AD39E}html[data-tema=escuro] .dn{color:#F29A72}
-html[data-tema=escuro] #aviso-adm{background:#3A2F12!important;border-color:#8A6A1F!important;color:#F3D27A!important}
-html[data-tema=escuro] .card .v{color:#E6EDF3}
+html[data-tema='escuro'] {
+  color-scheme: dark;
+}
+html[data-tema='escuro'] body {
+  background: #0e151c;
+  color: #e6edf3;
+}
+html[data-tema='escuro'] header {
+  background: #16202a;
+  border-bottom: 4px solid #5aa9e0;
+  color: #e6edf3;
+}
+html[data-tema='escuro'] h1,
+html[data-tema='escuro'] .bloco h2,
+html[data-tema='escuro'] .card .v,
+html[data-tema='escuro'] tr.dir td,
+html[data-tema='escuro'] .ferr b {
+  color: #e6edf3;
+}
+html[data-tema='escuro'] .voltar,
+html[data-tema='escuro'] .ferr a,
+html[data-tema='escuro'] main details summary,
+html[data-tema='escuro'] button.ab,
+html[data-tema='escuro'] .intro a,
+html[data-tema='escuro'] .nota a {
+  color: #7cc0ee;
+}
+html[data-tema='escuro'] .intro,
+html[data-tema='escuro'] .nota,
+html[data-tema='escuro'] .ferr,
+html[data-tema='escuro'] .txt span.d,
+html[data-tema='escuro'] .card small,
+html[data-tema='escuro'] .card .s,
+html[data-tema='escuro'] .bloco p.d,
+html[data-tema='escuro'] th,
+html[data-tema='escuro'] .vazio,
+html[data-tema='escuro'] tr.eq td,
+html[data-tema='escuro'] details p,
+html[data-tema='escuro'] .sel label,
+html[data-tema='escuro'] .form label {
+  color: #a7b4c0;
+}
+html[data-tema='escuro'] .card,
+html[data-tema='escuro'] .bloco,
+html[data-tema='escuro'] .linha {
+  background: #16202a;
+  border-color: #2a3743;
+}
+html[data-tema='escuro'] .card {
+  background: #1a2531;
+}
+html[data-tema='escuro'] .linha:hover {
+  border-color: #5aa9e0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+html[data-tema='escuro'] th,
+html[data-tema='escuro'] td {
+  border-bottom-color: #22303c;
+}
+html[data-tema='escuro'] tr.dir td {
+  background: #1c2b38;
+}
+html[data-tema='escuro'] select,
+html[data-tema='escuro'] input,
+html[data-tema='escuro'] textarea {
+  background: #0e151c;
+  color: #e6edf3;
+  border-color: #4b5d6e;
+}
+html[data-tema='escuro'] .chip {
+  background: #16202a;
+  color: #e6edf3;
+  border-color: #4b5d6e;
+}
+html[data-tema='escuro'] .chip[aria-pressed='true'] {
+  background: #e6edf3;
+  color: #0e151c;
+  border-color: #e6edf3;
+}
+html[data-tema='escuro'] .btn.p,
+html[data-tema='escuro'] .btn:not(.s):not(.p) {
+  background: #5aa9e0;
+  color: #0e151c;
+}
+html[data-tema='escuro'] .btn.p svg {
+  stroke: #0e151c;
+}
+html[data-tema='escuro'] .btn.s {
+  color: #7cc0ee;
+  border-color: #7cc0ee;
+}
+html[data-tema='escuro'] .info {
+  background: #1c2b38;
+  color: #7cc0ee;
+}
+html[data-tema='escuro'] .pill.c-o,
+html[data-tema='escuro'] .ok {
+  background: #1f4d3c;
+  color: #9be3c0;
+}
+html[data-tema='escuro'] .pill.c-b {
+  background: #1c3a52;
+  color: #9ccdf2;
+}
+html[data-tema='escuro'] .pill.c-s,
+html[data-tema='escuro'] .dev,
+html[data-tema='escuro'] .pill.p75,
+html[data-tema='escuro'] .pill.p50 {
+  background: #4a3c14;
+  color: #f3d27a;
+}
+html[data-tema='escuro'] .pill.c-r,
+html[data-tema='escuro'] .pill.p25,
+html[data-tema='escuro'] .pill.p0 {
+  background: #5e2f35;
+  color: #f5b5bc;
+}
+html[data-tema='escuro'] .pill.p100 {
+  background: #1f4d3c;
+  color: #9be3c0;
+}
+html[data-tema='escuro'] .pill.pn,
+html[data-tema='escuro'] .cfg {
+  background: #2e3b48;
+  color: #c5d0da;
+}
+html[data-tema='escuro'] .menu-aps details > div {
+  background: #16202a;
+  border-color: #2a3743;
+}
+html[data-tema='escuro'] .menu-aps details > div a {
+  color: #e6edf3;
+}
+html[data-tema='escuro'] .menu-aps details > div a:hover {
+  background: #22303c;
+}
+html[data-tema='escuro'] .menu-aps details > div a[aria-current='page'] {
+  background: #1c2b38;
+}
+html[data-tema='escuro'] .msg.ok {
+  color: #7ad39e;
+}
+html[data-tema='escuro'] .msg.er {
+  color: #f29a72;
+}
+html[data-tema='escuro'] .up {
+  color: #7ad39e;
+}
+html[data-tema='escuro'] .dn {
+  color: #f29a72;
+}
+html[data-tema='escuro'] #aviso-adm {
+  background: #3a2f12 !important;
+  border-color: #8a6a1f !important;
+  color: #f3d27a !important;
+}
+html[data-tema='escuro'] .card .v {
+  color: #e6edf3;
+}
 
 /* Páginas que usam as variáveis do painelaps.css (Composição, Usuários): o tema escolhido vale sobre o modo do sistema. */
-html[data-tema=claro],html[data-tema=personalizado]{color-scheme:light;--bg:#FFFFFF;--surface:#FFFFFF;--ink:#1B2340;--muted:#5A6478;--line:#D9E1EA;--field:#FFFFFF;--primary:#1F3C72;--primary-ink:#fff;--link:#1F3C72;--danger:#B3261E;--danger-bg:#FDECEA;--ok-bg:#E7F6EF;--ok:#14684F}
-html[data-tema=claro]{--bg:#F4F6F5}
-html[data-tema=escuro]{--bg:#0E151C;--surface:#16202A;--ink:#E6EDF3;--muted:#A7B4C0;--line:#2A3743;--field:#0E151C;--primary:#7CC0EE;--primary-ink:#0E151C;--link:#7CC0EE;--danger:#FF8C82;--danger-bg:#3A1F1E;--ok-bg:#173329;--ok:#7CE1C2}
+html[data-tema='claro'],
+html[data-tema='personalizado'] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --ink: #1b2340;
+  --muted: #5a6478;
+  --line: #d9e1ea;
+  --field: #ffffff;
+  --primary: #1f3c72;
+  --primary-ink: #fff;
+  --link: #1f3c72;
+  --danger: #b3261e;
+  --danger-bg: #fdecea;
+  --ok-bg: #e7f6ef;
+  --ok: #14684f;
+}
+html[data-tema='claro'] {
+  --bg: #f4f6f5;
+}
+html[data-tema='escuro'] {
+  --bg: #0e151c;
+  --surface: #16202a;
+  --ink: #e6edf3;
+  --muted: #a7b4c0;
+  --line: #2a3743;
+  --field: #0e151c;
+  --primary: #7cc0ee;
+  --primary-ink: #0e151c;
+  --link: #7cc0ee;
+  --danger: #ff8c82;
+  --danger-bg: #3a1f1e;
+  --ok-bg: #173329;
+  --ok: #7ce1c2;
+}

@@ -1,533 +1,120 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Relatório · Painel APS</title>
-<link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
-<style id="pagina">@page{size:A4 portrait}</style>
-<style>
-*{box-sizing:border-box}
-[hidden]{display:none!important}
-body{margin:0;font-family:Montserrat,system-ui,sans-serif;color:#1B2340;background:#F4F7FB}
-a{color:inherit;text-decoration:none}
-a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #00A7E7;outline-offset:3px}
-header.topo-site{background:#1F3C72;border-bottom:4px solid #00A7E7;color:#fff}
-.topo{max-width:1100px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.marca{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
-.barra-usuario{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#fff}
-.barra-usuario a,.barra-usuario button{color:inherit;font:inherit;background:none;border:1px solid rgba(255,255,255,.6);border-radius:99px;padding:5px 14px;cursor:pointer}
-main{max-width:1100px;margin:0 auto;padding:24px 32px 24px}
-.ferr{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-end;background:#fff;border:2px solid #D5DCE8;border-radius:14px;padding:14px 18px;margin-bottom:20px}
-.ferr label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em}
-.ferr select{font:inherit;font-size:15px;font-weight:600;text-transform:none;letter-spacing:0;min-height:42px;padding:0 12px;border:2px solid #D5DCE8;border-radius:10px;background:#fff;color:#1B2340;min-width:170px}
-.ferr .acoes{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
-.btn{font:inherit;font-weight:700;font-size:14px;min-height:42px;padding:0 18px;border-radius:99px;border:2px solid #1F3C72;background:#1F3C72;color:#fff;cursor:pointer}
-.btn.sec{background:#fff;color:#1F3C72}
-.dica{font-size:13px;color:#4A5670;margin:0 0 16px;line-height:1.5}
-/* O documento: sempre claro, como uma folha. */
-#doc{background:#fff;color:#1B2340;border:2px solid #D5DCE8;border-radius:14px;padding:32px 36px;line-height:1.5}
-#doc .capa{display:flex;gap:16px;align-items:center;border-bottom:4px solid #00A7E7;padding-bottom:14px;margin-bottom:16px}
-#doc .capa img{width:48px;height:48px}
-#doc .capa .org{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#4A5670}
-#doc h1{margin:2px 0 0;font-size:26px;font-weight:800;color:#1F3C72;line-height:1.2}
-#doc .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 24px;margin:0 0 20px;font-size:13px}
-#doc .meta dt{font-weight:700;color:#4A5670;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
-#doc .meta dd{margin:0;font-weight:600}
-#doc h2{margin:26px 0 6px;font-size:18px;color:#1F3C72;border-bottom:2px solid #D5DCE8;padding-bottom:4px;break-after:avoid}
-#doc h3{margin:16px 0 6px;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#4A5670;break-after:avoid}
-#doc p{margin:0 0 8px;font-size:13px}
-#doc table{border-collapse:collapse;width:100%;font-size:12.5px;margin:0 0 10px}
-#doc th,#doc td{text-align:left;padding:6px 8px;border-bottom:1px solid #E3E8F0;vertical-align:top}
-#doc th{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#4A5670;background:#F4F7FB}
-#doc td.n,#doc th.n{text-align:right;white-space:nowrap}
-#doc tr{break-inside:avoid}
-#doc tr.filho td{background:#FAFBFD;font-size:.94em;color:#33405C}#doc tr.filho td:first-child{padding-left:30px;position:relative}#doc tr.filho td:first-child::before{content:'';position:absolute;left:16px;top:0;bottom:50%;width:8px;border-left:2px solid #B8C3D6;border-bottom:2px solid #B8C3D6;border-radius:0 0 0 5px}#doc tr.filho+tr:not(.filho) td{border-top:6px solid #fff}#doc tr:not(.filho):has(+tr.filho) td{border-bottom-color:transparent}
-#doc table{table-layout:auto}#doc table.un th,#doc table.un td{padding:5px 5px;font-size:11.5px}#doc table.un td:first-child{white-space:normal;min-width:120px}
-#doc{overflow-x:auto}
-#doc small{display:block;color:#4A5670;font-size:11px}
-#doc .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:8px 0 6px}
-#doc .card{border:1px solid #D5DCE8;border-radius:8px;padding:8px 12px}
-#doc .card small{text-transform:uppercase;letter-spacing:.04em;font-weight:700}
-#doc .card .v{font-size:22px;font-weight:800;color:#1F3C72;line-height:1.2}
-.cc{display:inline-block;font-size:11px;font-weight:700;border-radius:99px;padding:1px 8px;white-space:nowrap}
-.k-o{background:#C7ECD9;color:#0F5A41}.k-b{background:#D9ECF8;color:#0B4F73}.k-s{background:#FBF0D3;color:#6E4700}.k-r{background:#F8D9DC;color:#8A1B2A}
-#doc .vazio{padding:10px 12px;border:1px dashed #B9C4C9;border-radius:8px;font-size:13px;color:#4A5670}
-#doc .rodadoc{margin-top:26px;padding-top:10px;border-top:1px solid #D5DCE8;font-size:11px;color:#4A5670}
-#doc .reg{display:grid;grid-template-columns:minmax(150px,1fr) minmax(220px,1.6fr);gap:4px 18px;align-items:center;padding:9px 0;border-bottom:1px solid #E3E8F0;break-inside:avoid}
-#doc .reg .nm{font-size:12.5px;line-height:1.3}#doc .reg .nm b{color:#1F3C72}
-#doc .reg .vl{font-size:12px;margin-top:2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.rg{position:relative;margin-right:14px;height:16px;box-shadow:0 0 0 1px rgba(20,33,43,.45);border-radius:4px;display:flex;overflow:visible;margin:6px 0 16px}
-.rg .sg{height:100%}.rg .sg{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#14212B;overflow:hidden;white-space:nowrap;border-right:1px solid rgba(20,33,43,.45)}
-.sg.k-r,.leg i.k-r{background:#F1B3B3}
-.sg.k-s,.leg i.k-s{background:#F5DC9B repeating-linear-gradient(45deg,rgba(20,33,43,.38) 0 1px,transparent 1px 5px)}
-.sg.k-b,.leg i.k-b{background:#A9D3EE repeating-linear-gradient(90deg,rgba(20,33,43,.38) 0 1px,transparent 1px 4px)}
-.sg.k-o,.leg i.k-o{background:#9ED8B8 radial-gradient(rgba(20,33,43,.55) 1px,transparent 1.3px) 0 0/5px 5px}
-@media print{.sg.k-r,.leg i.k-r{background-color:#fff!important}.sg.k-s,.leg i.k-s{background-color:#e6e6e6!important}.sg.k-b,.leg i.k-b{background-color:#bdbdbd!important}.sg.k-o,.leg i.k-o{background-color:#8c8c8c!important}.sg.k-o{color:#fff}.leg i{border:1px solid #555}}
-.rg .sg:first-child{border-radius:4px 0 0 4px}.rg .sg:last-child{border-radius:0 4px 4px 0}
-.rg .tk{position:absolute;top:18px;transform:translateX(-50%);font-size:9.5px;color:#4A5670;white-space:nowrap}
-.rg .rng{position:absolute;left:0;top:5px;height:6px;border-radius:3px;background:rgba(20,33,43,.55)}
-.rg .rf{position:absolute;top:-3px;width:10px;height:22px;margin-left:-5px;background:#fff;border:3px solid #1F3C72;border-radius:3px;box-sizing:border-box}
-.pag{margin-top:6px}.pag>h2:first-child{margin-top:22px}
-.eqcab{border-left:6px solid #00A7E7;padding:2px 0 2px 12px;margin:22px 0 8px}.eqcab h2{margin:0;border:0;padding:0;font-size:20px}.eqcab small{font-size:12px}
-.rg .mn{position:absolute;top:-3px;width:14px;height:22px;margin-left:-7px;background:#1F3C72;border:2px solid #fff;border-radius:3px;box-shadow:0 0 0 1px #1F3C72}
-.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11px;color:#4A5670;margin:4px 0 10px}.leg i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
-.bar{position:relative;height:10px;background:#EEF1F5;border-radius:5px;min-width:90px}.bar>span{position:absolute;left:0;top:0;bottom:0;border-radius:5px}.bar>em{position:absolute;top:-3px;bottom:-3px;width:2px;background:#14212B}
-.so-csv{display:none}
-#doc table.rep{width:100%;margin:0;border-collapse:collapse}#doc table.rep>thead>tr>th{background:#fff;padding:0 0 8px;border:0;text-transform:none;letter-spacing:0;font-size:inherit;color:inherit}#doc table.rep>tbody>tr>td{padding:0;border:0}#doc table.rep>tbody>tr,#doc table.rep>thead>tr{break-inside:auto}
-.ebn{background:#1F3C72;color:#fff;border-radius:8px;padding:10px 16px;display:flex;flex-direction:column;gap:2px;text-align:left}.ebn small,#doc .ebn small{color:#fff;opacity:.9;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.ebn b{font-size:24px;font-weight:800;line-height:1.15}.ebn span{font-size:11.5px;font-weight:500;color:#E3EEF9}
-.ebn.n-m{background:#14212B}.ebn.n-e{border-left:14px solid #00A7E7}
-.sel{background:#fff;border:2px solid #D5DCE8;border-radius:10px;padding:8px 12px;max-height:240px;overflow:auto;font-size:13px;min-width:280px;text-transform:none;letter-spacing:0;font-weight:500}
-.sel label{display:flex;gap:8px;align-items:center;flex-direction:row;font-size:13px;font-weight:500;text-transform:none;letter-spacing:0;color:#1B2340;padding:2px 0}.sel .gr{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#4A5670;margin:8px 0 2px}
-dialog#dlg{border:0;border-radius:16px;padding:0;max-width:560px;width:calc(100% - 32px);box-shadow:0 20px 60px rgba(20,33,43,.35);color:#1B2340}dialog#dlg::backdrop{background:rgba(20,33,43,.5)}
-#dlg form{padding:22px 24px;display:flex;flex-direction:column;gap:14px}#dlg h2{margin:0;font-size:19px;color:#1F3C72}#dlg p{margin:0;font-size:13px;color:#4A5670;line-height:1.5}
-#dlg fieldset{border:2px solid #D5DCE8;border-radius:10px;margin:0;padding:8px 12px;display:flex;flex-direction:column;gap:4px}#dlg fieldset legend{font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em;padding:0 6px}
-#dlg fieldset label{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:600}
-#dlg .rod{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}#dlg .sel{max-height:220px}
-@media(max-width:700px){main{padding:16px}#doc{padding:18px}}
-@media print{
-  .pag+.pag{break-before:page}.pag>h2:first-child{margin-top:0}
-  @page{margin:14mm 12mm 16mm;@bottom-left{content:"Painel APS · Cajamar";font-size:9px;color:#4A5670}@bottom-right{content:"Página " counter(page) " de " counter(pages);font-size:9px;color:#4A5670}}
-  #doc,#doc *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  body{background:#fff}header.topo-site,.ferr,.dica,#rodape-aps,.menu-aps{display:none!important}
-  main{max-width:none;padding:0}#doc{border:0;padding:0;border-radius:0}
-  #doc table{font-size:10.5px}#doc h2{font-size:15px}
-}
-</style>
-<link rel="stylesheet" href="/css/tema.css">
-<script src="/js/publico/tema.js"></script>
-</head>
-<body>
-<header class="topo-site"><div class="topo">
- <a class="marca" href="/"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
- <div id="barra"></div>
-</div></header>
-<main>
- <div class="ferr" role="group" aria-label="Opções do relatório">
-  <label>Relatório<select id="tipo">
-   <option value="geral">Visão geral</option>
-   <option value="federal">Federal (indicadores)</option>
-   <option value="regua">Federal · réguas (uma página por grupo)</option>
-   <option value="unidades">Por unidade (páginas de cada unidade em sequência)</option>
-   <option value="equipes">Por equipe (páginas de cada equipe em sequência)</option>
-   <option value="agrupado">Agrupado (município, unidades ou equipes consolidadas)</option>
-   <option value="estadual">Estadual (IGM SUS Paulista)</option>
-   <option value="municipal">Acompanhamento municipal</option>
-   <option value="absenteismo">Absenteísmo e filas</option>
-   <option value="completo">Completo (todos)</option>
-  </select></label>
-  <label>Competência<select id="comp"></select></label>
-  <label id="lbUn">Unidade<select id="un"><option value="">Todas</option></select></label>
-  <label>Folha<select id="orient"><option value="retrato">Retrato</option><option value="paisagem">Paisagem (horizontal)</option></select></label>
-  <label id="lbAb">Abrangência<select id="ab"><option value="municipio">Município</option><option value="unidades">Unidades selecionadas</option><option value="equipes">Equipes selecionadas</option></select></label>
-  <div id="selAg" class="sel" hidden aria-label="Escolha as unidades ou equipes"></div>
-  <label id="lbEq">Equipe<select id="eq"><option value="">Todas</option></select></label>
-  <label id="lbParcela">Parcela estadual<select id="parcela"></select></label>
-  <div class="acoes"><button class="btn" id="imprimir" type="button">Imprimir / salvar em PDF</button><button class="btn sec" id="lote" type="button">Emitir em lote (PDF)…</button><button class="btn sec" id="csv" type="button">Baixar CSV</button></div>
- </div>
- <dialog id="dlg" aria-labelledby="dlgt"><form method="dialog" id="fdlg">
-  <h2 id="dlgt">Emitir em lote (PDF)</h2>
-  <p>Gera um único PDF com um dossiê para cada item, sem mostrar na tela. Cada unidade ou equipe começa em página nova, com o nome em destaque no topo de todas as suas páginas.</p>
-  <fieldset><legend>Modelo</legend>
-   <label><input type="radio" name="modo" value="todos" checked> Todos (individuais): município, cada unidade e as equipes dela</label>
-   <label><input type="radio" name="modo" value="unidades"> Unidades (individuais): só as que eu escolher</label>
-   <label><input type="radio" name="modo" value="equipes"> Equipes (individuais): só as que eu escolher</label>
-  </fieldset>
-  <div id="selLote" class="sel" hidden></div>
-  <fieldset><legend>Incluir</legend><label><input type="checkbox" id="comMun" checked> Página do município no início</label></fieldset>
-  <p id="erroLote" role="alert" style="color:#8A1B2A;font-weight:700"></p>
-  <div class="rod"><button class="btn sec" type="button" id="cancLote">Cancelar</button><button class="btn" type="button" id="geraLote">Gerar PDF</button></div>
- </form></dialog>
- <p class="dica">O documento abaixo é o que será impresso ou salvo em PDF (no navegador, escolha “Salvar como PDF”). Só entram totais por município, unidade e equipe; nunca nomes de pacientes nem de profissionais. Cada emissão fica registrada no histórico de quem emitiu.</p>
- <article id="doc" aria-live="polite"><p class="vazio">Carregando…</p></article>
-</main>
-<script src="/js/sessao.js"></script>
-<script src="/js/catalogo-indicadores.js"></script>
-<script src="/js/estadual-regras.js"></script>
-<script src="/js/federal-calculo.js"></script>
-<script src="/js/estadual-calculo.js"></script>
-<script>
-const $=id=>document.getElementById(id);
-let dados={},ABS={},LANC=[],VAC=[],NESF=null,parcela=PARCELAS[2],ERRO=false,USUARIO=null,FILAS=null,COMPS=[];
-const Q14=19.59;
-const TITULOS={geral:'Visão geral da Atenção Primária',federal:'Cofinanciamento federal · indicadores',regua:'Cofinanciamento federal · gráfico com réguas',equipes:'Relatório por equipe · cofinanciamento federal',unidades:'Relatório por unidade · cofinanciamento federal',agrupado:'Relatório agrupado · cofinanciamento federal',lote:'Relatório em lote · cofinanciamento federal',estadual:'Cofinanciamento estadual · IGM SUS Paulista',municipal:'Acompanhamento municipal',absenteismo:'Absenteísmo e filas',completo:'Relatório completo da Atenção Primária'};
-const PERFIL={admin:'administrador',gestor:'gestor',leitor:'leitor'};
-const num=(v,c=1)=>v==null||isNaN(v)?'—':v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:c});
-const pct=v=>v==null?'—':num(v,1)+'%';
-const kpill=k=>k?'<span class="cc k-'+k+'">'+NOMEC[k]+'</span>':'';
-const ehGestor=()=>USUARIO&&(USUARIO.perfil==='admin'||USUARIO.perfil==='gestor');
-const med=a=>{if(!a.length)return null;const o=a.slice().sort((x,y)=>x-y),m=Math.floor(o.length/2);return o.length%2?o[m]:Math.round((o[m-1]+o[m])/2)};
-
-// ---------- federal e municipal ----------
-// Indicador "filho" (C7-A…D, CVAT-CAD/ACO): recuado sob o indicador principal.
-const fil=cod=>/^(C7|CVAT)-/.test(cod)?' class="filho"':'';
-function tabelaCods(cods,comp,un,comEquipes){
-  let corpo='';
-  for(const cod of cods){
-    const ls=linhasDe(cod,[comp],un);if(!ls.length)continue;
-    const cat=(window.CATALOGO||{})[cod]||{nome:cod,tipo:''};
-    const mun=agregar(ls,()=>'M').get(cod+'|M');if(!mun)continue;
-    const vm=resultado(mun,cat.tipo),km=conceito(cod,vm);
-    let eq='';
-    if(comEquipes&&FAIXA[cod]){const c={o:0,b:0,s:0,r:0};let n=0;[...agregar(ls,l=>l.unidade+' · '+l.equipe).values()].filter(g=>g.codigo===cod).forEach(g=>{const k=conceito(cod,resultado(g,cat.tipo));if(k){c[k]++;n++}});
-      eq=n?['o','b','s','r'].filter(k=>c[k]).map(k=>c[k]+' '+NOMEC[k].toLowerCase()).join(' · '):'';}
-    const direto=mun.direto!==undefined;
-    const nu=direto?'—':(cat.tipo==='pontos'?num(mun.pts,0):num(mun.num,0)),de=direto?'—':num(mun.den,0);
-    const aprox=cat.precisao==='aproximado'?' ≈':cat.precisao==='piso'?' (piso)':'';
-    corpo+='<tr'+fil(cod)+'><td><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+(cat.meta?'<small>Meta: '+esc(cat.meta)+'</small>':'')+'</td><td class="n">'+nu+'</td><td class="n">'+de+'</td><td class="n"><b>'+fmt(vm,cat.tipo)+'</b>'+aprox+'</td><td>'+kpill(km)+(km&&FAIXAX[cod]?' *':'')+'</td>'+(comEquipes?'<td>'+esc(eq)+'</td>':'')+'</tr>';
-  }
-  return corpo?'<table class="csv"><thead><tr><th>Indicador</th><th class="n">Numerador (ou pontos)</th><th class="n">Denominador</th><th class="n">Resultado</th><th>Conceito</th>'+(comEquipes?'<th>Equipes por conceito</th>':'')+'</tr></thead><tbody>'+corpo+'</tbody></table>':'';
-}
-function secFederal(comp,un){
-  let h='<h2>Cofinanciamento federal</h2><p>Indicadores das notas metodológicas do Ministério da Saúde, a partir dos totais coletados do PEC e-SUS no mês. O conceito é uma prévia para acompanhar as equipes; o resultado oficial é o do Ministério.</p>';
-  let algum=false;
-  for(const [gn,gc] of GRUPOS.slice(0,-1)){const t=tabelaCods(gc,comp,un,true);if(t){algum=true;h+='<h3>'+esc(gn)+'</h3>'+t}}
-  if(!algum)h+='<p class="vazio">Sem indicadores coletados nesta competência.</p>';
-  if(Object.keys(FAIXAX).some(c=>(dados[comp]||[]).some(l=>l.codigo===c)))h+='<p><small>* Faixa lida do desenho do dashboard, ainda a confirmar com a nota técnica vigente.</small></p>';
-  // por unidade
-  if(!un){
-    const uns=[...new Set((dados[comp]||[]).map(l=>l.unidade).filter(u=>u&&u!=='Município'))].sort();
-    if(uns.length>1){
-      const cods=NOTAS.filter(c=>linhasDe(c,[comp],'').length);
-      // Unidades nas linhas e indicadores nas colunas, em blocos de até 10 colunas (todas de uma vez na folha em paisagem).
-      const nomeCurto=u=>u.replace(/^(UBS|ESF|Psf|Usf|Posto de Saude)\s+(Enf(?:ermeiro)?\.?\s+|Dra?\s+|Vereador\s+)?/i,'');
-      let t='';
-      const passo=$('orient').value==='paisagem'?cods.length:10;
-      for(let i=0;i<cods.length;i+=passo){
-        const bloco=cods.slice(i,i+passo);
-        t+='<table class="csv un"><thead><tr><th>Unidade</th>'+bloco.map(c=>'<th class="n">'+esc(c)+'</th>').join('')+'</tr></thead><tbody>'
-         +uns.map(u=>'<tr><td>'+esc(nomeCurto(u))+'</td>'+bloco.map(cod=>{const cat=(window.CATALOGO||{})[cod]||{tipo:''};const g=agregar(linhasDe(cod,[comp],''),l=>l.unidade).get(cod+'|'+u);const v=g?resultado(g,cat.tipo):null;const k=conceito(cod,v);
-            return '<td class="n">'+fmt(v,cat.tipo)+(k?' <span class="cc k-'+k+'">'+NOMEC[k].charAt(0)+'</span>':'')+'</td>'}).join('')+'</tr>').join('')+'</tbody></table>';
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Relatório · Painel APS</title>
+    <link rel="icon" href="/img/painelaps.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap" />
+    <style id="pagina">
+      @page {
+        size: A4 portrait;
       }
-      h+='<h3>Resultado por unidade</h3>'+t+'<p><small>Conceito: O = ótimo, B = bom, S = suficiente, R = regular. Colunas vazias de conceito: indicador sem faixa definida.</small></p>';
-    }
-  }
-  return h;
-}
-function secMunicipal(comp,un){
-  const g=GRUPOS[GRUPOS.length-1];const t=tabelaCods(g[1],comp,un,false);
-  return '<h2>Acompanhamento municipal</h2><p>Indicadores acompanhados pelo município, fora do cofinanciamento federal.</p>'+(t||'<p class="vazio">Sem dados coletados nesta competência.</p>');
-}
-
-
-// ---------- réguas ----------
-function faixasDe(cod){
-  const t=FAIXA[cod];
-  if(t==='bp')return [[0,25,'r'],[25,50,'s'],[50,75,'b'],[75,100,'o']];
-  if(t==='cvat')return [[0,5,'r'],[5,7,'s'],[7,8.5,'b'],[8.5,10,'o']];
-  if(t==='m1')return [[0,1,'r'],[1,2,'s'],[2,3,'b'],[3,5,'o']];
-  if(t==='x'&&FAIXAX[cod])return FAIXAX[cod].map(x=>x.slice());
-  return null;
-}
-function reguaHtml(cod,vm,o){
-  o=o||{};const vals=(o.vals||[]).filter(v=>v!=null),ref=o.ref;
-  const f=faixasDe(cod);if(!f||vm==null)return '';
-  const todos=[vm].concat(vals);
-  const lo=f[0][0];let hi=f[f.length-1][1];
-  // Faixa aberta (sem teto): a régua acaba em 2,5 vezes o início dela (no máximo 100 nos percentuais); valores maiores ficam no fim da régua.
-  const aberta=hi>=1e8;
-  if(aberta){const base=f[f.length-1][0];hi=base*2.5;if((FAIXAX[cod]&&cod!=='B1'&&cod!=='B4'))hi=Math.min(100,hi)}
-  const pos=v=>Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100));
-  const seg=f.map(x=>({a:Math.max(lo,x[0]),b:Math.min(hi,x[1]),k:x[2]})).filter(x=>x.b>x.a);
-  let h='<div class="rg" role="img" aria-label="Régua do indicador '+esc(cod)+'">'
-   +seg.map(x=>'<div class="sg k-'+x.k+'" style="width:'+((x.b-x.a)/(hi-lo)*100).toFixed(2)+'%">'+((x.b-x.a)/(hi-lo)>.14?NOMEC[x.k]:((x.b-x.a)/(hi-lo)>.05?NOMEC[x.k][0]:''))+'</div>').join('');
-  let marcas=[lo].concat(seg.slice(1).map(x=>x.a),[hi]);
-  marcas=marcas.filter((m,i)=>i===0||i===marcas.length-1||(pos(m)-pos(marcas[i-1])>=7&&pos(hi)-pos(m)>=7));
-  h+=marcas.map((m,i)=>'<span class="tk" style="left:'+pos(m).toFixed(2)+'%;'+(i===0?'transform:none':i===marcas.length-1?'transform:translateX(-100%)':'')+'">'+num(m,m%1?2:0)+(aberta&&i===marcas.length-1?'+':'')+'</span>').join('');
-  if(vals.length>1){const mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);h+='<i class="rng" style="left:'+pos(mn).toFixed(2)+'%;width:'+Math.max(0.8,pos(mx)-pos(mn)).toFixed(2)+'%"></i>'}
-  if(ref!=null)h+='<i class="rf" style="left:'+pos(ref).toFixed(2)+'%"></i>';
-  h+='<i class="mn" style="left:'+pos(vm).toFixed(2)+'%"></i></div>';
-  return h;
-}
-const legRegua=(eqs)=>'<div class="leg"><span><i class="k-r"></i>Regular</span><span><i class="k-s"></i>Suficiente</span><span><i class="k-b"></i>Bom</span><span><i class="k-o"></i>Ótimo</span>'+(eqs?'<span><i style="background:#1F3C72"></i>Município</span><span><i style="background:rgba(20,33,43,.55);height:6px;vertical-align:2px"></i>Variação entre as equipes (menor a maior)</span>':'<span><i style="background:#1F3C72"></i>Esta equipe</span><span><i style="background:#fff;border:3px solid #1F3C72;box-sizing:border-box"></i>Município (referência)</span>')+'</div>';
-// Régua do município, uma página por grupo de indicadores; a faixa escura mostra de onde a onde as equipes variam.
-function secRegua(comp,un){
-  let out='',csvl='',n=0,primeiro=true;
-  for(const [gn,gc] of GRUPOS.slice(0,-1)){
-    let sub='';
-    for(const cod of gc){
-      if(!faixasDe(cod))continue;
-      const ls=linhasDe(cod,[comp],un);if(!ls.length)continue;
-      const cat=(window.CATALOGO||{})[cod]||{nome:cod,tipo:''};
-      const mun=agregar(ls,()=>'M').get(cod+'|M');if(!mun)continue;
-      const vm=resultado(mun,cat.tipo),km=conceito(cod,vm);
-      const eqs=[...agregar(ls,l=>l.unidade+' · '+l.equipe).values()].filter(g=>g.codigo===cod).map(g=>resultado(g,cat.tipo)).filter(v=>v!=null);
-      const reg=reguaHtml(cod,vm,{vals:eqs});if(!reg)continue;
-      n++;
-      const faixa=eqs.length>1?'<span>equipes: de '+fmt(Math.min.apply(null,eqs),cat.tipo)+' a '+fmt(Math.max.apply(null,eqs),cat.tipo)+' ('+eqs.length+')</span>':'<span>'+eqs.length+' equipe(s)</span>';
-      sub+='<div class="reg"><div class="nm"><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+'<div class="vl"><b>'+fmt(vm,cat.tipo)+'</b>'+kpill(km)+(FAIXAX[cod]?'*':'')+faixa+'</div></div><div>'+reg+'</div></div>';
-      csvl+='<tr><td>'+esc(gn)+'</td><td>'+esc(cod)+'</td><td>'+esc(nomeSem(cod,cat.nome))+'</td><td>'+fmt(vm,cat.tipo)+'</td><td>'+(km?NOMEC[km]:'')+'</td><td>'+eqs.map(v=>fmt(v,cat.tipo)).join(' | ')+'</td></tr>';
-    }
-    if(sub){out+='<section class="pag"><h2>'+(primeiro?'Cofinanciamento federal · réguas · ':'')+esc(gn)+'</h2>'+(primeiro?'<p>Cada régua mostra as faixas de conceito do indicador. O marcador azul é o município'+(un?' (recorte: '+esc(un)+')':'')+' e a faixa escura mostra de onde a onde as equipes variam. Só aparecem os indicadores com faixa definida; cada grupo começa numa página.</p>':'')+legRegua(true)+sub+'</section>';primeiro=false}
-  }
-  if(!n)return '<h2>Cofinanciamento federal · réguas</h2><p class="vazio">Sem indicadores com faixa definida nesta competência.</p>';
-  out+='<table class="csv so-csv"><thead><tr><th>Grupo</th><th>Código</th><th>Indicador</th><th>Município</th><th>Conceito</th><th>Equipes</th></tr></thead><tbody>'+csvl+'</tbody></table>';
-  if(Object.keys(FAIXAX).some(c=>faixasDe(c)&&(dados[comp]||[]).some(l=>l.codigo===c)))out+='<p><small>* Faixa lida do desenho do dashboard, ainda a confirmar com a nota técnica vigente.</small></p>';
-  return out;
-}
-// ---------- dossiês: município, unidade e equipe ----------
-// Cada dossiê é uma sequência de páginas; o nome da unidade/equipe se repete no topo de TODAS as páginas dele (cabeçalho de tabela repetido na impressão).
-const soltaEq=e=>!e||e==='Município'||/^sem equipe$/i.test(e);
-const ordPt=(a,b)=>a.localeCompare(b,'pt');
-function unidadesDe(comp){return [...new Set((dados[comp]||[]).map(l=>l.unidade).filter(u=>u&&u!=='Município'))].sort(ordPt)}
-function equipesDe(comp,un){
-  const m=new Map();
-  for(const l of (dados[comp]||[])){if(!l.unidade||l.unidade==='Município'||soltaEq(l.equipe))continue;if(un&&l.unidade!==un)continue;const k=l.unidade+'|'+l.equipe;if(!m.has(k))m.set(k,{u:l.unidade,e:l.equipe,tipo:l.tipoEquipe||''})}
-  return [...m.values()].sort((a,b)=>ordPt(a.u,b.u)||ordPt(a.e,b.e));
-}
-const curto=(s,n)=>s.length>n?s.slice(0,n-1)+'…':s;
-const escMunicipio=()=>({nivel:'Município',nome:'Município de Cajamar',sub:'Todas as unidades e equipes',uns:null,eqs:null,ref:false});
-const escUnidade=(comp,u)=>({nivel:'Unidade',nome:u,sub:equipesDe(comp,u).length+' equipe(s) com dados',uns:new Set([u]),eqs:null,ref:true});
-const escEquipe=t=>({nivel:'Equipe',nome:t.e,sub:t.u+(t.tipo?' · '+t.tipo:''),uns:new Set([t.u]),eqs:new Set([t.u+'|'+t.e]),ref:true});
-const escUnidades=us=>({nivel:'Unidades · consolidado',nome:us.length+(us.length===1?' unidade':' unidades'),sub:curto(us.join(' · '),230),uns:new Set(us),eqs:null,ref:true,lista:us.join(' · ')});
-const escEquipes=ts=>({nivel:'Equipes · consolidado',nome:ts.length+(ts.length===1?' equipe':' equipes'),sub:curto(ts.map(t=>t.u+' · '+t.e).join(' | '),230),uns:null,eqs:new Set(ts.map(t=>t.u+'|'+t.e)),ref:true,lista:ts.map(t=>t.u+' · '+t.e).join(' | ')});
-const filtroDe=E=>l=>(!E.uns||E.uns.has(l.unidade))&&(!E.eqs||E.eqs.has(l.unidade+'|'+l.equipe));
-const legEnt=E=>'<div class="leg"><span><i class="k-r"></i>Regular</span><span><i class="k-s"></i>Suficiente</span><span><i class="k-b"></i>Bom</span><span><i class="k-o"></i>Ótimo</span><span><i style="background:#1F3C72"></i>Resultado</span>'+(E.ref?'<span><i style="background:#fff;border:3px solid #1F3C72;box-sizing:border-box"></i>Município (referência)</span>':'')+'</div>';
-// Corpo de um dossiê: réguas por grupo e, para o que não tem faixa, uma tabela. csvl acumula as linhas do CSV.
-function corpoEscopo(comp,E,csvl){
-  const f=filtroDe(E);let corpo='';
-  for(const [gn,gc] of GRUPOS){
-    let reg='',tab='';
-    for(const cod of gc){
-      const todas=linhasDe(cod,[comp],'');
-      const ls=(E.uns||E.eqs)?todas.filter(f):todas;if(!ls.length)continue;
-      const cat=(window.CATALOGO||{})[cod]||{nome:cod,tipo:''};
-      const g=agregar(ls,()=>'T').get(cod+'|T');if(!g)continue;
-      const v=resultado(g,cat.tipo),k=conceito(cod,v);
-      const gm=E.ref?agregar(todas,()=>'M').get(cod+'|M'):null,vm=gm?resultado(gm,cat.tipo):null;
-      const direto=g.direto!==undefined,nu=direto?'—':num(cat.tipo==='pontos'?g.pts:g.num,0),de=direto?'—':num(g.den,0);
-      csvl.push('<tr><td>'+esc(E.nivel)+'</td><td>'+esc(E.nome)+'</td><td>'+esc(E.sub)+'</td><td>'+esc(cod)+'</td><td>'+esc(nomeSem(cod,cat.nome))+'</td><td>'+nu+'</td><td>'+de+'</td><td>'+fmt(v,cat.tipo)+'</td><td>'+(k?NOMEC[k]:'')+'</td><td>'+(E.ref?fmt(vm,cat.tipo):'')+'</td></tr>');
-      const r=faixasDe(cod)?reguaHtml(cod,v,E.ref?{ref:vm}:{}):'';
-      if(r)reg+='<div class="reg"><div class="nm"><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+'<div class="vl"><b>'+fmt(v,cat.tipo)+'</b>'+kpill(k)+(FAIXAX[cod]?'*':'')+(E.ref?'<span>município: '+fmt(vm,cat.tipo)+'</span>':'')+'</div></div><div>'+r+'</div></div>';
-      else tab+='<tr'+fil(cod)+'><td><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+'</td><td class="n">'+nu+'</td><td class="n">'+de+'</td><td class="n"><b>'+fmt(v,cat.tipo)+'</b></td>'+(E.ref?'<td class="n">'+fmt(vm,cat.tipo)+'</td>':'')+'</tr>';
-    }
-    if(reg||tab)corpo+='<h3>'+esc(gn)+'</h3>'+reg+(tab?'<table><thead><tr><th>Indicador sem régua</th><th class="n">Numerador (ou pontos)</th><th class="n">Denominador</th><th class="n">Resultado</th>'+(E.ref?'<th class="n">Município</th>':'')+'</tr></thead><tbody>'+tab+'</tbody></table>':'');
-  }
-  return corpo;
-}
-// Uma lista de dossiês, cada um começando em página nova e com o nome no topo de todas as suas páginas.
-function secEscopos(comp,lista,intro){
-  if(!lista.length)return '<h2>Relatório</h2><p class="vazio">Nada selecionado ou sem dados nesta competência.</p>';
-  const csvl=[];let out='';
-  lista.forEach((E,i)=>{
-    const corpo=corpoEscopo(comp,E,csvl);
-    out+='<section class="pag"><table class="rep"><thead><tr><th><div class="ebn n-'+({'Município':'m','Unidade':'u','Equipe':'e'}[E.nivel]||'g')+'"><small>'+esc(E.nivel)+'</small><b>'+esc(E.nome)+'</b><span>'+esc(E.sub)+'</span></div></th></tr></thead><tbody><tr><td>'
-      +(i===0&&intro?'<p>'+intro+'</p>':'')+legEnt(E)+(corpo||'<p class="vazio">Sem indicadores nesta competência.</p>')+'</td></tr></tbody></table></section>';
-  });
-  out+='<table class="csv so-csv"><thead><tr><th>Nível</th><th>Abrangência</th><th>Detalhe</th><th>Código</th><th>Indicador</th><th>Numerador (ou pontos)</th><th>Denominador</th><th>Resultado</th><th>Conceito</th><th>Município</th></tr></thead><tbody>'+csvl.join('')+'</tbody></table>';
-  out+='<p><small>* Faixa lida do desenho do dashboard, ainda a confirmar com a nota técnica vigente. Indicadores sem faixa definida (como a B2) aparecem na tabela, sem régua.</small></p>';
-  return out;
-}
-const INTRO_ESC='A faixa colorida da régua mostra os conceitos do indicador (regular, suficiente, bom e ótimo; em impressão preto e branco, cada conceito tem textura própria). O marcador escuro é o resultado desta página e o contorno é o município, para comparar.';
-// Lista de dossiês de um lote. modo: todos | unidades | equipes. sel: valores marcados.
-function listaLote(comp,modo,sel,comMun){
-  const L=[];if(comMun)L.push(escMunicipio());
-  const eqs=equipesDe(comp,'');
-  if(modo==='todos'){for(const u of unidadesDe(comp)){L.push(escUnidade(comp,u));for(const t of eqs.filter(x=>x.u===u))L.push(escEquipe(t))}}
-  if(modo==='unidades')for(const u of unidadesDe(comp))if(sel.includes(u))L.push(escUnidade(comp,u));
-  if(modo==='equipes')for(const t of eqs)if(sel.includes(t.u+'|'+t.e))L.push(escEquipe(t));
-  return L;
-}
-// Seletor de caixas de marcar (unidades ou equipes agrupadas por unidade).
-function painelSel(el,itens,marcados,aoMudar){
-  let h='<label class="todas"><input type="checkbox" data-todas> <b>Marcar todas</b></label><div class="lista">',ult=null;
-  for(const it of itens){if(it.g&&it.g!==ult){h+='<div class="gr">'+esc(it.g)+'</div>';ult=it.g}h+='<label><input type="checkbox" value="'+esc(it.v)+'"'+(marcados.has(it.v)?' checked':'')+'> '+esc(it.r)+'</label>'}
-  el.innerHTML=h+'</div>';
-  const cx=[...el.querySelectorAll('.lista input')],todas=el.querySelector('[data-todas]');
-  const sinc=()=>{todas.checked=cx.length>0&&cx.every(c=>c.checked)};sinc();
-  todas.onchange=()=>{cx.forEach(c=>c.checked=todas.checked);aoMudar&&aoMudar()};
-  cx.forEach(c=>c.onchange=()=>{sinc();aoMudar&&aoMudar()});
-}
-const marcadosDe=el=>[...el.querySelectorAll('.lista input:checked')].map(c=>c.value);
-const itensSel=(comp,nivel)=>nivel==='unidades'?unidadesDe(comp).map(u=>({v:u,r:u})):equipesDe(comp,'').map(t=>({v:t.u+'|'+t.e,r:t.e,g:t.u}));
-
-// ---------- estadual ----------
-function secEstadual(){
-  if(ERRO)return '<h2>Cofinanciamento estadual</h2><p class="vazio">Não foi possível carregar os lançamentos.</p>';
-  const c=calcular(),pontos=c.res.reduce((t,r)=>t+(r.pct===null?0:r.peso*r.pct),0),pend=c.linhas.filter(x=>x.r.pct===null);
-  const n=c.linhas.length-pend.length;
-  let h='<h2>Cofinanciamento estadual · '+esc(parcela.n)+'</h2><p>Parte variável do IGM SUS Paulista (CIB 150/2025). Período avaliado: '+NOMEQ(parcela.p)+', comparado com o '+NOMEQ(parcela.ant)+'. Só entram na nota os valores oficiais lançados; a estimativa do PEC aparece ao lado, separada.</p>';
-  h+='<div class="cards"><div class="card"><small>Nota da parte variável</small><div class="v">'+num(c.nota.final*100,1)+'%</div><small>'+num(pontos,2)+' de 10 pontos'+(c.nota.extra?' + ponto extra':'')+'</small></div>'
-   +'<div class="card"><small>Indicadores com dado</small><div class="v">'+n+' de '+c.linhas.length+'</div><small>'+(pend.length?'Faltam lançar: peso '+num(pend.reduce((t,x)=>t+x.it.peso,0),1)+' de 10':'Todos com dado')+'</small></div></div>';
-  h+='<table class="csv"><thead><tr><th>Indicador</th><th class="n">Peso</th><th>Valor</th><th>Comparação</th><th>Resultado</th><th class="n">Pontos</th></tr></thead><tbody>'
-   +c.linhas.map(x=>'<tr><td>'+esc(x.it.nome)+(x.d.origem?'<small>Origem: '+esc(x.d.origem)+'</small>':'')+'</td><td class="n">'+num(x.it.peso,1)+'</td><td>'+mostra(x.it,x.d)+'</td><td>'+ref(x.it,x.d)+'</td><td>'+(x.r.pct===null?'sem dado':Math.round(x.r.pct*100)+'%')+'<small>'+esc(dica(x))+'</small></td><td class="n">'+(x.r.pct===null?'—':num(x.it.peso*x.r.pct,2))+'</td></tr>').join('')
-   +'<tr><td><b>Óbito materno no ano</b></td><td class="n">—</td><td colspan="4">'+(c.ob?(c.ob.valor===0?'sem óbito materno informado':'com óbito materno informado'):'não lançado')+'</td></tr></tbody></table>';
-  return h;
-}
-
-// ---------- absenteísmo e filas ----------
-function secAbsenteismo(comp,un){
-  let h='<h2>Absenteísmo e filas</h2><p>Absenteísmo = faltas ÷ (atendimentos + faltas). Meta de referência do Q14.2.1: até '+num(Q14,2)+'%.</p>';
-  const ls=linhasDe('Q14.2.1',[comp],un);
-  if(ls.length){
-    const mun=agregar(ls,()=>'M').get('Q14.2.1|M'),v=resultado(mun,'percentual');
-    h+='<div class="cards"><div class="card"><small>Absenteísmo de consultas</small><div class="v">'+pct(v)+'</div><small>'+num(mun.num,0)+' faltas em '+num(mun.den,0)+' agendamentos decididos</small></div>'
-      +'<div class="card"><small>Referência</small><div class="v">'+num(Q14,2)+'%</div><small>'+(v==null?'':(v<=Q14?'dentro da meta':'acima da meta'))+'</small></div></div>';
-    const por=agregar(ls,l=>l.unidade),uns=[...new Set(ls.map(l=>l.unidade))].sort();
-    if(!un&&uns.length>1)h+='<h3>Por unidade</h3><table class="csv"><thead><tr><th>Unidade</th><th class="n">Faltas</th><th class="n">Agendamentos</th><th class="n">Absenteísmo</th><th>Meta</th></tr></thead><tbody>'
-      +uns.map(u=>{const g=por.get('Q14.2.1|'+u),r=g?resultado(g,'percentual'):null;return '<tr><td>'+esc(u)+'</td><td class="n">'+num(g.num,0)+'</td><td class="n">'+num(g.den,0)+'</td><td class="n"><b>'+pct(r)+'</b></td><td>'+(r==null?'—':r<=Q14?'dentro':'acima')+'</td></tr>'}).join('')+'</tbody></table>';
-    const eqs=agregar(ls,l=>l.unidade+' · '+l.equipe);
-    h+='<h3>Por equipe</h3><table class="csv"><thead><tr><th>Equipe</th><th class="n">Faltas</th><th class="n">Agendamentos</th><th class="n">Absenteísmo</th></tr></thead><tbody>'
-      +[...eqs.values()].filter(g=>g.codigo==='Q14.2.1').sort((a,b)=>a.rot.localeCompare(b.rot)).map(g=>{const r=resultado(g,'percentual');return '<tr><td>'+esc(g.rot)+'</td><td class="n">'+num(g.num,0)+'</td><td class="n">'+num(g.den,0)+'</td><td class="n"><b>'+pct(r)+'</b></td></tr>'}).join('')+'</tbody></table>';
-  }else h+='<p class="vazio">Sem o indicador Q14.2.1 nesta competência.</p>';
-  // faltas por categoria profissional e tipo (relatório gerencial de absenteísmo)
-  const ab=(ABS[comp]||[]).filter(x=>!un||x.unidade===un);
-  if(ab.length){
-    const g={};for(const x of ab){const k=(x.grupoCBO||x.cbo||'Outros')+'|'+x.tipoFalta;g[k]=(g[k]||0)+(x.n||0)}
-    const grupos=[...new Set(ab.map(x=>x.grupoCBO||x.cbo||'Outros'))].sort(),tipos=[...new Set(ab.map(x=>x.tipoFalta))].sort();
-    h+='<h3>Agendamentos por categoria profissional e situação</h3><table class="csv"><thead><tr><th>Categoria</th>'+tipos.map(t=>'<th class="n">'+esc(t)+'</th>').join('')+'<th class="n">Total</th></tr></thead><tbody>'
-      +grupos.map(gr=>{const t=tipos.map(tp=>g[gr+'|'+tp]||0);return '<tr><td>'+esc(gr)+'</td>'+t.map(v=>'<td class="n">'+num(v,0)+'</td>').join('')+'<td class="n"><b>'+num(t.reduce((a,b)=>a+b,0),0)+'</b></td></tr>'}).join('')+'</tbody></table>';
-  }
-  // filas por equipe (sem nomes de profissionais)
-  if(!ehGestor())h+='<h3>Filas e faltas por equipe</h3><p class="vazio">Esta parte é restrita a administradores e gestores.</p>';
-  else if(!FILAS||!FILAS.profissionais||!FILAS.profissionais.length)h+='<h3>Filas e faltas por equipe</h3><p class="vazio">Sem dados de filas e faltas para esta competência.</p>';
-  else{
-    const gq={};for(const p of FILAS.profissionais){if(un&&p.unidade!==un)continue;const k=p.unidade+'|'+(p.equipe||'Sem equipe');(gq[k]=gq[k]||{un:p.unidade,eq:p.equipe||'Sem equipe',f:0,a:0,d:[],prof:0,semAg:0}).prof++;const o=gq[k];o.f+=p.faltas||0;o.a+=p.atendimentos||0;if(p.agendaLidaEm)o.d.push(p.semVaga?91:p.diasVaga);else o.semAg++}
-    const c1=agregar(linhasDe('C1',[comp],un),l=>l.unidade+'|'+(l.equipe||'Sem equipe'));
-    h+='<h3>Filas e faltas por equipe (médicos e enfermeiros)</h3><p>Faltas e espera por equipe, ao lado da C1 (parcela de consultas de demanda programada). Espera = mediana de dias até a próxima vaga dos profissionais com agenda lida. Não há nomes de profissionais neste documento.</p>'
-     +'<table class="csv"><thead><tr><th>Equipe</th><th class="n">Prof.</th><th class="n">Faltas</th><th class="n">Absenteísmo</th><th>Faltas (risco: meta)</th><th class="n">Espera (mediana)</th><th>Espera (dias)</th><th class="n">C1 programada</th></tr></thead><tbody>'
-     +Object.values(gq).sort((a,b)=>(a.un+a.eq).localeCompare(b.un+b.eq,'pt')).map(o=>{const r=o.f+o.a?o.f/(o.f+o.a)*100:null,m=med(o.d),g=c1.get('C1|'+o.un+'|'+o.eq);return '<tr><td>'+esc(o.eq)+'<small>'+esc(o.un)+'</small></td><td class="n">'+o.prof+'</td><td class="n">'+num(o.f,0)+' de '+num(o.f+o.a,0)+'</td><td class="n"><b>'+pct(r)+'</b></td><td>'+barra(r,40,Q14,r==null?'#8A979F':r<=Q14?'#2F9E6E':'#D64545')+'</td><td class="n">'+(m==null?'agenda não lida':m>90?'90+ dias':m+' d')+'</td><td>'+barra(m,60,30,m==null?'#8A979F':m<=15?'#2F9E6E':m<=30?'#E3B341':'#D64545')+'</td><td class="n">'+(g&&g.den?pct(100*g.num/g.den):'—')+'</td></tr>'}).join('')+'</tbody></table>';
-  }
-  return h;
-}
-
-// ---------- visão geral ----------
-function secGeral(comp,un){
-  const todas=(dados[comp]||[]).filter(l=>!un||l.unidade===un);
-  const uns=new Set(todas.map(l=>l.unidade).filter(u=>u&&u!=='Município')),eqs=new Set(todas.filter(l=>l.equipe&&l.equipe!=='Município').map(l=>l.unidade+'|'+l.equipe));
-  const tot={o:0,b:0,s:0,r:0};
-  for(const cod of NOTAS){const ls=linhasDe(cod,[comp],un);if(!ls.length)continue;const cat=(window.CATALOGO||{})[cod]||{tipo:''};
-    [...agregar(ls,l=>l.unidade+' · '+l.equipe).values()].filter(g=>g.codigo===cod).forEach(g=>{const k=conceito(cod,resultado(g,cat.tipo));if(k)tot[k]++})}
-  const nt=tot.o+tot.b+tot.s+tot.r;
-  let h='<h2>Resumo</h2><div class="cards">'
-   +'<div class="card"><small>Cobertura da coleta</small><div class="v">'+uns.size+' unid.</div><small>'+eqs.size+' equipe(s) com dados</small></div>'
-   +(nt?'<div class="card"><small>Conceitos federais (prévia)</small><div class="v">'+nt+'</div><small>'+['o','b','s','r'].map(k=>tot[k]+' '+NOMEC[k].toLowerCase()).join(' · ')+'</small></div>':'');
-  const q=linhasDe('Q14.2.1',[comp],un);
-  if(q.length){const m=agregar(q,()=>'M').get('Q14.2.1|M'),v=resultado(m,'percentual');h+='<div class="card"><small>Absenteísmo de consultas</small><div class="v">'+pct(v)+'</div><small>meta: até '+num(Q14,2)+'%</small></div>'}
-  if(!ERRO&&LANC.length){const c=calcular();h+='<div class="card"><small>Nota estadual · '+esc(parcela.n)+'</small><div class="v">'+num(c.nota.final*100,1)+'%</div><small>'+(c.nota.completo?'todos os itens com dado':'parcial: faltam itens')+'</small></div>'}
-  h+='</div>';
-  const t=tabelaCods(['C1','C2','C3','C4','C5','C6','C7','CVAT','B1','B3','B4','B5','B6','M1','M2','CR1','CR2','CR3','CR4'],comp,un,false);
-  if(t)h+='<h3>Principais indicadores federais</h3>'+t;
-  return h;
-}
-
-// ---------- documento ----------
-const mesLong=c=>{const [a,m]=c.split('-');return ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'][m-1]+' de '+a};
-const SELAG={unidades:new Set(),equipes:new Set()};
-function montarSelAg(){
-  const comp=$('comp').value,ab=$('ab').value,el=$('selAg');
-  el.hidden=!($('tipo').value==='agrupado'&&ab!=='municipio');
-  if(el.hidden)return;
-  painelSel(el,itensSel(comp,ab),SELAG[ab],()=>{SELAG[ab]=new Set(marcadosDe(el));desenhar()});
-}
-function escoposDaTela(tipo,comp,un){
-  if(tipo==='unidades'){const us=un?[un]:unidadesDe(comp);return {lista:us.map(u=>escUnidade(comp,u)),abr:un||'Todas as unidades, uma a uma'}}
-  if(tipo==='equipes'){let l=equipesDe(comp,un);const eq=$('eq').value;if(eq)l=l.filter(x=>x.u+'|'+x.e===eq);return {lista:l.map(escEquipe),abr:(un||'Todas as unidades')+(eq?' · equipe selecionada':' · todas as equipes')}}
-  const ab=$('ab').value;
-  if(ab==='municipio')return {lista:[escMunicipio()],abr:'Município (consolidado)'};
-  const sel=[...SELAG[ab]];
-  if(ab==='unidades'){const us=unidadesDe(comp).filter(u=>sel.includes(u));return {lista:us.length?[escUnidades(us)]:[],abr:us.length+' unidade(s), consolidado'}}
-  const ts=equipesDe(comp,'').filter(t=>sel.includes(t.u+'|'+t.e));return {lista:ts.length?[escEquipes(ts)]:[],abr:ts.length+' equipe(s), consolidado'};
-}
-function moldura(tipo,comp,abr,corpo){
-  const quando=new Date();
-  const id='PAPS-'+comp.replace('-','')+'-'+tipo.slice(0,3).toUpperCase()+'-'+quando.toISOString().slice(0,16).replace(/\D/g,'');
-  $('doc').innerHTML='<div class="capa"><img src="/img/painelaps.svg" alt=""><div><div class="org">Painel APS · Secretaria de Saúde de Cajamar</div><h1>'+esc(TITULOS[tipo])+'</h1></div></div>'
-   +'<dl class="meta"><div><dt>Competência</dt><dd>'+esc(mesLong(comp))+'</dd></div><div><dt>Abrangência</dt><dd>'+esc(abr)+'</dd></div>'
-   +'<div><dt>Emitido por</dt><dd>'+esc(USUARIO?USUARIO.nome:'—')+(USUARIO?' ('+(PERFIL[USUARIO.perfil]||USUARIO.perfil)+')':'')+'</dd></div>'
-   +'<div><dt>Emitido em</dt><dd>'+quando.toLocaleDateString('pt-BR')+' às '+quando.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</dd></div>'
-   +'<div><dt>Código do documento</dt><dd>'+id+'</dd></div><div><dt>Fonte</dt><dd>PEC e-SUS APS (coleta pela extensão) e lançamentos oficiais</dd></div></dl>'
-   +corpo
-   +'<div class="rodadoc"><b>Como ler este documento.</b> Os números são totais coletados do PEC e-SUS e calculados pelo Painel APS conforme as notas técnicas e as deliberações citadas; são uma prévia para acompanhamento, e o resultado oficial é o do Ministério da Saúde e da Secretaria de Estado da Saúde. Valores marcados com ≈ são aproximados e “piso” indica que o valor real é igual ou maior. A explicação de cada coleta e de cada cálculo está em Como coletamos e calculamos (rodapé do Painel). Este documento não contém dados de pacientes.</div>';
-  document.title='Relatório · '+TITULOS[tipo]+' · '+comp;
-}
-
-function desenhar(){
-  const tipo=$('tipo').value,comp=$('comp').value,un=$('un').value;
-  $('pagina').textContent='@page{size:A4 '+($('orient').value==='paisagem'?'landscape':'portrait')+'}';
-  $('lbParcela').hidden=!(tipo==='estadual'||tipo==='completo'||tipo==='geral');
-  $('lbUn').hidden=(tipo==='estadual'||tipo==='agrupado');
-  $('lbEq').hidden=(tipo!=='equipes');
-  $('lbAb').hidden=(tipo!=='agrupado');
-  if(tipo==='equipes'){const atual=$('eq').value;const l=equipesDe(comp,un);$('eq').innerHTML='<option value="">Todas ('+l.length+')</option>'+l.map(x=>'<option value="'+esc(x.u+'|'+x.e)+'">'+esc(x.u+' · '+x.e)+'</option>').join('');$('eq').value=l.some(x=>x.u+'|'+x.e===atual)?atual:''}
-  $('selAg').hidden=!(tipo==='agrupado'&&$('ab').value!=='municipio');
-  if(!comp){$('doc').innerHTML='<p class="vazio">Ainda não há competências coletadas.</p>';return}
-  let corpo='',abr=un||'Município e todas as unidades';
-  if(tipo==='geral')corpo=secGeral(comp,un);
-  if(tipo==='federal'||tipo==='completo')corpo+=(tipo==='completo'?secGeral(comp,un):'')+secFederal(comp,un);
-  if(tipo==='regua'||tipo==='completo')corpo+=secRegua(comp,un);
-  if(tipo==='unidades'||tipo==='equipes'||tipo==='agrupado'){const r=escoposDaTela(tipo,comp,un);abr=r.abr;
-    corpo+=r.lista.length?secEscopos(comp,r.lista,INTRO_ESC+(r.lista[0].lista?' <b>Consolidado:</b> '+esc(r.lista[0].lista)+'.':'')):'<h2>Relatório</h2><p class="vazio">'+(tipo==='agrupado'?'Marque ao menos uma unidade ou equipe na lista acima.':'Sem dados nesta competência.')+'</p>'}
-  if(tipo==='estadual'||tipo==='completo')corpo+=secEstadual();
-  if(tipo==='municipal'||tipo==='completo')corpo+=secMunicipal(comp,un);
-  if(tipo==='absenteismo'||tipo==='completo')corpo+=secAbsenteismo(comp,un);
-  moldura(tipo,comp,tipo==='estadual'?'Município':abr,corpo);
-}
-async function carregarComp(comp){
-  if(!comp)return;
-  if(!dados[comp]){try{const d=await fetch('/api/v1/dados?competencia='+comp,{credentials:'same-origin'});if(d.ok){const j=await d.json();dados[comp]=j.indicadores||[];ABS[comp]=j.absenteismo||[]}}catch(_){}}
-  const uns=[...new Set((dados[comp]||[]).map(l=>l.unidade).filter(u=>u&&u!=='Município'))].sort();
-  const atual=$('un').value;$('un').innerHTML='<option value="">Todas</option>'+uns.map(u=>'<option>'+esc(u)+'</option>').join('');$('un').value=uns.includes(atual)?atual:'';
-  FILAS=null;
-  if(ehGestor()){try{const r=await fetch('/api/v1/filas?competencia='+comp,{credentials:'same-origin'});if(r.ok)FILAS=await r.json()}catch(_){}}
-}
-function csv(){
-  const linhas=[];const lim=s=>'"'+String(s).replace(/\s+/g,' ').trim().replace(/"/g,'""')+'"';
-  linhas.push([lim($('doc').querySelector('h1').textContent)].join(';'));
-  linhas.push(['Competência',lim($('comp').value)].join(';'));
-  $('doc').querySelectorAll('h2,h3,table.csv').forEach(el=>{
-    if(el.tagName==='TABLE')el.querySelectorAll('tr').forEach(tr=>linhas.push([...tr.children].map(c=>lim(c.textContent)).join(';')));
-    else{linhas.push('');linhas.push(lim(el.textContent))}});
-  const blob=new Blob(['﻿'+linhas.join('\r\n')],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='painel-aps-'+$('tipo').value+'-'+$('comp').value+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-}
-function registrar(acao,tipo,detalhe){try{fetch('/api/v1/relatorios/emissao',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({tipo:tipo||$('tipo').value,competencia:$('comp').value,formato:acao,unidade:detalhe!==undefined?detalhe:($('un').value||null)})})}catch(_){}}
-async function iniciar(){
-  const q=new URLSearchParams(location.search);
-  try{const e=await fetch('/api/v1/auth/eu',{credentials:'same-origin'});if(e.ok)USUARIO=(await e.json()).usuario||null}catch(_){}
-  if(!ehGestor())$('tipo').querySelector('option[value=absenteismo]').textContent='Absenteísmo (sem filas por equipe)';
-  try{const r=await fetch('/api/v1/competencias',{credentials:'same-origin'});if(r.status===401){location.replace('/entrar');return}COMPS=((await r.json()).competencias||[]).map(c=>c.competencia).sort().reverse()}catch(_){}
-  $('comp').innerHTML=COMPS.map(c=>'<option value="'+c+'">'+mesLong(c)+'</option>').join('');
-  const t=q.get('tipo');if(t&&[...$('tipo').options].some(o=>o.value===t))$('tipo').value=t;
-  if(q.get('competencia')&&COMPS.includes(q.get('competencia')))$('comp').value=q.get('competencia');
-  $('parcela').innerHTML=PARCELAS.map((P,i)=>'<option value="'+i+'">'+P.n+'</option>').join('');$('parcela').value='2';
-  try{
-    const [a,b,v]=await Promise.all([fetch('/api/v1/estadual/lancamentos',{credentials:'same-origin'}),fetch('/api/v1/composicao',{credentials:'same-origin'}),fetch('/api/v1/vacinas-pec',{credentials:'same-origin'})]);
-    if(v.ok)VAC=(await v.json()).doses||[];
-    if(a.ok){LANC=(await a.json()).vigentes;ERRO=false}else ERRO=true;
-    if(b.ok){const c=(await b.json()).composicao;NESF=c?(c.unidades||[]).reduce((t,u)=>t+(u.equipes||[]).filter(e=>e.tipo==='ESF').length,0):null}
-    // parcela padrão: a mais recente com algum lançamento
-    for(let i=PARCELAS.length-1;i>=0;i--){if(LANC.some(l=>l.periodo===PARCELAS[i].p)){parcela=PARCELAS[i];$('parcela').value=String(i);break}}
-  }catch(_){ERRO=true}
-  await carregarComp($('comp').value);montarSelAg();desenhar();
-  $('tipo').onchange=()=>{$('eq').value='';montarSelAg();desenhar()};$('ab').onchange=()=>{montarSelAg();desenhar()};$('eq').onchange=()=>desenhar();$('orient').onchange=()=>desenhar();$('un').onchange=()=>{$('eq').value='';desenhar()};
-  $('comp').onchange=async()=>{await carregarComp($('comp').value);SELAG.unidades.clear();SELAG.equipes.clear();montarSelAg();desenhar()};
-  $('parcela').onchange=()=>{parcela=PARCELAS[+$('parcela').value];desenhar()};
-  $('imprimir').onclick=()=>{registrar('pdf');window.print()};
-  $('csv').onclick=()=>{registrar('csv');csv()};
-  // Lote: gera o PDF sem mostrar o resultado na tela; depois da impressão a tela volta ao que estava.
-  const modo=()=>document.querySelector('#fdlg [name=modo]:checked').value;
-  const SELLOTE={unidades:new Set(),equipes:new Set()};
-  const montarLote=()=>{const m=modo(),el=$('selLote');el.hidden=(m==='todos');$('erroLote').textContent='';if(m==='todos')return;
-    painelSel(el,itensSel($('comp').value,m),SELLOTE[m],()=>{SELLOTE[m]=new Set(marcadosDe(el))})};
-  $('lote').onclick=()=>{const c=$('comp').value;SELLOTE.unidades=new Set(unidadesDe(c));SELLOTE.equipes=new Set(equipesDe(c,'').map(t=>t.u+'|'+t.e));montarLote();$('dlg').showModal()};
-  document.querySelectorAll('#fdlg [name=modo]').forEach(r=>r.onchange=montarLote);
-  $('cancLote').onclick=()=>$('dlg').close();
-  $('geraLote').onclick=()=>{
-    const comp=$('comp').value,m=modo(),sel=m==='todos'?[]:marcadosDe($('selLote'));
-    const lista=listaLote(comp,m,sel,$('comMun').checked);
-    if(!lista.length){$('erroLote').textContent='Marque ao menos um item para gerar o PDF.';return}
-    $('dlg').close();
-    $('pagina').textContent='@page{size:A4 '+($('orient').value==='paisagem'?'landscape':'portrait')+'}';
-    const abr=({todos:'Município, todas as unidades e equipes (individuais)',unidades:sel.length+' unidade(s), individuais',equipes:sel.length+' equipe(s), individuais'})[m]+' · '+lista.length+' dossiê(s)';
-    moldura('lote',comp,abr,secEscopos(comp,lista,INTRO_ESC));
-    registrar('pdf','lote',(m+' · '+lista.length+' dossiês').slice(0,80));
-    window.addEventListener('afterprint',()=>desenhar(),{once:true});
-    setTimeout(()=>window.print(),150);
-  };
-}
-iniciar();
-</script>
-</body>
+    </style>
+    <link rel="stylesheet" href="/css/relatorio.css" />
+    <link rel="stylesheet" href="/css/tema.css" />
+    <script src="/js/publico/tema.js"></script>
+    <script src="/js/util.js"></script>
+  </head>
+  <body>
+    <header class="topo-site">
+      <div class="topo">
+        <a class="marca" href="/"><img src="/img/painelaps.svg" alt="" width="34" height="34" /><span>Painel APS</span></a>
+        <div id="barra"></div>
+      </div>
+    </header>
+    <main>
+      <div class="ferr" role="group" aria-label="Opções do relatório">
+        <label
+          >Relatório<select id="tipo">
+            <option value="geral">Visão geral</option>
+            <option value="federal">Federal (indicadores)</option>
+            <option value="regua">Federal · réguas (uma página por grupo)</option>
+            <option value="unidades">Por unidade (páginas de cada unidade em sequência)</option>
+            <option value="equipes">Por equipe (páginas de cada equipe em sequência)</option>
+            <option value="agrupado">Agrupado (município, unidades ou equipes consolidadas)</option>
+            <option value="estadual">Estadual (IGM SUS Paulista)</option>
+            <option value="municipal">Acompanhamento municipal</option>
+            <option value="absenteismo">Absenteísmo e filas</option>
+            <option value="completo">Completo (todos)</option>
+          </select></label
+        >
+        <label>Competência<select id="comp"></select></label>
+        <label id="lbUn"
+          >Unidade<select id="un">
+            <option value="">Todas</option>
+          </select></label
+        >
+        <label
+          >Folha<select id="orient">
+            <option value="retrato">Retrato</option>
+            <option value="paisagem">Paisagem (horizontal)</option>
+          </select></label
+        >
+        <label id="lbAb"
+          >Abrangência<select id="ab">
+            <option value="municipio">Município</option>
+            <option value="unidades">Unidades selecionadas</option>
+            <option value="equipes">Equipes selecionadas</option>
+          </select></label
+        >
+        <div id="selAg" class="sel" hidden aria-label="Escolha as unidades ou equipes"></div>
+        <label id="lbEq"
+          >Equipe<select id="eq">
+            <option value="">Todas</option>
+          </select></label
+        >
+        <label id="lbParcela">Parcela estadual<select id="parcela"></select></label>
+        <div class="acoes">
+          <button class="btn" id="imprimir" type="button">Imprimir / salvar em PDF</button
+          ><button class="btn sec" id="lote" type="button">Emitir em lote (PDF)…</button
+          ><button class="btn sec" id="csv" type="button">Baixar CSV</button>
+        </div>
+      </div>
+      <dialog id="dlg" aria-labelledby="dlgt">
+        <form method="dialog" id="fdlg">
+          <h2 id="dlgt">Emitir em lote (PDF)</h2>
+          <p>
+            Gera um único PDF com um dossiê para cada item, sem mostrar na tela. Cada unidade ou equipe começa em página nova, com o nome em
+            destaque no topo de todas as suas páginas.
+          </p>
+          <fieldset>
+            <legend>Modelo</legend>
+            <label
+              ><input type="radio" name="modo" value="todos" checked /> Todos (individuais): município, cada unidade e as equipes
+              dela</label
+            >
+            <label><input type="radio" name="modo" value="unidades" /> Unidades (individuais): só as que eu escolher</label>
+            <label><input type="radio" name="modo" value="equipes" /> Equipes (individuais): só as que eu escolher</label>
+          </fieldset>
+          <div id="selLote" class="sel" hidden></div>
+          <fieldset>
+            <legend>Incluir</legend>
+            <label><input type="checkbox" id="comMun" checked /> Página do município no início</label>
+          </fieldset>
+          <p id="erroLote" role="alert" style="color: #8a1b2a; font-weight: 700"></p>
+          <div class="rod">
+            <button class="btn sec" type="button" id="cancLote">Cancelar</button
+            ><button class="btn" type="button" id="geraLote">Gerar PDF</button>
+          </div>
+        </form>
+      </dialog>
+      <p class="dica">
+        O documento abaixo é o que será impresso ou salvo em PDF (no navegador, escolha “Salvar como PDF”). Só entram totais por município,
+        unidade e equipe; nunca nomes de pacientes nem de profissionais. Cada emissão fica registrada no histórico de quem emitiu.
+      </p>
+      <article id="doc" aria-live="polite"><p class="vazio">Carregando…</p></article>
+    </main>
+    <script src="/js/sessao.js"></script>
+    <script src="/js/catalogo-indicadores.js"></script>
+    <script src="/js/estadual-regras.js"></script>
+    <script src="/js/federal-calculo.js"></script>
+    <script src="/js/estadual-calculo.js"></script>
+    <script src="/js/relatorio-base.js"></script>
+    <script src="/js/relatorio-federal.js"></script>
+    <script src="/js/relatorio-reguas.js"></script>
+    <script src="/js/relatorio-escopos.js"></script>
+    <script src="/js/relatorio-outros.js"></script>
+    <script src="/js/relatorio.js"></script>
+  </body>
 </html>

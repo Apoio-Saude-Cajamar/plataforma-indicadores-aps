@@ -193,6 +193,8 @@ Proteção em camadas:
 
 ## Desenvolvimento
 
+Código formatado com Prettier (`.prettierrc.json`): `npm run formatar` aplica e `npm run formato` só confere. Ficam de fora (`.prettierignore`) o que é gerado por script ou copiado da extensão: `painel/notas.html`, `painel/js/dados-*.js`, `painel/js/extracao.js`. Funções comuns das páginas (como `esc`, que escapa texto para HTML) ficam em `painel/js/util.js`; o relatório é dividido em `painel/js/relatorio-*.js` e `painel/css/relatorio.css`.
+
 ```bash
 npm test        # testes da API e do script de backup (Node 22+, sem instalar nada)
 npm run dev     # API local com o wrangler (requer npm install)

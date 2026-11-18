@@ -28,10 +28,11 @@ export async function criarColeta(env, corpo) {
     return { id, criada: false };
   }
   await env.DB.batch([
-    env.DB.prepare(`INSERT INTO coleta (id, competencia, tipo, versao_extensao, iniciado_em, status, config, recebido_em)
-                    VALUES (?, ?, ?, ?, ?, 'em_andamento', ?, ?)`)
-      .bind(id, comp, tipo, texto(corpo.versaoExtensao, 40), iniciado, config, quando),
-    marcarAlteracao(env, quando)
+    env.DB.prepare(
+      `INSERT INTO coleta (id, competencia, tipo, versao_extensao, iniciado_em, status, config, recebido_em)
+                    VALUES (?, ?, ?, ?, ?, 'em_andamento', ?, ?)`,
+    ).bind(id, comp, tipo, texto(corpo.versaoExtensao, 40), iniciado, config, quando),
+    marcarAlteracao(env, quando),
   ]);
   return { id, criada: true };
 }
@@ -58,12 +59,20 @@ function normalizarLinhas(linhas) {
     const extras = { ...(l.extras && typeof l.extras === 'object' ? l.extras : {}) };
     for (const k of Object.keys(l)) if (!CAMPOS_LINHA.has(k)) extras[k] = l[k];
     return {
-      codigo: String(l.codigo), recorte: l.recorte || 'situacao', unidade: String(l.unidade), unidadeCnes: l.unidadeCnes ?? null,
-      equipe: String(l.equipe), ine: l.ine || null, tipoEquipe: l.tipoEquipe ?? null,
-      numerador: l.numerador ?? null, denominador: l.denominador ?? null, somaPontos: l.somaPontos ?? null,
-      valor: l.valor ?? null, excluidos: l.excluidos ?? null,
+      codigo: String(l.codigo),
+      recorte: l.recorte || 'situacao',
+      unidade: String(l.unidade),
+      unidadeCnes: l.unidadeCnes ?? null,
+      equipe: String(l.equipe),
+      ine: l.ine || null,
+      tipoEquipe: l.tipoEquipe ?? null,
+      numerador: l.numerador ?? null,
+      denominador: l.denominador ?? null,
+      somaPontos: l.somaPontos ?? null,
+      valor: l.valor ?? null,
+      excluidos: l.excluidos ?? null,
       itens: l.itens && typeof l.itens === 'object' ? JSON.stringify(l.itens) : null,
-      extras: Object.keys(extras).length ? JSON.stringify(extras) : null
+      extras: Object.keys(extras).length ? JSON.stringify(extras) : null,
     };
   });
 }
@@ -73,9 +82,13 @@ function normalizarLinhas(linhas) {
 function inserirLista(env, nomeLista, itens, coletaId, chave, comp) {
   const { tabela, campos } = MAPA_ENVIO[nomeLista];
   const colunas = ['coleta_id', 'etapa_chave', 'competencia', ...Object.keys(campos)];
-  const expressoes = ['?', '?', '?', ...Object.values(campos).map(c => `json_extract(value, '${c}')`)];
-  return env.DB.prepare(`INSERT INTO ${tabela} (${colunas.join(', ')}) SELECT ${expressoes.join(', ')} FROM json_each(?)`)
-    .bind(coletaId, chave, comp, JSON.stringify(itens));
+  const expressoes = ['?', '?', '?', ...Object.values(campos).map((c) => `json_extract(value, '${c}')`)];
+  return env.DB.prepare(`INSERT INTO ${tabela} (${colunas.join(', ')}) SELECT ${expressoes.join(', ')} FROM json_each(?)`).bind(
+    coletaId,
+    chave,
+    comp,
+    JSON.stringify(itens),
+  );
 }
 
 export async function gravarEtapa(env, coletaId, corpo) {
@@ -89,9 +102,22 @@ export async function gravarEtapa(env, coletaId, corpo) {
   const quando = agora();
   const comp = coleta.competencia;
 
-  const valoresEtapa = [coletaId, chave, comp, bloco, texto(corpo.unidade, 200), texto(corpo.unidadeCnes, 20), texto(corpo.equipe, 200),
-    texto(corpo.ine, 20), texto(corpo.tipoEquipe, 20), status, Math.max(1, inteiro(corpo.tentativas, 1)), texto(corpo.erro, 2000),
-    coletadoEm, quando];
+  const valoresEtapa = [
+    coletaId,
+    chave,
+    comp,
+    bloco,
+    texto(corpo.unidade, 200),
+    texto(corpo.unidadeCnes, 20),
+    texto(corpo.equipe, 200),
+    texto(corpo.ine, 20),
+    texto(corpo.tipoEquipe, 20),
+    status,
+    Math.max(1, inteiro(corpo.tentativas, 1)),
+    texto(corpo.erro, 2000),
+    coletadoEm,
+    quando,
+  ];
   const sqlEtapa = `INSERT INTO etapa (coleta_id, chave, competencia, bloco, unidade, unidade_cnes, equipe, ine, tipo_equipe,
                                        status, tentativas, erro, coletado_em, recebido_em)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -105,7 +131,7 @@ export async function gravarEtapa(env, coletaId, corpo) {
     // Uma falha nunca apaga dados bons já gravados para a mesma etapa desta coleta.
     const r = await env.DB.batch([
       env.DB.prepare(sqlEtapa + " WHERE etapa.status <> 'ok'").bind(...valoresEtapa),
-      marcarAlteracao(env, quando)
+      marcarAlteracao(env, quando),
     ]);
     return { chave, status, gravada: (r[0].meta?.changes ?? 1) > 0 };
   }
@@ -115,26 +141,40 @@ export async function gravarEtapa(env, coletaId, corpo) {
   const atendimentos = lista(cubos, 'atendimentos');
   const absenteismo = lista(cubos, 'absenteismo');
   const escuta = lista(cubos, 'escuta');
-  const avisos = lista(corpo, 'avisos').map(a => String(typeof a === 'string' ? a : a?.mensagem ?? '').slice(0, 2000)).filter(Boolean);
+  const avisos = lista(corpo, 'avisos')
+    .map((a) => String(typeof a === 'string' ? a : (a?.mensagem ?? '')).slice(0, 2000))
+    .filter(Boolean);
 
-  const comandos = TABELAS_DA_ETAPA.map(t =>
-    env.DB.prepare(`DELETE FROM ${t} WHERE coleta_id = ? AND etapa_chave = ?`).bind(coletaId, chave));
+  const comandos = TABELAS_DA_ETAPA.map((t) =>
+    env.DB.prepare(`DELETE FROM ${t} WHERE coleta_id = ? AND etapa_chave = ?`).bind(coletaId, chave),
+  );
   comandos.push(env.DB.prepare(sqlEtapa).bind(...valoresEtapa));
   if (linhas.length) comandos.push(inserirLista(env, 'linhas', linhas, coletaId, chave, comp));
   if (atendimentos.length) comandos.push(inserirLista(env, 'atendimentos', atendimentos, coletaId, chave, comp));
   if (absenteismo.length) comandos.push(inserirLista(env, 'absenteismo', absenteismo, coletaId, chave, comp));
   if (escuta.length) comandos.push(inserirLista(env, 'escuta', escuta, coletaId, chave, comp));
   if (avisos.length) {
-    comandos.push(env.DB.prepare(`INSERT INTO aviso (coleta_id, etapa_chave, competencia, mensagem, criado_em)
-                                  SELECT ?, ?, ?, value, ? FROM json_each(?)`)
-      .bind(coletaId, chave, comp, quando, JSON.stringify(avisos)));
+    comandos.push(
+      env.DB.prepare(
+        `INSERT INTO aviso (coleta_id, etapa_chave, competencia, mensagem, criado_em)
+                                  SELECT ?, ?, ?, value, ? FROM json_each(?)`,
+      ).bind(coletaId, chave, comp, quando, JSON.stringify(avisos)),
+    );
   }
   comandos.push(marcarAlteracao(env, quando));
   await env.DB.batch(comandos); // tudo ou nada
 
   return {
-    chave, status, gravada: true,
-    contagens: { linhas: linhas.length, atendimentos: atendimentos.length, absenteismo: absenteismo.length, escuta: escuta.length, avisos: avisos.length }
+    chave,
+    status,
+    gravada: true,
+    contagens: {
+      linhas: linhas.length,
+      atendimentos: atendimentos.length,
+      absenteismo: absenteismo.length,
+      escuta: escuta.length,
+      avisos: avisos.length,
+    },
   };
 }
 
@@ -146,11 +186,15 @@ export async function concluirColeta(env, coletaId, corpo) {
   const concluido = dataIso(corpo.concluidoEm || quando, 'concluidoEm');
   await env.DB.batch([
     env.DB.prepare('UPDATE coleta SET status = ?, concluido_em = ? WHERE id = ?').bind(status, concluido, coletaId),
-    marcarAlteracao(env, quando)
+    marcarAlteracao(env, quando),
   ]);
-  const resumo = await env.DB.prepare(`SELECT
+  const resumo = await env.DB.prepare(
+    `SELECT
       SUM(status = 'ok') AS ok, SUM(status = 'falhou') AS falhas, COUNT(*) AS total
-    FROM etapa WHERE coleta_id = ?`).bind(coletaId).first();
+    FROM etapa WHERE coleta_id = ?`,
+  )
+    .bind(coletaId)
+    .first();
   return { id: coletaId, status, etapas: { ok: resumo.ok || 0, falhas: resumo.falhas || 0, total: resumo.total || 0 } };
 }
 
@@ -167,7 +211,11 @@ export async function listarColetas(env, comp) {
 
 export async function etapasDaColeta(env, coletaId) {
   await buscarColeta(env, coletaId);
-  const { results } = await env.DB.prepare(`SELECT chave, bloco, unidade, equipe, ine, status, tentativas, erro,
-           coletado_em AS coletadoEm FROM etapa WHERE coleta_id = ? ORDER BY unidade, equipe, chave`).bind(coletaId).all();
+  const { results } = await env.DB.prepare(
+    `SELECT chave, bloco, unidade, equipe, ine, status, tentativas, erro,
+           coletado_em AS coletadoEm FROM etapa WHERE coleta_id = ? ORDER BY unidade, equipe, chave`,
+  )
+    .bind(coletaId)
+    .all();
   return { id: coletaId, etapas: results };
 }

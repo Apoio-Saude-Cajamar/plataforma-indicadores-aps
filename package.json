@@ -8,10 +8,13 @@
     "test": "node --test --no-warnings=ExperimentalWarning \"test/**/*.test.mjs\"",
     "dev": "wrangler pages dev",
     "migrar": "wrangler d1 migrations apply indicadores-aps --remote",
-    "deploy": "wrangler d1 migrations apply indicadores-aps --remote && wrangler pages deploy"
+    "deploy": "wrangler d1 migrations apply indicadores-aps --remote && wrangler pages deploy",
+    "formatar": "prettier --write \"api/**/*.js\" \"functions/**/*.js\" \"painel/**/*.{js,css,html}\"",
+    "formato": "prettier --check \"api/**/*.js\" \"functions/**/*.js\" \"painel/**/*.{js,css,html}\""
   },
   "devDependencies": {
-    "wrangler": "^4.0.0"
+    "wrangler": "^4.0.0",
+    "prettier": "^3.8.0"
   },
   "engines": {
     "node": ">=22"

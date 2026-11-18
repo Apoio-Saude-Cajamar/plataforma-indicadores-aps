@@ -4,16 +4,24 @@ import { registrar } from './auth.js';
 
 async function sha256(t) {
   const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t));
-  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+  return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, '0')).join('');
 }
 
 function novaChave() {
   const b = crypto.getRandomValues(new Uint8Array(32));
-  return 'pc_' + btoa(String.fromCharCode(...b)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return (
+    'pc_' +
+    btoa(String.fromCharCode(...b))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '')
+  );
 }
 
 export async function listarChaves(env) {
-  const { results } = await env.DB.prepare('SELECT id, nome, prefixo, criada_em AS criadaEm, expira_em AS expiraEm, ultimo_uso AS ultimoUso, revogada_em AS revogadaEm FROM chave_coleta ORDER BY id DESC').all();
+  const { results } = await env.DB.prepare(
+    'SELECT id, nome, prefixo, criada_em AS criadaEm, expira_em AS expiraEm, ultimo_uso AS ultimoUso, revogada_em AS revogadaEm FROM chave_coleta ORDER BY id DESC',
+  ).all();
   return { chaves: results };
 }
 
@@ -28,8 +36,11 @@ export async function criarChave(req, env, adminId) {
     expira = new Date(Date.now() + d * 86400000).toISOString();
   }
   const chave = novaChave();
-  const r = await env.DB.prepare('INSERT INTO chave_coleta (nome, prefixo, hash, criada_por, criada_em, expira_em) VALUES (?, ?, ?, ?, ?, ?)')
-    .bind(nome, chave.slice(0, 7), await sha256(chave), adminId ?? null, agora(), expira).run();
+  const r = await env.DB.prepare(
+    'INSERT INTO chave_coleta (nome, prefixo, hash, criada_por, criada_em, expira_em) VALUES (?, ?, ?, ?, ?, ?)',
+  )
+    .bind(nome, chave.slice(0, 7), await sha256(chave), adminId ?? null, agora(), expira)
+    .run();
   if (adminId) await registrar(env, adminId, 'chave_coleta_criada', String(r.meta.last_row_id), req);
   return { id: r.meta.last_row_id, chave, aviso: 'Copie agora: esta chave não será mostrada de novo.' };
 }
@@ -42,9 +53,11 @@ export async function revogarChave(req, env, id, adminId) {
 }
 
 // Exclusão definitiva: só de chave já revogada ou vencida (uma chave ativa precisa ser revogada antes). Fica o registro no histórico de acessos.
-const INATIVA = "(revogada_em IS NOT NULL OR (expira_em IS NOT NULL AND expira_em < ?))";
+const INATIVA = '(revogada_em IS NOT NULL OR (expira_em IS NOT NULL AND expira_em < ?))';
 export async function excluirChave(req, env, id, adminId) {
-  const l = await env.DB.prepare('SELECT id, nome, prefixo, revogada_em AS rev, expira_em AS exp FROM chave_coleta WHERE id = ?').bind(id).first();
+  const l = await env.DB.prepare('SELECT id, nome, prefixo, revogada_em AS rev, expira_em AS exp FROM chave_coleta WHERE id = ?')
+    .bind(id)
+    .first();
   if (!l) throw new ErroHttp(404, 'Chave não encontrada.');
   if (!l.rev && !(l.exp && l.exp < agora())) throw new ErroHttp(409, 'Esta chave ainda está ativa. Revogue antes de excluir.');
   await env.DB.prepare('DELETE FROM chave_coleta WHERE id = ?').bind(id).run();
@@ -63,9 +76,12 @@ export async function chaveGeradaValida(request, env) {
   const cab = request.headers.get('authorization') || '';
   const token = cab.startsWith('Bearer ') ? cab.slice(7).trim() : '';
   if (!/^pc_[\w-]{30,}$/.test(token)) return false;
-  const l = await env.DB.prepare('SELECT id, expira_em AS exp, revogada_em AS rev, ultimo_uso AS uso FROM chave_coleta WHERE hash = ?').bind(await sha256(token)).first();
+  const l = await env.DB.prepare('SELECT id, expira_em AS exp, revogada_em AS rev, ultimo_uso AS uso FROM chave_coleta WHERE hash = ?')
+    .bind(await sha256(token))
+    .first();
   if (!l || l.rev || (l.exp && l.exp < agora())) return false;
   const t = agora();
-  if (!l.uso || Date.parse(t) - Date.parse(l.uso) > 60000) await env.DB.prepare('UPDATE chave_coleta SET ultimo_uso = ? WHERE id = ?').bind(t, l.id).run();
+  if (!l.uso || Date.parse(t) - Date.parse(l.uso) > 60000)
+    await env.DB.prepare('UPDATE chave_coleta SET ultimo_uso = ? WHERE id = ?').bind(t, l.id).run();
   return true;
 }

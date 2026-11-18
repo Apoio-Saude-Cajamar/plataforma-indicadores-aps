@@ -6,7 +6,8 @@ import { competencia } from './util.js';
 // se nunca deu certo, a última falha. É o que a extensão usa para "tentar de novo as falhas".
 export async function situacao(env, comp) {
   comp = competencia(comp);
-  const { results } = await env.DB.prepare(`
+  const { results } = await env.DB.prepare(
+    `
     WITH ordenadas AS (
       SELECT e.*, ROW_NUMBER() OVER (
         PARTITION BY e.chave
@@ -15,8 +16,11 @@ export async function situacao(env, comp) {
     SELECT chave, bloco, unidade, equipe, ine, status, tentativas, erro,
            coletado_em AS coletadoEm, coleta_id AS coletaId
     FROM ordenadas WHERE ordem = 1
-    ORDER BY unidade, equipe, chave`).bind(comp).all();
-  const ok = results.filter(r => r.status === 'ok').length;
+    ORDER BY unidade, equipe, chave`,
+  )
+    .bind(comp)
+    .all();
+  const ok = results.filter((r) => r.status === 'ok').length;
   return { competencia: comp, total: results.length, ok, pendentes: results.length - ok, etapas: results };
 }
 
@@ -55,21 +59,23 @@ const CONSULTAS_VIGENTES = {
       'escuta', c.escuta, 'periodoOk', json(CASE c.periodo_ok WHEN 1 THEN 'true' WHEN 0 THEN 'false' ELSE 'null' END))) AS dados
     FROM cubo_escuta c
     JOIN etapa_vigente v ON v.coleta_id = c.coleta_id AND v.chave = c.etapa_chave
-    WHERE c.competencia = ?`
+    WHERE c.competencia = ?`,
 };
 
 // Dados vigentes de uma competência, num único JSON: { competencia, indicadores, atendimentos, absenteismo, escuta }.
 export async function dadosVigentes(env, comp) {
   comp = competencia(comp);
   const nomes = Object.keys(CONSULTAS_VIGENTES);
-  const resultados = await env.DB.batch(nomes.map(n => env.DB.prepare(CONSULTAS_VIGENTES[n]).bind(comp)));
+  const resultados = await env.DB.batch(nomes.map((n) => env.DB.prepare(CONSULTAS_VIGENTES[n]).bind(comp)));
   const partes = nomes.map((n, i) => `"${n}":${resultados[i].results[0]?.dados || '[]'}`);
   return `{"competencia":"${comp}",${partes.join(',')}}`;
 }
 
 export async function competencias(env) {
-  const { results } = await env.DB.prepare(`
+  const { results } = await env.DB.prepare(
+    `
     SELECT competencia, COUNT(*) AS coletas, MAX(COALESCE(concluido_em, iniciado_em)) AS ultimaColetaEm
-    FROM coleta WHERE status <> 'cancelada' GROUP BY competencia ORDER BY competencia DESC`).all();
+    FROM coleta WHERE status <> 'cancelada' GROUP BY competencia ORDER BY competencia DESC`,
+  ).all();
   return { competencias: results };
 }

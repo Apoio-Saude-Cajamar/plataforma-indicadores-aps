@@ -1,537 +1,1578 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Filas e faltas · Painel APS</title>
-<link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&amp;display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&amp;display=swap">
-<style>
-body{margin:0}
-a{color:#0E5E8C}a:hover{color:#08405F}
-button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #2F8FD8;outline-offset:2px}
-#aviso{font:16px/1.5 'Source Sans 3','Segoe UI',system-ui,sans-serif;max-width:640px;margin:48px auto;padding:0 24px;color:#14212B}
-</style>
-</head>
-<body>
-<div id="tela"><p id="aviso">Carregando filas e faltas…</p></div>
-<template id="modelo">
-<div style="min-height: 100vh; background: #F4F6F5; color: #14212B; font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif; font-size: 16px; line-height: 1.5">
-
-  <div style="background: #1F3C72; border-bottom: 4px solid #00A7E7; color: #FFFFFF; font-family: 'Montserrat', system-ui, sans-serif">
-    <div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
-      <a href="/" style="display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 19px; color: #FFFFFF; text-decoration: none"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
-      <nav aria-label="Áreas do Painel" style="display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; font-weight: 600; font-size: 14px">
-        <template data-sc="for" list="{{menuSite}}" as="ms"><a href="{{ms.href}}" style="color: #FFFFFF; text-decoration: none; padding: 8px 12px; min-height: 36px; display: inline-flex; align-items: center; border-radius: 99px">{{ms.txt}}</a></template>
-        <template data-sc="if" value="{{temLanc}}"><details style="position: relative"><summary style="color: #FFFFFF; padding: 8px 12px; min-height: 36px; display: inline-flex; align-items: center; border-radius: 99px; cursor: pointer; list-style: none">Lançamentos ▾</summary>
-          <div style="position: absolute; z-index: 20; top: 100%; left: 0; min-width: 230px; margin-top: 6px; background: #FFFFFF; border: 2px solid #D5DCE8; border-radius: 12px; padding: 6px; box-shadow: 0 8px 24px rgba(20,33,43,.18); display: flex; flex-direction: column">
-            <a href="/lancamentos" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Metas do PAS</a>
-            <a href="/lancamentos-vacinas" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Coberturas vacinais</a>
-            <a href="/estadual#t-form" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Cofinanciamento estadual</a></div></details></template>
-      </nav>
-      <template data-sc="if" value="{{temUsuario}}"><details style="position: relative; font-size: 13px; font-weight: 600"><summary style="list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,.6); border-radius: 99px; padding: 4px 12px 4px 4px; min-height: 36px"><span style="width: 26px; height: 26px; border-radius: 50%; background: #00A7E7; display: inline-grid; place-items: center; font-weight: 800">{{usuarioInicial}}</span>{{usuarioNome}} ▾</summary>
-        <div style="position: absolute; z-index: 30; right: 0; top: 100%; margin-top: 6px; min-width: 260px; background: #FFFFFF; color: #1B2340; border: 2px solid #D5DCE8; border-radius: 12px; padding: 6px; box-shadow: 0 8px 24px rgba(20,33,43,.18); display: flex; flex-direction: column; font-size: 14px">
-          <template data-sc="for" list="{{itensUsuario}}" as="iu"><a href="{{iu.href}}" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-weight: {{iu.peso}}">{{iu.txt}}</a></template>
-          <button type="button" onClick="{{sair}}" style="font: inherit; color: #1B2340; background: none; border: 0; border-top: 1px solid #E3E8F0; margin-top: 6px; text-align: left; padding: 10px 12px 8px; cursor: pointer">Sair</button></div></details></template>
-    </div>
-  </div>
-  <header style="background: #1F3C72; border-bottom: 1px solid #00A7E7; color: #FFFFFF">
-    <div style="max-width: 1280px; margin: 0 auto; padding: 12px 24px 0; display: flex; flex-direction: column; gap: 8px">
-      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
-        <div style="display: flex; align-items: center; gap: 12px">
-          <div style="display: flex; flex-direction: column; line-height: 1.2">
-            <span style="font-weight: 700; font-size: 17px">Filas e faltas</span>
-            <span style="font-size: 13px; color: rgba(255,255,255,.85)">Médicos e enfermeiros da Atenção Primária · Cajamar</span>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Filas e faltas · Painel APS</title>
+    <link rel="icon" href="/img/painelaps.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&amp;display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&amp;display=swap" />
+    <style>
+      body {
+        margin: 0;
+      }
+      a {
+        color: #0e5e8c;
+      }
+      a:hover {
+        color: #08405f;
+      }
+      button:focus-visible,
+      select:focus-visible,
+      a:focus-visible {
+        outline: 3px solid #2f8fd8;
+        outline-offset: 2px;
+      }
+      #aviso {
+        font:
+          16px/1.5 'Source Sans 3',
+          'Segoe UI',
+          system-ui,
+          sans-serif;
+        max-width: 640px;
+        margin: 48px auto;
+        padding: 0 24px;
+        color: #14212b;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="tela"><p id="aviso">Carregando filas e faltas…</p></div>
+    <template id="modelo">
+      <div
+        style="
+          min-height: 100vh;
+          background: #f4f6f5;
+          color: #14212b;
+          font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+          font-size: 16px;
+          line-height: 1.5;
+        "
+      >
+        <div
+          style="background: #1f3c72; border-bottom: 4px solid #00a7e7; color: #ffffff; font-family: 'Montserrat', system-ui, sans-serif"
+        >
+          <div
+            style="
+              max-width: 1280px;
+              margin: 0 auto;
+              padding: 14px 24px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 16px;
+              flex-wrap: wrap;
+            "
+          >
+            <a
+              href="/"
+              style="
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-weight: 800;
+                font-size: 19px;
+                color: #ffffff;
+                text-decoration: none;
+              "
+              ><img src="/img/painelaps.svg" alt="" width="34" height="34" /><span>Painel APS</span></a
+            >
+            <nav
+              aria-label="Áreas do Painel"
+              style="display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; font-weight: 600; font-size: 14px"
+            >
+              <template data-sc="for" list="{{menuSite}}" as="ms"
+                ><a
+                  href="{{ms.href}}"
+                  style="
+                    color: #ffffff;
+                    text-decoration: none;
+                    padding: 8px 12px;
+                    min-height: 36px;
+                    display: inline-flex;
+                    align-items: center;
+                    border-radius: 99px;
+                  "
+                  >{{ms.txt}}</a
+                ></template
+              >
+              <template data-sc="if" value="{{temLanc}}"
+                ><details style="position: relative">
+                  <summary
+                    style="
+                      color: #ffffff;
+                      padding: 8px 12px;
+                      min-height: 36px;
+                      display: inline-flex;
+                      align-items: center;
+                      border-radius: 99px;
+                      cursor: pointer;
+                      list-style: none;
+                    "
+                  >
+                    Lançamentos ▾
+                  </summary>
+                  <div
+                    style="
+                      position: absolute;
+                      z-index: 20;
+                      top: 100%;
+                      left: 0;
+                      min-width: 230px;
+                      margin-top: 6px;
+                      background: #ffffff;
+                      border: 2px solid #d5dce8;
+                      border-radius: 12px;
+                      padding: 6px;
+                      box-shadow: 0 8px 24px rgba(20, 33, 43, 0.18);
+                      display: flex;
+                      flex-direction: column;
+                    "
+                  >
+                    <a
+                      href="/lancamentos"
+                      style="color: #1b2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap"
+                      >Metas do PAS</a
+                    >
+                    <a
+                      href="/lancamentos-vacinas"
+                      style="color: #1b2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap"
+                      >Coberturas vacinais</a
+                    >
+                    <a
+                      href="/estadual#t-form"
+                      style="color: #1b2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap"
+                      >Cofinanciamento estadual</a
+                    >
+                  </div>
+                </details></template
+              >
+            </nav>
+            <template data-sc="if" value="{{temUsuario}}"
+              ><details style="position: relative; font-size: 13px; font-weight: 600">
+                <summary
+                  style="
+                    list-style: none;
+                    cursor: pointer;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    border: 1px solid rgba(255, 255, 255, 0.6);
+                    border-radius: 99px;
+                    padding: 4px 12px 4px 4px;
+                    min-height: 36px;
+                  "
+                >
+                  <span
+                    style="
+                      width: 26px;
+                      height: 26px;
+                      border-radius: 50%;
+                      background: #00a7e7;
+                      display: inline-grid;
+                      place-items: center;
+                      font-weight: 800;
+                    "
+                    >{{usuarioInicial}}</span
+                  >{{usuarioNome}} ▾
+                </summary>
+                <div
+                  style="
+                    position: absolute;
+                    z-index: 30;
+                    right: 0;
+                    top: 100%;
+                    margin-top: 6px;
+                    min-width: 260px;
+                    background: #ffffff;
+                    color: #1b2340;
+                    border: 2px solid #d5dce8;
+                    border-radius: 12px;
+                    padding: 6px;
+                    box-shadow: 0 8px 24px rgba(20, 33, 43, 0.18);
+                    display: flex;
+                    flex-direction: column;
+                    font-size: 14px;
+                  "
+                >
+                  <template data-sc="for" list="{{itensUsuario}}" as="iu"
+                    ><a
+                      href="{{iu.href}}"
+                      style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-weight: {{iu.peso}}"
+                      >{{iu.txt}}</a
+                    ></template
+                  >
+                  <button
+                    type="button"
+                    onClick="{{sair}}"
+                    style="
+                      font: inherit;
+                      color: #1b2340;
+                      background: none;
+                      border: 0;
+                      border-top: 1px solid #e3e8f0;
+                      margin-top: 6px;
+                      text-align: left;
+                      padding: 10px 12px 8px;
+                      cursor: pointer;
+                    "
+                  >
+                    Sair
+                  </button>
+                </div>
+              </details></template
+            >
           </div>
         </div>
-        <span style="font-size: 13px; color: rgba(255,255,255,.85)">{{periodoTxt}}</span>
-      </div>
-      <nav aria-label="Visão" style="display: flex; flex-wrap: wrap; gap: 0 4px">
-        <template data-sc="for" list="{{abas}}" as="ab">
-          <button type="button" onClick="{{ab.escolher}}" aria-pressed="{{ab.pressionado}}" style="font: inherit; background: none; border: 0; border-bottom: 3px solid {{ab.borda}}; color: {{ab.cor}}; font-weight: {{ab.peso}}; padding: 10px 14px; min-height: 44px; cursor: pointer">{{ab.titulo}}</button>
-        </template>
-      </nav>
-    </div>
-  </header>
+        <header style="background: #1f3c72; border-bottom: 1px solid #00a7e7; color: #ffffff">
+          <div style="max-width: 1280px; margin: 0 auto; padding: 12px 24px 0; display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
+              <div style="display: flex; align-items: center; gap: 12px">
+                <div style="display: flex; flex-direction: column; line-height: 1.2">
+                  <span style="font-weight: 700; font-size: 17px">Filas e faltas</span>
+                  <span style="font-size: 13px; color: rgba(255, 255, 255, 0.85)">Médicos e enfermeiros da Atenção Primária · Cajamar</span>
+                </div>
+              </div>
+              <span style="font-size: 13px; color: rgba(255, 255, 255, 0.85)">{{periodoTxt}}</span>
+            </div>
+            <nav aria-label="Visão" style="display: flex; flex-wrap: wrap; gap: 0 4px">
+              <template data-sc="for" list="{{abas}}" as="ab">
+                <button
+                  type="button"
+                  onClick="{{ab.escolher}}"
+                  aria-pressed="{{ab.pressionado}}"
+                  style="font: inherit; background: none; border: 0; border-bottom: 3px solid {{ab.borda}}; color: {{ab.cor}}; font-weight: {{ab.peso}}; padding: 10px 14px; min-height: 44px; cursor: pointer"
+                >
+                  {{ab.titulo}}
+                </button>
+              </template>
+            </nav>
+          </div>
+        </header>
 
-  <div style="background: #FFFFFF; border-bottom: 1px solid #DCE2E0">
-    <div role="search" aria-label="Filtros" style="max-width: 1280px; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end">
-      <div style="display: flex; flex-direction: column; gap: 4px">
-        <label for="f-co" style="font-size: 13px; font-weight: 600; color: #33414C">Mês</label>
-        <select id="f-co" value="{{compSel}}" onChange="{{escolherComp}}" style="font: inherit; padding: 9px 12px; min-height: 44px; border: 1px solid #B9C4C9; border-radius: 8px; background: #FFFFFF">
-          <template data-sc="for" list="{{opcoesComp}}" as="c"><option value="{{c.id}}">{{c.rotulo}}</option></template>
-        </select>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 4px">
-        <label for="f-un" style="font-size: 13px; font-weight: 600; color: #33414C">Unidade</label>
-        <select id="f-un" value="{{unidadeSel}}" onChange="{{escolherUnidade}}" style="font: inherit; padding: 9px 12px; min-height: 44px; border: 1px solid #B9C4C9; border-radius: 8px; background: #FFFFFF; max-width: 260px">
-          <option value="">Todas as unidades</option>
-          <template data-sc="for" list="{{opcoesUnidade}}" as="u"><option value="{{u.nome}}">{{u.nome}}</option></template>
-        </select>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 4px">
-        <label for="f-eq" style="font-size: 13px; font-weight: 600; color: #33414C">Equipe</label>
-        <select id="f-eq" value="{{equipeSel}}" onChange="{{escolherEquipe}}" style="font: inherit; padding: 9px 12px; min-height: 44px; border: 1px solid #B9C4C9; border-radius: 8px; background: #FFFFFF; max-width: 240px">
-          <option value="">Todas as equipes</option>
-          <template data-sc="for" list="{{opcoesEquipe}}" as="e"><option value="{{e.nome}}">{{e.nome}}</option></template>
-        </select>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 4px">
-        <span style="font-size: 13px; font-weight: 600; color: #33414C">Categoria</span>
-        <div role="group" aria-label="Categoria" style="display: flex; border: 1px solid #B9C4C9; border-radius: 8px; overflow: hidden">
-          <template data-sc="for" list="{{botoesCat}}" as="b">
-            <button type="button" aria-pressed="{{b.pressionado}}" onClick="{{b.escolher}}" style="font: inherit; min-height: 44px; padding: 0 14px; border: 0; cursor: pointer; background: {{b.fundo}}; color: {{b.cor}}; font-weight: {{b.peso}}">{{b.rotulo}}</button>
+        <div style="background: #ffffff; border-bottom: 1px solid #dce2e0">
+          <div
+            role="search"
+            aria-label="Filtros"
+            style="max-width: 1280px; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end"
+          >
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <label for="f-co" style="font-size: 13px; font-weight: 600; color: #33414c">Mês</label>
+              <select
+                id="f-co"
+                value="{{compSel}}"
+                onChange="{{escolherComp}}"
+                style="
+                  font: inherit;
+                  padding: 9px 12px;
+                  min-height: 44px;
+                  border: 1px solid #b9c4c9;
+                  border-radius: 8px;
+                  background: #ffffff;
+                "
+              >
+                <template data-sc="for" list="{{opcoesComp}}" as="c"><option value="{{c.id}}">{{c.rotulo}}</option></template>
+              </select>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <label for="f-un" style="font-size: 13px; font-weight: 600; color: #33414c">Unidade</label>
+              <select
+                id="f-un"
+                value="{{unidadeSel}}"
+                onChange="{{escolherUnidade}}"
+                style="
+                  font: inherit;
+                  padding: 9px 12px;
+                  min-height: 44px;
+                  border: 1px solid #b9c4c9;
+                  border-radius: 8px;
+                  background: #ffffff;
+                  max-width: 260px;
+                "
+              >
+                <option value="">Todas as unidades</option>
+                <template data-sc="for" list="{{opcoesUnidade}}" as="u"><option value="{{u.nome}}">{{u.nome}}</option></template>
+              </select>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <label for="f-eq" style="font-size: 13px; font-weight: 600; color: #33414c">Equipe</label>
+              <select
+                id="f-eq"
+                value="{{equipeSel}}"
+                onChange="{{escolherEquipe}}"
+                style="
+                  font: inherit;
+                  padding: 9px 12px;
+                  min-height: 44px;
+                  border: 1px solid #b9c4c9;
+                  border-radius: 8px;
+                  background: #ffffff;
+                  max-width: 240px;
+                "
+              >
+                <option value="">Todas as equipes</option>
+                <template data-sc="for" list="{{opcoesEquipe}}" as="e"><option value="{{e.nome}}">{{e.nome}}</option></template>
+              </select>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <span style="font-size: 13px; font-weight: 600; color: #33414c">Categoria</span>
+              <div
+                role="group"
+                aria-label="Categoria"
+                style="display: flex; border: 1px solid #b9c4c9; border-radius: 8px; overflow: hidden"
+              >
+                <template data-sc="for" list="{{botoesCat}}" as="b">
+                  <button
+                    type="button"
+                    aria-pressed="{{b.pressionado}}"
+                    onClick="{{b.escolher}}"
+                    style="font: inherit; min-height: 44px; padding: 0 14px; border: 0; cursor: pointer; background: {{b.fundo}}; color: {{b.cor}}; font-weight: {{b.peso}}"
+                  >
+                    {{b.rotulo}}
+                  </button>
+                </template>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <label for="f-pr" style="font-size: 13px; font-weight: 600; color: #33414c">Profissional</label>
+              <select
+                id="f-pr"
+                value="{{profSel}}"
+                onChange="{{escolherProf}}"
+                style="
+                  font: inherit;
+                  padding: 9px 12px;
+                  min-height: 44px;
+                  border: 1px solid #b9c4c9;
+                  border-radius: 8px;
+                  background: #ffffff;
+                  max-width: 260px;
+                "
+              >
+                <option value="">Todos</option>
+                <template data-sc="for" list="{{opcoesProf}}" as="p"><option value="{{p.id}}">{{p.nome}}</option></template>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <main style="max-width: 1280px; margin: 0 auto; padding: 24px 24px 48px; display: flex; flex-direction: column; gap: 22px">
+          <div style="display: flex; flex-direction: column; gap: 4px; max-width: 840px">
+            <h1 style="margin: 0; font-size: 30px; font-weight: 700; line-height: 1.15; color: #1f3c72">{{titulo}}</h1>
+            <p style="margin: 0; color: #566370">
+              Quanto as pessoas faltam e quanto esperam por uma vaga. Absenteísmo = faltas ÷ (atendimentos + faltas). Próxima vaga = dias
+              corridos até o primeiro dia com horário livre na agenda do PEC.
+            </p>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 16px">
+            <template data-sc="for" list="{{resumo}}" as="r">
+              <div
+                style="
+                  flex: 1 1 220px;
+                  background: #ffffff;
+                  border: 1px solid #dce2e0;
+                  border-radius: 12px;
+                  padding: 16px 20px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 2px;
+                "
+              >
+                <span style="font-size: 13px; font-weight: 600; color: #566370">{{r.rotulo}}</span>
+                <span style="font-size: 30px; font-weight: 700; line-height: 1.15; color: {{r.cor}}">{{r.grande}}</span>
+                <span style="font-size: 14px; color: #566370">{{r.texto}}</span>
+              </div>
+            </template>
+          </div>
+
+          <template data-sc="if" value="{{abaLista}}">
+            <section
+              aria-labelledby="t-lin"
+              style="
+                background: #ffffff;
+                border: 1px solid #dce2e0;
+                border-radius: 12px;
+                padding: 18px 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+              "
+            >
+              <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
+                <div style="display: flex; flex-direction: column; gap: 2px">
+                  <h2 id="t-lin" style="margin: 0; font-size: 20px; font-weight: 700">Unidades, equipes e profissionais</h2>
+                  <span style="font-size: 14px; color: #566370"
+                    >Clique numa unidade para ver as equipes, e numa equipe para ver os profissionais.</span
+                  >
+                </div>
+                <div
+                  role="group"
+                  aria-label="Ordenar por"
+                  style="display: flex; border: 1px solid #b9c4c9; border-radius: 8px; overflow: hidden"
+                >
+                  <template data-sc="for" list="{{botoesOrdem}}" as="b">
+                    <button
+                      type="button"
+                      aria-pressed="{{b.pressionado}}"
+                      onClick="{{b.escolher}}"
+                      style="font: inherit; min-height: 44px; padding: 0 14px; border: 0; cursor: pointer; background: {{b.fundo}}; color: {{b.cor}}; font-weight: {{b.peso}}"
+                    >
+                      {{b.rotulo}}
+                    </button>
+                  </template>
+                </div>
+              </div>
+              <div style="overflow-x: auto">
+                <div style="min-width: 880px; display: flex; flex-direction: column">
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: minmax(0, 290px) minmax(0, 1fr) 120px minmax(0, 1fr) 100px;
+                      gap: 16px;
+                      align-items: end;
+                      padding: 6px 8px;
+                      font-size: 13px;
+                      font-weight: 600;
+                      color: #33414c;
+                      border-bottom: 1px solid #dce2e0;
+                    "
+                  >
+                    <span>Unidade · equipe · profissional</span>
+                    <div style="display: flex; justify-content: space-between">
+                      <span>Absenteísmo · 0%</span><span>meta {{metaTxt}}</span><span>50%</span>
+                    </div>
+                    <span style="text-align: right">Faltas ÷ agendados</span>
+                    <div style="display: flex; justify-content: space-between">
+                      <span>Próxima vaga · hoje</span><span>15 dias</span><span>30</span><span>60 ou mais</span>
+                    </div>
+                    <span style="text-align: right">Espera</span>
+                  </div>
+                  <template data-sc="for" list="{{linhas}}" as="l">
+                    <div
+                      style="display: grid; grid-template-columns: minmax(0, 290px) minmax(0, 1fr) 120px minmax(0, 1fr) 100px; gap: 16px; align-items: center; padding: {{l.pad}}; border-bottom: 1px solid #EEF1F0; background: {{l.fundo}}"
+                    >
+                      <div style="display: flex; flex-direction: column; min-width: 0; line-height: 1.3; padding-left: {{l.recuo}}">
+                        <template data-sc="if" value="{{l.abrivel}}">
+                          <button
+                            type="button"
+                            onClick="{{l.alternar}}"
+                            aria-expanded="{{l.expandido}}"
+                            style="font: inherit; color: inherit; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; font-weight: {{l.peso}}; min-height: 28px"
+                          >
+                            <span aria-hidden="true" style="display: inline-block; width: 18px; color: #566370">{{l.seta}}</span>{{l.nome}}
+                          </button>
+                        </template>
+                        <template data-sc="if" value="{{l.folha}}">
+                          <span style="font-weight: 600; overflow-wrap: anywhere">{{l.nome}}</span>
+                        </template>
+                        <span style="font-size: 13px; color: #566370; padding-left: {{l.recuoSub}}">{{l.sub}}</span>
+                      </div>
+                      <div role="img" aria-label="{{l.descFaltas}}" style="position: relative; height: 22px">
+                        <div
+                          style="
+                            position: absolute;
+                            left: 0;
+                            right: 0;
+                            top: 7px;
+                            height: 8px;
+                            border-radius: 4px;
+                            overflow: hidden;
+                            display: flex;
+                          "
+                        >
+                          <div style="width: {{metaPos}}; background: #D3EBDD"></div>
+                          <div style="flex: 1; background: #f6d5d1"></div>
+                        </div>
+                        <div
+                          style="position: absolute; left: 0; top: 7px; height: 8px; border-radius: 4px; width: {{l.faltasPos}}; background: {{l.faltasCor}}"
+                        ></div>
+                        <div style="position: absolute; top: 1px; height: 20px; width: 2px; left: {{metaPos}}; background: #14212B"></div>
+                      </div>
+                      <div style="text-align: right; line-height: 1.25">
+                        <span style="font-weight: 700; font-variant-numeric: tabular-nums">{{l.faltasTxt}}</span><br />
+                        <span style="font-size: 13px; color: #566370; font-variant-numeric: tabular-nums">{{l.conta}}</span>
+                      </div>
+                      <div role="img" aria-label="{{l.descEspera}}" style="position: relative; height: 22px">
+                        <div
+                          style="
+                            position: absolute;
+                            left: 0;
+                            right: 0;
+                            top: 7px;
+                            height: 8px;
+                            border-radius: 4px;
+                            overflow: hidden;
+                            display: flex;
+                          "
+                        >
+                          <div style="width: 25%; background: #d3ebdd"></div>
+                          <div style="width: 25%; background: #f8ebc6"></div>
+                          <div style="flex: 1; background: #f6d5d1"></div>
+                        </div>
+                        <span
+                          style="position: absolute; top: 2px; left: {{l.esperaPos}}; margin-left: -9px; width: 18px; height: 18px; border-radius: {{l.esperaRaio}}; background: {{l.esperaCor}}; box-shadow: 0 0 0 2px #FFFFFF; opacity: {{l.esperaOp}}"
+                        ></span>
+                      </div>
+                      <div style="text-align: right; line-height: 1.25">
+                        <span style="font-weight: 700; font-variant-numeric: tabular-nums">{{l.esperaTxt}}</span><br />
+                        <span style="font-size: 13px; color: #566370">{{l.esperaSub}}</span>
+                      </div>
+                    </div>
+                  </template>
+                  <template data-sc="if" value="{{semLinhas}}">
+                    <p style="margin: 14px 8px; color: #566370">Nenhum profissional neste recorte. Troque os filtros.</p>
+                  </template>
+                </div>
+              </div>
+              <p style="margin: 0; font-size: 13px; color: #566370">
+                Traço preto: meta de absenteísmo. Na unidade e na equipe, o absenteísmo soma faltas e agendados de todos, e a espera é a
+                mediana dos profissionais com agenda lida. Faixas de espera: até 15 dias, de 16 a 30 e acima de 30.
+              </p>
+            </section>
           </template>
-        </div>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 4px">
-        <label for="f-pr" style="font-size: 13px; font-weight: 600; color: #33414C">Profissional</label>
-        <select id="f-pr" value="{{profSel}}" onChange="{{escolherProf}}" style="font: inherit; padding: 9px 12px; min-height: 44px; border: 1px solid #B9C4C9; border-radius: 8px; background: #FFFFFF; max-width: 260px">
-          <option value="">Todos</option>
-          <template data-sc="for" list="{{opcoesProf}}" as="p"><option value="{{p.id}}">{{p.nome}}</option></template>
-        </select>
-      </div>
-    </div>
-  </div>
 
-  <main style="max-width: 1280px; margin: 0 auto; padding: 24px 24px 48px; display: flex; flex-direction: column; gap: 22px">
-    <div style="display: flex; flex-direction: column; gap: 4px; max-width: 840px">
-      <h1 style="margin: 0; font-size: 30px; font-weight: 700; line-height: 1.15; color: #1F3C72">{{titulo}}</h1>
-      <p style="margin: 0; color: #566370">Quanto as pessoas faltam e quanto esperam por uma vaga. Absenteísmo = faltas ÷ (atendimentos + faltas). Próxima vaga = dias corridos até o primeiro dia com horário livre na agenda do PEC.</p>
-    </div>
-
-    <div style="display: flex; flex-wrap: wrap; gap: 16px">
-      <template data-sc="for" list="{{resumo}}" as="r">
-        <div style="flex: 1 1 220px; background: #FFFFFF; border: 1px solid #DCE2E0; border-radius: 12px; padding: 16px 20px; display: flex; flex-direction: column; gap: 2px">
-          <span style="font-size: 13px; font-weight: 600; color: #566370">{{r.rotulo}}</span>
-          <span style="font-size: 30px; font-weight: 700; line-height: 1.15; color: {{r.cor}}">{{r.grande}}</span>
-          <span style="font-size: 14px; color: #566370">{{r.texto}}</span>
-        </div>
-      </template>
-    </div>
-
-    <template data-sc="if" value="{{abaLista}}">
-      <section aria-labelledby="t-lin" style="background: #FFFFFF; border: 1px solid #DCE2E0; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px">
-        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
-          <div style="display: flex; flex-direction: column; gap: 2px">
-            <h2 id="t-lin" style="margin: 0; font-size: 20px; font-weight: 700">Unidades, equipes e profissionais</h2>
-            <span style="font-size: 14px; color: #566370">Clique numa unidade para ver as equipes, e numa equipe para ver os profissionais.</span>
-          </div>
-          <div role="group" aria-label="Ordenar por" style="display: flex; border: 1px solid #B9C4C9; border-radius: 8px; overflow: hidden">
-            <template data-sc="for" list="{{botoesOrdem}}" as="b">
-              <button type="button" aria-pressed="{{b.pressionado}}" onClick="{{b.escolher}}" style="font: inherit; min-height: 44px; padding: 0 14px; border: 0; cursor: pointer; background: {{b.fundo}}; color: {{b.cor}}; font-weight: {{b.peso}}">{{b.rotulo}}</button>
-            </template>
-          </div>
-        </div>
-        <div style="overflow-x: auto">
-          <div style="min-width: 880px; display: flex; flex-direction: column">
-            <div style="display: grid; grid-template-columns: minmax(0, 290px) minmax(0, 1fr) 120px minmax(0, 1fr) 100px; gap: 16px; align-items: end; padding: 6px 8px; font-size: 13px; font-weight: 600; color: #33414C; border-bottom: 1px solid #DCE2E0">
-              <span>Unidade · equipe · profissional</span>
-              <div style="display: flex; justify-content: space-between"><span>Absenteísmo · 0%</span><span>meta {{metaTxt}}</span><span>50%</span></div>
-              <span style="text-align: right">Faltas ÷ agendados</span>
-              <div style="display: flex; justify-content: space-between"><span>Próxima vaga · hoje</span><span>15 dias</span><span>30</span><span>60 ou mais</span></div>
-              <span style="text-align: right">Espera</span>
-            </div>
-            <template data-sc="for" list="{{linhas}}" as="l">
-              <div style="display: grid; grid-template-columns: minmax(0, 290px) minmax(0, 1fr) 120px minmax(0, 1fr) 100px; gap: 16px; align-items: center; padding: {{l.pad}}; border-bottom: 1px solid #EEF1F0; background: {{l.fundo}}">
-                <div style="display: flex; flex-direction: column; min-width: 0; line-height: 1.3; padding-left: {{l.recuo}}">
-                  <template data-sc="if" value="{{l.abrivel}}">
-                    <button type="button" onClick="{{l.alternar}}" aria-expanded="{{l.expandido}}" style="font: inherit; color: inherit; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; font-weight: {{l.peso}}; min-height: 28px"><span aria-hidden="true" style="display: inline-block; width: 18px; color: #566370">{{l.seta}}</span>{{l.nome}}</button>
-                  </template>
-                  <template data-sc="if" value="{{l.folha}}">
-                    <span style="font-weight: 600; overflow-wrap: anywhere">{{l.nome}}</span>
-                  </template>
-                  <span style="font-size: 13px; color: #566370; padding-left: {{l.recuoSub}}">{{l.sub}}</span>
-                </div>
-                <div role="img" aria-label="{{l.descFaltas}}" style="position: relative; height: 22px">
-                  <div style="position: absolute; left: 0; right: 0; top: 7px; height: 8px; border-radius: 4px; overflow: hidden; display: flex">
-                    <div style="width: {{metaPos}}; background: #D3EBDD"></div><div style="flex: 1; background: #F6D5D1"></div>
+          <template data-sc="if" value="{{abaMapa}}">
+            <section
+              aria-labelledby="t-quad"
+              style="
+                background: #ffffff;
+                border: 1px solid #dce2e0;
+                border-radius: 12px;
+                padding: 18px 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+              "
+            >
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <h2 id="t-quad" style="margin: 0; font-size: 20px; font-weight: 700">Onde agir primeiro</h2>
+                <span style="font-size: 14px; color: #566370"
+                  >Cada ponto numerado é um profissional; a lista ao lado diz quem é cada número. Clique num ponto ou num nome para
+                  destacar.</span
+                >
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+                <div style="flex: 3 1 520px; min-width: 0; display: flex; gap: 10px">
+                  <div style="flex: none; width: 22px; display: flex; align-items: center; justify-content: center">
+                    <span
+                      style="
+                        writing-mode: vertical-rl;
+                        transform: rotate(180deg);
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: #33414c;
+                        white-space: nowrap;
+                      "
+                      >Dias até a próxima vaga (0 a 60 ou mais)</span
+                    >
                   </div>
-                  <div style="position: absolute; left: 0; top: 7px; height: 8px; border-radius: 4px; width: {{l.faltasPos}}; background: {{l.faltasCor}}"></div>
-                  <div style="position: absolute; top: 1px; height: 20px; width: 2px; left: {{metaPos}}; background: #14212B"></div>
-                </div>
-                <div style="text-align: right; line-height: 1.25">
-                  <span style="font-weight: 700; font-variant-numeric: tabular-nums">{{l.faltasTxt}}</span><br>
-                  <span style="font-size: 13px; color: #566370; font-variant-numeric: tabular-nums">{{l.conta}}</span>
-                </div>
-                <div role="img" aria-label="{{l.descEspera}}" style="position: relative; height: 22px">
-                  <div style="position: absolute; left: 0; right: 0; top: 7px; height: 8px; border-radius: 4px; overflow: hidden; display: flex">
-                    <div style="width: 25%; background: #D3EBDD"></div><div style="width: 25%; background: #F8EBC6"></div><div style="flex: 1; background: #F6D5D1"></div>
+                  <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+                    <div
+                      style="
+                        position: relative;
+                        height: 460px;
+                        border-left: 1px solid #b9c4c9;
+                        border-bottom: 1px solid #b9c4c9;
+                        background: #ffffff;
+                      "
+                    >
+                      <div style="position: absolute; left: {{metaPos}}; top: 0; height: 50%; right: 0; background: #FBF1EF"></div>
+                      <div
+                        style="position: absolute; left: {{metaPos}}; top: 0; bottom: 0; width: 0; border-left: 2px dashed #14212B"
+                      ></div>
+                      <div style="position: absolute; top: 50%; left: 0; right: 0; height: 0; border-top: 2px dashed #8a979f"></div>
+                      <span
+                        style="position: absolute; left: 8px; top: 6px; font-size: 13px; font-weight: 600; color: #6e4d00; max-width: 40%"
+                        >Fila longa, poucas faltas: falta agenda</span
+                      >
+                      <span
+                        style="
+                          position: absolute;
+                          right: 8px;
+                          top: 6px;
+                          font-size: 13px;
+                          font-weight: 700;
+                          color: #8e2318;
+                          text-align: right;
+                          max-width: 44%;
+                        "
+                        >Fila longa e muitas faltas: confirmar consultas e encaixar</span
+                      >
+                      <span
+                        style="
+                          position: absolute;
+                          left: 8px;
+                          bottom: 6px;
+                          font-size: 13px;
+                          font-weight: 600;
+                          color: #1d5a3a;
+                          max-width: 40%;
+                        "
+                        >Vaga rápida e poucas faltas</span
+                      >
+                      <span
+                        style="
+                          position: absolute;
+                          right: 8px;
+                          bottom: 6px;
+                          font-size: 13px;
+                          font-weight: 600;
+                          color: #6e4d00;
+                          text-align: right;
+                          max-width: 44%;
+                        "
+                        >Vaga rápida, muitas faltas</span
+                      >
+                      <template data-sc="for" list="{{pontos}}" as="p">
+                        <button
+                          type="button"
+                          onClick="{{p.destacar}}"
+                          aria-pressed="{{p.ativo}}"
+                          aria-label="{{p.titulo}}"
+                          title="{{p.titulo}}"
+                          style="position: absolute; left: {{p.x}}; top: {{p.y}}; margin: {{p.margem}}; width: {{p.tam}}; height: {{p.tam}}; border-radius: {{p.raio}}; background: {{p.cor}}; color: #FFFFFF; border: 2px solid #FFFFFF; box-shadow: {{p.sombra}}; font: 700 11px/1 'Source Sans 3', sans-serif; padding: 0; cursor: pointer; opacity: {{p.op}}; z-index: {{p.z}}"
+                        >
+                          {{p.n}}
+                        </button>
+                      </template>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: #566370">
+                      <span>0%</span><span style="font-size: 13px; font-weight: 600; color: #33414c">Absenteísmo (meta {{metaTxt}})</span
+                      ><span>50%</span>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; color: #33414c">
+                      <span style="display: flex; align-items: center; gap: 6px"
+                        ><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #0e5e8c"></span
+                        >Médico (círculo)</span
+                      >
+                      <span style="display: flex; align-items: center; gap: 6px"
+                        ><span style="display: inline-block; width: 14px; height: 14px; border-radius: 3px; background: #b8641b"></span
+                        >Enfermeiro (quadrado)</span
+                      >
+                      <span>{{semAgendaTxt}}</span>
+                    </div>
                   </div>
-                  <span style="position: absolute; top: 2px; left: {{l.esperaPos}}; margin-left: -9px; width: 18px; height: 18px; border-radius: {{l.esperaRaio}}; background: {{l.esperaCor}}; box-shadow: 0 0 0 2px #FFFFFF; opacity: {{l.esperaOp}}"></span>
                 </div>
-                <div style="text-align: right; line-height: 1.25">
-                  <span style="font-weight: 700; font-variant-numeric: tabular-nums">{{l.esperaTxt}}</span><br>
-                  <span style="font-size: 13px; color: #566370">{{l.esperaSub}}</span>
-                </div>
-              </div>
-            </template>
-            <template data-sc="if" value="{{semLinhas}}">
-              <p style="margin: 14px 8px; color: #566370">Nenhum profissional neste recorte. Troque os filtros.</p>
-            </template>
-          </div>
-        </div>
-        <p style="margin: 0; font-size: 13px; color: #566370">Traço preto: meta de absenteísmo. Na unidade e na equipe, o absenteísmo soma faltas e agendados de todos, e a espera é a mediana dos profissionais com agenda lida. Faixas de espera: até 15 dias, de 16 a 30 e acima de 30.</p>
-      </section>
-    </template>
-
-    <template data-sc="if" value="{{abaMapa}}">
-      <section aria-labelledby="t-quad" style="background: #FFFFFF; border: 1px solid #DCE2E0; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
-        <div style="display: flex; flex-direction: column; gap: 2px">
-          <h2 id="t-quad" style="margin: 0; font-size: 20px; font-weight: 700">Onde agir primeiro</h2>
-          <span style="font-size: 14px; color: #566370">Cada ponto numerado é um profissional; a lista ao lado diz quem é cada número. Clique num ponto ou num nome para destacar.</span>
-        </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
-          <div style="flex: 3 1 520px; min-width: 0; display: flex; gap: 10px">
-            <div style="flex: none; width: 22px; display: flex; align-items: center; justify-content: center">
-              <span style="writing-mode: vertical-rl; transform: rotate(180deg); font-size: 13px; font-weight: 600; color: #33414C; white-space: nowrap">Dias até a próxima vaga (0 a 60 ou mais)</span>
-            </div>
-            <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 6px">
-              <div style="position: relative; height: 460px; border-left: 1px solid #B9C4C9; border-bottom: 1px solid #B9C4C9; background: #FFFFFF">
-                <div style="position: absolute; left: {{metaPos}}; top: 0; height: 50%; right: 0; background: #FBF1EF"></div>
-                <div style="position: absolute; left: {{metaPos}}; top: 0; bottom: 0; width: 0; border-left: 2px dashed #14212B"></div>
-                <div style="position: absolute; top: 50%; left: 0; right: 0; height: 0; border-top: 2px dashed #8A979F"></div>
-                <span style="position: absolute; left: 8px; top: 6px; font-size: 13px; font-weight: 600; color: #6E4D00; max-width: 40%">Fila longa, poucas faltas: falta agenda</span>
-                <span style="position: absolute; right: 8px; top: 6px; font-size: 13px; font-weight: 700; color: #8E2318; text-align: right; max-width: 44%">Fila longa e muitas faltas: confirmar consultas e encaixar</span>
-                <span style="position: absolute; left: 8px; bottom: 6px; font-size: 13px; font-weight: 600; color: #1D5A3A; max-width: 40%">Vaga rápida e poucas faltas</span>
-                <span style="position: absolute; right: 8px; bottom: 6px; font-size: 13px; font-weight: 600; color: #6E4D00; text-align: right; max-width: 44%">Vaga rápida, muitas faltas</span>
-                <template data-sc="for" list="{{pontos}}" as="p">
-                  <button type="button" onClick="{{p.destacar}}" aria-pressed="{{p.ativo}}" aria-label="{{p.titulo}}" title="{{p.titulo}}" style="position: absolute; left: {{p.x}}; top: {{p.y}}; margin: {{p.margem}}; width: {{p.tam}}; height: {{p.tam}}; border-radius: {{p.raio}}; background: {{p.cor}}; color: #FFFFFF; border: 2px solid #FFFFFF; box-shadow: {{p.sombra}}; font: 700 11px/1 'Source Sans 3', sans-serif; padding: 0; cursor: pointer; opacity: {{p.op}}; z-index: {{p.z}}">{{p.n}}</button>
-                </template>
-              </div>
-              <div style="display: flex; justify-content: space-between; font-size: 12px; color: #566370"><span>0%</span><span style="font-size: 13px; font-weight: 600; color: #33414C">Absenteísmo (meta {{metaTxt}})</span><span>50%</span></div>
-              <div style="display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; color: #33414C">
-                <span style="display: flex; align-items: center; gap: 6px"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #0E5E8C"></span>Médico (círculo)</span>
-                <span style="display: flex; align-items: center; gap: 6px"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 3px; background: #B8641B"></span>Enfermeiro (quadrado)</span>
-                <span>{{semAgendaTxt}}</span>
-              </div>
-            </div>
-          </div>
-          <div style="flex: 1 1 300px; min-width: 0; max-height: 520px; overflow-y: auto; border: 1px solid #DCE2E0; border-radius: 8px">
-            <template data-sc="if" value="{{temDestaque}}">
-              <div style="padding: 12px 14px; background: #E7EEF3; border-bottom: 1px solid #DCE2E0; line-height: 1.35">
-                <span style="font-weight: 700">{{destaque.nome}}</span><br>
-                <span style="font-size: 14px; color: #33414C">{{destaque.sub}}</span><br>
-                <span style="font-size: 14px">{{destaque.valores}}</span>
-              </div>
-            </template>
-            <template data-sc="for" list="{{legenda}}" as="g">
-              <button type="button" onClick="{{g.destacar}}" aria-pressed="{{g.ativo}}" style="font: inherit; color: inherit; text-align: left; width: 100%; display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 7px 12px; min-height: 44px; border: 0; border-bottom: 1px solid #EEF1F0; background: {{g.fundo}}; cursor: pointer">
-                <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: {{g.raio}}; background: {{g.cor}}; color: #FFFFFF; font-weight: 700; font-size: 12px">{{g.n}}</span>
-                <span style="min-width: 0; line-height: 1.25"><span style="font-weight: 600; overflow-wrap: anywhere">{{g.nome}}</span><br><span style="font-size: 12px; color: #566370">{{g.sub}}</span></span>
-                <span style="font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap">{{g.valores}}</span>
-              </button>
-            </template>
-          </div>
-        </div>
-      </section>
-    </template>
-
-    <template data-sc="if" value="{{abaAcesso}}">
-      <section aria-labelledby="t-ace" style="background: #FFFFFF; border: 1px solid #DCE2E0; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
-        <div style="display: flex; flex-direction: column; gap: 2px">
-          <h2 id="t-ace" style="margin: 0; font-size: 20px; font-weight: 700">Faltas × acesso</h2>
-          <span style="font-size: 14px; color: #566370">Por equipe: faltas e espera até a vaga (esta tela) ao lado da C1, a parcela de consultas que é demanda programada. {{resumoAcesso}}</span>
-        </div>
-        <div style="display: grid; grid-template-columns: minmax(0, 1.3fr) 110px 110px 120px minmax(0, 2fr); gap: 16px; padding: 8px; border-bottom: 2px solid #DCE2E0; font-size: 13px; font-weight: 700; color: #33414C">
-          <span>Equipe</span><span style="text-align: right">Faltas</span><span style="text-align: right">Espera (mediana)</span><span style="text-align: right">C1 programada</span><span>Leitura</span>
-        </div>
-        <template data-sc="for" list="{{linhasAcesso}}" as="a">
-          <div style="display: grid; grid-template-columns: minmax(0, 1.3fr) 110px 110px 120px minmax(0, 2fr); gap: 16px; align-items: center; padding: 10px 8px; border-bottom: 1px solid #EEF1F0">
-            <div style="display: flex; flex-direction: column; line-height: 1.3; min-width: 0"><span style="font-weight: 600; overflow-wrap: anywhere">{{a.nome}}</span><span style="font-size: 13px; color: #566370">{{a.sub}}</span></div>
-            <span style="text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; color: {{a.faltasCor}}">{{a.faltasTxt}}</span>
-            <span style="text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; color: {{a.esperaCor}}">{{a.esperaTxt}}</span>
-            <div style="text-align: right; line-height: 1.25"><span style="font-weight: 700; font-variant-numeric: tabular-nums">{{a.c1Txt}}</span><br><span style="font-size: 13px; color: #566370">{{a.c1Sub}}</span></div>
-            <span style="font-size: 14px; color: #33414C">{{a.leitura}}</span>
-          </div>
-        </template>
-      </section>
-    </template>
-    <template data-sc="if" value="{{abaHorario}}">
-      <section aria-labelledby="t-hor" style="background: #FFFFFF; border: 1px solid #DCE2E0; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
-        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
-          <div style="display: flex; flex-direction: column; gap: 2px">
-            <h2 id="t-hor" style="margin: 0; font-size: 20px; font-weight: 700">Faltas por dia da semana e horário</h2>
-            <span style="font-size: 14px; color: #566370">{{horResumo}}</span>
-          </div>
-          <div role="group" aria-label="Medida" style="display: flex; border: 1px solid #B9C4C9; border-radius: 8px; overflow: hidden">
-            <template data-sc="for" list="{{botoesMedida}}" as="b">
-              <button type="button" aria-pressed="{{b.pressionado}}" onClick="{{b.escolher}}" style="font: inherit; min-height: 44px; padding: 0 14px; border: 0; cursor: pointer; background: {{b.fundo}}; color: {{b.cor}}; font-weight: {{b.peso}}">{{b.rotulo}}</button>
-            </template>
-          </div>
-        </div>
-        <template data-sc="if" value="{{horSem}}">
-          <p style="margin: 0; padding: 16px; background: #F4F6F5; border-radius: 8px; color: #33414C">{{horSemTxt}}</p>
-        </template>
-        <template data-sc="if" value="{{horTem}}">
-          <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
-            <div style="flex: 3 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
-              <div style="display: grid; grid-template-columns: 56px repeat({{horCols}}, minmax(0, 1fr)); gap: 2px">
-                <template data-sc="for" list="{{celulas}}" as="c">
-                  <div title="{{c.titulo}}" style="background: {{c.fundo}}; color: {{c.cor}}; font-weight: {{c.peso}}; font-size: {{c.tam}}; min-height: {{c.alt}}; display: flex; align-items: center; justify-content: {{c.alinha}}; padding: 0 6px; border-radius: 3px; font-variant-numeric: tabular-nums; background-image: {{c.textura}}">{{c.txt}}</div>
-                </template>
-              </div>
-              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: 13px; color: #33414C">
-                <span style="font-weight: 600">{{legTitulo}}</span>
-                <span style="display: flex; align-items: center; gap: 6px"><span>{{legMin}}</span>
-                  <span style="display: inline-block; width: 160px; height: 12px; border-radius: 3px; background: linear-gradient(90deg, #E3EEF9, #2F6FB3, #0B2F5B)"></span><span>{{legMax}}</span></span>
-                <span style="display: flex; align-items: center; gap: 6px"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 3px; background-color: #FFFFFF; background-image: repeating-linear-gradient(45deg, #B9C4C9 0 2px, transparent 2px 6px); border: 1px solid #B9C4C9"></span>menos de {{horMinimo}} agendamentos: pouco para concluir</span>
-              </div>
-            </div>
-            <div style="flex: 1 1 280px; min-width: 0; border: 1px solid #DCE2E0; border-radius: 8px; overflow: hidden">
-              <div style="padding: 10px 14px; background: #E7EEF3; font-weight: 700">Horários com mais faltas</div>
-              <table style="width: 100%; border-collapse: collapse; font-size: 14px">
-                <thead><tr style="text-align: left; color: #566370"><th style="padding: 6px 14px; font-weight: 600">Dia e hora</th><th style="padding: 6px 8px; font-weight: 600; text-align: right">Faltas</th><th style="padding: 6px 14px; font-weight: 600; text-align: right">Taxa</th></tr></thead>
-                <tbody>
-                  <template data-sc="for" list="{{topo}}" as="t">
-                    <tr style="border-top: 1px solid #EEF1F0"><td style="padding: 7px 14px">{{t.quando}}</td><td style="padding: 7px 8px; text-align: right; font-variant-numeric: tabular-nums">{{t.faltas}} de {{t.base}}</td><td style="padding: 7px 14px; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums">{{t.taxa}}</td></tr>
+                <div
+                  style="flex: 1 1 300px; min-width: 0; max-height: 520px; overflow-y: auto; border: 1px solid #dce2e0; border-radius: 8px"
+                >
+                  <template data-sc="if" value="{{temDestaque}}">
+                    <div style="padding: 12px 14px; background: #e7eef3; border-bottom: 1px solid #dce2e0; line-height: 1.35">
+                      <span style="font-weight: 700">{{destaque.nome}}</span><br />
+                      <span style="font-size: 14px; color: #33414c">{{destaque.sub}}</span><br />
+                      <span style="font-size: 14px">{{destaque.valores}}</span>
+                    </div>
                   </template>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </template>
-      </section>
+                  <template data-sc="for" list="{{legenda}}" as="g">
+                    <button
+                      type="button"
+                      onClick="{{g.destacar}}"
+                      aria-pressed="{{g.ativo}}"
+                      style="font: inherit; color: inherit; text-align: left; width: 100%; display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 7px 12px; min-height: 44px; border: 0; border-bottom: 1px solid #EEF1F0; background: {{g.fundo}}; cursor: pointer"
+                    >
+                      <span
+                        style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: {{g.raio}}; background: {{g.cor}}; color: #FFFFFF; font-weight: 700; font-size: 12px"
+                        >{{g.n}}</span
+                      >
+                      <span style="min-width: 0; line-height: 1.25"
+                        ><span style="font-weight: 600; overflow-wrap: anywhere">{{g.nome}}</span><br /><span
+                          style="font-size: 12px; color: #566370"
+                          >{{g.sub}}</span
+                        ></span
+                      >
+                      <span style="font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap"
+                        >{{g.valores}}</span
+                      >
+                    </button>
+                  </template>
+                </div>
+              </div>
+            </section>
+          </template>
+
+          <template data-sc="if" value="{{abaAcesso}}">
+            <section
+              aria-labelledby="t-ace"
+              style="
+                background: #ffffff;
+                border: 1px solid #dce2e0;
+                border-radius: 12px;
+                padding: 18px 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+              "
+            >
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <h2 id="t-ace" style="margin: 0; font-size: 20px; font-weight: 700">Faltas × acesso</h2>
+                <span style="font-size: 14px; color: #566370"
+                  >Por equipe: faltas e espera até a vaga (esta tela) ao lado da C1, a parcela de consultas que é demanda programada.
+                  {{resumoAcesso}}</span
+                >
+              </div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: minmax(0, 1.3fr) 110px 110px 120px minmax(0, 2fr);
+                  gap: 16px;
+                  padding: 8px;
+                  border-bottom: 2px solid #dce2e0;
+                  font-size: 13px;
+                  font-weight: 700;
+                  color: #33414c;
+                "
+              >
+                <span>Equipe</span><span style="text-align: right">Faltas</span><span style="text-align: right">Espera (mediana)</span
+                ><span style="text-align: right">C1 programada</span><span>Leitura</span>
+              </div>
+              <template data-sc="for" list="{{linhasAcesso}}" as="a">
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: minmax(0, 1.3fr) 110px 110px 120px minmax(0, 2fr);
+                    gap: 16px;
+                    align-items: center;
+                    padding: 10px 8px;
+                    border-bottom: 1px solid #eef1f0;
+                  "
+                >
+                  <div style="display: flex; flex-direction: column; line-height: 1.3; min-width: 0">
+                    <span style="font-weight: 600; overflow-wrap: anywhere">{{a.nome}}</span
+                    ><span style="font-size: 13px; color: #566370">{{a.sub}}</span>
+                  </div>
+                  <span style="text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; color: {{a.faltasCor}}"
+                    >{{a.faltasTxt}}</span
+                  >
+                  <span style="text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; color: {{a.esperaCor}}"
+                    >{{a.esperaTxt}}</span
+                  >
+                  <div style="text-align: right; line-height: 1.25">
+                    <span style="font-weight: 700; font-variant-numeric: tabular-nums">{{a.c1Txt}}</span><br /><span
+                      style="font-size: 13px; color: #566370"
+                      >{{a.c1Sub}}</span
+                    >
+                  </div>
+                  <span style="font-size: 14px; color: #33414c">{{a.leitura}}</span>
+                </div>
+              </template>
+            </section>
+          </template>
+          <template data-sc="if" value="{{abaHorario}}">
+            <section
+              aria-labelledby="t-hor"
+              style="
+                background: #ffffff;
+                border: 1px solid #dce2e0;
+                border-radius: 12px;
+                padding: 18px 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+              "
+            >
+              <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
+                <div style="display: flex; flex-direction: column; gap: 2px">
+                  <h2 id="t-hor" style="margin: 0; font-size: 20px; font-weight: 700">Faltas por dia da semana e horário</h2>
+                  <span style="font-size: 14px; color: #566370">{{horResumo}}</span>
+                </div>
+                <div
+                  role="group"
+                  aria-label="Medida"
+                  style="display: flex; border: 1px solid #b9c4c9; border-radius: 8px; overflow: hidden"
+                >
+                  <template data-sc="for" list="{{botoesMedida}}" as="b">
+                    <button
+                      type="button"
+                      aria-pressed="{{b.pressionado}}"
+                      onClick="{{b.escolher}}"
+                      style="font: inherit; min-height: 44px; padding: 0 14px; border: 0; cursor: pointer; background: {{b.fundo}}; color: {{b.cor}}; font-weight: {{b.peso}}"
+                    >
+                      {{b.rotulo}}
+                    </button>
+                  </template>
+                </div>
+              </div>
+              <template data-sc="if" value="{{horSem}}">
+                <p style="margin: 0; padding: 16px; background: #f4f6f5; border-radius: 8px; color: #33414c">{{horSemTxt}}</p>
+              </template>
+              <template data-sc="if" value="{{horTem}}">
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+                  <div style="flex: 3 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+                    <div style="display: grid; grid-template-columns: 56px repeat({{horCols}}, minmax(0, 1fr)); gap: 2px">
+                      <template data-sc="for" list="{{celulas}}" as="c">
+                        <div
+                          title="{{c.titulo}}"
+                          style="background: {{c.fundo}}; color: {{c.cor}}; font-weight: {{c.peso}}; font-size: {{c.tam}}; min-height: {{c.alt}}; display: flex; align-items: center; justify-content: {{c.alinha}}; padding: 0 6px; border-radius: 3px; font-variant-numeric: tabular-nums; background-image: {{c.textura}}"
+                        >
+                          {{c.txt}}
+                        </div>
+                      </template>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: 13px; color: #33414c">
+                      <span style="font-weight: 600">{{legTitulo}}</span>
+                      <span style="display: flex; align-items: center; gap: 6px"
+                        ><span>{{legMin}}</span>
+                        <span
+                          style="
+                            display: inline-block;
+                            width: 160px;
+                            height: 12px;
+                            border-radius: 3px;
+                            background: linear-gradient(90deg, #e3eef9, #2f6fb3, #0b2f5b);
+                          "
+                        ></span
+                        ><span>{{legMax}}</span></span
+                      >
+                      <span style="display: flex; align-items: center; gap: 6px"
+                        ><span
+                          style="
+                            display: inline-block;
+                            width: 14px;
+                            height: 14px;
+                            border-radius: 3px;
+                            background-color: #ffffff;
+                            background-image: repeating-linear-gradient(45deg, #b9c4c9 0 2px, transparent 2px 6px);
+                            border: 1px solid #b9c4c9;
+                          "
+                        ></span
+                        >menos de {{horMinimo}} agendamentos: pouco para concluir</span
+                      >
+                    </div>
+                  </div>
+                  <div style="flex: 1 1 280px; min-width: 0; border: 1px solid #dce2e0; border-radius: 8px; overflow: hidden">
+                    <div style="padding: 10px 14px; background: #e7eef3; font-weight: 700">Horários com mais faltas</div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px">
+                      <thead>
+                        <tr style="text-align: left; color: #566370">
+                          <th style="padding: 6px 14px; font-weight: 600">Dia e hora</th>
+                          <th style="padding: 6px 8px; font-weight: 600; text-align: right">Faltas</th>
+                          <th style="padding: 6px 14px; font-weight: 600; text-align: right">Taxa</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <template data-sc="for" list="{{topo}}" as="t">
+                          <tr style="border-top: 1px solid #eef1f0">
+                            <td style="padding: 7px 14px">{{t.quando}}</td>
+                            <td style="padding: 7px 8px; text-align: right; font-variant-numeric: tabular-nums">
+                              {{t.faltas}} de {{t.base}}
+                            </td>
+                            <td style="padding: 7px 14px; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums">
+                              {{t.taxa}}
+                            </td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </template>
+            </section>
+          </template>
+
+          <section
+            style="background: #ffffff; border: 1px solid #dce2e0; border-radius: 12px; padding: 16px 20px; font-size: 14px; color: #33414c"
+          >
+            <b>Fontes.</b> Absenteísmo: relatórios de atendimentos e de absenteísmo do PEC e-SUS APS, coletados pela extensão. Próxima vaga:
+            agenda de cada profissional com agenda ativa no PEC, na data da coleta. Faltas por horário: agendamentos do mês de cada
+            profissional (reservas de horário ficam de fora), somados por dia da semana e hora. Entram só médicos e enfermeiros das unidades
+            de Atenção Primária. O Painel guarda totais por profissional; nada de paciente. Esta tela é restrita a administradores e
+            gestores.
+          </section>
+        </main>
+      </div>
     </template>
+    <script src="/js/dc-mini.js"></script>
+    <script src="/js/rodape.js"></script>
+    <script>
+      let FILAS = null,
+        USUARIO = null,
+        ACESSO = {};
+      const ITENS_USUARIO = () => {
+        if (!USUARIO) return [];
+        const ls = [['/perfil', 'Meu perfil']];
+        if (USUARIO.origem === 'senha') ls.push(['/trocar-senha', 'Trocar senha']);
+        ls.push(['/ajuda', 'Ajuda e como ler os indicadores']);
+        if (USUARIO.perfil === 'admin')
+          ls.push(
+            ['', 'Configurações'],
+            ['/usuarios', 'Usuários'],
+            ['/monitoramento', 'Monitoramento das coletas'],
+            ['/comunicados', 'Comunicados'],
+            ['/publicacao', 'Página pública'],
+            ['/chaves', 'Chaves da extensão'],
+            ['/extensao', 'Extensões do Chrome'],
+            ['/historico', 'Histórico de acessos'],
+            ['/backups', 'Backups'],
+          );
+        return ls.map(([href, txt]) => ({ href: href || '#', txt, peso: href ? 600 : 800 }));
+      };
+      const MENU_SITE = () =>
+        [
+          ['/', 'Acompanhamentos'],
+          ['/composicao', 'Composição'],
+          ['/coleta', 'Como coletamos'],
+        ]
+          .concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas']] : [])
+          .map(([href, txt]) => ({ href, txt }));
+      const META = 19.59;
+      class Filas extends DCLogic {
+        constructor(props) {
+          super(props);
+          this.state = {
+            aba: 'lista',
+            unidade: '',
+            equipe: '',
+            cat: '',
+            prof: '',
+            ordem: 'faltas',
+            abertas: {},
+            destaque: '',
+            medida: 'taxa',
+          };
+        }
+        renderVals() {
+          const st = this.state;
+          const num = (v, c) => v.toLocaleString('pt-BR', { minimumFractionDigits: c, maximumFractionDigits: c });
+          const MAXF = 50,
+            MAXD = 60;
+          const posF = (v) => (Math.max(0, Math.min(1, (v || 0) / MAXF)) * 100).toFixed(2) + '%';
+          const posD = (v) => (Math.max(0, Math.min(1, v / MAXD)) * 100).toFixed(2) + '%';
+          const todos = FILAS.profissionais.map((p, i) => {
+            const f = p.faltas || 0,
+              a = p.atendimentos || 0,
+              temAg = !!p.agendaLidaEm;
+            return {
+              id: String(i),
+              un: p.unidade,
+              eq: p.equipe || 'Sem equipe',
+              cat: p.categoria,
+              nome: p.nome,
+              cbo: String(p.cbo || '').replace(/\s*-\s*\d+$/, ''),
+              faltas: f,
+              atend: a,
+              pct: f + a ? (f / (f + a)) * 100 : null,
+              dias: temAg ? (p.semVaga ? 91 : p.diasVaga) : null,
+              semVaga: temAg && !!p.semVaga,
+            };
+          });
+          const unidadeSel = todos.some((p) => p.un === st.unidade) ? st.unidade : '';
+          const doUn = todos.filter((p) => !unidadeSel || p.un === unidadeSel);
+          const equipes = Array.from(new Set(doUn.map((p) => p.eq))).sort((a, b) => a.localeCompare(b, 'pt'));
+          const equipeSel = equipes.indexOf(st.equipe) >= 0 ? st.equipe : '';
+          const antesProf = doUn.filter((p) => (!equipeSel || p.eq === equipeSel) && (!st.cat || p.cat === st.cat));
+          const profSel = antesProf.some((p) => p.id === st.prof) ? st.prof : '';
+          const sel = antesProf.filter((p) => !profSel || p.id === profSel);
 
-    <section style="background: #FFFFFF; border: 1px solid #DCE2E0; border-radius: 12px; padding: 16px 20px; font-size: 14px; color: #33414C">
-      <b>Fontes.</b> Absenteísmo: relatórios de atendimentos e de absenteísmo do PEC e-SUS APS, coletados pela extensão. Próxima vaga: agenda de cada profissional com agenda ativa no PEC, na data da coleta. Faltas por horário: agendamentos do mês de cada profissional (reservas de horário ficam de fora), somados por dia da semana e hora. Entram só médicos e enfermeiros das unidades de Atenção Primária. O Painel guarda totais por profissional; nada de paciente. Esta tela é restrita a administradores e gestores.
-    </section>
-  </main>
-</div>
-</template>
-<script src="/js/dc-mini.js"></script>
-<script src="/js/rodape.js"></script>
-<script>
-let FILAS = null, USUARIO = null, ACESSO = {};
-const ITENS_USUARIO = () => {
-  if (!USUARIO) return [];
-  const ls = [['/perfil', 'Meu perfil']];
-  if (USUARIO.origem === 'senha') ls.push(['/trocar-senha', 'Trocar senha']);
-  ls.push(['/ajuda', 'Ajuda e como ler os indicadores']);
-  if (USUARIO.perfil === 'admin') ls.push(['', 'Configurações'], ['/usuarios', 'Usuários'], ['/monitoramento', 'Monitoramento das coletas'], ['/comunicados', 'Comunicados'], ['/publicacao', 'Página pública'], ['/chaves', 'Chaves da extensão'], ['/extensao', 'Extensões do Chrome'], ['/historico', 'Histórico de acessos'], ['/backups', 'Backups']);
-  return ls.map(([href, txt]) => ({ href: href || '#', txt, peso: href ? 600 : 800 }));
-};
-const MENU_SITE = () => [['/', 'Acompanhamentos'], ['/composicao', 'Composição'], ['/coleta', 'Como coletamos']].concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas']] : []).map(([href, txt]) => ({ href, txt }));
-const META = 19.59;
-class Filas extends DCLogic {
-  constructor(props) {
-    super(props);
-    this.state = { aba: 'lista', unidade: '', equipe: '', cat: '', prof: '', ordem: 'faltas', abertas: {}, destaque: '', medida: 'taxa' };
-  }
-  renderVals() {
-    const st = this.state;
-    const num = (v, c) => v.toLocaleString('pt-BR', { minimumFractionDigits: c, maximumFractionDigits: c });
-    const MAXF = 50, MAXD = 60;
-    const posF = (v) => (Math.max(0, Math.min(1, (v || 0) / MAXF)) * 100).toFixed(2) + '%';
-    const posD = (v) => (Math.max(0, Math.min(1, v / MAXD)) * 100).toFixed(2) + '%';
-    const todos = FILAS.profissionais.map((p, i) => {
-      const f = p.faltas || 0, a = p.atendimentos || 0, temAg = !!p.agendaLidaEm;
-      return { id: String(i), un: p.unidade, eq: p.equipe || 'Sem equipe', cat: p.categoria, nome: p.nome, cbo: String(p.cbo || '').replace(/\s*-\s*\d+$/, ''), faltas: f, atend: a,
-        pct: f + a ? f / (f + a) * 100 : null, dias: temAg ? (p.semVaga ? 91 : p.diasVaga) : null, semVaga: temAg && !!p.semVaga };
-    });
-    const unidadeSel = todos.some((p) => p.un === st.unidade) ? st.unidade : '';
-    const doUn = todos.filter((p) => !unidadeSel || p.un === unidadeSel);
-    const equipes = Array.from(new Set(doUn.map((p) => p.eq))).sort((a, b) => a.localeCompare(b, 'pt'));
-    const equipeSel = equipes.indexOf(st.equipe) >= 0 ? st.equipe : '';
-    const antesProf = doUn.filter((p) => (!equipeSel || p.eq === equipeSel) && (!st.cat || p.cat === st.cat));
-    const profSel = antesProf.some((p) => p.id === st.prof) ? st.prof : '';
-    const sel = antesProf.filter((p) => !profSel || p.id === profSel);
+          const corFaltas = (v) => (v === null ? '#8A979F' : v <= META ? '#2F855A' : '#C0392B');
+          const corEspera = (d) => (d <= 15 ? '#2F855A' : d <= 30 ? '#B7791F' : '#C0392B');
+          const soma = (arr, k) => arr.reduce((t, p) => t + p[k], 0);
+          const mediana = (arr) => {
+            if (!arr.length) return null;
+            const o = arr.slice().sort((a, b) => a - b),
+              m = Math.floor(o.length / 2);
+            return o.length % 2 ? o[m] : Math.round((o[m - 1] + o[m]) / 2);
+          };
+          const diasTxt = (d) => (d === null ? '—' : d > 90 ? '90+ dias' : d + (d === 1 ? ' dia' : ' dias'));
+          const agrega = (ps) => {
+            const f = soma(ps, 'faltas'),
+              a = soma(ps, 'atend');
+            return {
+              faltas: f,
+              atend: a,
+              pct: f + a ? (f / (f + a)) * 100 : null,
+              dias: mediana(ps.filter((p) => p.dias !== null).map((p) => p.dias)),
+              n: ps.length,
+            };
+          };
+          const ordena = (arr) =>
+            arr
+              .slice()
+              .sort((x, y) =>
+                st.ordem === 'espera'
+                  ? (y.dias === null ? -1 : y.dias) - (x.dias === null ? -1 : x.dias)
+                  : st.ordem === 'nome'
+                    ? x.nome.localeCompare(y.nome, 'pt', { numeric: true })
+                    : (y.pct === null ? -1 : y.pct) - (x.pct === null ? -1 : x.pct),
+              );
+          const linhaDe = (o, nivel, extra) =>
+            Object.assign(
+              {
+                nome: o.nome,
+                sub: o.sub,
+                recuo: nivel * 22 + 'px',
+                recuoSub: extra && extra.abrivel ? '18px' : '0',
+                pad: nivel === 2 ? '8px' : '10px 8px',
+                fundo: nivel === 0 ? '#F6F9FA' : 'transparent',
+                peso: nivel === 0 ? 700 : 600,
+                abrivel: false,
+                folha: true,
+                alternar: () => {},
+                expandido: 'false',
+                seta: '',
+                faltasPos: posF(o.pct),
+                faltasCor: corFaltas(o.pct),
+                faltasTxt: o.pct === null ? '—' : num(o.pct, 1) + '%',
+                conta: o.faltas + o.atend ? o.faltas + ' de ' + (o.faltas + o.atend) : 'sem agendados',
+                esperaPos: o.dias === null ? '0%' : posD(o.dias),
+                esperaCor: o.dias === null ? '#8A979F' : corEspera(o.dias),
+                esperaOp: o.dias === null ? 0 : 1,
+                esperaRaio: '50%',
+                esperaTxt: diasTxt(o.dias),
+                esperaSub: o.dias === null ? 'agenda não lida' : extra && extra.grupo ? 'mediana' : '',
+                descFaltas:
+                  o.nome +
+                  ': absenteísmo ' +
+                  (o.pct === null ? 'sem dados' : num(o.pct, 1) + '%, ' + o.faltas + ' faltas em ' + (o.faltas + o.atend) + ' agendados') +
+                  '; meta ' +
+                  num(META, 2) +
+                  '%',
+                descEspera: o.nome + ': ' + (o.dias === null ? 'agenda não lida' : 'próxima vaga em ' + diasTxt(o.dias)),
+              },
+              extra || {},
+            );
 
-    const corFaltas = (v) => (v === null ? '#8A979F' : v <= META ? '#2F855A' : '#C0392B');
-    const corEspera = (d) => (d <= 15 ? '#2F855A' : d <= 30 ? '#B7791F' : '#C0392B');
-    const soma = (arr, k) => arr.reduce((t, p) => t + p[k], 0);
-    const mediana = (arr) => { if (!arr.length) return null; const o = arr.slice().sort((a, b) => a - b), m = Math.floor(o.length / 2); return o.length % 2 ? o[m] : Math.round((o[m - 1] + o[m]) / 2); };
-    const diasTxt = (d) => d === null ? '—' : d > 90 ? '90+ dias' : d + (d === 1 ? ' dia' : ' dias');
-    const agrega = (ps) => { const f = soma(ps, 'faltas'), a = soma(ps, 'atend'); return { faltas: f, atend: a, pct: f + a ? f / (f + a) * 100 : null, dias: mediana(ps.filter((p) => p.dias !== null).map((p) => p.dias)), n: ps.length }; };
-    const ordena = (arr) => arr.slice().sort((x, y) => st.ordem === 'espera' ? (y.dias === null ? -1 : y.dias) - (x.dias === null ? -1 : x.dias)
-      : st.ordem === 'nome' ? x.nome.localeCompare(y.nome, 'pt', { numeric: true }) : (y.pct === null ? -1 : y.pct) - (x.pct === null ? -1 : x.pct));
-    const linhaDe = (o, nivel, extra) => Object.assign({
-      nome: o.nome, sub: o.sub, recuo: nivel * 22 + 'px', recuoSub: extra && extra.abrivel ? '18px' : '0', pad: nivel === 2 ? '8px' : '10px 8px',
-      fundo: nivel === 0 ? '#F6F9FA' : 'transparent', peso: nivel === 0 ? 700 : 600, abrivel: false, folha: true, alternar: () => {}, expandido: 'false', seta: '',
-      faltasPos: posF(o.pct), faltasCor: corFaltas(o.pct), faltasTxt: o.pct === null ? '—' : num(o.pct, 1) + '%', conta: o.faltas + o.atend ? o.faltas + ' de ' + (o.faltas + o.atend) : 'sem agendados',
-      esperaPos: o.dias === null ? '0%' : posD(o.dias), esperaCor: o.dias === null ? '#8A979F' : corEspera(o.dias), esperaOp: o.dias === null ? 0 : 1, esperaRaio: '50%',
-      esperaTxt: diasTxt(o.dias), esperaSub: o.dias === null ? 'agenda não lida' : (extra && extra.grupo ? 'mediana' : ''),
-      descFaltas: o.nome + ': absenteísmo ' + (o.pct === null ? 'sem dados' : num(o.pct, 1) + '%, ' + o.faltas + ' faltas em ' + (o.faltas + o.atend) + ' agendados') + '; meta ' + num(META, 2) + '%',
-      descEspera: o.nome + ': ' + (o.dias === null ? 'agenda não lida' : 'próxima vaga em ' + diasTxt(o.dias))
-    }, extra || {});
+          // Faltas × acesso: por equipe, faltas e espera (desta tela) ao lado da C1 (% de demanda programada), do mesmo mês.
+          const gEq = {};
+          for (const p of todos.filter((x) => (!unidadeSel || x.un === unidadeSel) && (!st.cat || x.cat === st.cat))) {
+            const k = p.un + '|' + p.eq;
+            (gEq[k] = gEq[k] || { un: p.un, eq: p.eq, ps: [] }).ps.push(p);
+          }
+          const linhasAcesso = Object.keys(gEq)
+            .map((k) => {
+              const g = gEq[k],
+                ag = agrega(g.ps),
+                c1 = ACESSO[k] || null;
+              const c1p = c1 && c1.den ? (c1.num / c1.den) * 100 : null;
+              const alta = ag.pct !== null && ag.pct > META,
+                longa = ag.dias !== null && ag.dias > 30,
+                progBaixa = c1p !== null && c1p < 50;
+              const leitura =
+                ag.pct === null && c1p === null
+                  ? 'Sem dados.'
+                  : alta && longa
+                    ? 'Fila longa e muitas faltas: confirmar consultas antes de abrir mais agenda.'
+                    : longa && !alta
+                      ? 'Fila longa com poucas faltas: falta agenda.'
+                      : alta
+                        ? 'Muitas faltas com vaga rápida: reforçar a confirmação.'
+                        : 'Dentro da meta de faltas e com vaga em até 30 dias.';
+              return {
+                un: g.un,
+                eq: g.eq,
+                nome: g.eq === 'Sem equipe' ? 'Sem equipe' : g.eq,
+                sub: g.un,
+                pct: ag.pct,
+                dias: ag.dias,
+                c1p,
+                faltasTxt: ag.pct === null ? '—' : num(ag.pct, 1) + '%',
+                faltasCor: corFaltas(ag.pct),
+                esperaTxt: diasTxt(ag.dias),
+                esperaCor: ag.dias === null ? '#8A979F' : corEspera(ag.dias),
+                c1Txt: c1p === null ? '—' : num(c1p, 1) + '%',
+                c1Sub: c1 ? c1.num + ' de ' + c1.den : 'sem C1 (equipe sem indicador)',
+                leitura: progBaixa
+                  ? leitura + ' Pouca demanda programada (C1 abaixo de 50%): a agenda é tomada por demanda espontânea.'
+                  : leitura,
+              };
+            })
+            .sort((a, b) => (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct));
+          const resumoAcesso = (() => {
+            const com = linhasAcesso.filter((l) => l.pct !== null && l.c1p !== null);
+            if (com.length < 3) return 'Poucas equipes têm C1 e faltas no mesmo mês para comparar.';
+            const mx = (a) => a.reduce((t, v) => t + v, 0) / a.length;
+            const xs = com.map((l) => l.c1p),
+              ys = com.map((l) => l.pct),
+              mxv = mx(xs),
+              myv = mx(ys);
+            const sxy = xs.reduce((t, x, i) => t + (x - mxv) * (ys[i] - myv), 0),
+              sxx = xs.reduce((t, x) => t + (x - mxv) ** 2, 0),
+              syy = ys.reduce((t, y) => t + (y - myv) ** 2, 0);
+            const r = sxx && syy ? sxy / Math.sqrt(sxx * syy) : 0;
+            return (
+              com.length +
+              ' equipes com C1 e faltas. Correlação entre C1 e faltas: ' +
+              num(r, 2) +
+              (Math.abs(r) < 0.3 || com.length < 8
+                ? ' (indicativa: ' + (com.length < 8 ? 'com menos de 8 equipes' : 'correlação fraca') + ' não dá para afirmar relação)'
+                : r < 0
+                  ? ' (mais demanda programada, menos faltas)'
+                  : ' (mais demanda programada, mais faltas)') +
+              '.'
+            );
+          })();
 
-    // Faltas × acesso: por equipe, faltas e espera (desta tela) ao lado da C1 (% de demanda programada), do mesmo mês.
-    const gEq = {};
-    for (const p of todos.filter((x) => (!unidadeSel || x.un === unidadeSel) && (!st.cat || x.cat === st.cat))) {
-      const k = p.un + '|' + p.eq; (gEq[k] = gEq[k] || { un: p.un, eq: p.eq, ps: [] }).ps.push(p);
-    }
-    const linhasAcesso = Object.keys(gEq).map((k) => {
-      const g = gEq[k], ag = agrega(g.ps), c1 = ACESSO[k] || null;
-      const c1p = c1 && c1.den ? c1.num / c1.den * 100 : null;
-      const alta = ag.pct !== null && ag.pct > META, longa = ag.dias !== null && ag.dias > 30, progBaixa = c1p !== null && c1p < 50;
-      const leitura = ag.pct === null && c1p === null ? 'Sem dados.'
-        : alta && longa ? 'Fila longa e muitas faltas: confirmar consultas antes de abrir mais agenda.'
-        : longa && !alta ? 'Fila longa com poucas faltas: falta agenda.'
-        : alta ? 'Muitas faltas com vaga rápida: reforçar a confirmação.'
-        : 'Dentro da meta de faltas e com vaga em até 30 dias.';
-      return { un: g.un, eq: g.eq, nome: g.eq === 'Sem equipe' ? 'Sem equipe' : g.eq, sub: g.un, pct: ag.pct, dias: ag.dias, c1p,
-        faltasTxt: ag.pct === null ? '—' : num(ag.pct, 1) + '%', faltasCor: corFaltas(ag.pct),
-        esperaTxt: diasTxt(ag.dias), esperaCor: ag.dias === null ? '#8A979F' : corEspera(ag.dias),
-        c1Txt: c1p === null ? '—' : num(c1p, 1) + '%', c1Sub: c1 ? c1.num + ' de ' + c1.den : 'sem C1 (equipe sem indicador)',
-        leitura: (progBaixa ? leitura + ' Pouca demanda programada (C1 abaixo de 50%): a agenda é tomada por demanda espontânea.' : leitura) };
-    }).sort((a, b) => (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct));
-    const resumoAcesso = (() => {
-      const com = linhasAcesso.filter((l) => l.pct !== null && l.c1p !== null);
-      if (com.length < 3) return 'Poucas equipes têm C1 e faltas no mesmo mês para comparar.';
-      const mx = (a) => a.reduce((t, v) => t + v, 0) / a.length;
-      const xs = com.map((l) => l.c1p), ys = com.map((l) => l.pct), mxv = mx(xs), myv = mx(ys);
-      const sxy = xs.reduce((t, x, i) => t + (x - mxv) * (ys[i] - myv), 0), sxx = xs.reduce((t, x) => t + (x - mxv) ** 2, 0), syy = ys.reduce((t, y) => t + (y - myv) ** 2, 0);
-      const r = sxx && syy ? sxy / Math.sqrt(sxx * syy) : 0;
-      return com.length + ' equipes com C1 e faltas. Correlação entre C1 e faltas: ' + num(r, 2) + (Math.abs(r) < 0.3 || com.length < 8 ? ' (indicativa: ' + (com.length < 8 ? 'com menos de 8 equipes' : 'correlação fraca') + ' não dá para afirmar relação)' : r < 0 ? ' (mais demanda programada, menos faltas)' : ' (mais demanda programada, mais faltas)') + '.';
-    })();
+          // Unidade -> equipe -> profissional, abrindo por clique.
+          const linhas = [];
+          const abertas = st.abertas || {};
+          const alterna = (k) => () => {
+            const o = { ...(this.state.abertas || {}) };
+            if (o[k]) delete o[k];
+            else o[k] = true;
+            this.setState({ abertas: o });
+          };
+          const unidadesSel = Array.from(new Set(sel.map((p) => p.un)));
+          const grupos = ordena(
+            unidadesSel.map((u) => Object.assign({ nome: u, ps: sel.filter((p) => p.un === u) }, agrega(sel.filter((p) => p.un === u)))),
+          );
+          grupos.forEach((g) => {
+            const ku = 'u|' + g.nome,
+              abU = !!abertas[ku] || unidadesSel.length === 1;
+            const eqs = Array.from(new Set(g.ps.map((p) => p.eq)));
+            linhas.push(
+              linhaDe(
+                {
+                  ...g,
+                  sub:
+                    eqs.length +
+                    (eqs.length === 1 ? ' equipe' : ' equipes') +
+                    ' · ' +
+                    g.n +
+                    (g.n === 1 ? ' profissional' : ' profissionais'),
+                },
+                0,
+                {
+                  abrivel: true,
+                  folha: false,
+                  grupo: true,
+                  alternar: alterna(ku),
+                  expandido: abU ? 'true' : 'false',
+                  seta: abU ? '▾' : '▸',
+                },
+              ),
+            );
+            if (!abU) return;
+            ordena(
+              eqs.map((e) => Object.assign({ nome: e, ps: g.ps.filter((p) => p.eq === e) }, agrega(g.ps.filter((p) => p.eq === e)))),
+            ).forEach((e) => {
+              const ke = ku + '|' + e.nome,
+                abE = !!abertas[ke] || eqs.length === 1 || !!equipeSel || !!profSel;
+              linhas.push(
+                linhaDe({ ...e, sub: e.n + (e.n === 1 ? ' profissional' : ' profissionais') }, 1, {
+                  abrivel: true,
+                  folha: false,
+                  grupo: true,
+                  alternar: alterna(ke),
+                  expandido: abE ? 'true' : 'false',
+                  seta: abE ? '▾' : '▸',
+                }),
+              );
+              if (abE)
+                ordena(e.ps).forEach((p) =>
+                  linhas.push(
+                    linhaDe({ ...p, sub: p.cbo }, 2, {
+                      esperaRaio: p.cat === 'Médico' ? '50%' : '4px',
+                      fundo: p.pct !== null && p.pct > META && p.dias !== null && p.dias > 30 ? '#FBF1EF' : 'transparent',
+                    }),
+                  ),
+                );
+            });
+          });
 
-    // Unidade -> equipe -> profissional, abrindo por clique.
-    const linhas = [];
-    const abertas = st.abertas || {};
-    const alterna = (k) => () => { const o = { ...(this.state.abertas || {}) }; if (o[k]) delete o[k]; else o[k] = true; this.setState({ abertas: o }); };
-    const unidadesSel = Array.from(new Set(sel.map((p) => p.un)));
-    const grupos = ordena(unidadesSel.map((u) => Object.assign({ nome: u, ps: sel.filter((p) => p.un === u) }, agrega(sel.filter((p) => p.un === u)))));
-    grupos.forEach((g) => {
-      const ku = 'u|' + g.nome, abU = !!abertas[ku] || unidadesSel.length === 1;
-      const eqs = Array.from(new Set(g.ps.map((p) => p.eq)));
-      linhas.push(linhaDe({ ...g, sub: eqs.length + (eqs.length === 1 ? ' equipe' : ' equipes') + ' · ' + g.n + (g.n === 1 ? ' profissional' : ' profissionais') }, 0,
-        { abrivel: true, folha: false, grupo: true, alternar: alterna(ku), expandido: abU ? 'true' : 'false', seta: abU ? '▾' : '▸' }));
-      if (!abU) return;
-      ordena(eqs.map((e) => Object.assign({ nome: e, ps: g.ps.filter((p) => p.eq === e) }, agrega(g.ps.filter((p) => p.eq === e))))).forEach((e) => {
-        const ke = ku + '|' + e.nome, abE = !!abertas[ke] || eqs.length === 1 || !!equipeSel || !!profSel;
-        linhas.push(linhaDe({ ...e, sub: e.n + (e.n === 1 ? ' profissional' : ' profissionais') }, 1,
-          { abrivel: true, folha: false, grupo: true, alternar: alterna(ke), expandido: abE ? 'true' : 'false', seta: abE ? '▾' : '▸' }));
-        if (abE) ordena(e.ps).forEach((p) => linhas.push(linhaDe({ ...p, sub: p.cbo }, 2, { esperaRaio: p.cat === 'Médico' ? '50%' : '4px', fundo: p.pct !== null && p.pct > META && p.dias !== null && p.dias > 30 ? '#FBF1EF' : 'transparent' })));
-      });
-    });
+          const tot = agrega(sel);
+          const comAg = sel.filter((p) => p.dias !== null);
+          const criticos = sel.filter((p) => p.pct !== null && p.pct > META && p.dias !== null && p.dias > 30);
+          const resumo = [
+            {
+              rotulo: 'Absenteísmo do recorte',
+              grande: tot.pct === null ? '—' : num(tot.pct, 1) + '%',
+              cor: corFaltas(tot.pct),
+              texto: tot.faltas + ' faltas em ' + (tot.faltas + tot.atend) + ' agendados · meta ' + num(META, 2) + '%',
+            },
+            {
+              rotulo: 'Espera típica',
+              grande: diasTxt(tot.dias),
+              cor: '#14212B',
+              texto: comAg.length
+                ? 'mediana até a próxima vaga, em ' + comAg.length + ' agendas lidas'
+                : 'nenhuma agenda lida neste recorte',
+            },
+            {
+              rotulo: 'Sem vaga em 30 dias',
+              grande: comAg.filter((p) => p.dias > 30).length + ' de ' + comAg.length,
+              cor: '#14212B',
+              texto: 'profissionais com a agenda cheia além de um mês',
+            },
+            {
+              rotulo: 'Fila longa e muita falta',
+              grande: String(criticos.length),
+              cor: criticos.length ? '#C0392B' : '#2F855A',
+              texto: criticos.length ? 'acima da meta de faltas e mais de 30 dias de espera' : 'nenhum profissional nessa situação',
+            },
+          ];
 
-    const tot = agrega(sel);
-    const comAg = sel.filter((p) => p.dias !== null);
-    const criticos = sel.filter((p) => p.pct !== null && p.pct > META && p.dias !== null && p.dias > 30);
-    const resumo = [
-      { rotulo: 'Absenteísmo do recorte', grande: tot.pct === null ? '—' : num(tot.pct, 1) + '%', cor: corFaltas(tot.pct), texto: tot.faltas + ' faltas em ' + (tot.faltas + tot.atend) + ' agendados · meta ' + num(META, 2) + '%' },
-      { rotulo: 'Espera típica', grande: diasTxt(tot.dias), cor: '#14212B', texto: comAg.length ? 'mediana até a próxima vaga, em ' + comAg.length + ' agendas lidas' : 'nenhuma agenda lida neste recorte' },
-      { rotulo: 'Sem vaga em 30 dias', grande: comAg.filter((p) => p.dias > 30).length + ' de ' + comAg.length, cor: '#14212B', texto: 'profissionais com a agenda cheia além de um mês' },
-      { rotulo: 'Fila longa e muita falta', grande: String(criticos.length), cor: criticos.length ? '#C0392B' : '#2F855A', texto: criticos.length ? 'acima da meta de faltas e mais de 30 dias de espera' : 'nenhum profissional nessa situação' }
-    ];
+          // Mapa: só quem tem as duas medidas. Numeração do mais crítico (mais dias e mais faltas) para o menos.
+          const noMapa = sel
+            .filter((p) => p.pct !== null && p.dias !== null)
+            .sort((a, b) => b.dias / MAXD + b.pct / MAXF - (a.dias / MAXD + a.pct / MAXF));
+          const destaqueId = noMapa.some((p) => p.id === st.destaque) ? st.destaque : '';
+          const corCat = (p) => (p.cat === 'Médico' ? '#0E5E8C' : '#B8641B');
+          const valores = (p) => num(p.pct, 1) + '% · ' + diasTxt(p.dias);
+          const destacar = (id) => () => this.setState({ destaque: this.state.destaque === id ? '' : id });
+          const pontos = noMapa.map((p, i) => {
+            const at = p.id === destaqueId;
+            return {
+              n: i + 1,
+              x: posF(p.pct),
+              y: ((1 - Math.min(1, p.dias / MAXD)) * 100).toFixed(2) + '%',
+              cor: corCat(p),
+              raio: p.cat === 'Médico' ? '50%' : '4px',
+              tam: at ? '30px' : '24px',
+              margem: at ? '-15px 0 0 -15px' : '-12px 0 0 -12px',
+              sombra: at ? '0 0 0 3px #14212B' : 'none',
+              op: destaqueId && !at ? 0.35 : 1,
+              z: at ? 3 : 1,
+              ativo: at ? 'true' : 'false',
+              destacar: destacar(p.id),
+              titulo:
+                i + 1 + ' · ' + p.nome + ' (' + p.eq + ', ' + p.un + '): ' + num(p.pct, 1) + '% de faltas, vaga em ' + diasTxt(p.dias),
+            };
+          });
+          const legenda = noMapa.map((p, i) => ({
+            n: i + 1,
+            nome: p.nome,
+            sub: p.eq + ' · ' + p.un,
+            valores: valores(p),
+            cor: corCat(p),
+            raio: p.cat === 'Médico' ? '50%' : '4px',
+            fundo: p.id === destaqueId ? '#E7EEF3' : '#FFFFFF',
+            ativo: p.id === destaqueId ? 'true' : 'false',
+            destacar: destacar(p.id),
+          }));
+          const d = noMapa.find((p) => p.id === destaqueId);
+          const fora = sel.length - noMapa.length;
 
-    // Mapa: só quem tem as duas medidas. Numeração do mais crítico (mais dias e mais faltas) para o menos.
-    const noMapa = sel.filter((p) => p.pct !== null && p.dias !== null).sort((a, b) => (b.dias / MAXD + b.pct / MAXF) - (a.dias / MAXD + a.pct / MAXF));
-    const destaqueId = noMapa.some((p) => p.id === st.destaque) ? st.destaque : '';
-    const corCat = (p) => (p.cat === 'Médico' ? '#0E5E8C' : '#B8641B');
-    const valores = (p) => num(p.pct, 1) + '% · ' + diasTxt(p.dias);
-    const destacar = (id) => () => this.setState({ destaque: this.state.destaque === id ? '' : id });
-    const pontos = noMapa.map((p, i) => { const at = p.id === destaqueId; return {
-      n: i + 1, x: posF(p.pct), y: ((1 - Math.min(1, p.dias / MAXD)) * 100).toFixed(2) + '%', cor: corCat(p), raio: p.cat === 'Médico' ? '50%' : '4px',
-      tam: at ? '30px' : '24px', margem: at ? '-15px 0 0 -15px' : '-12px 0 0 -12px', sombra: at ? '0 0 0 3px #14212B' : 'none', op: destaqueId && !at ? 0.35 : 1, z: at ? 3 : 1,
-      ativo: at ? 'true' : 'false', destacar: destacar(p.id), titulo: (i + 1) + ' · ' + p.nome + ' (' + p.eq + ', ' + p.un + '): ' + num(p.pct, 1) + '% de faltas, vaga em ' + diasTxt(p.dias) }; });
-    const legenda = noMapa.map((p, i) => ({ n: i + 1, nome: p.nome, sub: p.eq + ' · ' + p.un, valores: valores(p), cor: corCat(p), raio: p.cat === 'Médico' ? '50%' : '4px',
-      fundo: p.id === destaqueId ? '#E7EEF3' : '#FFFFFF', ativo: p.id === destaqueId ? 'true' : 'false', destacar: destacar(p.id) }));
-    const d = noMapa.find((p) => p.id === destaqueId);
-    const fora = sel.length - noMapa.length;
+          // Faltas por horário: soma a grade dia da semana × hora dos profissionais do recorte (os mesmos filtros das outras abas).
+          const MINIMO = 5,
+            DIAS = ['', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+            DIAS_LONGO = ['', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'];
+          const chaveP = (un, eq, nome) => un + '|' + (eq || 'Sem equipe') + '|' + nome;
+          const nosel = new Set(sel.map((p) => chaveP(p.un, p.eq, p.nome)));
+          const celH = {};
+          let profsH = 0;
+          (FILAS.horarios || []).forEach((h) => {
+            if (!nosel.has(chaveP(h.unidade, h.equipe, h.nome))) return;
+            profsH++;
+            Object.keys(h.grade || {}).forEach((d) =>
+              Object.keys(h.grade[d]).forEach((hr) => {
+                const v = h.grade[d][hr],
+                  c = (celH[d + '|' + hr] = celH[d + '|' + hr] || { d: +d, h: +hr, ag: 0, at: 0, fa: 0 });
+                c.ag += v[0];
+                c.at += v[1];
+                c.fa += v[2];
+              }),
+            );
+          });
+          const cels = Object.values(celH).map((c) =>
+            Object.assign(c, { base: c.at + c.fa, taxa: c.at + c.fa ? (c.fa / (c.at + c.fa)) * 100 : null }),
+          );
+          const horTem = cels.length > 0;
+          const horas = horTem
+            ? Array.from(
+                { length: Math.max(...cels.map((c) => c.h)) - Math.min(...cels.map((c) => c.h)) + 1 },
+                (_, i) => Math.min(...cels.map((c) => c.h)) + i,
+              )
+            : [];
+          const dias = horTem ? [1, 2, 3, 4, 5, 6].concat(cels.some((c) => c.d === 7 && c.ag) ? [7] : []) : [];
+          const porTaxa = st.medida === 'taxa';
+          const valorC = (c) => (porTaxa ? c.taxa : c.fa);
+          const usaveis = cels.filter((c) => (porTaxa ? c.base >= MINIMO : c.fa > 0));
+          const vmax = Math.max(1, ...usaveis.map(valorC));
+          const RAMPA = ['#E3EEF9', '#BCD6EE', '#8FBAE0', '#5F98CF', '#2F6FB3', '#1B4F8C', '#0B2F5B'];
+          const faixa = (v) => RAMPA[Math.min(RAMPA.length - 1, Math.floor((v / vmax) * RAMPA.length))];
+          const hh = (n) => String(n).padStart(2, '0') + 'h';
+          const celulas = [];
+          if (horTem) {
+            celulas.push({
+              txt: '',
+              fundo: 'transparent',
+              cor: '#566370',
+              peso: 600,
+              tam: '13px',
+              alt: '24px',
+              alinha: 'flex-start',
+              textura: 'none',
+              titulo: '',
+            });
+            dias.forEach((d) =>
+              celulas.push({
+                txt: DIAS[d],
+                titulo: DIAS_LONGO[d],
+                fundo: 'transparent',
+                cor: '#33414C',
+                peso: 600,
+                tam: '13px',
+                alt: '24px',
+                alinha: 'center',
+                textura: 'none',
+              }),
+            );
+            horas.forEach((hr) => {
+              celulas.push({
+                txt: hh(hr),
+                titulo: '',
+                fundo: 'transparent',
+                cor: '#33414C',
+                peso: 600,
+                tam: '13px',
+                alt: '38px',
+                alinha: 'flex-start',
+                textura: 'none',
+              });
+              dias.forEach((d) => {
+                const c = celH[d + '|' + hr],
+                  quando = DIAS_LONGO[d] + ', ' + hh(hr);
+                if (!c || !c.ag) {
+                  celulas.push({
+                    txt: '',
+                    titulo: quando + ': sem agenda',
+                    fundo: '#F4F6F5',
+                    cor: '#8A979F',
+                    peso: 400,
+                    tam: '13px',
+                    alt: '38px',
+                    alinha: 'center',
+                    textura: 'none',
+                  });
+                  return;
+                }
+                const poucos = c.base < MINIMO,
+                  sem = !porTaxa && !c.fa;
+                const titulo =
+                  quando +
+                  ': ' +
+                  (c.base ? c.fa + ' faltas em ' + c.base + ' agendamentos (' + num(c.taxa, 1) + '%)' : 'nenhum agendamento já decidido') +
+                  ' · ' +
+                  profsH +
+                  (profsH === 1 ? ' profissional' : ' profissionais') +
+                  ' no recorte' +
+                  (poucos ? ' · poucos agendamentos para concluir' : '');
+                if ((porTaxa && poucos) || sem) {
+                  celulas.push({
+                    txt: porTaxa ? '·' : '0',
+                    titulo,
+                    fundo: '#FFFFFF',
+                    cor: '#566370',
+                    peso: 400,
+                    tam: '13px',
+                    alt: '38px',
+                    alinha: 'center',
+                    textura: porTaxa ? 'repeating-linear-gradient(45deg, #D5DCE0 0 2px, transparent 2px 6px)' : 'none',
+                  });
+                  return;
+                }
+                const v = valorC(c),
+                  f = faixa(v),
+                  escuro = RAMPA.indexOf(f) >= 3;
+                celulas.push({
+                  txt: porTaxa ? num(v, 0) + '%' : String(v),
+                  titulo,
+                  fundo: f,
+                  cor: escuro ? '#FFFFFF' : '#14212B',
+                  peso: 600,
+                  tam: '13px',
+                  alt: '38px',
+                  alinha: 'center',
+                  textura: 'none',
+                });
+              });
+            });
+          }
+          const topo = cels
+            .filter((c) => c.fa > 0 && c.base >= MINIMO)
+            .sort((a, b) => (porTaxa ? b.taxa - a.taxa || b.fa - a.fa : b.fa - a.fa || b.taxa - a.taxa))
+            .slice(0, 8)
+            .map((c) => ({ quando: DIAS_LONGO[c.d] + ', ' + hh(c.h), faltas: c.fa, base: c.base, taxa: num(c.taxa, 1) + '%' }));
+          const totH = cels.reduce((t, c) => ({ fa: t.fa + c.fa, base: t.base + c.base }), { fa: 0, base: 0 });
 
-    // Faltas por horário: soma a grade dia da semana × hora dos profissionais do recorte (os mesmos filtros das outras abas).
-    const MINIMO = 5, DIAS = ['', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'], DIAS_LONGO = ['', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'];
-    const chaveP = (un, eq, nome) => un + '|' + (eq || 'Sem equipe') + '|' + nome;
-    const nosel = new Set(sel.map((p) => chaveP(p.un, p.eq, p.nome)));
-    const celH = {};
-    let profsH = 0;
-    (FILAS.horarios || []).forEach((h) => {
-      if (!nosel.has(chaveP(h.unidade, h.equipe, h.nome))) return;
-      profsH++;
-      Object.keys(h.grade || {}).forEach((d) => Object.keys(h.grade[d]).forEach((hr) => {
-        const v = h.grade[d][hr], c = (celH[d + '|' + hr] = celH[d + '|' + hr] || { d: +d, h: +hr, ag: 0, at: 0, fa: 0 });
-        c.ag += v[0]; c.at += v[1]; c.fa += v[2];
-      }));
-    });
-    const cels = Object.values(celH).map((c) => Object.assign(c, { base: c.at + c.fa, taxa: c.at + c.fa ? c.fa / (c.at + c.fa) * 100 : null }));
-    const horTem = cels.length > 0;
-    const horas = horTem ? Array.from({ length: Math.max(...cels.map((c) => c.h)) - Math.min(...cels.map((c) => c.h)) + 1 }, (_, i) => Math.min(...cels.map((c) => c.h)) + i) : [];
-    const dias = horTem ? [1, 2, 3, 4, 5, 6].concat(cels.some((c) => c.d === 7 && c.ag) ? [7] : []) : [];
-    const porTaxa = st.medida === 'taxa';
-    const valorC = (c) => (porTaxa ? c.taxa : c.fa);
-    const usaveis = cels.filter((c) => (porTaxa ? c.base >= MINIMO : c.fa > 0));
-    const vmax = Math.max(1, ...usaveis.map(valorC));
-    const RAMPA = ['#E3EEF9', '#BCD6EE', '#8FBAE0', '#5F98CF', '#2F6FB3', '#1B4F8C', '#0B2F5B'];
-    const faixa = (v) => RAMPA[Math.min(RAMPA.length - 1, Math.floor(v / vmax * RAMPA.length))];
-    const hh = (n) => String(n).padStart(2, '0') + 'h';
-    const celulas = [];
-    if (horTem) {
-      celulas.push({ txt: '', fundo: 'transparent', cor: '#566370', peso: 600, tam: '13px', alt: '24px', alinha: 'flex-start', textura: 'none', titulo: '' });
-      dias.forEach((d) => celulas.push({ txt: DIAS[d], titulo: DIAS_LONGO[d], fundo: 'transparent', cor: '#33414C', peso: 600, tam: '13px', alt: '24px', alinha: 'center', textura: 'none' }));
-      horas.forEach((hr) => {
-        celulas.push({ txt: hh(hr), titulo: '', fundo: 'transparent', cor: '#33414C', peso: 600, tam: '13px', alt: '38px', alinha: 'flex-start', textura: 'none' });
-        dias.forEach((d) => {
-          const c = celH[d + '|' + hr], quando = DIAS_LONGO[d] + ', ' + hh(hr);
-          if (!c || !c.ag) { celulas.push({ txt: '', titulo: quando + ': sem agenda', fundo: '#F4F6F5', cor: '#8A979F', peso: 400, tam: '13px', alt: '38px', alinha: 'center', textura: 'none' }); return; }
-          const poucos = c.base < MINIMO, sem = !porTaxa && !c.fa;
-          const titulo = quando + ': ' + (c.base ? c.fa + ' faltas em ' + c.base + ' agendamentos (' + num(c.taxa, 1) + '%)' : 'nenhum agendamento já decidido') + ' · ' + profsH + (profsH === 1 ? ' profissional' : ' profissionais') + ' no recorte' + (poucos ? ' · poucos agendamentos para concluir' : '');
-          if ((porTaxa && poucos) || sem) { celulas.push({ txt: porTaxa ? '·' : '0', titulo, fundo: '#FFFFFF', cor: '#566370', peso: 400, tam: '13px', alt: '38px', alinha: 'center', textura: porTaxa ? 'repeating-linear-gradient(45deg, #D5DCE0 0 2px, transparent 2px 6px)' : 'none' }); return; }
-          const v = valorC(c), f = faixa(v), escuro = RAMPA.indexOf(f) >= 3;
-          celulas.push({ txt: porTaxa ? num(v, 0) + '%' : String(v), titulo, fundo: f, cor: escuro ? '#FFFFFF' : '#14212B', peso: 600, tam: '13px', alt: '38px', alinha: 'center', textura: 'none' });
-        });
-      });
-    }
-    const topo = cels.filter((c) => c.fa > 0 && c.base >= MINIMO).sort((a, b) => porTaxa ? b.taxa - a.taxa || b.fa - a.fa : b.fa - a.fa || b.taxa - a.taxa).slice(0, 8)
-      .map((c) => ({ quando: DIAS_LONGO[c.d] + ', ' + hh(c.h), faltas: c.fa, base: c.base, taxa: num(c.taxa, 1) + '%' }));
-    const totH = cels.reduce((t, c) => ({ fa: t.fa + c.fa, base: t.base + c.base }), { fa: 0, base: 0 });
-
-    const botao = (ativo) => ({ pressionado: ativo ? 'true' : 'false', fundo: ativo ? '#14212B' : '#FFFFFF', cor: ativo ? '#FFFFFF' : '#14212B', peso: ativo ? 600 : 400 });
-    const mes = (c) => { const [a, m] = c.split('-'); return ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'][m - 1] + ' de ' + a; };
-    const lidas = FILAS.profissionais.map((p) => p.agendaLidaEm).filter(Boolean).sort();
-    return {
-      menuSite: MENU_SITE(), temLanc: !!USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor'), itensUsuario: ITENS_USUARIO(), usuarioInicial: USUARIO ? USUARIO.nome.trim().charAt(0).toUpperCase() : '', temUsuario: !!USUARIO, usuarioNome: USUARIO ? USUARIO.nome.split(' ')[0] : '',
-      sair: async () => { try { await fetch('/api/v1/auth/sair', { method: 'POST', credentials: 'same-origin' }); } finally { location.replace('/entrar'); } },
-      linhas, resumo, pontos, legenda, semLinhas: linhas.length === 0, metaPos: posF(META), metaTxt: num(META, 2) + '%',
-      abaLista: st.aba === 'lista', abaMapa: st.aba === 'mapa',
-      abaHorario: st.aba === 'horario', abaAcesso: st.aba === 'acesso', linhasAcesso, resumoAcesso, horTem, horSem: !horTem, horCols: dias.length, celulas, topo, horMinimo: MINIMO,
-      horSemTxt: (FILAS.horarios || []).length ? 'Nenhum profissional deste recorte tem agenda lida no mês.' : 'Ainda não há grade de horários. Na extensão (versão 0.9.1 ou mais nova), marque "Faltas por horário" junto de "Filas e faltas" e rode a coleta.',
-      horResumo: horTem ? totH.fa + ' faltas em ' + totH.base + ' agendamentos já decididos (' + (totH.base ? num(totH.fa / totH.base * 100, 1) : '0') + '%), de ' + profsH + (profsH === 1 ? ' profissional' : ' profissionais') + '. Passe o mouse sobre uma célula para ver os números.' : 'Agendamentos do mês de cada profissional, somados por dia da semana e hora.',
-      legTitulo: porTaxa ? 'Taxa de faltas' : 'Número de faltas', legMin: porTaxa ? '0%' : '1', legMax: porTaxa ? num(vmax, 0) + '%' : String(Math.round(vmax)),
-      botoesMedida: [['taxa', 'Taxa de faltas'], ['faltas', 'Número de faltas']].map(([id, rotulo]) => ({ rotulo, ...botao(st.medida === id), escolher: () => this.setState({ medida: id }) })),
-      abas: [['lista', 'Unidades, equipes e profissionais'], ['mapa', 'Mapa: onde agir primeiro'], ['horario', 'Faltas por horário'], ['acesso', 'Faltas × acesso']].map(([id, titulo]) => ({ titulo, pressionado: st.aba === id ? 'true' : 'false',
-        borda: st.aba === id ? '#00A7E7' : 'transparent', cor: st.aba === id ? '#FFFFFF' : 'rgba(255,255,255,.85)', peso: st.aba === id ? 700 : 400, escolher: () => this.setState({ aba: id }) })),
-      temDestaque: !!d, destaque: d ? { nome: d.nome, sub: d.cbo + ' · ' + d.eq + ' · ' + d.un, valores: num(d.pct, 1) + '% de faltas (' + d.faltas + ' de ' + (d.faltas + d.atend) + ') · próxima vaga em ' + diasTxt(d.dias) } : {},
-      semAgendaTxt: fora ? fora + (fora === 1 ? ' profissional fica' : ' profissionais ficam') + ' fora do mapa por não ter as duas medidas.' : '',
-      periodoTxt: 'Faltas: ' + mes(FILAS.competencia) + (lidas.length ? ' · Agendas lidas em ' + new Date(lidas[lidas.length - 1]).toLocaleDateString('pt-BR') : ' · Agendas ainda não lidas'),
-      titulo: profSel ? sel[0].nome : equipeSel ? equipeSel + (unidadeSel ? ' · ' + unidadeSel : '') : unidadeSel || 'Onde as pessoas faltam e onde esperam mais?',
-      compSel: FILAS.competencia, opcoesComp: FILAS.competencias.map((c) => ({ id: c, rotulo: mes(c) })), escolherComp: (ev) => carregar(ev.target.value),
-      unidadeSel, equipeSel, profSel,
-      opcoesUnidade: Array.from(new Set(todos.map((p) => p.un))).sort((a, b) => a.localeCompare(b, 'pt')).map((nome) => ({ nome })),
-      opcoesEquipe: equipes.map((nome) => ({ nome })), opcoesProf: antesProf.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt')).map((p) => ({ id: p.id, nome: p.nome })),
-      botoesCat: [['', 'Todos'], ['Médico', 'Médicos'], ['Enfermeiro', 'Enfermeiros']].map(([id, rotulo]) => ({ rotulo, ...botao((st.cat || '') === id), escolher: () => this.setState({ cat: id, prof: '' }) })),
-      botoesOrdem: [['faltas', 'Mais faltas'], ['espera', 'Maior espera'], ['nome', 'Nome']].map(([id, rotulo]) => ({ rotulo, ...botao(st.ordem === id), escolher: () => this.setState({ ordem: id }) })),
-      escolherUnidade: (ev) => this.setState({ unidade: ev.target.value, equipe: '', prof: '' }),
-      escolherEquipe: (ev) => this.setState({ equipe: ev.target.value, prof: '' }),
-      escolherProf: (ev) => this.setState({ prof: ev.target.value })
-    };
-  }
-}
-let tela = null;
-async function carregar(comp) {
-  const aviso = (t) => { document.getElementById('tela').innerHTML = '<p id="aviso">' + t + ' <a href="/">Voltar ao início</a></p>'; tela = null; };
-  try {
-    const r = await fetch('/api/v1/filas' + (comp ? '?competencia=' + encodeURIComponent(comp) : ''), { credentials: 'same-origin' });
-    if (r.status === 401) { location.replace('/entrar'); return; }
-    if (r.status === 403) { aviso('Esta tela mostra dados por profissional e é restrita a administradores e gestores.'); return; }
-    if (!r.ok) throw 0;
-    const d = await r.json();
-    if (!USUARIO) { try { const e = await fetch('/api/v1/auth/eu', { credentials: 'same-origin' }); if (e.ok) USUARIO = (await e.json()).usuario || null; } catch (_) {} }
-    if (!d.profissionais.length) { aviso('Ainda não há dados de filas e faltas. Na extensão, marque "Filas e faltas" e rode a coleta no computador que acessa o PEC.'); return; }
-    FILAS = d;
-    ACESSO = {};
-    try {
-      const a = await fetch('/api/v1/dados?competencia=' + encodeURIComponent(d.competencia), { credentials: 'same-origin' });
-      if (a.ok) for (const x of ((await a.json()).indicadores || [])) if (x.codigo === 'C1' && x.denominador) ACESSO[x.unidade + '|' + (x.equipe || 'Sem equipe')] = { num: x.numerador, den: x.denominador };
-    } catch (_) {}
-    if (tela) tela.setState({}); else tela = montarDC(document.getElementById('modelo'), Filas, document.getElementById('tela'), {});
-  } catch (e) { aviso('Não foi possível carregar. Recarregue a página.'); }
-}
-carregar();
-</script>
-</body>
+          const botao = (ativo) => ({
+            pressionado: ativo ? 'true' : 'false',
+            fundo: ativo ? '#14212B' : '#FFFFFF',
+            cor: ativo ? '#FFFFFF' : '#14212B',
+            peso: ativo ? 600 : 400,
+          });
+          const mes = (c) => {
+            const [a, m] = c.split('-');
+            return (
+              ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'][
+                m - 1
+              ] +
+              ' de ' +
+              a
+            );
+          };
+          const lidas = FILAS.profissionais
+            .map((p) => p.agendaLidaEm)
+            .filter(Boolean)
+            .sort();
+          return {
+            menuSite: MENU_SITE(),
+            temLanc: !!USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor'),
+            itensUsuario: ITENS_USUARIO(),
+            usuarioInicial: USUARIO ? USUARIO.nome.trim().charAt(0).toUpperCase() : '',
+            temUsuario: !!USUARIO,
+            usuarioNome: USUARIO ? USUARIO.nome.split(' ')[0] : '',
+            sair: async () => {
+              try {
+                await fetch('/api/v1/auth/sair', { method: 'POST', credentials: 'same-origin' });
+              } finally {
+                location.replace('/entrar');
+              }
+            },
+            linhas,
+            resumo,
+            pontos,
+            legenda,
+            semLinhas: linhas.length === 0,
+            metaPos: posF(META),
+            metaTxt: num(META, 2) + '%',
+            abaLista: st.aba === 'lista',
+            abaMapa: st.aba === 'mapa',
+            abaHorario: st.aba === 'horario',
+            abaAcesso: st.aba === 'acesso',
+            linhasAcesso,
+            resumoAcesso,
+            horTem,
+            horSem: !horTem,
+            horCols: dias.length,
+            celulas,
+            topo,
+            horMinimo: MINIMO,
+            horSemTxt: (FILAS.horarios || []).length
+              ? 'Nenhum profissional deste recorte tem agenda lida no mês.'
+              : 'Ainda não há grade de horários. Na extensão (versão 0.9.1 ou mais nova), marque "Faltas por horário" junto de "Filas e faltas" e rode a coleta.',
+            horResumo: horTem
+              ? totH.fa +
+                ' faltas em ' +
+                totH.base +
+                ' agendamentos já decididos (' +
+                (totH.base ? num((totH.fa / totH.base) * 100, 1) : '0') +
+                '%), de ' +
+                profsH +
+                (profsH === 1 ? ' profissional' : ' profissionais') +
+                '. Passe o mouse sobre uma célula para ver os números.'
+              : 'Agendamentos do mês de cada profissional, somados por dia da semana e hora.',
+            legTitulo: porTaxa ? 'Taxa de faltas' : 'Número de faltas',
+            legMin: porTaxa ? '0%' : '1',
+            legMax: porTaxa ? num(vmax, 0) + '%' : String(Math.round(vmax)),
+            botoesMedida: [
+              ['taxa', 'Taxa de faltas'],
+              ['faltas', 'Número de faltas'],
+            ].map(([id, rotulo]) => ({ rotulo, ...botao(st.medida === id), escolher: () => this.setState({ medida: id }) })),
+            abas: [
+              ['lista', 'Unidades, equipes e profissionais'],
+              ['mapa', 'Mapa: onde agir primeiro'],
+              ['horario', 'Faltas por horário'],
+              ['acesso', 'Faltas × acesso'],
+            ].map(([id, titulo]) => ({
+              titulo,
+              pressionado: st.aba === id ? 'true' : 'false',
+              borda: st.aba === id ? '#00A7E7' : 'transparent',
+              cor: st.aba === id ? '#FFFFFF' : 'rgba(255,255,255,.85)',
+              peso: st.aba === id ? 700 : 400,
+              escolher: () => this.setState({ aba: id }),
+            })),
+            temDestaque: !!d,
+            destaque: d
+              ? {
+                  nome: d.nome,
+                  sub: d.cbo + ' · ' + d.eq + ' · ' + d.un,
+                  valores:
+                    num(d.pct, 1) + '% de faltas (' + d.faltas + ' de ' + (d.faltas + d.atend) + ') · próxima vaga em ' + diasTxt(d.dias),
+                }
+              : {},
+            semAgendaTxt: fora
+              ? fora + (fora === 1 ? ' profissional fica' : ' profissionais ficam') + ' fora do mapa por não ter as duas medidas.'
+              : '',
+            periodoTxt:
+              'Faltas: ' +
+              mes(FILAS.competencia) +
+              (lidas.length
+                ? ' · Agendas lidas em ' + new Date(lidas[lidas.length - 1]).toLocaleDateString('pt-BR')
+                : ' · Agendas ainda não lidas'),
+            titulo: profSel
+              ? sel[0].nome
+              : equipeSel
+                ? equipeSel + (unidadeSel ? ' · ' + unidadeSel : '')
+                : unidadeSel || 'Onde as pessoas faltam e onde esperam mais?',
+            compSel: FILAS.competencia,
+            opcoesComp: FILAS.competencias.map((c) => ({ id: c, rotulo: mes(c) })),
+            escolherComp: (ev) => carregar(ev.target.value),
+            unidadeSel,
+            equipeSel,
+            profSel,
+            opcoesUnidade: Array.from(new Set(todos.map((p) => p.un)))
+              .sort((a, b) => a.localeCompare(b, 'pt'))
+              .map((nome) => ({ nome })),
+            opcoesEquipe: equipes.map((nome) => ({ nome })),
+            opcoesProf: antesProf
+              .slice()
+              .sort((a, b) => a.nome.localeCompare(b.nome, 'pt'))
+              .map((p) => ({ id: p.id, nome: p.nome })),
+            botoesCat: [
+              ['', 'Todos'],
+              ['Médico', 'Médicos'],
+              ['Enfermeiro', 'Enfermeiros'],
+            ].map(([id, rotulo]) => ({ rotulo, ...botao((st.cat || '') === id), escolher: () => this.setState({ cat: id, prof: '' }) })),
+            botoesOrdem: [
+              ['faltas', 'Mais faltas'],
+              ['espera', 'Maior espera'],
+              ['nome', 'Nome'],
+            ].map(([id, rotulo]) => ({ rotulo, ...botao(st.ordem === id), escolher: () => this.setState({ ordem: id }) })),
+            escolherUnidade: (ev) => this.setState({ unidade: ev.target.value, equipe: '', prof: '' }),
+            escolherEquipe: (ev) => this.setState({ equipe: ev.target.value, prof: '' }),
+            escolherProf: (ev) => this.setState({ prof: ev.target.value }),
+          };
+        }
+      }
+      let tela = null;
+      async function carregar(comp) {
+        const aviso = (t) => {
+          document.getElementById('tela').innerHTML = '<p id="aviso">' + t + ' <a href="/">Voltar ao início</a></p>';
+          tela = null;
+        };
+        try {
+          const r = await fetch('/api/v1/filas' + (comp ? '?competencia=' + encodeURIComponent(comp) : ''), { credentials: 'same-origin' });
+          if (r.status === 401) {
+            location.replace('/entrar');
+            return;
+          }
+          if (r.status === 403) {
+            aviso('Esta tela mostra dados por profissional e é restrita a administradores e gestores.');
+            return;
+          }
+          if (!r.ok) throw 0;
+          const d = await r.json();
+          if (!USUARIO) {
+            try {
+              const e = await fetch('/api/v1/auth/eu', { credentials: 'same-origin' });
+              if (e.ok) USUARIO = (await e.json()).usuario || null;
+            } catch (_) {}
+          }
+          if (!d.profissionais.length) {
+            aviso(
+              'Ainda não há dados de filas e faltas. Na extensão, marque "Filas e faltas" e rode a coleta no computador que acessa o PEC.',
+            );
+            return;
+          }
+          FILAS = d;
+          ACESSO = {};
+          try {
+            const a = await fetch('/api/v1/dados?competencia=' + encodeURIComponent(d.competencia), { credentials: 'same-origin' });
+            if (a.ok)
+              for (const x of (await a.json()).indicadores || [])
+                if (x.codigo === 'C1' && x.denominador)
+                  ACESSO[x.unidade + '|' + (x.equipe || 'Sem equipe')] = { num: x.numerador, den: x.denominador };
+          } catch (_) {}
+          if (tela) tela.setState({});
+          else tela = montarDC(document.getElementById('modelo'), Filas, document.getElementById('tela'), {});
+        } catch (e) {
+          aviso('Não foi possível carregar. Recarregue a página.');
+        }
+      }
+      carregar();
+    </script>
+  </body>
 </html>

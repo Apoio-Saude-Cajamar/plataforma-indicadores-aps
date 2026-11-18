@@ -1,133 +1,492 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Como coletamos e calculamos · Painel APS</title>
-<link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
-<style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Montserrat,system-ui,sans-serif;color:#1B2340;background:#F4F7FB}
-a{color:inherit;text-decoration:none}
-a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #00A7E7;outline-offset:3px}
-header{background:#1F3C72;border-bottom:4px solid #00A7E7;color:#fff}
-.topo{max-width:1100px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.marca{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
-.barra-usuario{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#fff}
-.barra-usuario a,.barra-usuario button{color:inherit;font:inherit;background:none;border:1px solid rgba(255,255,255,.6);border-radius:99px;padding:5px 14px;cursor:pointer}
-main{max-width:1100px;margin:0 auto;padding:32px 32px 56px}
-.voltar{font-weight:600;color:#1F3C72;text-decoration:underline;font-size:14px}
-h1{margin:12px 0 8px;font-size:30px;font-weight:800;color:#1F3C72;line-height:1.2}
-.intro{margin:0 0 20px;font-size:15px;line-height:1.55;color:#4A5670;max-width:760px}
-.sel{display:flex;flex-wrap:wrap;gap:16px 28px;margin-bottom:20px}
-.sel label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em}
-.sel select{font:inherit;font-size:15px;font-weight:600;text-transform:none;letter-spacing:0;min-height:42px;padding:0 12px;border:2px solid #D5DCE8;border-radius:10px;background:#fff;color:#1B2340;min-width:180px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:24px}
-.card,.bloco{background:#fff;border:2px solid #D5DCE8;border-radius:14px;padding:18px 20px}
-.card small{display:block;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
-.card .v{font-size:34px;font-weight:800;color:#1F3C72;line-height:1.1}
-.card .s{font-size:13px;color:#4A5670;margin-top:6px;line-height:1.45}
-.pill{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px;margin-left:8px;vertical-align:middle}
-.c-o{background:#C7ECD9;color:#0F5A41}.c-b{background:#D9ECF8;color:#0B4F73}.c-s{background:#FBF0D3;color:#6E4700}.c-r{background:#F8D9DC;color:#8A1B2A}
-.up{color:#0F6B4F;font-weight:700}.dn{color:#A8222F;font-weight:700}
-.bloco{margin-bottom:20px}
-.bloco h2{margin:0 0 6px;font-size:19px;color:#1B2340}
-.bloco p.d{margin:0 0 14px;font-size:14px;color:#4A5670;line-height:1.5}
-table{border-collapse:collapse;width:100%;font-size:14px}
-th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #E3E8F0;vertical-align:middle}
-th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#4A5670}
-td.n,th.n{text-align:right;white-space:nowrap}
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Como coletamos e calculamos · Painel APS</title>
+    <link rel="icon" href="/img/painelaps.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Montserrat, system-ui, sans-serif;
+        color: #1b2340;
+        background: #f4f7fb;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      a:focus-visible,
+      button:focus-visible,
+      select:focus-visible {
+        outline: 3px solid #00a7e7;
+        outline-offset: 3px;
+      }
+      header {
+        background: #1f3c72;
+        border-bottom: 4px solid #00a7e7;
+        color: #fff;
+      }
+      .topo {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 14px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .marca {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+        font-size: 19px;
+      }
+      .barra-usuario {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #fff;
+      }
+      .barra-usuario a,
+      .barra-usuario button {
+        color: inherit;
+        font: inherit;
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 99px;
+        padding: 5px 14px;
+        cursor: pointer;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 32px 56px;
+      }
+      .voltar {
+        font-weight: 600;
+        color: #1f3c72;
+        text-decoration: underline;
+        font-size: 14px;
+      }
+      h1 {
+        margin: 12px 0 8px;
+        font-size: 30px;
+        font-weight: 800;
+        color: #1f3c72;
+        line-height: 1.2;
+      }
+      .intro {
+        margin: 0 0 20px;
+        font-size: 15px;
+        line-height: 1.55;
+        color: #4a5670;
+        max-width: 760px;
+      }
+      .sel {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px 28px;
+        margin-bottom: 20px;
+      }
+      .sel label {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #4a5670;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .sel select {
+        font: inherit;
+        font-size: 15px;
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: 0;
+        min-height: 42px;
+        padding: 0 12px;
+        border: 2px solid #d5dce8;
+        border-radius: 10px;
+        background: #fff;
+        color: #1b2340;
+        min-width: 180px;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .card,
+      .bloco {
+        background: #fff;
+        border: 2px solid #d5dce8;
+        border-radius: 14px;
+        padding: 18px 20px;
+      }
+      .card small {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: #4a5670;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 6px;
+      }
+      .card .v {
+        font-size: 34px;
+        font-weight: 800;
+        color: #1f3c72;
+        line-height: 1.1;
+      }
+      .card .s {
+        font-size: 13px;
+        color: #4a5670;
+        margin-top: 6px;
+        line-height: 1.45;
+      }
+      .pill {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 99px;
+        padding: 3px 10px;
+        margin-left: 8px;
+        vertical-align: middle;
+      }
+      .c-o {
+        background: #c7ecd9;
+        color: #0f5a41;
+      }
+      .c-b {
+        background: #d9ecf8;
+        color: #0b4f73;
+      }
+      .c-s {
+        background: #fbf0d3;
+        color: #6e4700;
+      }
+      .c-r {
+        background: #f8d9dc;
+        color: #8a1b2a;
+      }
+      .up {
+        color: #0f6b4f;
+        font-weight: 700;
+      }
+      .dn {
+        color: #a8222f;
+        font-weight: 700;
+      }
+      .bloco {
+        margin-bottom: 20px;
+      }
+      .bloco h2 {
+        margin: 0 0 6px;
+        font-size: 19px;
+        color: #1b2340;
+      }
+      .bloco p.d {
+        margin: 0 0 14px;
+        font-size: 14px;
+        color: #4a5670;
+        line-height: 1.5;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 14px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 9px 10px;
+        border-bottom: 1px solid #e3e8f0;
+        vertical-align: middle;
+      }
+      th {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #4a5670;
+      }
+      td.n,
+      th.n {
+        text-align: right;
+        white-space: nowrap;
+      }
 
-.sec{margin:26px 0 10px;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#4A5670}
-.it{background:#fff;border:2px solid #D5DCE8;border-radius:14px;margin-bottom:10px}
-.it summary{cursor:pointer;list-style:none;padding:14px 18px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline}
-.it summary::-webkit-details-marker{display:none}
-.it summary b{font-size:16px}.it summary span.id{font-size:12px;color:#4A5670}
-.it[open] summary{border-bottom:1px solid #E3E8F0}
-.modo{font-size:12px;font-weight:700;border-radius:99px;padding:2px 10px;background:#D9ECF8;color:#0B4F73}
-.modo.municipio{background:#C7ECD9;color:#0F5A41}.modo.ambos{background:#FBF0D3;color:#6E4700}
-.it dl{margin:0;padding:12px 18px 16px;display:grid;grid-template-columns:150px 1fr;gap:8px 16px;font-size:14px;line-height:1.5}
-.it dt{font-weight:700;color:#4A5670}.it dd{margin:0}
-.ancoras{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}.ancoras a{font-size:14px;font-weight:700;color:#1F3C72;border:2px solid #D5DCE8;border-radius:99px;padding:6px 14px;background:#fff}.ancoras a:hover{border-color:#00A7E7}
-.regra{margin:0 0 10px;font-size:14px;line-height:1.55}.regra b{color:#1F3C72}
-.prec{font-size:12px;font-weight:700;border-radius:99px;padding:2px 10px;background:#E7EEF3;color:#33414C}
-section.parte{scroll-margin-top:16px}
-.aviso{background:#E6F6EE;border:2px solid #1C9C76;border-radius:14px;padding:14px 18px;font-size:14px;line-height:1.55;margin:0 0 8px}
-@media(max-width:600px){.it dl{grid-template-columns:1fr}.it dt{margin-top:6px}}
-</style>
-<link rel="stylesheet" href="/css/tema.css">
-<script src="/js/publico/tema.js"></script>
-</head>
-<body>
-<header><div class="topo">
- <a class="marca" href="/"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
- <div id="barra"></div>
-</div></header>
-<main>
- <h1>Como coletamos e calculamos</h1>
- <nav class="ancoras" aria-label="Nesta página"><a href="#coletamos">Como coletamos</a><a href="#calculamos">Como calculamos</a><a href="#privacidade">Privacidade dos dados</a></nav>
- <p class="intro">De onde vem cada número do Painel e o que a extensão do Chrome faz no PEC e-SUS. Esta página usa o mesmo texto que aparece no ícone ⓘ de cada item da extensão. Quando a extensão mudar, ela é atualizada junto.</p>
- <section class="parte" id="privacidade"><p class="aviso"><b>Só totais.</b> <span id="lgpd"></span></p></section>
- <section class="parte" id="coletamos"><div id="lista"></div></section>
- <section class="parte" id="calculamos"><h2 class="sec">Como calculamos</h2><div id="calculo"></div></section>
-</main>
-<script src="/js/extracao.js"></script>
-<script src="/js/catalogo-indicadores.js"></script>
-<script src="/js/estadual-regras.js"></script>
-<script src="/js/sessao.js"></script>
-<script>
-const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const ESC={municipio:'município · uma consulta',unidade:'por unidade',ambos:'município + unidade'};
-document.getElementById('lgpd').textContent='A extensão usa a sessão que o usuário já abriu no PEC. Nenhum nome de paciente, CPF ou prontuário é guardado ou enviado. Composição e filas levam nome e cargo de profissionais; o eMulti usa um resumo irreversível, só em memória, para contar pessoas diferentes.';
-let h='';
-for(const [f,nome] of Object.entries(EXTRACAO.FINALIDADES)){
-  const itens=EXTRACAO.ITENS.filter(i=>i.finalidade===f); if(!itens.length) continue;
-  h+='<h2 class="sec">'+esc(nome)+'</h2>';
-  for(const i of itens) h+='<details class="it"><summary><b>'+esc(i.nome)+'</b><span class="id">'+esc(i.indicadores)+'</span><span class="modo '+i.escopo+'">'+ESC[i.escopo]+'</span></summary><dl>'
-    +'<dt>Fonte no PEC</dt><dd>'+esc(i.fonte)+'</dd><dt>Como é lido</dt><dd>'+esc(i.como)+'</dd><dt>Vai ao Painel</dt><dd>'+esc(i.sai)+'</dd><dt>Dados pessoais</dt><dd>'+esc(i.pessoal)+'</dd></dl></details>';
-}
-document.getElementById('lista').innerHTML=h;
+      .sec {
+        margin: 26px 0 10px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #4a5670;
+      }
+      .it {
+        background: #fff;
+        border: 2px solid #d5dce8;
+        border-radius: 14px;
+        margin-bottom: 10px;
+      }
+      .it summary {
+        cursor: pointer;
+        list-style: none;
+        padding: 14px 18px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 12px;
+        align-items: baseline;
+      }
+      .it summary::-webkit-details-marker {
+        display: none;
+      }
+      .it summary b {
+        font-size: 16px;
+      }
+      .it summary span.id {
+        font-size: 12px;
+        color: #4a5670;
+      }
+      .it[open] summary {
+        border-bottom: 1px solid #e3e8f0;
+      }
+      .modo {
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 99px;
+        padding: 2px 10px;
+        background: #d9ecf8;
+        color: #0b4f73;
+      }
+      .modo.municipio {
+        background: #c7ecd9;
+        color: #0f5a41;
+      }
+      .modo.ambos {
+        background: #fbf0d3;
+        color: #6e4700;
+      }
+      .it dl {
+        margin: 0;
+        padding: 12px 18px 16px;
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 8px 16px;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .it dt {
+        font-weight: 700;
+        color: #4a5670;
+      }
+      .it dd {
+        margin: 0;
+      }
+      .ancoras {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 20px;
+      }
+      .ancoras a {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1f3c72;
+        border: 2px solid #d5dce8;
+        border-radius: 99px;
+        padding: 6px 14px;
+        background: #fff;
+      }
+      .ancoras a:hover {
+        border-color: #00a7e7;
+      }
+      .regra {
+        margin: 0 0 10px;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+      .regra b {
+        color: #1f3c72;
+      }
+      .prec {
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 99px;
+        padding: 2px 10px;
+        background: #e7eef3;
+        color: #33414c;
+      }
+      section.parte {
+        scroll-margin-top: 16px;
+      }
+      .aviso {
+        background: #e6f6ee;
+        border: 2px solid #1c9c76;
+        border-radius: 14px;
+        padding: 14px 18px;
+        font-size: 14px;
+        line-height: 1.55;
+        margin: 0 0 8px;
+      }
+      @media (max-width: 600px) {
+        .it dl {
+          grid-template-columns: 1fr;
+        }
+        .it dt {
+          margin-top: 6px;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="/css/tema.css" />
+    <script src="/js/publico/tema.js"></script>
+    <script src="/js/util.js"></script>
+  </head>
+  <body>
+    <header>
+      <div class="topo">
+        <a class="marca" href="/"><img src="/img/painelaps.svg" alt="" width="34" height="34" /><span>Painel APS</span></a>
+        <div id="barra"></div>
+      </div>
+    </header>
+    <main>
+      <h1>Como coletamos e calculamos</h1>
+      <nav class="ancoras" aria-label="Nesta página">
+        <a href="#coletamos">Como coletamos</a><a href="#calculamos">Como calculamos</a><a href="#privacidade">Privacidade dos dados</a>
+      </nav>
+      <p class="intro">
+        De onde vem cada número do Painel e o que a extensão do Chrome faz no PEC e-SUS. Esta página usa o mesmo texto que aparece no ícone
+        ⓘ de cada item da extensão. Quando a extensão mudar, ela é atualizada junto.
+      </p>
+      <section class="parte" id="privacidade">
+        <p class="aviso"><b>Só totais.</b> <span id="lgpd"></span></p>
+      </section>
+      <section class="parte" id="coletamos"><div id="lista"></div></section>
+      <section class="parte" id="calculamos">
+        <h2 class="sec">Como calculamos</h2>
+        <div id="calculo"></div>
+      </section>
+    </main>
+    <script src="/js/extracao.js"></script>
+    <script src="/js/catalogo-indicadores.js"></script>
+    <script src="/js/estadual-regras.js"></script>
+    <script src="/js/sessao.js"></script>
+    <script>
+      const ESC = { municipio: 'município · uma consulta', unidade: 'por unidade', ambos: 'município + unidade' };
+      document.getElementById('lgpd').textContent =
+        'A extensão usa a sessão que o usuário já abriu no PEC. Nenhum nome de paciente, CPF ou prontuário é guardado ou enviado. Composição e filas levam nome e cargo de profissionais; o eMulti usa um resumo irreversível, só em memória, para contar pessoas diferentes.';
+      let h = '';
+      for (const [f, nome] of Object.entries(EXTRACAO.FINALIDADES)) {
+        const itens = EXTRACAO.ITENS.filter((i) => i.finalidade === f);
+        if (!itens.length) continue;
+        h += '<h2 class="sec">' + esc(nome) + '</h2>';
+        for (const i of itens)
+          h +=
+            '<details class="it"><summary><b>' +
+            esc(i.nome) +
+            '</b><span class="id">' +
+            esc(i.indicadores) +
+            '</span><span class="modo ' +
+            i.escopo +
+            '">' +
+            ESC[i.escopo] +
+            '</span></summary><dl>' +
+            '<dt>Fonte no PEC</dt><dd>' +
+            esc(i.fonte) +
+            '</dd><dt>Como é lido</dt><dd>' +
+            esc(i.como) +
+            '</dd><dt>Vai ao Painel</dt><dd>' +
+            esc(i.sai) +
+            '</dd><dt>Dados pessoais</dt><dd>' +
+            esc(i.pessoal) +
+            '</dd></dl></details>';
+      }
+      document.getElementById('lista').innerHTML = h;
 
-// ---- Como calculamos: tudo sai do catálogo de indicadores e das regras do estadual (as mesmas usadas nas telas).
-(function(){
-const GR=[
- ['Cofinanciamento federal · eSF e eAP (C1 a C7: mais acesso e cuidado ao longo da vida)',['C1','C2','C3','C4','C5','C6','C7','C7-A','C7-B','C7-C','C7-D']],
- ['Cofinanciamento federal · Vínculo e acompanhamento territorial',['CVAT','CVAT-CAD','CVAT-ACO']],
- ['Cofinanciamento federal · Odontologia, eMulti e Consultório na Rua',['B1','B2','B3','B4','B5','B6','M1','M2','CR1','CR2','CR3','CR4']],
- ['Acompanhamento municipal (fora do cofinanciamento federal)',['Q14.2.1','Q12.2','S20','S3','S4','VINC6A12','TERR-ATU','TERR-COMP','TERR-VIS','TERR-FA']]
-];
-const TIPO={pontos:'média de pontos (0 a 100)',percentual:'percentual',razao:'razão',nota:'nota composta',contagem:'contagem'};
-const PREC={exato:'exato',aproximado:'aproximado',piso:'piso (o real é igual ou maior)'};
-let h='<p class="regra"><b>Regras gerais.</b> O Painel não recalcula o PEC: ele soma o que a extensão leu (numeradores e denominadores por unidade e equipe) e aplica as fórmulas abaixo. <b>Percentual</b> = numerador ÷ denominador. <b>Média de pontos</b> = soma dos pontos de cada pessoa ÷ pessoas da equipe. A nota de cada equipe, da unidade e do município usa os mesmos números, somados; nunca a média de percentuais. A competência é o mês escolhido; os indicadores de quadrimestre olham os 4 meses até ele.</p>'
- +'<p class="regra"><b>Precisão.</b> “Exato” bate com o PEC; “aproximado” depende de uma regra que o relatório do PEC só permite aproximar; “piso” significa que o valor real é igual ou maior. A justificativa aparece em cada indicador.</p>';
-for(const [tit,cods] of GR){
-  h+='<h3 class="sec">'+esc(tit)+'</h3>';
-  for(const c of cods){ const i=CATALOGO[c]; if(!i) continue;
-    h+='<details class="it"><summary><b>'+esc(i.nome)+'</b><span class="id">'+esc(c)+'</span><span class="modo">'+esc(TIPO[i.tipo]||i.tipo)+'</span>'+(i.precisao?'<span class="prec">'+esc(PREC[i.precisao]||i.precisao)+'</span>':'')+'</summary><dl>'
-     +(i.formula?'<dt>Fórmula</dt><dd>'+esc(i.formula)+'</dd>':'')
-     +(i.numerador?'<dt>Numerador</dt><dd>'+esc(i.numerador)+'</dd>':'')
-     +(i.denominador?'<dt>Denominador</dt><dd>'+esc(i.denominador)+'</dd>':'')
-     +(i.meta?'<dt>Meta</dt><dd>'+esc(i.meta)+'</dd>':'')
-     +(i.fonte?'<dt>Fonte no PEC</dt><dd>'+esc(i.fonte)+'</dd>':'')
-     +(i.margem?'<dt>Margem</dt><dd>'+esc(i.margem)+'</dd>':'')
-     +(i.nota?'<dt>Observação</dt><dd>'+esc(i.nota)+'</dd>':'')+'</dl></details>';
-  }
-}
-h+='<h3 class="sec">Filas e faltas (gestão)</h3><div class="bloco"><p class="regra"><b>Absenteísmo</b> = faltas ÷ (atendimentos + faltas), por profissional; a meta de referência é 19,59% (a do Q14.2.1). Equipes e unidades somam as faltas e os atendimentos dos profissionais, sem fazer média de percentuais.</p>'
- +'<p class="regra"><b>Próxima vaga</b> = dias corridos de hoje até o primeiro dia com horário livre na agenda do PEC, olhando o mês atual e os três seguintes; sem dia livre nesse prazo, a espera passa de 90 dias. Para a equipe e a unidade vale a <b>mediana</b> dos profissionais com agenda lida. Quem não tem agenda ativa no PEC aparece como “agenda não lida” e fica fora da mediana.</p>'
- +'<p class="regra"><b>Faltas por horário</b> = grade dia da semana × hora com agendados, atendidos e faltas do mês; células com menos de 5 agendamentos decididos não entram na taxa.</p>'
- +'<p class="regra"><b>Faltas × acesso</b> = faltas e espera de cada equipe ao lado da C1 (consultas de demanda programada ÷ todas), do mesmo mês. A correlação mostrada é só indicativa quando há menos de 8 equipes.</p></div>';
-const E=ESTADUAL_REGRAS;
-h+='<h3 class="sec">Cofinanciamento estadual (IGM SUS Paulista)</h3><div class="bloco"><p class="regra">Parte variável do IGM SUS Paulista (Deliberação CIB 150/2025, que mantém a lógica da CIB 117/2023). A nota é a soma, de 0 a 10, dos pesos abaixo multiplicados pela pontuação de cada item (0%, 25%, 50%, 75% ou 100%). Só os valores <b>oficiais</b> lançados entram na nota; a estimativa pelo PEC fica ao lado, separada.</p><table><thead><tr><th>Item</th><th class="n">Peso</th></tr></thead><tbody>'
- +E.ITENS.map(i=>'<tr><td>'+esc(i.nome)+'</td><td class="n">'+String(i.peso).replace('.',',')+'</td></tr>').join('')+'</tbody></table>'
- +'<p class="regra" style="margin-top:12px"><b>Vacinas</b> (meta 95%; HPV, 90%): a pontuação depende de onde estava a cobertura no período anterior (a), de onde está agora (v) e da mediana estadual (m). Se a estava na meta: manter-se nela vale 100%; cair abaixo da meta, mas na mediana ou acima, 75%; abaixo da mediana, 0%. Se a estava entre a mediana e a meta: subir vale 100%; manter ou cair mantendo-se na mediana, 75%; abaixo da mediana, 0%. Se a estava abaixo da mediana: alcançar a mediana vale 100%; manter ou subir sem alcançá-la, 50%; cair, 0%.</p>'
- +'<p class="regra"><b>Cobertura da eSF</b> = nº de eSF × 3.500 ÷ população (limitada a 100%): 70% ou mais vale 100%; de 50% a menos de 70%, 50%; de 15% a menos de 50%, 25%; abaixo disso, 0%. <b>Internações sensíveis à APS</b>: abaixo da média estadual 100%, senão 50%. <b>Sífilis</b>: 90% ou mais, 100%; senão 0%. <b>LIRAa</b>: levantamento realizado 100%. <b>Mortalidade infantil</b>: depende do quartil e da taxa na janela atual e na anterior.</p>'
- +'<p class="regra"><b>Parcelas:</b> 1ª em maio (2025-Q3 contra 2025-Q2), 2ª em setembro (2026-Q1 contra 2025-Q3), 3ª em dezembro (2026-Q2 contra 2026-Q1). População de referência: '+E.POP.toLocaleString('pt-BR')+' habitantes.</p>'
- +'<p class="regra"><b>Estimativa pelo PEC</b> (vacinas): doses aplicadas de janeiro ao fim do quadrimestre ÷ população-alvo lançada. É aproximada: o PEC conta a idade na aplicação, não a coorte de nascimento; por isso não entra na nota.</p></div>';
-h+='<h3 class="sec">Composição das equipes</h3><div class="bloco"><p class="regra">Árvore município → unidade → equipe → profissional, lida da lotação do PEC (nome, cargo/CBO e equipe). Uma coleta que lê só algumas unidades <b>acrescenta</b> essas unidades ao mês, sem apagar as já recebidas. Profissional em mais de uma equipe é sinalizado: pode ser homônimo ou lotação dupla.</p></div>';
-document.getElementById('calculo').innerHTML=h;
-})();
-</script>
-</body>
+      // ---- Como calculamos: tudo sai do catálogo de indicadores e das regras do estadual (as mesmas usadas nas telas).
+      (function () {
+        const GR = [
+          [
+            'Cofinanciamento federal · eSF e eAP (C1 a C7: mais acesso e cuidado ao longo da vida)',
+            ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C7-A', 'C7-B', 'C7-C', 'C7-D'],
+          ],
+          ['Cofinanciamento federal · Vínculo e acompanhamento territorial', ['CVAT', 'CVAT-CAD', 'CVAT-ACO']],
+          [
+            'Cofinanciamento federal · Odontologia, eMulti e Consultório na Rua',
+            ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'M1', 'M2', 'CR1', 'CR2', 'CR3', 'CR4'],
+          ],
+          [
+            'Acompanhamento municipal (fora do cofinanciamento federal)',
+            ['Q14.2.1', 'Q12.2', 'S20', 'S3', 'S4', 'VINC6A12', 'TERR-ATU', 'TERR-COMP', 'TERR-VIS', 'TERR-FA'],
+          ],
+        ];
+        const TIPO = {
+          pontos: 'média de pontos (0 a 100)',
+          percentual: 'percentual',
+          razao: 'razão',
+          nota: 'nota composta',
+          contagem: 'contagem',
+        };
+        const PREC = { exato: 'exato', aproximado: 'aproximado', piso: 'piso (o real é igual ou maior)' };
+        let h =
+          '<p class="regra"><b>Regras gerais.</b> O Painel não recalcula o PEC: ele soma o que a extensão leu (numeradores e denominadores por unidade e equipe) e aplica as fórmulas abaixo. <b>Percentual</b> = numerador ÷ denominador. <b>Média de pontos</b> = soma dos pontos de cada pessoa ÷ pessoas da equipe. A nota de cada equipe, da unidade e do município usa os mesmos números, somados; nunca a média de percentuais. A competência é o mês escolhido; os indicadores de quadrimestre olham os 4 meses até ele.</p>' +
+          '<p class="regra"><b>Precisão.</b> “Exato” bate com o PEC; “aproximado” depende de uma regra que o relatório do PEC só permite aproximar; “piso” significa que o valor real é igual ou maior. A justificativa aparece em cada indicador.</p>';
+        for (const [tit, cods] of GR) {
+          h += '<h3 class="sec">' + esc(tit) + '</h3>';
+          for (const c of cods) {
+            const i = CATALOGO[c];
+            if (!i) continue;
+            h +=
+              '<details class="it"><summary><b>' +
+              esc(i.nome) +
+              '</b><span class="id">' +
+              esc(c) +
+              '</span><span class="modo">' +
+              esc(TIPO[i.tipo] || i.tipo) +
+              '</span>' +
+              (i.precisao ? '<span class="prec">' + esc(PREC[i.precisao] || i.precisao) + '</span>' : '') +
+              '</summary><dl>' +
+              (i.formula ? '<dt>Fórmula</dt><dd>' + esc(i.formula) + '</dd>' : '') +
+              (i.numerador ? '<dt>Numerador</dt><dd>' + esc(i.numerador) + '</dd>' : '') +
+              (i.denominador ? '<dt>Denominador</dt><dd>' + esc(i.denominador) + '</dd>' : '') +
+              (i.meta ? '<dt>Meta</dt><dd>' + esc(i.meta) + '</dd>' : '') +
+              (i.fonte ? '<dt>Fonte no PEC</dt><dd>' + esc(i.fonte) + '</dd>' : '') +
+              (i.margem ? '<dt>Margem</dt><dd>' + esc(i.margem) + '</dd>' : '') +
+              (i.nota ? '<dt>Observação</dt><dd>' + esc(i.nota) + '</dd>' : '') +
+              '</dl></details>';
+          }
+        }
+        h +=
+          '<h3 class="sec">Filas e faltas (gestão)</h3><div class="bloco"><p class="regra"><b>Absenteísmo</b> = faltas ÷ (atendimentos + faltas), por profissional; a meta de referência é 19,59% (a do Q14.2.1). Equipes e unidades somam as faltas e os atendimentos dos profissionais, sem fazer média de percentuais.</p>' +
+          '<p class="regra"><b>Próxima vaga</b> = dias corridos de hoje até o primeiro dia com horário livre na agenda do PEC, olhando o mês atual e os três seguintes; sem dia livre nesse prazo, a espera passa de 90 dias. Para a equipe e a unidade vale a <b>mediana</b> dos profissionais com agenda lida. Quem não tem agenda ativa no PEC aparece como “agenda não lida” e fica fora da mediana.</p>' +
+          '<p class="regra"><b>Faltas por horário</b> = grade dia da semana × hora com agendados, atendidos e faltas do mês; células com menos de 5 agendamentos decididos não entram na taxa.</p>' +
+          '<p class="regra"><b>Faltas × acesso</b> = faltas e espera de cada equipe ao lado da C1 (consultas de demanda programada ÷ todas), do mesmo mês. A correlação mostrada é só indicativa quando há menos de 8 equipes.</p></div>';
+        const E = ESTADUAL_REGRAS;
+        h +=
+          '<h3 class="sec">Cofinanciamento estadual (IGM SUS Paulista)</h3><div class="bloco"><p class="regra">Parte variável do IGM SUS Paulista (Deliberação CIB 150/2025, que mantém a lógica da CIB 117/2023). A nota é a soma, de 0 a 10, dos pesos abaixo multiplicados pela pontuação de cada item (0%, 25%, 50%, 75% ou 100%). Só os valores <b>oficiais</b> lançados entram na nota; a estimativa pelo PEC fica ao lado, separada.</p><table><thead><tr><th>Item</th><th class="n">Peso</th></tr></thead><tbody>' +
+          E.ITENS.map((i) => '<tr><td>' + esc(i.nome) + '</td><td class="n">' + String(i.peso).replace('.', ',') + '</td></tr>').join('') +
+          '</tbody></table>' +
+          '<p class="regra" style="margin-top:12px"><b>Vacinas</b> (meta 95%; HPV, 90%): a pontuação depende de onde estava a cobertura no período anterior (a), de onde está agora (v) e da mediana estadual (m). Se a estava na meta: manter-se nela vale 100%; cair abaixo da meta, mas na mediana ou acima, 75%; abaixo da mediana, 0%. Se a estava entre a mediana e a meta: subir vale 100%; manter ou cair mantendo-se na mediana, 75%; abaixo da mediana, 0%. Se a estava abaixo da mediana: alcançar a mediana vale 100%; manter ou subir sem alcançá-la, 50%; cair, 0%.</p>' +
+          '<p class="regra"><b>Cobertura da eSF</b> = nº de eSF × 3.500 ÷ população (limitada a 100%): 70% ou mais vale 100%; de 50% a menos de 70%, 50%; de 15% a menos de 50%, 25%; abaixo disso, 0%. <b>Internações sensíveis à APS</b>: abaixo da média estadual 100%, senão 50%. <b>Sífilis</b>: 90% ou mais, 100%; senão 0%. <b>LIRAa</b>: levantamento realizado 100%. <b>Mortalidade infantil</b>: depende do quartil e da taxa na janela atual e na anterior.</p>' +
+          '<p class="regra"><b>Parcelas:</b> 1ª em maio (2025-Q3 contra 2025-Q2), 2ª em setembro (2026-Q1 contra 2025-Q3), 3ª em dezembro (2026-Q2 contra 2026-Q1). População de referência: ' +
+          E.POP.toLocaleString('pt-BR') +
+          ' habitantes.</p>' +
+          '<p class="regra"><b>Estimativa pelo PEC</b> (vacinas): doses aplicadas de janeiro ao fim do quadrimestre ÷ população-alvo lançada. É aproximada: o PEC conta a idade na aplicação, não a coorte de nascimento; por isso não entra na nota.</p></div>';
+        h +=
+          '<h3 class="sec">Composição das equipes</h3><div class="bloco"><p class="regra">Árvore município → unidade → equipe → profissional, lida da lotação do PEC (nome, cargo/CBO e equipe). Uma coleta que lê só algumas unidades <b>acrescenta</b> essas unidades ao mês, sem apagar as já recebidas. Profissional em mais de uma equipe é sinalizado: pode ser homônimo ou lotação dupla.</p></div>';
+        document.getElementById('calculo').innerHTML = h;
+      })();
+    </script>
+  </body>
 </html>

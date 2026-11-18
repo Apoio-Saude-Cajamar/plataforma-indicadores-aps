@@ -1,121 +1,565 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cofinanciamento federal · Painel APS</title>
-<link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
-<style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Montserrat,system-ui,sans-serif;color:#1B2340;background:#F4F7FB}
-a{color:inherit;text-decoration:none}
-a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #00A7E7;outline-offset:3px}
-header{background:#1F3C72;border-bottom:4px solid #00A7E7;color:#fff}
-.topo{max-width:1100px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.marca{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
-.barra-usuario{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#fff}
-.barra-usuario a,.barra-usuario button{color:inherit;font:inherit;background:none;border:1px solid rgba(255,255,255,.6);border-radius:99px;padding:5px 14px;cursor:pointer}
-main{max-width:1100px;margin:0 auto;padding:32px 32px 56px}
-.voltar{font-weight:600;color:#1F3C72;text-decoration:underline;font-size:14px}
-h1{margin:12px 0 8px;font-size:30px;font-weight:800;color:#1F3C72;line-height:1.2}
-.intro{margin:0 0 20px;font-size:15px;line-height:1.55;color:#4A5670;max-width:760px}
-.sel{display:flex;flex-wrap:wrap;gap:16px 28px;margin-bottom:20px}
-.sel label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em}
-.sel select{font:inherit;font-size:15px;font-weight:600;text-transform:none;letter-spacing:0;min-height:42px;padding:0 12px;border:2px solid #D5DCE8;border-radius:10px;background:#fff;color:#1B2340;min-width:180px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:24px}
-.card,.bloco{background:#fff;border:2px solid #D5DCE8;border-radius:14px;padding:18px 20px}
-.card small{display:block;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
-.card .v{font-size:34px;font-weight:800;color:#1F3C72;line-height:1.1}
-.card .s{font-size:13px;color:#4A5670;margin-top:6px;line-height:1.45}
-.pill{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px;margin-left:8px;vertical-align:middle}
-.c-o{background:#C7ECD9;color:#0F5A41}.c-b{background:#D9ECF8;color:#0B4F73}.c-s{background:#FBF0D3;color:#6E4700}.c-r{background:#F8D9DC;color:#8A1B2A}
-.up{color:#0F6B4F;font-weight:700}.dn{color:#A8222F;font-weight:700}
-.bloco{margin-bottom:20px}
-.bloco h2{margin:0 0 6px;font-size:19px;color:#1B2340}
-.bloco p.d{margin:0 0 14px;font-size:14px;color:#4A5670;line-height:1.5}
-table{border-collapse:collapse;width:100%;font-size:14px}
-th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #E3E8F0;vertical-align:middle}
-th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#4A5670}
-td.n,th.n{text-align:right;white-space:nowrap}
-.tab{overflow-x:auto}
-.barra{display:flex;height:16px;border-radius:5px;overflow:hidden;min-width:140px;background:#E3E8F0}
-.barra i{display:block;height:100%}
-.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:#4A5670;margin-top:12px}
-.leg em{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
-.k-o{background:#1C9C76}.k-b{background:#4FB3E8}.k-s{background:#F2C14E}.k-r{background:#E0525F}
-.nota{font-size:13px;color:#4A5670;line-height:1.55}
-.nota li{margin-bottom:6px}
-.mini{display:inline-block;height:10px;border-radius:3px;background:#1F3C72;vertical-align:middle;margin-right:8px}
-@media(max-width:600px){.topo{padding:14px 16px}main{padding:20px 16px 36px}h1{font-size:24px}.card .v{font-size:28px}}
-</style>
-<link rel="stylesheet" href="/css/tema.css">
-<script src="/js/publico/tema.js"></script>
-</head>
-<body>
-<header><div class="topo">
- <a class="marca" href="/"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
- <div id="barra"></div>
-</div></header>
-<main>
- <a class="voltar" href="/">← Voltar aos acompanhamentos</a>
- <h1>Cofinanciamento federal</h1>
- <p class="intro">Resultados oficiais de Cajamar no Siaps, do Ministério da Saúde, por quadrimestre. O MS publica quantas equipes ficaram em cada conceito; o nome de cada equipe e os percentuais mensais ficam só no acesso restrito de gestor.</p>
- <div class="sel">
-  <label>Quadrimestre<select id="q"></select></label>
-  <label>Tipo de equipe<select id="e"></select></label>
- </div>
- <section class="cards" id="cards" aria-live="polite"></section>
- <section class="bloco"><h2 id="t-ind">Indicadores</h2><p class="d" id="d-ind"></p><div class="tab" id="ind"></div>
-  <div class="leg"><span><em class="k-o"></em>Ótimo</span><span><em class="k-b"></em>Bom</span><span><em class="k-s"></em>Suficiente</span><span><em class="k-r"></em>Regular</span><span>Números nas barras: quantas equipes em cada conceito</span></div></section>
- <section class="bloco"><h2>Evolução da nota média da Qualidade</h2><p class="d">Estimativa de 0 a 10: soma, nos indicadores, de peso × pontos médios das equipes (Ótimo 1, Bom 0,75, Suficiente 0,5, Regular 0,25).</p><div class="tab" id="evo"></div></section>
- <section class="bloco"><h2>Como ler</h2><ul class="nota">
-  <li>O conceito de cada equipe já é a média dos meses calculada pelo Ministério da Saúde. A nota média aqui é uma estimativa para a rede, não a classificação oficial do município: o MS classifica cada equipe.</li>
-  <li>Faixas da nota final da Qualidade: Ótimo acima de 7,5; Bom de 5 a 7,5; Suficiente de 2,6 a 4,9; Regular até 2,5. Para o Vínculo (CVAT): Ótimo acima de 8,5; Bom de 7 a 8,5; Suficiente de 5 a 6,9; Regular abaixo de 5. (NT nº 8/2026-DEAPS/SAPS/MS, que revoga a NT nº 6/2025; M1 e M2: Notas Metodológicas 43 e 44/2026)</li>
-  <li>Em 2026 os componentes de desempenho estão em implantação parcial (Portaria GM/MS nº 10.994/2026): só o conceito Ótimo recebe a mais, e os demais recebem como Bom. A implantação integral está prevista para o 1º quadrimestre de 2027.</li>
-  <li>Consultório na Rua (eCR) só aparece a partir do 2º/2026, com uma equipe, e os pesos de CR1 a CR4 não foram confirmados em fonte oficial; por isso mostramos só o conceito, sem nota.</li>
-  <li>Quadrimestres publicados em 09/11/2026: 1º/2025 ao 2º/2026. Ainda não há prévia pública do 3º/2026. Fonte: Ministério da Saúde, Siaps, relatórios públicos de Cajamar (IBGE 350920).</li>
-  <li><b>Pontos que a coleta do Painel ainda não considera (nota informativa).</b> CVAT: o bônus de satisfação não será considerado, por decisão da gestão; o Bolsa Família (peso 1,3) é lido do marcador do PEC, mas o BPC não consta no PEC e fica de fora; por isso o índice próprio pode ficar abaixo do divulgado pelo Ministério. eMulti: ainda não entram discussão de caso/PTS nem o compartilhamento virtual de cuidado. eCR (CR4): os itens A a C são estimados.</li>
- <li><a class="voltar" href="/federal-notas">Notas metodológicas (rascunho, com valores fictícios)</a></li>
- </ul></section>
-</main>
-<script src="/js/dados-federal.js"></script>
-<script src="/js/sessao.js"></script>
-<script>
-const D=window.FEDERAL,PT={o:1,b:.75,s:.5,r:.25},$=s=>document.querySelector(s),
-f1=v=>v.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}),f2=v=>v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-const QS=[...new Set(D.conceitos.map(c=>c.q))],ORD=['eSF','eAP','eSB','eMulti','eCR'];
-const EQN={eSF:'eSF · Saúde da Família',eAP:'eAP · Atenção Primária',eSB:'eSB · Saúde Bucal',eMulti:'eMulti',eCR:'eCR · Consultório na Rua'};
-const EQ=ORD.filter(e=>D.conceitos.some(c=>c.eq==e));
-const num=v=>typeof v=='number';
-function qual(n){return n>7.5?['Ótimo','c-o']:n>=5?['Bom','c-b']:n>2.5?['Suficiente','c-s']:['Regular','c-r']}
-function nota(q,e){const cs=D.conceitos.filter(c=>c.q==q&&c.eq==e);if(!cs.length||cs.some(c=>!num(c.peso)))return null;
- return cs.reduce((t,c)=>t+c.peso*(PT.o*c.o+PT.b*c.b+PT.s*c.s+PT.r*c.r)/c.n,0)}
-function pm(c){return(PT.o*c.o+PT.b*c.b+PT.s*c.s+PT.r*c.r)/c.n}
-function barra(c){const t=c.o+c.b+c.s+c.r||1;return'<div class="barra" role="img" aria-label="Ótimo '+c.o+', Bom '+c.b+', Suficiente '+c.s+', Regular '+c.r+'">'+['o','b','s','r'].map(k=>c[k]?'<i class="k-'+k+'" style="width:'+(c[k]/t*100)+'%" title="'+c[k]+'"></i>':'').join('')+'</div>'}
-function dist(c){return[['Ótimo',c.o],['Bom',c.b],['Suficiente',c.s],['Regular',c.r]].filter(x=>x[1]).map(x=>x[1]+' '+x[0]).join(' · ')}
-function render(){
- const q=$('#q').value,e=$('#e').value,i=QS.indexOf(q),qa=i>0?QS[i-1]:null;
- const n=nota(q,e),na=qa?nota(qa,e):null;
- const fin=D.final.filter(x=>x.q==q&&x.eq==e),fq=fin.find(x=>/^Qualidade/.test(x.comp)),fc=fin.find(x=>/CVAT.*final/.test(x.comp));
- let h='';
- if(n!=null){const[l,c]=qual(n);h+='<div class="card"><small>Nota média da Qualidade</small><div class="v">'+f2(n)+'<span class="pill '+c+'">'+l+'</span></div><div class="s">'+(na!=null?'Em '+qa+': '+f2(na)+' · <span class="'+(n>=na?'up':'dn')+'">'+(n>=na?'▲ ':'▼ ')+f2(Math.abs(n-na))+'</span>':'Primeiro quadrimestre com dados desta equipe')+'</div></div>'}
- else h+='<div class="card"><small>Nota média da Qualidade</small><div class="v">—</div><div class="s">Sem nota: os pesos dos indicadores desta equipe não foram confirmados em fonte oficial. Veja os conceitos abaixo.</div></div>';
- if(fq)h+='<div class="card"><small>Classificação final · Qualidade</small>'+barra(fq)+'<div class="s">'+dist(fq)+' · '+fq.n+' equipe'+(fq.n>1?'s':'')+'</div></div>';
- if(fc)h+='<div class="card"><small>Classificação final · Vínculo (CVAT)</small>'+barra(fc)+'<div class="s">'+dist(fc)+' · '+fc.n+' equipe'+(fc.n>1?'s':'')+'</div></div>';
- $('#cards').innerHTML=h;
- const cs=D.conceitos.filter(c=>c.q==q&&c.eq==e).map(c=>({...c,perda:num(c.peso)?c.peso*(1-pm(c)):null}));
- cs.sort((a,b)=>(b.perda??-1)-(a.perda??-1));
- $('#t-ind').textContent='Indicadores · '+EQN[e]+' · '+q;
- $('#d-ind').textContent=cs.some(c=>c.perda!=null)?'Ordenados por pontos perdidos: peso × (1 − pontos médios). Quanto maior, mais a rede deixou de pontuar naquele indicador.':'Sem pesos confirmados, os indicadores aparecem na ordem da fonte.';
- $('#ind').innerHTML=cs.length?'<table><thead><tr><th>Indicador</th><th class="n">Peso</th><th>Equipes por conceito</th><th class="n">Pontos perdidos</th></tr></thead><tbody>'+cs.map(c=>'<tr><td><b>'+(c.sig&&c.sig!='—'?c.sig+' · ':'')+'</b>'+c.nome+'</td><td class="n">'+(num(c.peso)?c.peso:'—')+'</td><td>'+barra(c)+'<small style="color:#4A5670">'+dist(c)+'</small></td><td class="n">'+(c.perda!=null?f2(c.perda):'—')+'</td></tr>').join('')+'</tbody></table>':'<p class="d">Sem dados para esta combinação.</p>';
- const mx=10;$('#evo').innerHTML='<table><thead><tr><th>Equipe</th>'+QS.map(x=>'<th class="n">'+x+'</th>').join('')+'</tr></thead><tbody>'+EQ.map(x=>'<tr'+(x==e?' style="background:#F4F7FB"':'')+'><td><b>'+EQN[x]+'</b></td>'+QS.map(y=>{const v=nota(y,x);return'<td class="n">'+(v==null?(D.conceitos.some(c=>c.q==y&&c.eq==x)?'sem nota':'—'):'<span class="mini" style="width:'+Math.round(v/mx*50)+'px"></span>'+f2(v))+'</td>'}).join('')+'</tr>').join('')+'</tbody></table>';
-}
-$('#q').innerHTML=QS.slice().reverse().map(x=>'<option>'+x+'</option>').join('');
-$('#e').innerHTML=EQ.map(x=>'<option value="'+x+'">'+EQN[x]+'</option>').join('');
-$('#q').addEventListener('change',render);$('#e').addEventListener('change',render);render();
-</script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cofinanciamento federal · Painel APS</title>
+    <link rel="icon" href="/img/painelaps.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Montserrat, system-ui, sans-serif;
+        color: #1b2340;
+        background: #f4f7fb;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      a:focus-visible,
+      button:focus-visible,
+      select:focus-visible {
+        outline: 3px solid #00a7e7;
+        outline-offset: 3px;
+      }
+      header {
+        background: #1f3c72;
+        border-bottom: 4px solid #00a7e7;
+        color: #fff;
+      }
+      .topo {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 14px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .marca {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+        font-size: 19px;
+      }
+      .barra-usuario {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #fff;
+      }
+      .barra-usuario a,
+      .barra-usuario button {
+        color: inherit;
+        font: inherit;
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 99px;
+        padding: 5px 14px;
+        cursor: pointer;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 32px 56px;
+      }
+      .voltar {
+        font-weight: 600;
+        color: #1f3c72;
+        text-decoration: underline;
+        font-size: 14px;
+      }
+      h1 {
+        margin: 12px 0 8px;
+        font-size: 30px;
+        font-weight: 800;
+        color: #1f3c72;
+        line-height: 1.2;
+      }
+      .intro {
+        margin: 0 0 20px;
+        font-size: 15px;
+        line-height: 1.55;
+        color: #4a5670;
+        max-width: 760px;
+      }
+      .sel {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px 28px;
+        margin-bottom: 20px;
+      }
+      .sel label {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #4a5670;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .sel select {
+        font: inherit;
+        font-size: 15px;
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: 0;
+        min-height: 42px;
+        padding: 0 12px;
+        border: 2px solid #d5dce8;
+        border-radius: 10px;
+        background: #fff;
+        color: #1b2340;
+        min-width: 180px;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .card,
+      .bloco {
+        background: #fff;
+        border: 2px solid #d5dce8;
+        border-radius: 14px;
+        padding: 18px 20px;
+      }
+      .card small {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: #4a5670;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 6px;
+      }
+      .card .v {
+        font-size: 34px;
+        font-weight: 800;
+        color: #1f3c72;
+        line-height: 1.1;
+      }
+      .card .s {
+        font-size: 13px;
+        color: #4a5670;
+        margin-top: 6px;
+        line-height: 1.45;
+      }
+      .pill {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 99px;
+        padding: 3px 10px;
+        margin-left: 8px;
+        vertical-align: middle;
+      }
+      .c-o {
+        background: #c7ecd9;
+        color: #0f5a41;
+      }
+      .c-b {
+        background: #d9ecf8;
+        color: #0b4f73;
+      }
+      .c-s {
+        background: #fbf0d3;
+        color: #6e4700;
+      }
+      .c-r {
+        background: #f8d9dc;
+        color: #8a1b2a;
+      }
+      .up {
+        color: #0f6b4f;
+        font-weight: 700;
+      }
+      .dn {
+        color: #a8222f;
+        font-weight: 700;
+      }
+      .bloco {
+        margin-bottom: 20px;
+      }
+      .bloco h2 {
+        margin: 0 0 6px;
+        font-size: 19px;
+        color: #1b2340;
+      }
+      .bloco p.d {
+        margin: 0 0 14px;
+        font-size: 14px;
+        color: #4a5670;
+        line-height: 1.5;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 14px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 9px 10px;
+        border-bottom: 1px solid #e3e8f0;
+        vertical-align: middle;
+      }
+      th {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #4a5670;
+      }
+      td.n,
+      th.n {
+        text-align: right;
+        white-space: nowrap;
+      }
+      .tab {
+        overflow-x: auto;
+      }
+      .barra {
+        display: flex;
+        height: 16px;
+        border-radius: 5px;
+        overflow: hidden;
+        min-width: 140px;
+        background: #e3e8f0;
+      }
+      .barra i {
+        display: block;
+        height: 100%;
+      }
+      .leg {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+        font-size: 13px;
+        color: #4a5670;
+        margin-top: 12px;
+      }
+      .leg em {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        margin-right: 6px;
+        vertical-align: -1px;
+      }
+      .k-o {
+        background: #1c9c76;
+      }
+      .k-b {
+        background: #4fb3e8;
+      }
+      .k-s {
+        background: #f2c14e;
+      }
+      .k-r {
+        background: #e0525f;
+      }
+      .nota {
+        font-size: 13px;
+        color: #4a5670;
+        line-height: 1.55;
+      }
+      .nota li {
+        margin-bottom: 6px;
+      }
+      .mini {
+        display: inline-block;
+        height: 10px;
+        border-radius: 3px;
+        background: #1f3c72;
+        vertical-align: middle;
+        margin-right: 8px;
+      }
+      @media (max-width: 600px) {
+        .topo {
+          padding: 14px 16px;
+        }
+        main {
+          padding: 20px 16px 36px;
+        }
+        h1 {
+          font-size: 24px;
+        }
+        .card .v {
+          font-size: 28px;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="/css/tema.css" />
+    <script src="/js/publico/tema.js"></script>
+    <script src="/js/util.js"></script>
+  </head>
+  <body>
+    <header>
+      <div class="topo">
+        <a class="marca" href="/"><img src="/img/painelaps.svg" alt="" width="34" height="34" /><span>Painel APS</span></a>
+        <div id="barra"></div>
+      </div>
+    </header>
+    <main>
+      <a class="voltar" href="/">← Voltar aos acompanhamentos</a>
+      <h1>Cofinanciamento federal</h1>
+      <p class="intro">
+        Resultados oficiais de Cajamar no Siaps, do Ministério da Saúde, por quadrimestre. O MS publica quantas equipes ficaram em cada
+        conceito; o nome de cada equipe e os percentuais mensais ficam só no acesso restrito de gestor.
+      </p>
+      <div class="sel">
+        <label>Quadrimestre<select id="q"></select></label>
+        <label>Tipo de equipe<select id="e"></select></label>
+      </div>
+      <section class="cards" id="cards" aria-live="polite"></section>
+      <section class="bloco">
+        <h2 id="t-ind">Indicadores</h2>
+        <p class="d" id="d-ind"></p>
+        <div class="tab" id="ind"></div>
+        <div class="leg">
+          <span><em class="k-o"></em>Ótimo</span><span><em class="k-b"></em>Bom</span><span><em class="k-s"></em>Suficiente</span
+          ><span><em class="k-r"></em>Regular</span><span>Números nas barras: quantas equipes em cada conceito</span>
+        </div>
+      </section>
+      <section class="bloco">
+        <h2>Evolução da nota média da Qualidade</h2>
+        <p class="d">
+          Estimativa de 0 a 10: soma, nos indicadores, de peso × pontos médios das equipes (Ótimo 1, Bom 0,75, Suficiente 0,5, Regular
+          0,25).
+        </p>
+        <div class="tab" id="evo"></div>
+      </section>
+      <section class="bloco">
+        <h2>Como ler</h2>
+        <ul class="nota">
+          <li>
+            O conceito de cada equipe já é a média dos meses calculada pelo Ministério da Saúde. A nota média aqui é uma estimativa para a
+            rede, não a classificação oficial do município: o MS classifica cada equipe.
+          </li>
+          <li>
+            Faixas da nota final da Qualidade: Ótimo acima de 7,5; Bom de 5 a 7,5; Suficiente de 2,6 a 4,9; Regular até 2,5. Para o Vínculo
+            (CVAT): Ótimo acima de 8,5; Bom de 7 a 8,5; Suficiente de 5 a 6,9; Regular abaixo de 5. (NT nº 8/2026-DEAPS/SAPS/MS, que revoga
+            a NT nº 6/2025; M1 e M2: Notas Metodológicas 43 e 44/2026)
+          </li>
+          <li>
+            Em 2026 os componentes de desempenho estão em implantação parcial (Portaria GM/MS nº 10.994/2026): só o conceito Ótimo recebe a
+            mais, e os demais recebem como Bom. A implantação integral está prevista para o 1º quadrimestre de 2027.
+          </li>
+          <li>
+            Consultório na Rua (eCR) só aparece a partir do 2º/2026, com uma equipe, e os pesos de CR1 a CR4 não foram confirmados em fonte
+            oficial; por isso mostramos só o conceito, sem nota.
+          </li>
+          <li>
+            Quadrimestres publicados em 09/11/2026: 1º/2025 ao 2º/2026. Ainda não há prévia pública do 3º/2026. Fonte: Ministério da Saúde,
+            Siaps, relatórios públicos de Cajamar (IBGE 350920).
+          </li>
+          <li>
+            <b>Pontos que a coleta do Painel ainda não considera (nota informativa).</b> CVAT: o bônus de satisfação não será considerado,
+            por decisão da gestão; o Bolsa Família (peso 1,3) é lido do marcador do PEC, mas o BPC não consta no PEC e fica de fora; por
+            isso o índice próprio pode ficar abaixo do divulgado pelo Ministério. eMulti: ainda não entram discussão de caso/PTS nem o
+            compartilhamento virtual de cuidado. eCR (CR4): os itens A a C são estimados.
+          </li>
+          <li><a class="voltar" href="/federal-notas">Notas metodológicas (rascunho, com valores fictícios)</a></li>
+        </ul>
+      </section>
+    </main>
+    <script src="/js/dados-federal.js"></script>
+    <script src="/js/sessao.js"></script>
+    <script>
+      const D = window.FEDERAL,
+        PT = { o: 1, b: 0.75, s: 0.5, r: 0.25 },
+        $ = (s) => document.querySelector(s),
+        f1 = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+        f2 = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const QS = [...new Set(D.conceitos.map((c) => c.q))],
+        ORD = ['eSF', 'eAP', 'eSB', 'eMulti', 'eCR'];
+      const EQN = {
+        eSF: 'eSF · Saúde da Família',
+        eAP: 'eAP · Atenção Primária',
+        eSB: 'eSB · Saúde Bucal',
+        eMulti: 'eMulti',
+        eCR: 'eCR · Consultório na Rua',
+      };
+      const EQ = ORD.filter((e) => D.conceitos.some((c) => c.eq == e));
+      const num = (v) => typeof v == 'number';
+      function qual(n) {
+        return n > 7.5 ? ['Ótimo', 'c-o'] : n >= 5 ? ['Bom', 'c-b'] : n > 2.5 ? ['Suficiente', 'c-s'] : ['Regular', 'c-r'];
+      }
+      function nota(q, e) {
+        const cs = D.conceitos.filter((c) => c.q == q && c.eq == e);
+        if (!cs.length || cs.some((c) => !num(c.peso))) return null;
+        return cs.reduce((t, c) => t + (c.peso * (PT.o * c.o + PT.b * c.b + PT.s * c.s + PT.r * c.r)) / c.n, 0);
+      }
+      function pm(c) {
+        return (PT.o * c.o + PT.b * c.b + PT.s * c.s + PT.r * c.r) / c.n;
+      }
+      function barra(c) {
+        const t = c.o + c.b + c.s + c.r || 1;
+        return (
+          '<div class="barra" role="img" aria-label="Ótimo ' +
+          c.o +
+          ', Bom ' +
+          c.b +
+          ', Suficiente ' +
+          c.s +
+          ', Regular ' +
+          c.r +
+          '">' +
+          ['o', 'b', 's', 'r']
+            .map((k) => (c[k] ? '<i class="k-' + k + '" style="width:' + (c[k] / t) * 100 + '%" title="' + c[k] + '"></i>' : ''))
+            .join('') +
+          '</div>'
+        );
+      }
+      function dist(c) {
+        return [
+          ['Ótimo', c.o],
+          ['Bom', c.b],
+          ['Suficiente', c.s],
+          ['Regular', c.r],
+        ]
+          .filter((x) => x[1])
+          .map((x) => x[1] + ' ' + x[0])
+          .join(' · ');
+      }
+      function render() {
+        const q = $('#q').value,
+          e = $('#e').value,
+          i = QS.indexOf(q),
+          qa = i > 0 ? QS[i - 1] : null;
+        const n = nota(q, e),
+          na = qa ? nota(qa, e) : null;
+        const fin = D.final.filter((x) => x.q == q && x.eq == e),
+          fq = fin.find((x) => /^Qualidade/.test(x.comp)),
+          fc = fin.find((x) => /CVAT.*final/.test(x.comp));
+        let h = '';
+        if (n != null) {
+          const [l, c] = qual(n);
+          h +=
+            '<div class="card"><small>Nota média da Qualidade</small><div class="v">' +
+            f2(n) +
+            '<span class="pill ' +
+            c +
+            '">' +
+            l +
+            '</span></div><div class="s">' +
+            (na != null
+              ? 'Em ' +
+                qa +
+                ': ' +
+                f2(na) +
+                ' · <span class="' +
+                (n >= na ? 'up' : 'dn') +
+                '">' +
+                (n >= na ? '▲ ' : '▼ ') +
+                f2(Math.abs(n - na)) +
+                '</span>'
+              : 'Primeiro quadrimestre com dados desta equipe') +
+            '</div></div>';
+        } else
+          h +=
+            '<div class="card"><small>Nota média da Qualidade</small><div class="v">—</div><div class="s">Sem nota: os pesos dos indicadores desta equipe não foram confirmados em fonte oficial. Veja os conceitos abaixo.</div></div>';
+        if (fq)
+          h +=
+            '<div class="card"><small>Classificação final · Qualidade</small>' +
+            barra(fq) +
+            '<div class="s">' +
+            dist(fq) +
+            ' · ' +
+            fq.n +
+            ' equipe' +
+            (fq.n > 1 ? 's' : '') +
+            '</div></div>';
+        if (fc)
+          h +=
+            '<div class="card"><small>Classificação final · Vínculo (CVAT)</small>' +
+            barra(fc) +
+            '<div class="s">' +
+            dist(fc) +
+            ' · ' +
+            fc.n +
+            ' equipe' +
+            (fc.n > 1 ? 's' : '') +
+            '</div></div>';
+        $('#cards').innerHTML = h;
+        const cs = D.conceitos
+          .filter((c) => c.q == q && c.eq == e)
+          .map((c) => ({ ...c, perda: num(c.peso) ? c.peso * (1 - pm(c)) : null }));
+        cs.sort((a, b) => (b.perda ?? -1) - (a.perda ?? -1));
+        $('#t-ind').textContent = 'Indicadores · ' + EQN[e] + ' · ' + q;
+        $('#d-ind').textContent = cs.some((c) => c.perda != null)
+          ? 'Ordenados por pontos perdidos: peso × (1 − pontos médios). Quanto maior, mais a rede deixou de pontuar naquele indicador.'
+          : 'Sem pesos confirmados, os indicadores aparecem na ordem da fonte.';
+        $('#ind').innerHTML = cs.length
+          ? '<table><thead><tr><th>Indicador</th><th class="n">Peso</th><th>Equipes por conceito</th><th class="n">Pontos perdidos</th></tr></thead><tbody>' +
+            cs
+              .map(
+                (c) =>
+                  '<tr><td><b>' +
+                  (c.sig && c.sig != '—' ? c.sig + ' · ' : '') +
+                  '</b>' +
+                  c.nome +
+                  '</td><td class="n">' +
+                  (num(c.peso) ? c.peso : '—') +
+                  '</td><td>' +
+                  barra(c) +
+                  '<small style="color:#4A5670">' +
+                  dist(c) +
+                  '</small></td><td class="n">' +
+                  (c.perda != null ? f2(c.perda) : '—') +
+                  '</td></tr>',
+              )
+              .join('') +
+            '</tbody></table>'
+          : '<p class="d">Sem dados para esta combinação.</p>';
+        const mx = 10;
+        $('#evo').innerHTML =
+          '<table><thead><tr><th>Equipe</th>' +
+          QS.map((x) => '<th class="n">' + x + '</th>').join('') +
+          '</tr></thead><tbody>' +
+          EQ.map(
+            (x) =>
+              '<tr' +
+              (x == e ? ' style="background:#F4F7FB"' : '') +
+              '><td><b>' +
+              EQN[x] +
+              '</b></td>' +
+              QS.map((y) => {
+                const v = nota(y, x);
+                return (
+                  '<td class="n">' +
+                  (v == null
+                    ? D.conceitos.some((c) => c.q == y && c.eq == x)
+                      ? 'sem nota'
+                      : '—'
+                    : '<span class="mini" style="width:' + Math.round((v / mx) * 50) + 'px"></span>' + f2(v)) +
+                  '</td>'
+                );
+              }).join('') +
+              '</tr>',
+          ).join('') +
+          '</tbody></table>';
+      }
+      $('#q').innerHTML = QS.slice()
+        .reverse()
+        .map((x) => '<option>' + x + '</option>')
+        .join('');
+      $('#e').innerHTML = EQ.map((x) => '<option value="' + x + '">' + EQN[x] + '</option>').join('');
+      $('#q').addEventListener('change', render);
+      $('#e').addEventListener('change', render);
+      render();
+    </script>
+  </body>
 </html>

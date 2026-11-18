@@ -1,0 +1,12 @@
+# Gerados por scripts ou copiados da extensão (o teste exige que extracao.js seja igual ao da extensão).
+painel/notas.html
+painel/js/dados-federal.js
+painel/js/dados-municipal.js
+painel/js/dc-mini.js
+painel/js/extracao.js
+desenho/
+backup/
+node_modules/
+.wrangler/
+migrations/
+painel/downloads/

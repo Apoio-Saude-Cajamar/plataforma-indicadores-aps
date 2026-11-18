@@ -3,7 +3,7 @@
 import { ErroHttp, agora, lerJson, texto, competencia } from './util.js';
 
 const CATEGORIAS = ['Médico', 'Enfermeiro'];
-const inteiro = v => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.round(v) : null);
+const inteiro = (v) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.round(v) : null);
 
 export async function gravarFilas(env, corpo) {
   const comp = competencia(corpo.competencia);
@@ -21,11 +21,28 @@ export async function gravarFilas(env, corpo) {
       agenda_lida_em = COALESCE(excluded.agenda_lida_em, agenda_lida_em), atualizado_em = excluded.atualizado_em`;
   const ops = [];
   for (const p of lista) {
-    const unidade = texto(p.unidade, 120), nome = texto(p.nome, 160), cbo = texto(p.cbo, 160);
+    const unidade = texto(p.unidade, 120),
+      nome = texto(p.nome, 160),
+      cbo = texto(p.cbo, 160);
     if (!unidade || !nome || !cbo || !CATEGORIAS.includes(p.categoria)) continue;
     const lida = p.agendaLidaEm ? texto(p.agendaLidaEm, 40) : null;
-    ops.push(env.DB.prepare(sql).bind(comp, unidade, texto(p.equipe, 160) || '', cbo, p.categoria, nome, inteiro(p.faltas), inteiro(p.atendimentos),
-      lida ? inteiro(p.diasVaga) : null, lida && p.proximaVaga ? texto(p.proximaVaga, 10) : null, lida ? (p.semVaga ? 1 : 0) : null, lida, quando));
+    ops.push(
+      env.DB.prepare(sql).bind(
+        comp,
+        unidade,
+        texto(p.equipe, 160) || '',
+        cbo,
+        p.categoria,
+        nome,
+        inteiro(p.faltas),
+        inteiro(p.atendimentos),
+        lida ? inteiro(p.diasVaga) : null,
+        lida && p.proximaVaga ? texto(p.proximaVaga, 10) : null,
+        lida ? (p.semVaga ? 1 : 0) : null,
+        lida,
+        quando,
+      ),
+    );
   }
   for (let i = 0; i < ops.length; i += 50) await env.DB.batch(ops.slice(i, i + 50));
   return { competencia: comp, gravados: ops.length };
@@ -74,7 +91,10 @@ export async function gravarFilasHorario(env, corpo) {
     ON CONFLICT (competencia, unidade, equipe, cbo, nome) DO UPDATE SET categoria = excluded.categoria, grade = excluded.grade, atualizado_em = excluded.atualizado_em`;
   const ops = [];
   for (const p of lista) {
-    const unidade = texto(p.unidade, 120), nome = texto(p.nome, 160), cbo = texto(p.cbo, 160), grade = limparGrade(p.grade);
+    const unidade = texto(p.unidade, 120),
+      nome = texto(p.nome, 160),
+      cbo = texto(p.cbo, 160),
+      grade = limparGrade(p.grade);
     if (!unidade || !nome || !cbo || !grade || !CATEGORIAS.includes(p.categoria)) continue;
     ops.push(env.DB.prepare(sql).bind(comp, unidade, texto(p.equipe, 160) || '', cbo, p.categoria, nome, JSON.stringify(grade), quando));
   }
@@ -85,12 +105,34 @@ export async function gravarFilasHorario(env, corpo) {
 export async function lerFilas(env, url) {
   const pedido = url.searchParams.get('competencia');
   await garantirHorario(env);
-  const lista = (await env.DB.prepare('SELECT competencia FROM fila_profissional UNION SELECT competencia FROM fila_horario ORDER BY competencia DESC').all()).results.map(x => x.competencia);
+  const lista = (
+    await env.DB.prepare(
+      'SELECT competencia FROM fila_profissional UNION SELECT competencia FROM fila_horario ORDER BY competencia DESC',
+    ).all()
+  ).results.map((x) => x.competencia);
   const comp = pedido ? competencia(pedido) : lista[0];
   if (!comp) return { competencias: [], competencia: null, profissionais: [], horarios: [] };
-  const { results } = await env.DB.prepare(`SELECT unidade, equipe, cbo, categoria, nome, faltas, atendimentos, dias_vaga AS diasVaga, proxima_vaga AS proximaVaga,
-      sem_vaga AS semVaga, agenda_lida_em AS agendaLidaEm FROM fila_profissional WHERE competencia = ? ORDER BY unidade, equipe, nome`).bind(comp).all();
-  const hs = (await env.DB.prepare('SELECT unidade, equipe, cbo, categoria, nome, grade FROM fila_horario WHERE competencia = ? ORDER BY unidade, equipe, nome').bind(comp).all()).results;
-  const horarios = hs.map(h => { let grade = {}; try { grade = JSON.parse(h.grade) || {}; } catch (_) { /* grade ilegível: fica vazia */ } return { unidade: h.unidade, equipe: h.equipe, cbo: h.cbo, categoria: h.categoria, nome: h.nome, grade }; });
+  const { results } = await env.DB.prepare(
+    `SELECT unidade, equipe, cbo, categoria, nome, faltas, atendimentos, dias_vaga AS diasVaga, proxima_vaga AS proximaVaga,
+      sem_vaga AS semVaga, agenda_lida_em AS agendaLidaEm FROM fila_profissional WHERE competencia = ? ORDER BY unidade, equipe, nome`,
+  )
+    .bind(comp)
+    .all();
+  const hs = (
+    await env.DB.prepare(
+      'SELECT unidade, equipe, cbo, categoria, nome, grade FROM fila_horario WHERE competencia = ? ORDER BY unidade, equipe, nome',
+    )
+      .bind(comp)
+      .all()
+  ).results;
+  const horarios = hs.map((h) => {
+    let grade = {};
+    try {
+      grade = JSON.parse(h.grade) || {};
+    } catch (_) {
+      /* grade ilegível: fica vazia */
+    }
+    return { unidade: h.unidade, equipe: h.equipe, cbo: h.cbo, categoria: h.categoria, nome: h.nome, grade };
+  });
   return { competencias: lista, competencia: comp, profissionais: results, horarios };
 }

@@ -1,203 +1,852 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cofinanciamento federal · Painel APS</title>
-<link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
-<style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Montserrat,system-ui,sans-serif;color:#1B2340;background:#F4F7FB}
-a{color:inherit;text-decoration:none}
-a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #00A7E7;outline-offset:3px}
-header{background:#1F3C72;border-bottom:4px solid #00A7E7;color:#fff}
-.topo{max-width:1100px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.marca{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
-.barra-usuario{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#fff}
-.barra-usuario a,.barra-usuario button{color:inherit;font:inherit;background:none;border:1px solid rgba(255,255,255,.6);border-radius:99px;padding:5px 14px;cursor:pointer}
-main{max-width:1100px;margin:0 auto;padding:32px 32px 56px}
-.voltar{font-weight:600;color:#1F3C72;text-decoration:underline;font-size:14px}
-h1{margin:12px 0 8px;font-size:30px;font-weight:800;color:#1F3C72;line-height:1.2}
-.intro{margin:0 0 20px;font-size:15px;line-height:1.55;color:#4A5670;max-width:760px}
-.sel{display:flex;flex-wrap:wrap;gap:16px 18px;margin-bottom:20px}
-.sel label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em}
-.sel select{font:inherit;font-size:15px;font-weight:600;text-transform:none;letter-spacing:0;min-height:42px;padding:0 12px;border:2px solid #D5DCE8;border-radius:10px;background:#fff;color:#1B2340;min-width:150px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:24px}
-.card,.bloco{background:#fff;border:2px solid #D5DCE8;border-radius:14px;padding:18px 20px}
-.card small{display:block;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
-.card .v{font-size:34px;font-weight:800;color:#1F3C72;line-height:1.1}
-.card .s{font-size:13px;color:#4A5670;margin-top:6px;line-height:1.45}
-.card.cc{grid-column:1/-1}.cg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px}.ct{border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}.ct b{font-size:30px;line-height:1.1}.ct span{font-weight:700;font-size:14px}.ct i{font-style:normal;font-size:13px;opacity:.8}
-.cards .card:not(.cc){align-self:start}@media(max-width:600px){.cg{grid-template-columns:repeat(2,1fr)}}
-.pill{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px;margin-left:8px;vertical-align:middle}
-.c-o{background:#C7ECD9;color:#0F5A41}.c-b{background:#D9ECF8;color:#0B4F73}.c-s{background:#FBF0D3;color:#6E4700}.c-r{background:#F8D9DC;color:#8A1B2A}
-.up{color:#0F6B4F;font-weight:700}.dn{color:#A8222F;font-weight:700}
-.bloco{margin-bottom:20px}
-.bloco h2{margin:0 0 6px;font-size:19px;color:#1B2340}
-.bloco p.d{margin:0 0 14px;font-size:14px;color:#4A5670;line-height:1.5}
-table{border-collapse:collapse;width:100%;font-size:14px}
-th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #E3E8F0;vertical-align:middle}
-th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#4A5670}
-td.n,th.n{text-align:right;white-space:nowrap}
-.tab{overflow-x:auto}
-.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:#4A5670;margin-top:12px}
-.leg em{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
-.k-o{background:#1C9C76}.k-b{background:#4FB3E8}.k-s{background:#F2C14E}.k-r{background:#E0525F}
-.nota{font-size:13px;color:#4A5670;line-height:1.55}
-.nota li{margin-bottom:6px}
-@media(max-width:600px){.topo{padding:14px 16px}main{padding:20px 16px 36px}h1{font-size:24px}.card .v{font-size:28px}}
-.pill.sit-Atingida{background:#C7ECD9;color:#0F5A41}.pill.sit-No{background:#D9ECF8;color:#0B4F73}.pill.sit-Crítica,.pill.sit-Não{background:#F8D9DC;color:#8A1B2A}.pill.sit-Sem{background:#E7EAF0;color:#3A4660}
-.pill{margin-left:0}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
-.chip{font:inherit;font-weight:700;font-size:14px;color:#1B2340;background:#fff;border:2px solid #D5DCE8;border-radius:99px;padding:7px 14px;cursor:pointer}
-.chip[aria-pressed=true]{background:#1F3C72;border-color:#1F3C72;color:#fff}
-details summary{cursor:pointer;color:#1F3C72;font-weight:600;font-size:13px}
-details p{margin:6px 0 0;font-size:13px;color:#4A5670;line-height:1.5;max-width:520px}
-tr.dir td{background:#F4F7FB;font-weight:800;color:#1F3C72;font-size:13px}
-td.m{min-width:230px}
-tr.eq td{font-size:13px;color:#4A5670}tr.un td{font-weight:700}
-.info{display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border-radius:50%;background:#D9ECF8;color:#0B4F73;font-size:12px;font-weight:800;cursor:help;margin-left:6px}
-.vazio{padding:18px;color:#4A5670;font-size:14px;line-height:1.55}
-button.ab{font:inherit;font-size:13px;font-weight:700;color:#1F3C72;background:none;border:0;cursor:pointer;text-decoration:underline;padding:0}
-</style>
-<link rel="stylesheet" href="/css/tema.css">
-<script src="/js/publico/tema.js"></script>
-</head>
-<body>
-<header><div class="topo">
- <a class="marca" href="/"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
- <div id="barra"></div>
-</div></header>
-<main>
- <a class="voltar" href="/">← Voltar aos acompanhamentos</a>
- <h1>Cofinanciamento federal</h1>
- <p class="intro">Indicadores das notas metodológicas do Ministério, com os totais coletados do PEC e-SUS pela extensão, por mês. Escolha um mês ou some vários para ver o período. O cálculo é mensal, para acompanhar as equipes antes do fechamento da avaliação; o resultado oficial é o do Ministério (<a class="voltar" href="/federal">ver o último resultado do Siaps</a>). O símbolo <span class="info">i</span> marca valores aproximados e explica a margem.</p>
- <div class="sel">
-  <label>De<select id="de"></select></label>
-  <label>Até<select id="ate"></select></label>
-  <label>Unidade<select id="un"><option value="">Todas</option></select></label>
-  <label>Grupo<select id="gr"><option value="">Todos</option></select></label>
-  <label>Conceito<select id="co"><option value="">Todos</option><option value="o">Ótimo</option><option value="b">Bom</option><option value="s">Suficiente</option><option value="r">Regular</option><option value="n">Sem classificação</option></select></label>
- </div>
- <p class="nota" id="estado" role="status"></p>
- <nav class="chips" id="abas" role="tablist" aria-label="Seções">
-  <button class="chip" role="tab" data-a="resumo" aria-pressed="true">Resumo</button>
-  <button class="chip" role="tab" data-a="evol" aria-pressed="false">Evolução mensal</button>
-  <button class="chip" role="tab" data-a="detalhe" aria-pressed="false">Detalhe e equipes</button>
-  <button class="chip" role="tab" data-a="ajuda" aria-pressed="false">Como ler</button>
- </nav>
- <div id="dash">
- <div data-aba="resumo">
- <section class="cards" id="cards" aria-live="polite"></section>
- <section class="bloco" id="visao" hidden><h2>Resultado e conceito por indicador</h2><p class="d">Valor do município e quantas equipes ficaram em cada conceito (Ótimo, Bom, Suficiente, Regular) no mês mais recente do período. É uma prévia com dados do PEC; o conceito oficial é o do Ministério. * Faixa a confirmar com a nota técnica vigente.</p><div class="tab" id="conc"></div>
-</section>
- </div>
- <div data-aba="evol">
- <section class="bloco" id="evol" hidden><h2>Evolução mensal no município</h2><p class="d">Resultado de cada mês coletado.</p><div class="tab" id="evo"></div></section>
- </div>
- </div>
- <div data-aba="detalhe" id="grupos" hidden></div>
- <div data-aba="ajuda" hidden><section class="bloco"><h2>Como ler</h2><ul class="nota">
-  <li>Os conceitos são uma prévia calculada com os dados do PEC; o conceito oficial de cada equipe é o do Ministério da Saúde.</li>
-  <li>Faixas usadas: boas práticas (C2 a C7) e Consultório na Rua (CR1 a CR4, notas metodológicas da SAPS), Ótimo acima de 75, Bom acima de 50, Suficiente acima de 25, Regular até 25, conforme os exemplos da NT nº 8/2026; vínculo (CVAT), Ótimo acima de 8,5, Bom de 7 a 8,5, Suficiente de 5 a 6,9, Regular abaixo de 5; M1, Ótimo acima de 3, Bom acima de 2, Suficiente acima de 1 (NT nº 43/2026).</li>
-  <li>O último grupo (acompanhamento municipal) reúne indicadores que o PEC fornece mas que não fazem parte das notas do cofinanciamento federal: absenteísmo, vínculo por equipe, pré-natal da macro e território.</li>
-  <li>C1, B1, B3, B4, B5, B6 e M2 usam faixas lidas do desenho do dashboard, marcadas com asterisco (*): confirme com a nota técnica vigente. B2 aparece só com o resultado, sem conceito, por ainda não termos faixa definida.</li>
- </ul></section></div>
-</main>
-<script src="/js/sessao.js"></script>
-<script src="/js/catalogo-indicadores.js"></script>
-<script src="/js/federal-calculo.js"></script>
-<script>
-const $=id=>document.getElementById(id);
-let dados={};   // competencia -> linhas
-const abertos=new Set();
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cofinanciamento federal · Painel APS</title>
+    <link rel="icon" href="/img/painelaps.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Montserrat, system-ui, sans-serif;
+        color: #1b2340;
+        background: #f4f7fb;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      a:focus-visible,
+      button:focus-visible,
+      select:focus-visible {
+        outline: 3px solid #00a7e7;
+        outline-offset: 3px;
+      }
+      header {
+        background: #1f3c72;
+        border-bottom: 4px solid #00a7e7;
+        color: #fff;
+      }
+      .topo {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 14px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .marca {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+        font-size: 19px;
+      }
+      .barra-usuario {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #fff;
+      }
+      .barra-usuario a,
+      .barra-usuario button {
+        color: inherit;
+        font: inherit;
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 99px;
+        padding: 5px 14px;
+        cursor: pointer;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 32px 56px;
+      }
+      .voltar {
+        font-weight: 600;
+        color: #1f3c72;
+        text-decoration: underline;
+        font-size: 14px;
+      }
+      h1 {
+        margin: 12px 0 8px;
+        font-size: 30px;
+        font-weight: 800;
+        color: #1f3c72;
+        line-height: 1.2;
+      }
+      .intro {
+        margin: 0 0 20px;
+        font-size: 15px;
+        line-height: 1.55;
+        color: #4a5670;
+        max-width: 760px;
+      }
+      .sel {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px 18px;
+        margin-bottom: 20px;
+      }
+      .sel label {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #4a5670;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .sel select {
+        font: inherit;
+        font-size: 15px;
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: 0;
+        min-height: 42px;
+        padding: 0 12px;
+        border: 2px solid #d5dce8;
+        border-radius: 10px;
+        background: #fff;
+        color: #1b2340;
+        min-width: 150px;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .card,
+      .bloco {
+        background: #fff;
+        border: 2px solid #d5dce8;
+        border-radius: 14px;
+        padding: 18px 20px;
+      }
+      .card small {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: #4a5670;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 6px;
+      }
+      .card .v {
+        font-size: 34px;
+        font-weight: 800;
+        color: #1f3c72;
+        line-height: 1.1;
+      }
+      .card .s {
+        font-size: 13px;
+        color: #4a5670;
+        margin-top: 6px;
+        line-height: 1.45;
+      }
+      .card.cc {
+        grid-column: 1/-1;
+      }
+      .cg {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-top: 8px;
+      }
+      .ct {
+        border-radius: 12px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .ct b {
+        font-size: 30px;
+        line-height: 1.1;
+      }
+      .ct span {
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .ct i {
+        font-style: normal;
+        font-size: 13px;
+        opacity: 0.8;
+      }
+      .cards .card:not(.cc) {
+        align-self: start;
+      }
+      @media (max-width: 600px) {
+        .cg {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      .pill {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 99px;
+        padding: 3px 10px;
+        margin-left: 8px;
+        vertical-align: middle;
+      }
+      .c-o {
+        background: #c7ecd9;
+        color: #0f5a41;
+      }
+      .c-b {
+        background: #d9ecf8;
+        color: #0b4f73;
+      }
+      .c-s {
+        background: #fbf0d3;
+        color: #6e4700;
+      }
+      .c-r {
+        background: #f8d9dc;
+        color: #8a1b2a;
+      }
+      .up {
+        color: #0f6b4f;
+        font-weight: 700;
+      }
+      .dn {
+        color: #a8222f;
+        font-weight: 700;
+      }
+      .bloco {
+        margin-bottom: 20px;
+      }
+      .bloco h2 {
+        margin: 0 0 6px;
+        font-size: 19px;
+        color: #1b2340;
+      }
+      .bloco p.d {
+        margin: 0 0 14px;
+        font-size: 14px;
+        color: #4a5670;
+        line-height: 1.5;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 14px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 9px 10px;
+        border-bottom: 1px solid #e3e8f0;
+        vertical-align: middle;
+      }
+      th {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #4a5670;
+      }
+      td.n,
+      th.n {
+        text-align: right;
+        white-space: nowrap;
+      }
+      .tab {
+        overflow-x: auto;
+      }
+      .leg {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+        font-size: 13px;
+        color: #4a5670;
+        margin-top: 12px;
+      }
+      .leg em {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        margin-right: 6px;
+        vertical-align: -1px;
+      }
+      .k-o {
+        background: #1c9c76;
+      }
+      .k-b {
+        background: #4fb3e8;
+      }
+      .k-s {
+        background: #f2c14e;
+      }
+      .k-r {
+        background: #e0525f;
+      }
+      .nota {
+        font-size: 13px;
+        color: #4a5670;
+        line-height: 1.55;
+      }
+      .nota li {
+        margin-bottom: 6px;
+      }
+      @media (max-width: 600px) {
+        .topo {
+          padding: 14px 16px;
+        }
+        main {
+          padding: 20px 16px 36px;
+        }
+        h1 {
+          font-size: 24px;
+        }
+        .card .v {
+          font-size: 28px;
+        }
+      }
+      .pill.sit-Atingida {
+        background: #c7ecd9;
+        color: #0f5a41;
+      }
+      .pill.sit-No {
+        background: #d9ecf8;
+        color: #0b4f73;
+      }
+      .pill.sit-Crítica,
+      .pill.sit-Não {
+        background: #f8d9dc;
+        color: #8a1b2a;
+      }
+      .pill.sit-Sem {
+        background: #e7eaf0;
+        color: #3a4660;
+      }
+      .pill {
+        margin-left: 0;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+      .chip {
+        font: inherit;
+        font-weight: 700;
+        font-size: 14px;
+        color: #1b2340;
+        background: #fff;
+        border: 2px solid #d5dce8;
+        border-radius: 99px;
+        padding: 7px 14px;
+        cursor: pointer;
+      }
+      .chip[aria-pressed='true'] {
+        background: #1f3c72;
+        border-color: #1f3c72;
+        color: #fff;
+      }
+      details summary {
+        cursor: pointer;
+        color: #1f3c72;
+        font-weight: 600;
+        font-size: 13px;
+      }
+      details p {
+        margin: 6px 0 0;
+        font-size: 13px;
+        color: #4a5670;
+        line-height: 1.5;
+        max-width: 520px;
+      }
+      tr.dir td {
+        background: #f4f7fb;
+        font-weight: 800;
+        color: #1f3c72;
+        font-size: 13px;
+      }
+      td.m {
+        min-width: 230px;
+      }
+      tr.eq td {
+        font-size: 13px;
+        color: #4a5670;
+      }
+      tr.un td {
+        font-weight: 700;
+      }
+      .info {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        text-align: center;
+        border-radius: 50%;
+        background: #d9ecf8;
+        color: #0b4f73;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: help;
+        margin-left: 6px;
+      }
+      .vazio {
+        padding: 18px;
+        color: #4a5670;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+      button.ab {
+        font: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        color: #1f3c72;
+        background: none;
+        border: 0;
+        cursor: pointer;
+        text-decoration: underline;
+        padding: 0;
+      }
+    </style>
+    <link rel="stylesheet" href="/css/tema.css" />
+    <script src="/js/publico/tema.js"></script>
+    <script src="/js/util.js"></script>
+  </head>
+  <body>
+    <header>
+      <div class="topo">
+        <a class="marca" href="/"><img src="/img/painelaps.svg" alt="" width="34" height="34" /><span>Painel APS</span></a>
+        <div id="barra"></div>
+      </div>
+    </header>
+    <main>
+      <a class="voltar" href="/">← Voltar aos acompanhamentos</a>
+      <h1>Cofinanciamento federal</h1>
+      <p class="intro">
+        Indicadores das notas metodológicas do Ministério, com os totais coletados do PEC e-SUS pela extensão, por mês. Escolha um mês ou
+        some vários para ver o período. O cálculo é mensal, para acompanhar as equipes antes do fechamento da avaliação; o resultado oficial
+        é o do Ministério (<a class="voltar" href="/federal">ver o último resultado do Siaps</a>). O símbolo
+        <span class="info">i</span> marca valores aproximados e explica a margem.
+      </p>
+      <div class="sel">
+        <label>De<select id="de"></select></label>
+        <label>Até<select id="ate"></select></label>
+        <label
+          >Unidade<select id="un">
+            <option value="">Todas</option>
+          </select></label
+        >
+        <label
+          >Grupo<select id="gr">
+            <option value="">Todos</option>
+          </select></label
+        >
+        <label
+          >Conceito<select id="co">
+            <option value="">Todos</option>
+            <option value="o">Ótimo</option>
+            <option value="b">Bom</option>
+            <option value="s">Suficiente</option>
+            <option value="r">Regular</option>
+            <option value="n">Sem classificação</option>
+          </select></label
+        >
+      </div>
+      <p class="nota" id="estado" role="status"></p>
+      <nav class="chips" id="abas" role="tablist" aria-label="Seções">
+        <button class="chip" role="tab" data-a="resumo" aria-pressed="true">Resumo</button>
+        <button class="chip" role="tab" data-a="evol" aria-pressed="false">Evolução mensal</button>
+        <button class="chip" role="tab" data-a="detalhe" aria-pressed="false">Detalhe e equipes</button>
+        <button class="chip" role="tab" data-a="ajuda" aria-pressed="false">Como ler</button>
+      </nav>
+      <div id="dash">
+        <div data-aba="resumo">
+          <section class="cards" id="cards" aria-live="polite"></section>
+          <section class="bloco" id="visao" hidden>
+            <h2>Resultado e conceito por indicador</h2>
+            <p class="d">
+              Valor do município e quantas equipes ficaram em cada conceito (Ótimo, Bom, Suficiente, Regular) no mês mais recente do
+              período. É uma prévia com dados do PEC; o conceito oficial é o do Ministério. * Faixa a confirmar com a nota técnica vigente.
+            </p>
+            <div class="tab" id="conc"></div>
+          </section>
+        </div>
+        <div data-aba="evol">
+          <section class="bloco" id="evol" hidden>
+            <h2>Evolução mensal no município</h2>
+            <p class="d">Resultado de cada mês coletado.</p>
+            <div class="tab" id="evo"></div>
+          </section>
+        </div>
+      </div>
+      <div data-aba="detalhe" id="grupos" hidden></div>
+      <div data-aba="ajuda" hidden>
+        <section class="bloco">
+          <h2>Como ler</h2>
+          <ul class="nota">
+            <li>
+              Os conceitos são uma prévia calculada com os dados do PEC; o conceito oficial de cada equipe é o do Ministério da Saúde.
+            </li>
+            <li>
+              Faixas usadas: boas práticas (C2 a C7) e Consultório na Rua (CR1 a CR4, notas metodológicas da SAPS), Ótimo acima de 75, Bom
+              acima de 50, Suficiente acima de 25, Regular até 25, conforme os exemplos da NT nº 8/2026; vínculo (CVAT), Ótimo acima de 8,5,
+              Bom de 7 a 8,5, Suficiente de 5 a 6,9, Regular abaixo de 5; M1, Ótimo acima de 3, Bom acima de 2, Suficiente acima de 1 (NT nº
+              43/2026).
+            </li>
+            <li>
+              O último grupo (acompanhamento municipal) reúne indicadores que o PEC fornece mas que não fazem parte das notas do
+              cofinanciamento federal: absenteísmo, vínculo por equipe, pré-natal da macro e território.
+            </li>
+            <li>
+              C1, B1, B3, B4, B5, B6 e M2 usam faixas lidas do desenho do dashboard, marcadas com asterisco (*): confirme com a nota técnica
+              vigente. B2 aparece só com o resultado, sem conceito, por ainda não termos faixa definida.
+            </li>
+          </ul>
+        </section>
+      </div>
+    </main>
+    <script src="/js/sessao.js"></script>
+    <script src="/js/catalogo-indicadores.js"></script>
+    <script src="/js/federal-calculo.js"></script>
+    <script>
+      const $ = (id) => document.getElementById(id);
+      let dados = {}; // competencia -> linhas
+      const abertos = new Set();
 
-const passa=(cod,v)=>{const f=$('co').value;if(!f)return true;const k=conceito(cod,v);return f==='n'?!k:k===f};
-const grupoOk=cod=>!$('gr').value||grupoDe(cod)===$('gr').value;
-function painel(comps,un){
- const ult=comps[comps.length-1],todas=(dados[ult]||[]).filter(l=>!un||l.unidade===un);
- const uns=new Set(todas.map(l=>l.unidade).filter(u=>u&&u!=='Município')),eqs=new Set(todas.filter(l=>l.equipe&&l.equipe!=='Município').map(l=>l.unidade+'|'+l.equipe)),cods=new Set(todas.map(l=>l.codigo));
- let h='<div class="card"><small>Mês mais recente</small><div class="v">'+(ult?mesNome(ult):'—')+'</div><div class="s">'+comps.length+' mês(es) no período</div></div>'
-  +'<div class="card"><small>Cobertura da coleta</small><div class="v">'+uns.size+'</div><div class="s">unidade(s) e '+eqs.size+' equipe(s) com dados</div></div>'
-  +'<div class="card"><small>Indicadores coletados</small><div class="v">'+cods.size+'</div><div class="s">códigos diferentes no mês</div></div>';
- let linhas='',tot={o:0,b:0,s:0,r:0};
- for(const [gn,gc] of GRUPOS){let sub='';
- for(const cod of gc.filter(c=>NOTAS.includes(c))){if(!grupoOk(cod))continue;const ls=linhasDe(cod,[ult],un);if(!ls.length)continue;const cat=(window.CATALOGO||{})[cod]||{nome:cod,tipo:''};
-  const m=agregar(ls,l=>l.unidade+' · '+l.equipe),c={o:0,b:0,s:0,r:0};let n=0,ne=0;
-  [...m.values()].filter(g=>g.codigo===cod).forEach(g=>{ne++;const k=conceito(cod,resultado(g,cat.tipo));if(k){c[k]++;tot[k]++;n++}});
-  const mun=agregar(ls,()=>'M').get(cod+'|M'),vm=mun?resultado(mun,cat.tipo):null,km=conceito(cod,vm);
-  if(!passa(cod,vm))continue;
-  sub+='<tr><td><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+'</td><td class="n">'+fmt(vm,cat.tipo)+(km?' <span class="pill '+PILL[km]+'">'+NOMEC[km]+'</span>'+aconf(cod):'')+'</td><td style="min-width:200px">'+(n?['o','b','s','r'].filter(k=>c[k]).map(k=>'<span class="pill '+PILL[k]+'" style="margin:0 6px 4px 0">'+c[k]+' '+NOMEC[k]+'</span>').join(''):'<span style="color:#4A5670;font-size:13px">sem faixa definida</span>')+'</td><td class="n">'+ne+'</td></tr>'}
- if(sub)linhas+='<tr class="dir"><td colspan="4">'+esc(gn)+'</td></tr>'+sub}
- const nt=tot.o+tot.b+tot.s+tot.r;
- if(nt)h+='<div class="card cc"><small>Conceitos atribuídos (prévia) · '+nt+' combinações de equipe e indicador com faixa</small><div class="cg">'+['o','b','s','r'].map(k=>'<div class="ct '+PILL[k]+'"><b>'+(tot[k]||0)+'</b><span>'+NOMEC[k]+'</span><i>'+Math.round(100*(tot[k]||0)/nt)+'%</i></div>').join('')+'</div><div class="s">O detalhe por grupo e por equipe está na aba Detalhe e equipes.</div></div>';
- $('cards').innerHTML=ult?h:'';
- $('visao').hidden=!linhas;$('conc').innerHTML=linhas?'<table><thead><tr><th>Indicador</th><th class="n">Município</th><th>Equipes por conceito</th><th class="n">Equipes com dado</th></tr></thead><tbody>'+linhas+'</tbody></table>':'';
- // Evolução: um valor do município por mês coletado (todos os meses disponíveis, não só o período).
- const meses=Object.keys(dados).sort();let ev='';
- if(meses.length>1){for(const [gn,cods2] of GRUPOS){if($('gr').value&&$('gr').value!==gn)continue;let sub2='';for(const cod of cods2){const cat=(window.CATALOGO||{})[cod];if(!cat||cat.tipo==='contagem'||/-/.test(cod))continue;
-   const vs=meses.map(c=>{const ls=linhasDe(cod,[c],un);const g=ls.length?agregar(ls,()=>'M').get(cod+'|M'):null;return g?resultado(g,cat.tipo):null});if(vs.every(v=>v==null))continue;
-   sub2+='<tr><td><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+'</td>'+vs.map(v=>'<td class="n">'+(v==null?'–':fmt(v,cat.tipo))+'</td>').join('')+'</tr>'}
-  if(sub2)ev+='<tr class="dir"><td colspan="'+(meses.length+1)+'">'+esc(gn)+'</td></tr>'+sub2}}
- $('evol').hidden=!ev;$('evo').innerHTML=ev?'<table><thead><tr><th>Indicador</th>'+meses.map(c=>'<th class="n">'+mesNome(c)+'</th>').join('')+'</tr></thead><tbody>'+ev+'</tbody></table>':'';
-}
-function desenhar(){
- const comps=Object.keys(dados).sort().filter(c=>c>=$('de').value&&c<=$('ate').value);
- const un=$('un').value;
- const varios=comps.length>1;
- painel(comps,un);
- let html='';let algum=false;
- for(const [nome,cods] of GRUPOS){
-  if($('gr').value&&$('gr').value!==nome)continue;
-  let corpo='';
-  for(const cod of cods){
-   const cat=(window.CATALOGO||{})[cod]||{nome:cod,tipo:''};
-   // Indicadores de situação (retrato do mês) não somam entre meses: usa o mês mais recente do período.
-   const usar=varios&&NAO_SOMA_MESES.has(cod)?[comps[comps.length-1]]:comps;
-   let ls=[];usar.forEach(c=>ls.push(...(dados[c]||[]).filter(l=>l.codigo===cod||(cod==='C7'&&/^C7-/.test(l.codigo))||(cod==='CVAT'&&/^CVAT-/.test(l.codigo)))));
-   ls=ls.filter(l=>l.recorte!=='desfecho'||cod==='C2'||cod==='C3');
-   if(un)ls=ls.filter(l=>l.unidade===un);
-   if(!ls.length)continue;
-   const pega=(m,r)=>m.get(cod+'|'+r);
-   const tot=pega(agregar(ls,()=>un||'Município'),un||'Município');
-   if(!tot)continue;
-   if(!passa(cod,resultado(tot,cat.tipo)))continue;
-   algum=true;
-   const defTxt=cat.numerador?'Numerador: '+cat.numerador+'. Denominador: '+cat.denominador+'. ':'';
-   const dica=(cat.margem||defTxt)?'<span class="info" title="'+esc(defTxt+(cat.margem?(cat.precisao==='piso'?'Piso: o valor real é igual ou maior. ':cat.precisao==='aproximado'?'Aproximado. ':'')+cat.margem:''))+'">i</span>':'';
-   const obs=varios&&NAO_SOMA_MESES.has(cod)?' <small>('+mesNome(usar[0])+')</small>':'';
-   const ab=abertos.has(cod);
-   corpo+='<tr class="un"><td>'+esc(cod)+' · '+esc(nomeSem(cod,cat.nome))+dica+obs+'<br><button class="ab" data-c="'+esc(cod)+'" aria-expanded="'+ab+'">'+(ab?'Ocultar equipes':'Ver por equipe')+'</button></td><td class="n">'+(tot.direto!==undefined?'':Math.round(tot.num).toLocaleString('pt-BR'))+'</td><td class="n">'+(tot.direto!==undefined?'':Math.round(tot.den).toLocaleString('pt-BR'))+'</td><td class="n"><b>'+fmt(resultado(tot,cat.tipo),cat.tipo)+'</b>'+pc(cod,resultado(tot,cat.tipo))+'</td></tr>';
-   if(ab){const m=agregar(ls,l=>l.unidade+' · '+l.equipe);[...m.values()].filter(g=>g.codigo===cod&&passa(cod,resultado(g,cat.tipo))).sort((a,b)=>a.rot.localeCompare(b.rot)).forEach(g=>{corpo+='<tr class="eq"><td>'+esc(g.rot)+'</td><td class="n">'+(g.direto!==undefined?'':Math.round(g.num).toLocaleString('pt-BR'))+'</td><td class="n">'+(g.direto!==undefined?'':Math.round(g.den).toLocaleString('pt-BR'))+'</td><td class="n">'+fmt(resultado(g,cat.tipo),cat.tipo)+pc(cod,resultado(g,cat.tipo))+'</td></tr>'});}
-  }
-  if(corpo)html+='<section class="bloco"><h2>'+esc(nome)+'</h2><div class="tab"><table><thead><tr><th>Indicador</th><th class="n">Numerador</th><th class="n">Denominador</th><th class="n">Resultado</th></tr></thead><tbody>'+corpo+'</tbody></table></div></section>';
- }
- $('grupos').innerHTML=html||'<div class="bloco vazio">Nenhum indicador coletado neste período. Rode a coleta pela extensão no computador que acessa o PEC; os resultados aparecem aqui assim que chegarem. Acompanhe o envio em Monitoramento das coletas.</div>';
- $('estado').textContent=algum?(varios?'Período: '+mesNome(comps[0])+' a '+mesNome(comps[comps.length-1])+'. Indicadores de retrato (cadastro, cuidado continuado) mostram o mês mais recente; os de produção somam os meses.':'Mês: '+mesNome(comps[0])+'.'):'Nenhum indicador coletado neste período (veja a aba Detalhe e equipes).';
-}
-$('grupos').addEventListener('click',e=>{const b=e.target.closest('button.ab');if(!b)return;const c=b.dataset.c;abertos.has(c)?abertos.delete(c):abertos.add(c);desenhar()});
-async function carregar(){
- try{
-  const r=await fetch('/api/v1/competencias',{credentials:'same-origin'});if(!r.ok)throw 0;
-  const cs=((await r.json()).competencias||[]).map(c=>c.competencia).sort();
-  if(!cs.length){desenhar();return}
-  const op=cs.map(c=>'<option value="'+c+'">'+mesNome(c)+'</option>').join('');
-  $('de').innerHTML=op;$('ate').innerHTML=op;$('de').value=$('ate').value=cs[cs.length-1];
-  await Promise.all(cs.map(async c=>{const d=await fetch('/api/v1/dados?competencia='+c,{credentials:'same-origin'});if(d.ok)dados[c]=(await d.json()).indicadores||[]}));
-  const uns=[...new Set(Object.values(dados).flat().map(l=>l.unidade).filter(u=>u&&u!=='Município'))].sort();
-  $('un').innerHTML='<option value="">Todas</option>'+uns.map(u=>'<option>'+esc(u)+'</option>').join('');
-  desenhar();
- }catch(e){$('grupos').innerHTML='<div class="bloco vazio">Não foi possível carregar os indicadores. Recarregue a página; se continuar, veja o Monitoramento das coletas.</div>'}
-}
-$('gr').innerHTML='<option value="">Todos</option>'+GRUPOS.map(g=>'<option>'+esc(g[0])+'</option>').join('');
-['de','ate','un','gr','co'].forEach(i=>$(i).addEventListener('change',()=>{if($('de').value>$('ate').value)$('ate').value=$('de').value;desenhar()}));
-function aba(a){document.querySelectorAll('[data-aba]').forEach(e=>e.hidden=e.dataset.aba!==a);document.querySelectorAll('#abas .chip').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===a)));try{sessionStorage.setItem('indAba',a)}catch(_){}}
-$('abas').addEventListener('click',e=>{const b=e.target.closest('.chip');if(b)aba(b.dataset.a)});
-let a0='resumo';try{a0=sessionStorage.getItem('indAba')||a0}catch(_){}
-carregar();aba(a0);
-</script>
-</body>
+      const passa = (cod, v) => {
+        const f = $('co').value;
+        if (!f) return true;
+        const k = conceito(cod, v);
+        return f === 'n' ? !k : k === f;
+      };
+      const grupoOk = (cod) => !$('gr').value || grupoDe(cod) === $('gr').value;
+      function painel(comps, un) {
+        const ult = comps[comps.length - 1],
+          todas = (dados[ult] || []).filter((l) => !un || l.unidade === un);
+        const uns = new Set(todas.map((l) => l.unidade).filter((u) => u && u !== 'Município')),
+          eqs = new Set(todas.filter((l) => l.equipe && l.equipe !== 'Município').map((l) => l.unidade + '|' + l.equipe)),
+          cods = new Set(todas.map((l) => l.codigo));
+        let h =
+          '<div class="card"><small>Mês mais recente</small><div class="v">' +
+          (ult ? mesNome(ult) : '—') +
+          '</div><div class="s">' +
+          comps.length +
+          ' mês(es) no período</div></div>' +
+          '<div class="card"><small>Cobertura da coleta</small><div class="v">' +
+          uns.size +
+          '</div><div class="s">unidade(s) e ' +
+          eqs.size +
+          ' equipe(s) com dados</div></div>' +
+          '<div class="card"><small>Indicadores coletados</small><div class="v">' +
+          cods.size +
+          '</div><div class="s">códigos diferentes no mês</div></div>';
+        let linhas = '',
+          tot = { o: 0, b: 0, s: 0, r: 0 };
+        for (const [gn, gc] of GRUPOS) {
+          let sub = '';
+          for (const cod of gc.filter((c) => NOTAS.includes(c))) {
+            if (!grupoOk(cod)) continue;
+            const ls = linhasDe(cod, [ult], un);
+            if (!ls.length) continue;
+            const cat = (window.CATALOGO || {})[cod] || { nome: cod, tipo: '' };
+            const m = agregar(ls, (l) => l.unidade + ' · ' + l.equipe),
+              c = { o: 0, b: 0, s: 0, r: 0 };
+            let n = 0,
+              ne = 0;
+            [...m.values()]
+              .filter((g) => g.codigo === cod)
+              .forEach((g) => {
+                ne++;
+                const k = conceito(cod, resultado(g, cat.tipo));
+                if (k) {
+                  c[k]++;
+                  tot[k]++;
+                  n++;
+                }
+              });
+            const mun = agregar(ls, () => 'M').get(cod + '|M'),
+              vm = mun ? resultado(mun, cat.tipo) : null,
+              km = conceito(cod, vm);
+            if (!passa(cod, vm)) continue;
+            sub +=
+              '<tr><td><b>' +
+              esc(cod) +
+              '</b> · ' +
+              esc(nomeSem(cod, cat.nome)) +
+              '</td><td class="n">' +
+              fmt(vm, cat.tipo) +
+              (km ? ' <span class="pill ' + PILL[km] + '">' + NOMEC[km] + '</span>' + aconf(cod) : '') +
+              '</td><td style="min-width:200px">' +
+              (n
+                ? ['o', 'b', 's', 'r']
+                    .filter((k) => c[k])
+                    .map((k) => '<span class="pill ' + PILL[k] + '" style="margin:0 6px 4px 0">' + c[k] + ' ' + NOMEC[k] + '</span>')
+                    .join('')
+                : '<span style="color:#4A5670;font-size:13px">sem faixa definida</span>') +
+              '</td><td class="n">' +
+              ne +
+              '</td></tr>';
+          }
+          if (sub) linhas += '<tr class="dir"><td colspan="4">' + esc(gn) + '</td></tr>' + sub;
+        }
+        const nt = tot.o + tot.b + tot.s + tot.r;
+        if (nt)
+          h +=
+            '<div class="card cc"><small>Conceitos atribuídos (prévia) · ' +
+            nt +
+            ' combinações de equipe e indicador com faixa</small><div class="cg">' +
+            ['o', 'b', 's', 'r']
+              .map(
+                (k) =>
+                  '<div class="ct ' +
+                  PILL[k] +
+                  '"><b>' +
+                  (tot[k] || 0) +
+                  '</b><span>' +
+                  NOMEC[k] +
+                  '</span><i>' +
+                  Math.round((100 * (tot[k] || 0)) / nt) +
+                  '%</i></div>',
+              )
+              .join('') +
+            '</div><div class="s">O detalhe por grupo e por equipe está na aba Detalhe e equipes.</div></div>';
+        $('cards').innerHTML = ult ? h : '';
+        $('visao').hidden = !linhas;
+        $('conc').innerHTML = linhas
+          ? '<table><thead><tr><th>Indicador</th><th class="n">Município</th><th>Equipes por conceito</th><th class="n">Equipes com dado</th></tr></thead><tbody>' +
+            linhas +
+            '</tbody></table>'
+          : '';
+        // Evolução: um valor do município por mês coletado (todos os meses disponíveis, não só o período).
+        const meses = Object.keys(dados).sort();
+        let ev = '';
+        if (meses.length > 1) {
+          for (const [gn, cods2] of GRUPOS) {
+            if ($('gr').value && $('gr').value !== gn) continue;
+            let sub2 = '';
+            for (const cod of cods2) {
+              const cat = (window.CATALOGO || {})[cod];
+              if (!cat || cat.tipo === 'contagem' || /-/.test(cod)) continue;
+              const vs = meses.map((c) => {
+                const ls = linhasDe(cod, [c], un);
+                const g = ls.length ? agregar(ls, () => 'M').get(cod + '|M') : null;
+                return g ? resultado(g, cat.tipo) : null;
+              });
+              if (vs.every((v) => v == null)) continue;
+              sub2 +=
+                '<tr><td><b>' +
+                esc(cod) +
+                '</b> · ' +
+                esc(nomeSem(cod, cat.nome)) +
+                '</td>' +
+                vs.map((v) => '<td class="n">' + (v == null ? '–' : fmt(v, cat.tipo)) + '</td>').join('') +
+                '</tr>';
+            }
+            if (sub2) ev += '<tr class="dir"><td colspan="' + (meses.length + 1) + '">' + esc(gn) + '</td></tr>' + sub2;
+          }
+        }
+        $('evol').hidden = !ev;
+        $('evo').innerHTML = ev
+          ? '<table><thead><tr><th>Indicador</th>' +
+            meses.map((c) => '<th class="n">' + mesNome(c) + '</th>').join('') +
+            '</tr></thead><tbody>' +
+            ev +
+            '</tbody></table>'
+          : '';
+      }
+      function desenhar() {
+        const comps = Object.keys(dados)
+          .sort()
+          .filter((c) => c >= $('de').value && c <= $('ate').value);
+        const un = $('un').value;
+        const varios = comps.length > 1;
+        painel(comps, un);
+        let html = '';
+        let algum = false;
+        for (const [nome, cods] of GRUPOS) {
+          if ($('gr').value && $('gr').value !== nome) continue;
+          let corpo = '';
+          for (const cod of cods) {
+            const cat = (window.CATALOGO || {})[cod] || { nome: cod, tipo: '' };
+            // Indicadores de situação (retrato do mês) não somam entre meses: usa o mês mais recente do período.
+            const usar = varios && NAO_SOMA_MESES.has(cod) ? [comps[comps.length - 1]] : comps;
+            let ls = [];
+            usar.forEach((c) =>
+              ls.push(
+                ...(dados[c] || []).filter(
+                  (l) => l.codigo === cod || (cod === 'C7' && /^C7-/.test(l.codigo)) || (cod === 'CVAT' && /^CVAT-/.test(l.codigo)),
+                ),
+              ),
+            );
+            ls = ls.filter((l) => l.recorte !== 'desfecho' || cod === 'C2' || cod === 'C3');
+            if (un) ls = ls.filter((l) => l.unidade === un);
+            if (!ls.length) continue;
+            const pega = (m, r) => m.get(cod + '|' + r);
+            const tot = pega(
+              agregar(ls, () => un || 'Município'),
+              un || 'Município',
+            );
+            if (!tot) continue;
+            if (!passa(cod, resultado(tot, cat.tipo))) continue;
+            algum = true;
+            const defTxt = cat.numerador ? 'Numerador: ' + cat.numerador + '. Denominador: ' + cat.denominador + '. ' : '';
+            const dica =
+              cat.margem || defTxt
+                ? '<span class="info" title="' +
+                  esc(
+                    defTxt +
+                      (cat.margem
+                        ? (cat.precisao === 'piso'
+                            ? 'Piso: o valor real é igual ou maior. '
+                            : cat.precisao === 'aproximado'
+                              ? 'Aproximado. '
+                              : '') + cat.margem
+                        : ''),
+                  ) +
+                  '">i</span>'
+                : '';
+            const obs = varios && NAO_SOMA_MESES.has(cod) ? ' <small>(' + mesNome(usar[0]) + ')</small>' : '';
+            const ab = abertos.has(cod);
+            corpo +=
+              '<tr class="un"><td>' +
+              esc(cod) +
+              ' · ' +
+              esc(nomeSem(cod, cat.nome)) +
+              dica +
+              obs +
+              '<br><button class="ab" data-c="' +
+              esc(cod) +
+              '" aria-expanded="' +
+              ab +
+              '">' +
+              (ab ? 'Ocultar equipes' : 'Ver por equipe') +
+              '</button></td><td class="n">' +
+              (tot.direto !== undefined ? '' : Math.round(tot.num).toLocaleString('pt-BR')) +
+              '</td><td class="n">' +
+              (tot.direto !== undefined ? '' : Math.round(tot.den).toLocaleString('pt-BR')) +
+              '</td><td class="n"><b>' +
+              fmt(resultado(tot, cat.tipo), cat.tipo) +
+              '</b>' +
+              pc(cod, resultado(tot, cat.tipo)) +
+              '</td></tr>';
+            if (ab) {
+              const m = agregar(ls, (l) => l.unidade + ' · ' + l.equipe);
+              [...m.values()]
+                .filter((g) => g.codigo === cod && passa(cod, resultado(g, cat.tipo)))
+                .sort((a, b) => a.rot.localeCompare(b.rot))
+                .forEach((g) => {
+                  corpo +=
+                    '<tr class="eq"><td>' +
+                    esc(g.rot) +
+                    '</td><td class="n">' +
+                    (g.direto !== undefined ? '' : Math.round(g.num).toLocaleString('pt-BR')) +
+                    '</td><td class="n">' +
+                    (g.direto !== undefined ? '' : Math.round(g.den).toLocaleString('pt-BR')) +
+                    '</td><td class="n">' +
+                    fmt(resultado(g, cat.tipo), cat.tipo) +
+                    pc(cod, resultado(g, cat.tipo)) +
+                    '</td></tr>';
+                });
+            }
+          }
+          if (corpo)
+            html +=
+              '<section class="bloco"><h2>' +
+              esc(nome) +
+              '</h2><div class="tab"><table><thead><tr><th>Indicador</th><th class="n">Numerador</th><th class="n">Denominador</th><th class="n">Resultado</th></tr></thead><tbody>' +
+              corpo +
+              '</tbody></table></div></section>';
+        }
+        $('grupos').innerHTML =
+          html ||
+          '<div class="bloco vazio">Nenhum indicador coletado neste período. Rode a coleta pela extensão no computador que acessa o PEC; os resultados aparecem aqui assim que chegarem. Acompanhe o envio em Monitoramento das coletas.</div>';
+        $('estado').textContent = algum
+          ? varios
+            ? 'Período: ' +
+              mesNome(comps[0]) +
+              ' a ' +
+              mesNome(comps[comps.length - 1]) +
+              '. Indicadores de retrato (cadastro, cuidado continuado) mostram o mês mais recente; os de produção somam os meses.'
+            : 'Mês: ' + mesNome(comps[0]) + '.'
+          : 'Nenhum indicador coletado neste período (veja a aba Detalhe e equipes).';
+      }
+      $('grupos').addEventListener('click', (e) => {
+        const b = e.target.closest('button.ab');
+        if (!b) return;
+        const c = b.dataset.c;
+        abertos.has(c) ? abertos.delete(c) : abertos.add(c);
+        desenhar();
+      });
+      async function carregar() {
+        try {
+          const r = await fetch('/api/v1/competencias', { credentials: 'same-origin' });
+          if (!r.ok) throw 0;
+          const cs = ((await r.json()).competencias || []).map((c) => c.competencia).sort();
+          if (!cs.length) {
+            desenhar();
+            return;
+          }
+          const op = cs.map((c) => '<option value="' + c + '">' + mesNome(c) + '</option>').join('');
+          $('de').innerHTML = op;
+          $('ate').innerHTML = op;
+          $('de').value = $('ate').value = cs[cs.length - 1];
+          await Promise.all(
+            cs.map(async (c) => {
+              const d = await fetch('/api/v1/dados?competencia=' + c, { credentials: 'same-origin' });
+              if (d.ok) dados[c] = (await d.json()).indicadores || [];
+            }),
+          );
+          const uns = [
+            ...new Set(
+              Object.values(dados)
+                .flat()
+                .map((l) => l.unidade)
+                .filter((u) => u && u !== 'Município'),
+            ),
+          ].sort();
+          $('un').innerHTML = '<option value="">Todas</option>' + uns.map((u) => '<option>' + esc(u) + '</option>').join('');
+          desenhar();
+        } catch (e) {
+          $('grupos').innerHTML =
+            '<div class="bloco vazio">Não foi possível carregar os indicadores. Recarregue a página; se continuar, veja o Monitoramento das coletas.</div>';
+        }
+      }
+      $('gr').innerHTML = '<option value="">Todos</option>' + GRUPOS.map((g) => '<option>' + esc(g[0]) + '</option>').join('');
+      ['de', 'ate', 'un', 'gr', 'co'].forEach((i) =>
+        $(i).addEventListener('change', () => {
+          if ($('de').value > $('ate').value) $('ate').value = $('de').value;
+          desenhar();
+        }),
+      );
+      function aba(a) {
+        document.querySelectorAll('[data-aba]').forEach((e) => (e.hidden = e.dataset.aba !== a));
+        document.querySelectorAll('#abas .chip').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.a === a)));
+        try {
+          sessionStorage.setItem('indAba', a);
+        } catch (_) {}
+      }
+      $('abas').addEventListener('click', (e) => {
+        const b = e.target.closest('.chip');
+        if (b) aba(b.dataset.a);
+      });
+      let a0 = 'resumo';
+      try {
+        a0 = sessionStorage.getItem('indAba') || a0;
+      } catch (_) {}
+      carregar();
+      aba(a0);
+    </script>
+  </body>
 </html>

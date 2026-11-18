@@ -22,7 +22,20 @@
 // "leitura" aceita a chave da extensão ou a sessão de um usuário logado.
 import { VERSAO_API } from './esquema.js';
 import { ErroHttp, json, jsonTexto, lerJson, exigir, competencia } from './util.js';
-import { entrar, sair, eu, trocarSenha, listarUsuarios, criarUsuario, alterarUsuario, exigirSessao, registrar, sessaoDoPedido, configApoio, retornoApoio } from './auth.js';
+import {
+  entrar,
+  sair,
+  eu,
+  trocarSenha,
+  listarUsuarios,
+  criarUsuario,
+  alterarUsuario,
+  exigirSessao,
+  registrar,
+  sessaoDoPedido,
+  configApoio,
+  retornoApoio,
+} from './auth.js';
 import { criarColeta, gravarEtapa, concluirColeta, listarColetas, etapasDaColeta } from './coletas.js';
 import { situacao, dadosVigentes, competencias } from './consultas.js';
 import { gravarComposicao, lerComposicao } from './composicao.js';
@@ -65,7 +78,12 @@ const ROTAS = [
   ['GET', /^\/chaves$/, 'usuarios', async (req, env) => json(await listarChaves(env))],
   ['POST', /^\/chaves$/, 'usuarios', async (req, env, m, url, quem) => json(await criarChave(req, env, quem), 201)],
   ['DELETE', /^\/chaves\/inativas$/, 'usuarios', async (req, env, m, url, quem) => json(await excluirChavesInativas(req, env, quem))],
-  ['DELETE', /^\/chaves\/(\d+)\/excluir$/, 'usuarios', async (req, env, m, url, quem) => json(await excluirChave(req, env, Number(m[1]), quem))],
+  [
+    'DELETE',
+    /^\/chaves\/(\d+)\/excluir$/,
+    'usuarios',
+    async (req, env, m, url, quem) => json(await excluirChave(req, env, Number(m[1]), quem)),
+  ],
   ['DELETE', /^\/chaves\/(\d+)$/, 'usuarios', async (req, env, m, url, quem) => json(await revogarChave(req, env, Number(m[1]), quem))],
   ['PUT', /^\/filas$/, 'coleta', async (req, env) => json(await gravarFilas(env, await lerJson(req)))],
   ['PUT', /^\/filas\/horarios$/, 'coleta', async (req, env) => json(await gravarFilasHorario(env, await lerJson(req)))],
@@ -73,15 +91,38 @@ const ROTAS = [
   ['GET', /^\/filas$/, 'lancar', async (req, env, m, url) => json(await lerFilas(env, url))],
   ['GET', /^\/lancamentos$/, 'leitura', async (req, env, m, url) => json(await listarLancamentos(env, url))],
   // Emissão de relatório (PDF/CSV) pelo navegador: fica no histórico de quem emitiu. Não guarda o conteúdo do relatório.
-  ['POST', /^\/relatorios\/emissao$/, 'leitura', async (req, env, m, url, quem) => {
-    const c = await lerJson(req);
-    const TIPOS = ['geral', 'federal', 'estadual', 'municipal', 'absenteismo', 'completo', 'regua', 'equipes', 'unidades', 'agrupado', 'lote'];
-    if (!TIPOS.includes(c.tipo)) throw new ErroHttp(400, 'Tipo de relatório inválido.');
-    const comp = competencia(c.competencia);
-    const formato = c.formato === 'csv' ? 'csv' : 'pdf';
-    await registrar(env, quem && typeof quem === 'object' ? quem.id : quem, 'relatorio.emitido', `${c.tipo} · ${comp} · ${formato}${c.unidade ? ' · ' + String(c.unidade).slice(0, 80) : ''}`, req);
-    return json({ ok: true });
-  }],
+  [
+    'POST',
+    /^\/relatorios\/emissao$/,
+    'leitura',
+    async (req, env, m, url, quem) => {
+      const c = await lerJson(req);
+      const TIPOS = [
+        'geral',
+        'federal',
+        'estadual',
+        'municipal',
+        'absenteismo',
+        'completo',
+        'regua',
+        'equipes',
+        'unidades',
+        'agrupado',
+        'lote',
+      ];
+      if (!TIPOS.includes(c.tipo)) throw new ErroHttp(400, 'Tipo de relatório inválido.');
+      const comp = competencia(c.competencia);
+      const formato = c.formato === 'csv' ? 'csv' : 'pdf';
+      await registrar(
+        env,
+        quem && typeof quem === 'object' ? quem.id : quem,
+        'relatorio.emitido',
+        `${c.tipo} · ${comp} · ${formato}${c.unidade ? ' · ' + String(c.unidade).slice(0, 80) : ''}`,
+        req,
+      );
+      return json({ ok: true });
+    },
+  ],
   ['GET', /^\/meus-registros$/, 'leitura', async (req, env, m, url, quem) => json(await meusRegistros(env, quem))],
   ['GET', /^\/registros$/, 'usuarios', async (req, env) => json(await registros(env))],
   ['GET', /^\/backups\/estado$/, 'usuarios', async (req, env) => json(await estadoBackup(env))],
@@ -98,17 +139,26 @@ const ROTAS = [
   ['POST', /^\/comunicados\/(\d+)\/lido$/, null, async (req, env, m) => json(await marcarLido(req, env, Number(m[1])))],
   ['GET', /^\/comunicados$/, 'usuarios', async (req, env) => json(await listarComunicados(env))],
   ['POST', /^\/comunicados$/, 'usuarios', async (req, env, m, url, quem) => json(await criarComunicado(req, env, quem), 201)],
-  ['PATCH', /^\/comunicados\/(\d+)$/, 'usuarios', async (req, env, m, url, quem) => json(await alterarComunicado(req, env, Number(m[1]), quem))],
+  [
+    'PATCH',
+    /^\/comunicados\/(\d+)$/,
+    'usuarios',
+    async (req, env, m, url, quem) => json(await alterarComunicado(req, env, Number(m[1]), quem)),
+  ],
   ['GET', /^\/monitoramento$/, 'usuarios', async (req, env) => json(await monitoramento(env))],
   ['GET', /^\/populacao$/, 'leitura', async (req, env) => json(await populacaoMunicipio(env))],
 
   ['GET', /^\/backup\/manifesto$/, 'backup', async (req, env) => json(await manifesto(env))],
-  ['GET', /^\/backup\/tabela\/(\w+)$/, 'backup', async (req, env, m, url) =>
-    jsonTexto(await paginaTabela(env, m[1], url.searchParams.get('depois'), url.searchParams.get('limite')))],
+  [
+    'GET',
+    /^\/backup\/tabela\/(\w+)$/,
+    'backup',
+    async (req, env, m, url) => jsonTexto(await paginaTabela(env, m[1], url.searchParams.get('depois'), url.searchParams.get('limite'))),
+  ],
 
   ['POST', /^\/restauracao\/iniciar$/, 'admin', async (req, env) => json(await iniciarRestauracao(env, await lerJson(req)))],
   ['POST', /^\/restauracao\/tabela\/(\w+)$/, 'admin', async (req, env, m) => json(await restaurarParte(env, m[1], await lerJson(req)))],
-  ['POST', /^\/restauracao\/concluir$/, 'admin', async (req, env) => json(await concluirRestauracao(env, await lerJson(req)))]
+  ['POST', /^\/restauracao\/concluir$/, 'admin', async (req, env) => json(await concluirRestauracao(env, await lerJson(req)))],
 ];
 
 // Chave (cabeçalho Authorization) para a extensão, o backup e a administração por linha de comando;
@@ -116,13 +166,18 @@ const ROTAS = [
 async function autorizar(request, env, papel) {
   const temChave = (request.headers.get('authorization') || '').startsWith('Bearer ');
   if (papel === 'usuarios') {
-    if (temChave) { exigir(request, env, 'admin'); return null; }
+    if (temChave) {
+      exigir(request, env, 'admin');
+      return null;
+    }
     return (await exigirSessao(request, env, ['admin'])).usuario.id;
   }
   if (papel === 'lancar') return (await exigirSessao(request, env, ['admin', 'gestor'])).usuario.id;
   if (papel === 'leitura' && !temChave) return (await exigirSessao(request, env)).usuario.id;
-  try { exigir(request, env, papel); } catch (e) {
-    if (papel === 'coleta' && e instanceof ErroHttp && e.status === 401 && await chaveGeradaValida(request, env)) return null;
+  try {
+    exigir(request, env, papel);
+  } catch (e) {
+    if (papel === 'coleta' && e instanceof ErroHttp && e.status === 401 && (await chaveGeradaValida(request, env))) return null;
     throw e;
   }
   return null;
@@ -134,7 +189,10 @@ async function tratarApi(request, env, url) {
   for (const [metodo, padrao, papel, acao] of ROTAS) {
     const m = caminho.match(padrao);
     if (!m) continue;
-    if (metodo !== request.method) { metodoErrado = true; continue; }
+    if (metodo !== request.method) {
+      metodoErrado = true;
+      continue;
+    }
     const quem = papel ? await autorizar(request, env, papel) : null;
     return acao(request, env, m, url, quem);
   }
@@ -143,11 +201,32 @@ async function tratarApi(request, env, url) {
 }
 
 // Páginas: só /entrar e os arquivos visuais são públicos; o resto exige login.
-const PUBLICAS = [/^\/entrar(\.html)?$/, /^\/css\//, /^\/img\//, /^\/js\/publico\//, /^\/js\/(estadual-regras|catalogo-indicadores)\.js$/, /^\/publico(\.html)?$/, /^\/favicon\.(ico|svg)$/, /^\/robots\.txt$/];
-const SO_ADMIN = [/^\/usuarios(\.html)?$/, /^\/monitoramento(\.html)?$/, /^\/comunicados(\.html)?$/, /^\/extensao(\.html)?$/, /^\/publicacao(\.html)?$/, /^\/chaves(\.html)?$/, /^\/historico(\.html)?$/, /^\/backups(\.html)?$/, /^\/downloads\//];
+const PUBLICAS = [
+  /^\/entrar(\.html)?$/,
+  /^\/css\//,
+  /^\/img\//,
+  /^\/js\/publico\//,
+  /^\/js\/(estadual-regras|catalogo-indicadores)\.js$/,
+  /^\/publico(\.html)?$/,
+  /^\/favicon\.(ico|svg)$/,
+  /^\/robots\.txt$/,
+];
+const SO_ADMIN = [
+  /^\/usuarios(\.html)?$/,
+  /^\/monitoramento(\.html)?$/,
+  /^\/comunicados(\.html)?$/,
+  /^\/extensao(\.html)?$/,
+  /^\/publicacao(\.html)?$/,
+  /^\/chaves(\.html)?$/,
+  /^\/historico(\.html)?$/,
+  /^\/backups(\.html)?$/,
+  /^\/downloads\//,
+];
 const SEGURANCA = {
-  'x-frame-options': 'DENY', 'x-content-type-options': 'nosniff', 'referrer-policy': 'same-origin',
-  'permissions-policy': 'camera=(), microphone=(), geolocation=()'
+  'x-frame-options': 'DENY',
+  'x-content-type-options': 'nosniff',
+  'referrer-policy': 'same-origin',
+  'permissions-policy': 'camera=(), microphone=(), geolocation=()',
 };
 
 function comCabecalhos(resp, extra = {}) {
@@ -159,20 +238,23 @@ function comCabecalhos(resp, extra = {}) {
 async function paginas(request, env, url) {
   if (!env.ASSETS) return new Response('Não encontrado', { status: 404 });
   const caminho = url.pathname;
-  if (PUBLICAS.some(r => r.test(caminho))) {
+  if (PUBLICAS.some((r) => r.test(caminho))) {
     // Quem já está logado e abre /entrar vai direto para o painel.
-    if (/^\/entrar/.test(caminho) && await sessaoDoPedido(request, env)) return Response.redirect(new URL('/', url).toString(), 302);
+    if (/^\/entrar/.test(caminho) && (await sessaoDoPedido(request, env))) return Response.redirect(new URL('/', url).toString(), 302);
     return comCabecalhos(await env.ASSETS.fetch(request));
   }
   const s = await sessaoDoPedido(request, env);
   if (!s) {
     const volta = caminho + url.search;
-    return Response.redirect(new URL('/entrar' + (volta && volta !== '/' ? '?volta=' + encodeURIComponent(volta) : ''), url).toString(), 302);
+    return Response.redirect(
+      new URL('/entrar' + (volta && volta !== '/' ? '?volta=' + encodeURIComponent(volta) : ''), url).toString(),
+      302,
+    );
   }
   if (s.usuario.trocarSenha && !/^\/trocar-senha(\.html)?$/.test(caminho) && !/^\/js\//.test(caminho)) {
     return Response.redirect(new URL('/trocar-senha', url).toString(), 302);
   }
-  if (SO_ADMIN.some(r => r.test(caminho)) && s.usuario.perfil !== 'admin') return Response.redirect(new URL('/', url).toString(), 302);
+  if (SO_ADMIN.some((r) => r.test(caminho)) && s.usuario.perfil !== 'admin') return Response.redirect(new URL('/', url).toString(), 302);
   return comCabecalhos(await env.ASSETS.fetch(request), { 'cache-control': 'private, no-store' });
 }
 
@@ -185,14 +267,18 @@ export default {
         return await tratarApi(request, env, url);
       } catch (e) {
         if (e instanceof ErroHttp) return json({ erro: e.message }, e.status);
-        console.error('Erro inesperado', request.method, url.pathname, e && e.stack || e);
+        console.error('Erro inesperado', request.method, url.pathname, (e && e.stack) || e);
         return json({ erro: 'Erro interno. Tente novamente; se persistir, veja os registros do Worker.' }, 500);
       }
     }
     if (url.pathname === '/auth/apoio') {
-      try { return await retornoApoio(request, env, url); }
-      catch (e) { console.error('Apoio', e && e.stack || e); return Response.redirect(new URL('/entrar?erro=' + encodeURIComponent('Falha na entrada pelo Apoio.'), url).toString(), 302); }
+      try {
+        return await retornoApoio(request, env, url);
+      } catch (e) {
+        console.error('Apoio', (e && e.stack) || e);
+        return Response.redirect(new URL('/entrar?erro=' + encodeURIComponent('Falha na entrada pelo Apoio.'), url).toString(), 302);
+      }
     }
     return paginas(request, env, url);
-  }
+  },
 };

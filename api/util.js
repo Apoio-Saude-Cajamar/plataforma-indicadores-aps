@@ -10,7 +10,7 @@ export class ErroHttp extends Error {
 const CABECALHOS = {
   'content-type': 'application/json; charset=utf-8',
   'cache-control': 'no-store',
-  'x-content-type-options': 'nosniff'
+  'x-content-type-options': 'nosniff',
 };
 
 export function json(dados, status = 200) {
@@ -54,14 +54,14 @@ const PAPEIS = {
   coleta: ['TOKEN_COLETA', 'TOKEN_ADMIN'],
   leitura: ['TOKEN_COLETA', 'TOKEN_ADMIN'],
   backup: ['TOKEN_BACKUP', 'TOKEN_ADMIN'],
-  admin: ['TOKEN_ADMIN']
+  admin: ['TOKEN_ADMIN'],
 };
 
 export function exigir(request, env, papel) {
   const cab = request.headers.get('authorization') || '';
   const token = cab.startsWith('Bearer ') ? cab.slice(7).trim() : '';
   if (!token) throw new ErroHttp(401, 'Chave de acesso ausente.');
-  const ok = PAPEIS[papel].some(nome => env[nome] && env[nome].length >= 16 && iguais(token, env[nome]));
+  const ok = PAPEIS[papel].some((nome) => env[nome] && env[nome].length >= 16 && iguais(token, env[nome]));
   if (!ok) throw new ErroHttp(401, 'Chave de acesso inválida para esta operação.');
 }
 
