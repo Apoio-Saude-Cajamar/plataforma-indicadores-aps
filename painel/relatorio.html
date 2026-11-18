@@ -9,6 +9,7 @@
 <style id="pagina">@page{size:A4 portrait}</style>
 <style>
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;font-family:Montserrat,system-ui,sans-serif;color:#1B2340;background:#F4F7FB}
 a{color:inherit;text-decoration:none}
 a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #00A7E7;outline-offset:3px}
@@ -56,7 +57,7 @@ main{max-width:1100px;margin:0 auto;padding:24px 32px 24px}
 #doc .reg{display:grid;grid-template-columns:minmax(150px,1fr) minmax(220px,1.6fr);gap:4px 18px;align-items:center;padding:9px 0;border-bottom:1px solid #E3E8F0;break-inside:avoid}
 #doc .reg .nm{font-size:12.5px;line-height:1.3}#doc .reg .nm b{color:#1F3C72}
 #doc .reg .vl{font-size:12px;margin-top:2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.rg{position:relative;height:16px;box-shadow:0 0 0 1px rgba(20,33,43,.45);border-radius:4px;display:flex;overflow:visible;margin:6px 0 16px}
+.rg{position:relative;margin-right:14px;height:16px;box-shadow:0 0 0 1px rgba(20,33,43,.45);border-radius:4px;display:flex;overflow:visible;margin:6px 0 16px}
 .rg .sg{height:100%}.rg .sg{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#14212B;overflow:hidden;white-space:nowrap;border-right:1px solid rgba(20,33,43,.45)}
 .sg.k-r,.leg i.k-r{background:#F1B3B3}
 .sg.k-s,.leg i.k-s{background:#F5DC9B repeating-linear-gradient(45deg,rgba(20,33,43,.38) 0 1px,transparent 1px 5px)}
@@ -73,6 +74,16 @@ main{max-width:1100px;margin:0 auto;padding:24px 32px 24px}
 .leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11px;color:#4A5670;margin:4px 0 10px}.leg i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
 .bar{position:relative;height:10px;background:#EEF1F5;border-radius:5px;min-width:90px}.bar>span{position:absolute;left:0;top:0;bottom:0;border-radius:5px}.bar>em{position:absolute;top:-3px;bottom:-3px;width:2px;background:#14212B}
 .so-csv{display:none}
+#doc table.rep{width:100%;margin:0;border-collapse:collapse}#doc table.rep>thead>tr>th{background:#fff;padding:0 0 8px;border:0;text-transform:none;letter-spacing:0;font-size:inherit;color:inherit}#doc table.rep>tbody>tr>td{padding:0;border:0}#doc table.rep>tbody>tr,#doc table.rep>thead>tr{break-inside:auto}
+.ebn{background:#1F3C72;color:#fff;border-radius:8px;padding:10px 16px;display:flex;flex-direction:column;gap:2px;text-align:left}.ebn small,#doc .ebn small{color:#fff;opacity:.9;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.ebn b{font-size:24px;font-weight:800;line-height:1.15}.ebn span{font-size:11.5px;font-weight:500;color:#E3EEF9}
+.ebn.n-m{background:#14212B}.ebn.n-e{border-left:14px solid #00A7E7}
+.sel{background:#fff;border:2px solid #D5DCE8;border-radius:10px;padding:8px 12px;max-height:240px;overflow:auto;font-size:13px;min-width:280px;text-transform:none;letter-spacing:0;font-weight:500}
+.sel label{display:flex;gap:8px;align-items:center;flex-direction:row;font-size:13px;font-weight:500;text-transform:none;letter-spacing:0;color:#1B2340;padding:2px 0}.sel .gr{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#4A5670;margin:8px 0 2px}
+dialog#dlg{border:0;border-radius:16px;padding:0;max-width:560px;width:calc(100% - 32px);box-shadow:0 20px 60px rgba(20,33,43,.35);color:#1B2340}dialog#dlg::backdrop{background:rgba(20,33,43,.5)}
+#dlg form{padding:22px 24px;display:flex;flex-direction:column;gap:14px}#dlg h2{margin:0;font-size:19px;color:#1F3C72}#dlg p{margin:0;font-size:13px;color:#4A5670;line-height:1.5}
+#dlg fieldset{border:2px solid #D5DCE8;border-radius:10px;margin:0;padding:8px 12px;display:flex;flex-direction:column;gap:4px}#dlg fieldset legend{font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em;padding:0 6px}
+#dlg fieldset label{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:600}
+#dlg .rod{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}#dlg .sel{max-height:220px}
 @media(max-width:700px){main{padding:16px}#doc{padding:18px}}
 @media print{
   .pag+.pag{break-before:page}.pag>h2:first-child{margin-top:0}
@@ -97,7 +108,9 @@ main{max-width:1100px;margin:0 auto;padding:24px 32px 24px}
    <option value="geral">Visão geral</option>
    <option value="federal">Federal (indicadores)</option>
    <option value="regua">Federal · réguas (uma página por grupo)</option>
-   <option value="equipes">Por equipe (uma página por equipe)</option>
+   <option value="unidades">Por unidade (páginas de cada unidade em sequência)</option>
+   <option value="equipes">Por equipe (páginas de cada equipe em sequência)</option>
+   <option value="agrupado">Agrupado (município, unidades ou equipes consolidadas)</option>
    <option value="estadual">Estadual (IGM SUS Paulista)</option>
    <option value="municipal">Acompanhamento municipal</option>
    <option value="absenteismo">Absenteísmo e filas</option>
@@ -106,10 +119,25 @@ main{max-width:1100px;margin:0 auto;padding:24px 32px 24px}
   <label>Competência<select id="comp"></select></label>
   <label id="lbUn">Unidade<select id="un"><option value="">Todas</option></select></label>
   <label>Folha<select id="orient"><option value="retrato">Retrato</option><option value="paisagem">Paisagem (horizontal)</option></select></label>
+  <label id="lbAb">Abrangência<select id="ab"><option value="municipio">Município</option><option value="unidades">Unidades selecionadas</option><option value="equipes">Equipes selecionadas</option></select></label>
+  <div id="selAg" class="sel" hidden aria-label="Escolha as unidades ou equipes"></div>
   <label id="lbEq">Equipe<select id="eq"><option value="">Todas</option></select></label>
   <label id="lbParcela">Parcela estadual<select id="parcela"></select></label>
-  <div class="acoes"><button class="btn" id="imprimir" type="button">Imprimir / salvar em PDF</button><button class="btn sec" id="csv" type="button">Baixar CSV</button></div>
+  <div class="acoes"><button class="btn" id="imprimir" type="button">Imprimir / salvar em PDF</button><button class="btn sec" id="lote" type="button">Emitir em lote (PDF)…</button><button class="btn sec" id="csv" type="button">Baixar CSV</button></div>
  </div>
+ <dialog id="dlg" aria-labelledby="dlgt"><form method="dialog" id="fdlg">
+  <h2 id="dlgt">Emitir em lote (PDF)</h2>
+  <p>Gera um único PDF com um dossiê para cada item, sem mostrar na tela. Cada unidade ou equipe começa em página nova, com o nome em destaque no topo de todas as suas páginas.</p>
+  <fieldset><legend>Modelo</legend>
+   <label><input type="radio" name="modo" value="todos" checked> Todos (individuais): município, cada unidade e as equipes dela</label>
+   <label><input type="radio" name="modo" value="unidades"> Unidades (individuais): só as que eu escolher</label>
+   <label><input type="radio" name="modo" value="equipes"> Equipes (individuais): só as que eu escolher</label>
+  </fieldset>
+  <div id="selLote" class="sel" hidden></div>
+  <fieldset><legend>Incluir</legend><label><input type="checkbox" id="comMun" checked> Página do município no início</label></fieldset>
+  <p id="erroLote" role="alert" style="color:#8A1B2A;font-weight:700"></p>
+  <div class="rod"><button class="btn sec" type="button" id="cancLote">Cancelar</button><button class="btn" type="button" id="geraLote">Gerar PDF</button></div>
+ </form></dialog>
  <p class="dica">O documento abaixo é o que será impresso ou salvo em PDF (no navegador, escolha “Salvar como PDF”). Só entram totais por município, unidade e equipe; nunca nomes de pacientes nem de profissionais. Cada emissão fica registrada no histórico de quem emitiu.</p>
  <article id="doc" aria-live="polite"><p class="vazio">Carregando…</p></article>
 </main>
@@ -122,7 +150,7 @@ main{max-width:1100px;margin:0 auto;padding:24px 32px 24px}
 const $=id=>document.getElementById(id);
 let dados={},ABS={},LANC=[],VAC=[],NESF=null,parcela=PARCELAS[2],ERRO=false,USUARIO=null,FILAS=null,COMPS=[];
 const Q14=19.59;
-const TITULOS={geral:'Visão geral da Atenção Primária',federal:'Cofinanciamento federal · indicadores',regua:'Cofinanciamento federal · gráfico com réguas',equipes:'Relatório por equipe · cofinanciamento federal',estadual:'Cofinanciamento estadual · IGM SUS Paulista',municipal:'Acompanhamento municipal',absenteismo:'Absenteísmo e filas',completo:'Relatório completo da Atenção Primária'};
+const TITULOS={geral:'Visão geral da Atenção Primária',federal:'Cofinanciamento federal · indicadores',regua:'Cofinanciamento federal · gráfico com réguas',equipes:'Relatório por equipe · cofinanciamento federal',unidades:'Relatório por unidade · cofinanciamento federal',agrupado:'Relatório agrupado · cofinanciamento federal',lote:'Relatório em lote · cofinanciamento federal',estadual:'Cofinanciamento estadual · IGM SUS Paulista',municipal:'Acompanhamento municipal',absenteismo:'Absenteísmo e filas',completo:'Relatório completo da Atenção Primária'};
 const PERFIL={admin:'administrador',gestor:'gestor',leitor:'leitor'};
 const num=(v,c=1)=>v==null||isNaN(v)?'—':v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:c});
 const pct=v=>v==null?'—':num(v,1)+'%';
@@ -236,46 +264,81 @@ function secRegua(comp,un){
   if(Object.keys(FAIXAX).some(c=>faixasDe(c)&&(dados[comp]||[]).some(l=>l.codigo===c)))out+='<p><small>* Faixa lida do desenho do dashboard, ainda a confirmar com a nota técnica vigente.</small></p>';
   return out;
 }
-// Um relatório por equipe, todos no mesmo documento: cada equipe começa numa página.
+// ---------- dossiês: município, unidade e equipe ----------
+// Cada dossiê é uma sequência de páginas; o nome da unidade/equipe se repete no topo de TODAS as páginas dele (cabeçalho de tabela repetido na impressão).
 const soltaEq=e=>!e||e==='Município'||/^sem equipe$/i.test(e);
+const ordPt=(a,b)=>a.localeCompare(b,'pt');
+function unidadesDe(comp){return [...new Set((dados[comp]||[]).map(l=>l.unidade).filter(u=>u&&u!=='Município'))].sort(ordPt)}
 function equipesDe(comp,un){
   const m=new Map();
   for(const l of (dados[comp]||[])){if(!l.unidade||l.unidade==='Município'||soltaEq(l.equipe))continue;if(un&&l.unidade!==un)continue;const k=l.unidade+'|'+l.equipe;if(!m.has(k))m.set(k,{u:l.unidade,e:l.equipe,tipo:l.tipoEquipe||''})}
-  return [...m.values()].sort((a,b)=>a.u.localeCompare(b.u,'pt')||a.e.localeCompare(b.e,'pt'));
+  return [...m.values()].sort((a,b)=>ordPt(a.u,b.u)||ordPt(a.e,b.e));
 }
-function secEquipes(comp,un,eqSel){
-  let lista=equipesDe(comp,un);
-  if(eqSel)lista=lista.filter(x=>x.u+'|'+x.e===eqSel);
-  if(!lista.length)return '<h2>Relatório por equipe</h2><p class="vazio">Sem equipes com dados nesta competência.</p>';
-  let out='',csvl='',primeiro=true;
-  for(const t of lista){
-    const doTime=cod=>linhasDe(cod,[comp],t.u).filter(l=>l.equipe===t.e);
-    const doMun=cod=>linhasDe(cod,[comp],'');
-    let corpo='';
-    for(const [gn,gc] of GRUPOS){
-      let reg='',tab='';
-      for(const cod of gc){
-        const ls=doTime(cod);if(!ls.length)continue;
-        const cat=(window.CATALOGO||{})[cod]||{nome:cod,tipo:''};
-        const g=agregar(ls,()=>'T').get(cod+'|T');if(!g)continue;
-        const v=resultado(g,cat.tipo),k=conceito(cod,v);
-        const gm=agregar(doMun(cod),()=>'M').get(cod+'|M'),vm=gm?resultado(gm,cat.tipo):null;
-        const direto=g.direto!==undefined,nu=direto?'—':num(cat.tipo==='pontos'?g.pts:g.num,0),de=direto?'—':num(g.den,0);
-        csvl+='<tr><td>'+esc(t.u)+'</td><td>'+esc(t.e)+'</td><td>'+esc(cod)+'</td><td>'+esc(nomeSem(cod,cat.nome))+'</td><td>'+nu+'</td><td>'+de+'</td><td>'+fmt(v,cat.tipo)+'</td><td>'+(k?NOMEC[k]:'')+'</td><td>'+fmt(vm,cat.tipo)+'</td></tr>';
-        const r=faixasDe(cod)?reguaHtml(cod,v,{ref:vm}):'';
-        if(r)reg+='<div class="reg"><div class="nm"><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+'<div class="vl"><b>'+fmt(v,cat.tipo)+'</b>'+kpill(k)+(FAIXAX[cod]?'*':'')+'<span>município: '+fmt(vm,cat.tipo)+'</span></div></div><div>'+r+'</div></div>';
-        else tab+='<tr><td><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+'</td><td class="n">'+nu+'</td><td class="n">'+de+'</td><td class="n"><b>'+fmt(v,cat.tipo)+'</b></td><td class="n">'+fmt(vm,cat.tipo)+'</td></tr>';
-      }
-      if(reg||tab)corpo+='<h3>'+esc(gn)+'</h3>'+reg+(tab?'<table><thead><tr><th>Indicador sem régua</th><th class="n">Numerador (ou pontos)</th><th class="n">Denominador</th><th class="n">Resultado</th><th class="n">Município</th></tr></thead><tbody>'+tab+'</tbody></table>':'');
+const curto=(s,n)=>s.length>n?s.slice(0,n-1)+'…':s;
+const escMunicipio=()=>({nivel:'Município',nome:'Município de Cajamar',sub:'Todas as unidades e equipes',uns:null,eqs:null,ref:false});
+const escUnidade=(comp,u)=>({nivel:'Unidade',nome:u,sub:equipesDe(comp,u).length+' equipe(s) com dados',uns:new Set([u]),eqs:null,ref:true});
+const escEquipe=t=>({nivel:'Equipe',nome:t.e,sub:t.u+(t.tipo?' · '+t.tipo:''),uns:new Set([t.u]),eqs:new Set([t.u+'|'+t.e]),ref:true});
+const escUnidades=us=>({nivel:'Unidades · consolidado',nome:us.length+(us.length===1?' unidade':' unidades'),sub:curto(us.join(' · '),230),uns:new Set(us),eqs:null,ref:true,lista:us.join(' · ')});
+const escEquipes=ts=>({nivel:'Equipes · consolidado',nome:ts.length+(ts.length===1?' equipe':' equipes'),sub:curto(ts.map(t=>t.u+' · '+t.e).join(' | '),230),uns:null,eqs:new Set(ts.map(t=>t.u+'|'+t.e)),ref:true,lista:ts.map(t=>t.u+' · '+t.e).join(' | ')});
+const filtroDe=E=>l=>(!E.uns||E.uns.has(l.unidade))&&(!E.eqs||E.eqs.has(l.unidade+'|'+l.equipe));
+const legEnt=E=>'<div class="leg"><span><i class="k-r"></i>Regular</span><span><i class="k-s"></i>Suficiente</span><span><i class="k-b"></i>Bom</span><span><i class="k-o"></i>Ótimo</span><span><i style="background:#1F3C72"></i>Resultado</span>'+(E.ref?'<span><i style="background:#fff;border:3px solid #1F3C72;box-sizing:border-box"></i>Município (referência)</span>':'')+'</div>';
+// Corpo de um dossiê: réguas por grupo e, para o que não tem faixa, uma tabela. csvl acumula as linhas do CSV.
+function corpoEscopo(comp,E,csvl){
+  const f=filtroDe(E);let corpo='';
+  for(const [gn,gc] of GRUPOS){
+    let reg='',tab='';
+    for(const cod of gc){
+      const todas=linhasDe(cod,[comp],'');
+      const ls=(E.uns||E.eqs)?todas.filter(f):todas;if(!ls.length)continue;
+      const cat=(window.CATALOGO||{})[cod]||{nome:cod,tipo:''};
+      const g=agregar(ls,()=>'T').get(cod+'|T');if(!g)continue;
+      const v=resultado(g,cat.tipo),k=conceito(cod,v);
+      const gm=E.ref?agregar(todas,()=>'M').get(cod+'|M'):null,vm=gm?resultado(gm,cat.tipo):null;
+      const direto=g.direto!==undefined,nu=direto?'—':num(cat.tipo==='pontos'?g.pts:g.num,0),de=direto?'—':num(g.den,0);
+      csvl.push('<tr><td>'+esc(E.nivel)+'</td><td>'+esc(E.nome)+'</td><td>'+esc(E.sub)+'</td><td>'+esc(cod)+'</td><td>'+esc(nomeSem(cod,cat.nome))+'</td><td>'+nu+'</td><td>'+de+'</td><td>'+fmt(v,cat.tipo)+'</td><td>'+(k?NOMEC[k]:'')+'</td><td>'+(E.ref?fmt(vm,cat.tipo):'')+'</td></tr>');
+      const r=faixasDe(cod)?reguaHtml(cod,v,E.ref?{ref:vm}:{}):'';
+      if(r)reg+='<div class="reg"><div class="nm"><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+'<div class="vl"><b>'+fmt(v,cat.tipo)+'</b>'+kpill(k)+(FAIXAX[cod]?'*':'')+(E.ref?'<span>município: '+fmt(vm,cat.tipo)+'</span>':'')+'</div></div><div>'+r+'</div></div>';
+      else tab+='<tr><td><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+'</td><td class="n">'+nu+'</td><td class="n">'+de+'</td><td class="n"><b>'+fmt(v,cat.tipo)+'</b></td>'+(E.ref?'<td class="n">'+fmt(vm,cat.tipo)+'</td>':'')+'</tr>';
     }
-    out+='<section class="pag"><div class="eqcab"><small>'+esc(t.u)+(t.tipo?' · '+esc(t.tipo):'')+'</small><h2>'+esc(t.e)+'</h2></div>'+(primeiro?'<p>Uma página por equipe. O marcador azul é a equipe; o contorno é o município, para comparar. Faixas de conceito: regular, suficiente, bom e ótimo.</p>':'')+legRegua(false)+(corpo||'<p class="vazio">Sem indicadores nesta competência.</p>')+'</section>';
-    primeiro=false;
+    if(reg||tab)corpo+='<h3>'+esc(gn)+'</h3>'+reg+(tab?'<table><thead><tr><th>Indicador sem régua</th><th class="n">Numerador (ou pontos)</th><th class="n">Denominador</th><th class="n">Resultado</th>'+(E.ref?'<th class="n">Município</th>':'')+'</tr></thead><tbody>'+tab+'</tbody></table>':'');
   }
-  out+='<table class="csv so-csv"><thead><tr><th>Unidade</th><th>Equipe</th><th>Código</th><th>Indicador</th><th>Numerador (ou pontos)</th><th>Denominador</th><th>Resultado</th><th>Conceito</th><th>Município</th></tr></thead><tbody>'+csvl+'</tbody></table>';
+  return corpo;
+}
+// Uma lista de dossiês, cada um começando em página nova e com o nome no topo de todas as suas páginas.
+function secEscopos(comp,lista,intro){
+  if(!lista.length)return '<h2>Relatório</h2><p class="vazio">Nada selecionado ou sem dados nesta competência.</p>';
+  const csvl=[];let out='';
+  lista.forEach((E,i)=>{
+    const corpo=corpoEscopo(comp,E,csvl);
+    out+='<section class="pag"><table class="rep"><thead><tr><th><div class="ebn n-'+({'Município':'m','Unidade':'u','Equipe':'e'}[E.nivel]||'g')+'"><small>'+esc(E.nivel)+'</small><b>'+esc(E.nome)+'</b><span>'+esc(E.sub)+'</span></div></th></tr></thead><tbody><tr><td>'
+      +(i===0&&intro?'<p>'+intro+'</p>':'')+legEnt(E)+(corpo||'<p class="vazio">Sem indicadores nesta competência.</p>')+'</td></tr></tbody></table></section>';
+  });
+  out+='<table class="csv so-csv"><thead><tr><th>Nível</th><th>Abrangência</th><th>Detalhe</th><th>Código</th><th>Indicador</th><th>Numerador (ou pontos)</th><th>Denominador</th><th>Resultado</th><th>Conceito</th><th>Município</th></tr></thead><tbody>'+csvl.join('')+'</tbody></table>';
   out+='<p><small>* Faixa lida do desenho do dashboard, ainda a confirmar com a nota técnica vigente. Indicadores sem faixa definida (como a B2) aparecem na tabela, sem régua.</small></p>';
   return out;
 }
-const barra=(v,max,meta,cor)=>v==null?'—':'<div class="bar"><span style="width:'+Math.min(100,v/max*100).toFixed(1)+'%;background:'+cor+'"></span>'+(meta!=null?'<em style="left:'+Math.min(100,meta/max*100).toFixed(1)+'%"></em>':'')+'</div>';
+const INTRO_ESC='A faixa colorida da régua mostra os conceitos do indicador (regular, suficiente, bom e ótimo; em impressão preto e branco, cada conceito tem textura própria). O marcador escuro é o resultado desta página e o contorno é o município, para comparar.';
+// Lista de dossiês de um lote. modo: todos | unidades | equipes. sel: valores marcados.
+function listaLote(comp,modo,sel,comMun){
+  const L=[];if(comMun)L.push(escMunicipio());
+  const eqs=equipesDe(comp,'');
+  if(modo==='todos'){for(const u of unidadesDe(comp)){L.push(escUnidade(comp,u));for(const t of eqs.filter(x=>x.u===u))L.push(escEquipe(t))}}
+  if(modo==='unidades')for(const u of unidadesDe(comp))if(sel.includes(u))L.push(escUnidade(comp,u));
+  if(modo==='equipes')for(const t of eqs)if(sel.includes(t.u+'|'+t.e))L.push(escEquipe(t));
+  return L;
+}
+// Seletor de caixas de marcar (unidades ou equipes agrupadas por unidade).
+function painelSel(el,itens,marcados,aoMudar){
+  let h='<label class="todas"><input type="checkbox" data-todas> <b>Marcar todas</b></label><div class="lista">',ult=null;
+  for(const it of itens){if(it.g&&it.g!==ult){h+='<div class="gr">'+esc(it.g)+'</div>';ult=it.g}h+='<label><input type="checkbox" value="'+esc(it.v)+'"'+(marcados.has(it.v)?' checked':'')+'> '+esc(it.r)+'</label>'}
+  el.innerHTML=h+'</div>';
+  const cx=[...el.querySelectorAll('.lista input')],todas=el.querySelector('[data-todas]');
+  const sinc=()=>{todas.checked=cx.length>0&&cx.every(c=>c.checked)};sinc();
+  todas.onchange=()=>{cx.forEach(c=>c.checked=todas.checked);aoMudar&&aoMudar()};
+  cx.forEach(c=>c.onchange=()=>{sinc();aoMudar&&aoMudar()});
+}
+const marcadosDe=el=>[...el.querySelectorAll('.lista input:checked')].map(c=>c.value);
+const itensSel=(comp,nivel)=>nivel==='unidades'?unidadesDe(comp).map(u=>({v:u,r:u})):equipesDe(comp,'').map(t=>({v:t.u+'|'+t.e,r:t.e,g:t.u}));
 
 // ---------- estadual ----------
 function secEstadual(){
@@ -349,32 +412,55 @@ function secGeral(comp,un){
 
 // ---------- documento ----------
 const mesLong=c=>{const [a,m]=c.split('-');return ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'][m-1]+' de '+a};
-function desenhar(){
-  const tipo=$('tipo').value,comp=$('comp').value,un=$('un').value;
-  $('pagina').textContent='@page{size:A4 '+($('orient').value==='paisagem'?'landscape':'portrait')+'}';
-  $('lbParcela').hidden=!(tipo==='estadual'||tipo==='completo'||tipo==='geral');
-  $('lbUn').hidden=(tipo==='estadual');
-  $('lbEq').hidden=(tipo!=='equipes');
-  if(tipo==='equipes'){const atual=$('eq').value;const l=equipesDe(comp,un);$('eq').innerHTML='<option value="">Todas ('+l.length+')</option>'+l.map(x=>'<option value="'+esc(x.u+'|'+x.e)+'">'+esc(x.u+' · '+x.e)+'</option>').join('');$('eq').value=l.some(x=>x.u+'|'+x.e===atual)?atual:''}
-  if(!comp){$('doc').innerHTML='<p class="vazio">Ainda não há competências coletadas.</p>';return}
+const SELAG={unidades:new Set(),equipes:new Set()};
+function montarSelAg(){
+  const comp=$('comp').value,ab=$('ab').value,el=$('selAg');
+  el.hidden=!($('tipo').value==='agrupado'&&ab!=='municipio');
+  if(el.hidden)return;
+  painelSel(el,itensSel(comp,ab),SELAG[ab],()=>{SELAG[ab]=new Set(marcadosDe(el));desenhar()});
+}
+function escoposDaTela(tipo,comp,un){
+  if(tipo==='unidades'){const us=un?[un]:unidadesDe(comp);return {lista:us.map(u=>escUnidade(comp,u)),abr:un||'Todas as unidades, uma a uma'}}
+  if(tipo==='equipes'){let l=equipesDe(comp,un);const eq=$('eq').value;if(eq)l=l.filter(x=>x.u+'|'+x.e===eq);return {lista:l.map(escEquipe),abr:(un||'Todas as unidades')+(eq?' · equipe selecionada':' · todas as equipes')}}
+  const ab=$('ab').value;
+  if(ab==='municipio')return {lista:[escMunicipio()],abr:'Município (consolidado)'};
+  const sel=[...SELAG[ab]];
+  if(ab==='unidades'){const us=unidadesDe(comp).filter(u=>sel.includes(u));return {lista:us.length?[escUnidades(us)]:[],abr:us.length+' unidade(s), consolidado'}}
+  const ts=equipesDe(comp,'').filter(t=>sel.includes(t.u+'|'+t.e));return {lista:ts.length?[escEquipes(ts)]:[],abr:ts.length+' equipe(s), consolidado'};
+}
+function moldura(tipo,comp,abr,corpo){
   const quando=new Date();
-  let corpo='';
-  if(tipo==='geral')corpo=secGeral(comp,un);
-  if(tipo==='federal'||tipo==='completo')corpo+=(tipo==='completo'?secGeral(comp,un):'')+secFederal(comp,un);
-  if(tipo==='regua'||tipo==='completo')corpo+=secRegua(comp,un);
-  if(tipo==='equipes')corpo+=secEquipes(comp,un,$('eq').value);
-  if(tipo==='estadual'||tipo==='completo')corpo+=secEstadual();
-  if(tipo==='municipal'||tipo==='completo')corpo+=secMunicipal(comp,un);
-  if(tipo==='absenteismo'||tipo==='completo')corpo+=secAbsenteismo(comp,un);
   const id='PAPS-'+comp.replace('-','')+'-'+tipo.slice(0,3).toUpperCase()+'-'+quando.toISOString().slice(0,16).replace(/\D/g,'');
   $('doc').innerHTML='<div class="capa"><img src="/img/painelaps.svg" alt=""><div><div class="org">Painel APS · Secretaria de Saúde de Cajamar</div><h1>'+esc(TITULOS[tipo])+'</h1></div></div>'
-   +'<dl class="meta"><div><dt>Competência</dt><dd>'+esc(mesLong(comp))+'</dd></div><div><dt>Abrangência</dt><dd>'+(tipo==='estadual'?'Município':(un?esc(un):'Município e todas as unidades'))+'</dd></div>'
+   +'<dl class="meta"><div><dt>Competência</dt><dd>'+esc(mesLong(comp))+'</dd></div><div><dt>Abrangência</dt><dd>'+esc(abr)+'</dd></div>'
    +'<div><dt>Emitido por</dt><dd>'+esc(USUARIO?USUARIO.nome:'—')+(USUARIO?' ('+(PERFIL[USUARIO.perfil]||USUARIO.perfil)+')':'')+'</dd></div>'
    +'<div><dt>Emitido em</dt><dd>'+quando.toLocaleDateString('pt-BR')+' às '+quando.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</dd></div>'
    +'<div><dt>Código do documento</dt><dd>'+id+'</dd></div><div><dt>Fonte</dt><dd>PEC e-SUS APS (coleta pela extensão) e lançamentos oficiais</dd></div></dl>'
    +corpo
    +'<div class="rodadoc"><b>Como ler este documento.</b> Os números são totais coletados do PEC e-SUS e calculados pelo Painel APS conforme as notas técnicas e as deliberações citadas; são uma prévia para acompanhamento, e o resultado oficial é o do Ministério da Saúde e da Secretaria de Estado da Saúde. Valores marcados com ≈ são aproximados e “piso” indica que o valor real é igual ou maior. A explicação de cada coleta e de cada cálculo está em Como coletamos e calculamos (rodapé do Painel). Este documento não contém dados de pacientes.</div>';
   document.title='Relatório · '+TITULOS[tipo]+' · '+comp;
+}
+
+function desenhar(){
+  const tipo=$('tipo').value,comp=$('comp').value,un=$('un').value;
+  $('pagina').textContent='@page{size:A4 '+($('orient').value==='paisagem'?'landscape':'portrait')+'}';
+  $('lbParcela').hidden=!(tipo==='estadual'||tipo==='completo'||tipo==='geral');
+  $('lbUn').hidden=(tipo==='estadual'||tipo==='agrupado');
+  $('lbEq').hidden=(tipo!=='equipes');
+  $('lbAb').hidden=(tipo!=='agrupado');
+  if(tipo==='equipes'){const atual=$('eq').value;const l=equipesDe(comp,un);$('eq').innerHTML='<option value="">Todas ('+l.length+')</option>'+l.map(x=>'<option value="'+esc(x.u+'|'+x.e)+'">'+esc(x.u+' · '+x.e)+'</option>').join('');$('eq').value=l.some(x=>x.u+'|'+x.e===atual)?atual:''}
+  $('selAg').hidden=!(tipo==='agrupado'&&$('ab').value!=='municipio');
+  if(!comp){$('doc').innerHTML='<p class="vazio">Ainda não há competências coletadas.</p>';return}
+  let corpo='',abr=un||'Município e todas as unidades';
+  if(tipo==='geral')corpo=secGeral(comp,un);
+  if(tipo==='federal'||tipo==='completo')corpo+=(tipo==='completo'?secGeral(comp,un):'')+secFederal(comp,un);
+  if(tipo==='regua'||tipo==='completo')corpo+=secRegua(comp,un);
+  if(tipo==='unidades'||tipo==='equipes'||tipo==='agrupado'){const r=escoposDaTela(tipo,comp,un);abr=r.abr;
+    corpo+=r.lista.length?secEscopos(comp,r.lista,INTRO_ESC+(r.lista[0].lista?' <b>Consolidado:</b> '+esc(r.lista[0].lista)+'.':'')):'<h2>Relatório</h2><p class="vazio">'+(tipo==='agrupado'?'Marque ao menos uma unidade ou equipe na lista acima.':'Sem dados nesta competência.')+'</p>'}
+  if(tipo==='estadual'||tipo==='completo')corpo+=secEstadual();
+  if(tipo==='municipal'||tipo==='completo')corpo+=secMunicipal(comp,un);
+  if(tipo==='absenteismo'||tipo==='completo')corpo+=secAbsenteismo(comp,un);
+  moldura(tipo,comp,tipo==='estadual'?'Município':abr,corpo);
 }
 async function carregarComp(comp){
   if(!comp)return;
@@ -394,7 +480,7 @@ function csv(){
   const blob=new Blob(['﻿'+linhas.join('\r\n')],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='painel-aps-'+$('tipo').value+'-'+$('comp').value+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 }
-function registrar(acao){try{fetch('/api/v1/relatorios/emissao',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({tipo:$('tipo').value,competencia:$('comp').value,formato:acao,unidade:$('un').value||null})})}catch(_){}}
+function registrar(acao,tipo,detalhe){try{fetch('/api/v1/relatorios/emissao',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({tipo:tipo||$('tipo').value,competencia:$('comp').value,formato:acao,unidade:detalhe!==undefined?detalhe:($('un').value||null)})})}catch(_){}}
 async function iniciar(){
   const q=new URLSearchParams(location.search);
   try{const e=await fetch('/api/v1/auth/eu',{credentials:'same-origin'});if(e.ok)USUARIO=(await e.json()).usuario||null}catch(_){}
@@ -412,12 +498,32 @@ async function iniciar(){
     // parcela padrão: a mais recente com algum lançamento
     for(let i=PARCELAS.length-1;i>=0;i--){if(LANC.some(l=>l.periodo===PARCELAS[i].p)){parcela=PARCELAS[i];$('parcela').value=String(i);break}}
   }catch(_){ERRO=true}
-  await carregarComp($('comp').value);desenhar();
-  $('tipo').onchange=()=>{$('eq').value='';desenhar()};$('eq').onchange=()=>desenhar();$('orient').onchange=()=>desenhar();$('un').onchange=()=>{$('eq').value='';desenhar()};
-  $('comp').onchange=async()=>{await carregarComp($('comp').value);desenhar()};
+  await carregarComp($('comp').value);montarSelAg();desenhar();
+  $('tipo').onchange=()=>{$('eq').value='';montarSelAg();desenhar()};$('ab').onchange=()=>{montarSelAg();desenhar()};$('eq').onchange=()=>desenhar();$('orient').onchange=()=>desenhar();$('un').onchange=()=>{$('eq').value='';desenhar()};
+  $('comp').onchange=async()=>{await carregarComp($('comp').value);SELAG.unidades.clear();SELAG.equipes.clear();montarSelAg();desenhar()};
   $('parcela').onchange=()=>{parcela=PARCELAS[+$('parcela').value];desenhar()};
   $('imprimir').onclick=()=>{registrar('pdf');window.print()};
   $('csv').onclick=()=>{registrar('csv');csv()};
+  // Lote: gera o PDF sem mostrar o resultado na tela; depois da impressão a tela volta ao que estava.
+  const modo=()=>document.querySelector('#fdlg [name=modo]:checked').value;
+  const SELLOTE={unidades:new Set(),equipes:new Set()};
+  const montarLote=()=>{const m=modo(),el=$('selLote');el.hidden=(m==='todos');$('erroLote').textContent='';if(m==='todos')return;
+    painelSel(el,itensSel($('comp').value,m),SELLOTE[m],()=>{SELLOTE[m]=new Set(marcadosDe(el))})};
+  $('lote').onclick=()=>{const c=$('comp').value;SELLOTE.unidades=new Set(unidadesDe(c));SELLOTE.equipes=new Set(equipesDe(c,'').map(t=>t.u+'|'+t.e));montarLote();$('dlg').showModal()};
+  document.querySelectorAll('#fdlg [name=modo]').forEach(r=>r.onchange=montarLote);
+  $('cancLote').onclick=()=>$('dlg').close();
+  $('geraLote').onclick=()=>{
+    const comp=$('comp').value,m=modo(),sel=m==='todos'?[]:marcadosDe($('selLote'));
+    const lista=listaLote(comp,m,sel,$('comMun').checked);
+    if(!lista.length){$('erroLote').textContent='Marque ao menos um item para gerar o PDF.';return}
+    $('dlg').close();
+    $('pagina').textContent='@page{size:A4 '+($('orient').value==='paisagem'?'landscape':'portrait')+'}';
+    const abr=({todos:'Município, todas as unidades e equipes (individuais)',unidades:sel.length+' unidade(s), individuais',equipes:sel.length+' equipe(s), individuais'})[m]+' · '+lista.length+' dossiê(s)';
+    moldura('lote',comp,abr,secEscopos(comp,lista,INTRO_ESC));
+    registrar('pdf','lote',(m+' · '+lista.length+' dossiês').slice(0,80));
+    window.addEventListener('afterprint',()=>desenhar(),{once:true});
+    setTimeout(()=>window.print(),150);
+  };
 }
 iniciar();
 </script>

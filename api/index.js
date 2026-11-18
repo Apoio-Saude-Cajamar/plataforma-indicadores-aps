@@ -75,7 +75,7 @@ const ROTAS = [
   // Emissão de relatório (PDF/CSV) pelo navegador: fica no histórico de quem emitiu. Não guarda o conteúdo do relatório.
   ['POST', /^\/relatorios\/emissao$/, 'leitura', async (req, env, m, url, quem) => {
     const c = await lerJson(req);
-    const TIPOS = ['geral', 'federal', 'estadual', 'municipal', 'absenteismo', 'completo', 'regua', 'equipes'];
+    const TIPOS = ['geral', 'federal', 'estadual', 'municipal', 'absenteismo', 'completo', 'regua', 'equipes', 'unidades', 'agrupado', 'lote'];
     if (!TIPOS.includes(c.tipo)) throw new ErroHttp(400, 'Tipo de relatório inválido.');
     const comp = competencia(c.competencia);
     const formato = c.formato === 'csv' ? 'csv' : 'pdf';

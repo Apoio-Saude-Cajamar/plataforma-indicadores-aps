@@ -523,6 +523,7 @@ test('relatório: emissão fica registrada para quem emitiu e valida o tipo', as
   await nav.pedir('POST', '/api/v1/auth/entrar', { login: 'rita', senha: 'Painel#Forte2026' });
   assert.equal((await nav.pedir('POST', '/api/v1/relatorios/emissao', { tipo: 'inexistente', competencia: '2026-10' })).status, 400);
   assert.equal((await nav.pedir('POST', '/api/v1/relatorios/emissao', { tipo: 'federal', competencia: '2026-10', formato: 'csv', unidade: 'UBS A' })).status, 200);
+  assert.equal((await nav.pedir('POST', '/api/v1/relatorios/emissao', { tipo: 'lote', competencia: '2026-10', formato: 'pdf', unidade: 'todos · 34 dossiês' })).status, 200);
   const r = await (await nav.pedir('GET', '/api/v1/meus-registros')).json();
   assert.ok(r.registros.some(x => x.acao === 'relatorio.emitido' && /federal · 2026-10 · csv · UBS A/.test(x.detalhe)));
   assert.equal((await nav.pedir('GET', '/relatorio')).status, 200);
