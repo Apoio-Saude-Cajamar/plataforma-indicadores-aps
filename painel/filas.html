@@ -230,6 +230,26 @@ button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #2F8
       </section>
     </template>
 
+    <template data-sc="if" value="{{abaAcesso}}">
+      <section aria-labelledby="t-ace" style="background: #FFFFFF; border: 1px solid #DCE2E0; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <h2 id="t-ace" style="margin: 0; font-size: 20px; font-weight: 700">Faltas × acesso</h2>
+          <span style="font-size: 14px; color: #566370">Por equipe: faltas e espera até a vaga (esta tela) ao lado da C1, a parcela de consultas que é demanda programada. {{resumoAcesso}}</span>
+        </div>
+        <div style="display: grid; grid-template-columns: minmax(0, 1.3fr) 110px 110px 120px minmax(0, 2fr); gap: 16px; padding: 8px; border-bottom: 2px solid #DCE2E0; font-size: 13px; font-weight: 700; color: #33414C">
+          <span>Equipe</span><span style="text-align: right">Faltas</span><span style="text-align: right">Espera (mediana)</span><span style="text-align: right">C1 programada</span><span>Leitura</span>
+        </div>
+        <template data-sc="for" list="{{linhasAcesso}}" as="a">
+          <div style="display: grid; grid-template-columns: minmax(0, 1.3fr) 110px 110px 120px minmax(0, 2fr); gap: 16px; align-items: center; padding: 10px 8px; border-bottom: 1px solid #EEF1F0">
+            <div style="display: flex; flex-direction: column; line-height: 1.3; min-width: 0"><span style="font-weight: 600; overflow-wrap: anywhere">{{a.nome}}</span><span style="font-size: 13px; color: #566370">{{a.sub}}</span></div>
+            <span style="text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; color: {{a.faltasCor}}">{{a.faltasTxt}}</span>
+            <span style="text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; color: {{a.esperaCor}}">{{a.esperaTxt}}</span>
+            <div style="text-align: right; line-height: 1.25"><span style="font-weight: 700; font-variant-numeric: tabular-nums">{{a.c1Txt}}</span><br><span style="font-size: 13px; color: #566370">{{a.c1Sub}}</span></div>
+            <span style="font-size: 14px; color: #33414C">{{a.leitura}}</span>
+          </div>
+        </template>
+      </section>
+    </template>
     <template data-sc="if" value="{{abaHorario}}">
       <section aria-labelledby="t-hor" style="background: #FFFFFF; border: 1px solid #DCE2E0; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
         <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
@@ -285,7 +305,7 @@ button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #2F8
 </template>
 <script src="/js/dc-mini.js"></script>
 <script>
-let FILAS = null, USUARIO = null;
+let FILAS = null, USUARIO = null, ACESSO = {};
 const ITENS_USUARIO = () => {
   if (!USUARIO) return [];
   const ls = [['/perfil', 'Meu perfil']];
@@ -337,6 +357,36 @@ class Filas extends DCLogic {
       descFaltas: o.nome + ': absenteísmo ' + (o.pct === null ? 'sem dados' : num(o.pct, 1) + '%, ' + o.faltas + ' faltas em ' + (o.faltas + o.atend) + ' agendados') + '; meta ' + num(META, 2) + '%',
       descEspera: o.nome + ': ' + (o.dias === null ? 'agenda não lida' : 'próxima vaga em ' + diasTxt(o.dias))
     }, extra || {});
+
+    // Faltas × acesso: por equipe, faltas e espera (desta tela) ao lado da C1 (% de demanda programada), do mesmo mês.
+    const gEq = {};
+    for (const p of todos.filter((x) => (!unidadeSel || x.un === unidadeSel) && (!st.cat || x.cat === st.cat))) {
+      const k = p.un + '|' + p.eq; (gEq[k] = gEq[k] || { un: p.un, eq: p.eq, ps: [] }).ps.push(p);
+    }
+    const linhasAcesso = Object.keys(gEq).map((k) => {
+      const g = gEq[k], ag = agrega(g.ps), c1 = ACESSO[k] || null;
+      const c1p = c1 && c1.den ? c1.num / c1.den * 100 : null;
+      const alta = ag.pct !== null && ag.pct > META, longa = ag.dias !== null && ag.dias > 30, progBaixa = c1p !== null && c1p < 50;
+      const leitura = ag.pct === null && c1p === null ? 'Sem dados.'
+        : alta && longa ? 'Fila longa e muitas faltas: confirmar consultas antes de abrir mais agenda.'
+        : longa && !alta ? 'Fila longa com poucas faltas: falta agenda.'
+        : alta ? 'Muitas faltas com vaga rápida: reforçar a confirmação.'
+        : 'Dentro da meta de faltas e com vaga em até 30 dias.';
+      return { un: g.un, eq: g.eq, nome: g.eq === 'Sem equipe' ? 'Sem equipe' : g.eq, sub: g.un, pct: ag.pct, dias: ag.dias, c1p,
+        faltasTxt: ag.pct === null ? '—' : num(ag.pct, 1) + '%', faltasCor: corFaltas(ag.pct),
+        esperaTxt: diasTxt(ag.dias), esperaCor: ag.dias === null ? '#8A979F' : corEspera(ag.dias),
+        c1Txt: c1p === null ? '—' : num(c1p, 1) + '%', c1Sub: c1 ? c1.num + ' de ' + c1.den : 'sem C1 (equipe sem indicador)',
+        leitura: (progBaixa ? leitura + ' Pouca demanda programada (C1 abaixo de 50%): a agenda é tomada por demanda espontânea.' : leitura) };
+    }).sort((a, b) => (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct));
+    const resumoAcesso = (() => {
+      const com = linhasAcesso.filter((l) => l.pct !== null && l.c1p !== null);
+      if (com.length < 3) return 'Poucas equipes têm C1 e faltas no mesmo mês para comparar.';
+      const mx = (a) => a.reduce((t, v) => t + v, 0) / a.length;
+      const xs = com.map((l) => l.c1p), ys = com.map((l) => l.pct), mxv = mx(xs), myv = mx(ys);
+      const sxy = xs.reduce((t, x, i) => t + (x - mxv) * (ys[i] - myv), 0), sxx = xs.reduce((t, x) => t + (x - mxv) ** 2, 0), syy = ys.reduce((t, y) => t + (y - myv) ** 2, 0);
+      const r = sxx && syy ? sxy / Math.sqrt(sxx * syy) : 0;
+      return com.length + ' equipes com C1 e faltas. Correlação entre C1 e faltas: ' + num(r, 2) + (Math.abs(r) < 0.3 || com.length < 8 ? ' (indicativa: ' + (com.length < 8 ? 'com menos de 8 equipes' : 'correlação fraca') + ' não dá para afirmar relação)' : r < 0 ? ' (mais demanda programada, menos faltas)' : ' (mais demanda programada, mais faltas)') + '.';
+    })();
 
     // Unidade -> equipe -> profissional, abrindo por clique.
     const linhas = [];
@@ -437,12 +487,12 @@ class Filas extends DCLogic {
       sair: async () => { try { await fetch('/api/v1/auth/sair', { method: 'POST', credentials: 'same-origin' }); } finally { location.replace('/entrar'); } },
       linhas, resumo, pontos, legenda, semLinhas: linhas.length === 0, metaPos: posF(META), metaTxt: num(META, 2) + '%',
       abaLista: st.aba === 'lista', abaMapa: st.aba === 'mapa',
-      abaHorario: st.aba === 'horario', horTem, horSem: !horTem, horCols: dias.length, celulas, topo, horMinimo: MINIMO,
+      abaHorario: st.aba === 'horario', abaAcesso: st.aba === 'acesso', linhasAcesso, resumoAcesso, horTem, horSem: !horTem, horCols: dias.length, celulas, topo, horMinimo: MINIMO,
       horSemTxt: (FILAS.horarios || []).length ? 'Nenhum profissional deste recorte tem agenda lida no mês.' : 'Ainda não há grade de horários. Na extensão (versão 0.9.1 ou mais nova), marque "Faltas por horário" junto de "Filas e faltas" e rode a coleta.',
       horResumo: horTem ? totH.fa + ' faltas em ' + totH.base + ' agendamentos já decididos (' + (totH.base ? num(totH.fa / totH.base * 100, 1) : '0') + '%), de ' + profsH + (profsH === 1 ? ' profissional' : ' profissionais') + '. Passe o mouse sobre uma célula para ver os números.' : 'Agendamentos do mês de cada profissional, somados por dia da semana e hora.',
       legTitulo: porTaxa ? 'Taxa de faltas' : 'Número de faltas', legMin: porTaxa ? '0%' : '1', legMax: porTaxa ? num(vmax, 0) + '%' : String(Math.round(vmax)),
       botoesMedida: [['taxa', 'Taxa de faltas'], ['faltas', 'Número de faltas']].map(([id, rotulo]) => ({ rotulo, ...botao(st.medida === id), escolher: () => this.setState({ medida: id }) })),
-      abas: [['lista', 'Unidades, equipes e profissionais'], ['mapa', 'Mapa: onde agir primeiro'], ['horario', 'Faltas por horário']].map(([id, titulo]) => ({ titulo, pressionado: st.aba === id ? 'true' : 'false',
+      abas: [['lista', 'Unidades, equipes e profissionais'], ['mapa', 'Mapa: onde agir primeiro'], ['horario', 'Faltas por horário'], ['acesso', 'Faltas × acesso']].map(([id, titulo]) => ({ titulo, pressionado: st.aba === id ? 'true' : 'false',
         borda: st.aba === id ? '#00A7E7' : 'transparent', cor: st.aba === id ? '#FFFFFF' : 'rgba(255,255,255,.85)', peso: st.aba === id ? 700 : 400, escolher: () => this.setState({ aba: id }) })),
       temDestaque: !!d, destaque: d ? { nome: d.nome, sub: d.cbo + ' · ' + d.eq + ' · ' + d.un, valores: num(d.pct, 1) + '% de faltas (' + d.faltas + ' de ' + (d.faltas + d.atend) + ') · próxima vaga em ' + diasTxt(d.dias) } : {},
       semAgendaTxt: fora ? fora + (fora === 1 ? ' profissional fica' : ' profissionais ficam') + ' fora do mapa por não ter as duas medidas.' : '',
@@ -472,6 +522,11 @@ async function carregar(comp) {
     if (!USUARIO) { try { const e = await fetch('/api/v1/auth/eu', { credentials: 'same-origin' }); if (e.ok) USUARIO = (await e.json()).usuario || null; } catch (_) {} }
     if (!d.profissionais.length) { aviso('Ainda não há dados de filas e faltas. Na extensão, marque "Filas e faltas" e rode a coleta no computador que acessa o PEC.'); return; }
     FILAS = d;
+    ACESSO = {};
+    try {
+      const a = await fetch('/api/v1/dados?competencia=' + encodeURIComponent(d.competencia), { credentials: 'same-origin' });
+      if (a.ok) for (const x of ((await a.json()).indicadores || [])) if (x.codigo === 'C1' && x.denominador) ACESSO[x.unidade + '|' + (x.equipe || 'Sem equipe')] = { num: x.numerador, den: x.denominador };
+    } catch (_) {}
     if (tela) tela.setState({}); else tela = montarDC(document.getElementById('modelo'), Filas, document.getElementById('tela'), {});
   } catch (e) { aviso('Não foi possível carregar. Recarregue a página.'); }
 }
