@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relatório · Painel APS</title>
+<link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Montserrat,system-ui,sans-serif;color:#1B2340;background:#F4F7FB}
+a{color:inherit;text-decoration:none}
+a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #00A7E7;outline-offset:3px}
+header.topo-site{background:#1F3C72;border-bottom:4px solid #00A7E7;color:#fff}
+.topo{max-width:1100px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.marca{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
+.barra-usuario{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#fff}
+.barra-usuario a,.barra-usuario button{color:inherit;font:inherit;background:none;border:1px solid rgba(255,255,255,.6);border-radius:99px;padding:5px 14px;cursor:pointer}
+main{max-width:1100px;margin:0 auto;padding:24px 32px 24px}
+.ferr{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-end;background:#fff;border:2px solid #D5DCE8;border-radius:14px;padding:14px 18px;margin-bottom:20px}
+.ferr label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:#4A5670;text-transform:uppercase;letter-spacing:.04em}
+.ferr select{font:inherit;font-size:15px;font-weight:600;text-transform:none;letter-spacing:0;min-height:42px;padding:0 12px;border:2px solid #D5DCE8;border-radius:10px;background:#fff;color:#1B2340;min-width:170px}
+.ferr .acoes{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:700;font-size:14px;min-height:42px;padding:0 18px;border-radius:99px;border:2px solid #1F3C72;background:#1F3C72;color:#fff;cursor:pointer}
+.btn.sec{background:#fff;color:#1F3C72}
+.dica{font-size:13px;color:#4A5670;margin:0 0 16px;line-height:1.5}
+/* O documento: sempre claro, como uma folha. */
+#doc{background:#fff;color:#1B2340;border:2px solid #D5DCE8;border-radius:14px;padding:32px 36px;line-height:1.5}
+#doc .capa{display:flex;gap:16px;align-items:center;border-bottom:4px solid #00A7E7;padding-bottom:14px;margin-bottom:16px}
+#doc .capa img{width:48px;height:48px}
+#doc .capa .org{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#4A5670}
+#doc h1{margin:2px 0 0;font-size:26px;font-weight:800;color:#1F3C72;line-height:1.2}
+#doc .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 24px;margin:0 0 20px;font-size:13px}
+#doc .meta dt{font-weight:700;color:#4A5670;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+#doc .meta dd{margin:0;font-weight:600}
+#doc h2{margin:26px 0 6px;font-size:18px;color:#1F3C72;border-bottom:2px solid #D5DCE8;padding-bottom:4px;break-after:avoid}
+#doc h3{margin:16px 0 6px;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#4A5670;break-after:avoid}
+#doc p{margin:0 0 8px;font-size:13px}
+#doc table{border-collapse:collapse;width:100%;font-size:12.5px;margin:0 0 10px}
+#doc th,#doc td{text-align:left;padding:6px 8px;border-bottom:1px solid #E3E8F0;vertical-align:top}
+#doc th{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#4A5670;background:#F4F7FB}
+#doc td.n,#doc th.n{text-align:right;white-space:nowrap}
+#doc tr{break-inside:avoid}
+#doc small{display:block;color:#4A5670;font-size:11px}
+#doc .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:8px 0 6px}
+#doc .card{border:1px solid #D5DCE8;border-radius:8px;padding:8px 12px}
+#doc .card small{text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+#doc .card .v{font-size:22px;font-weight:800;color:#1F3C72;line-height:1.2}
+.cc{display:inline-block;font-size:11px;font-weight:700;border-radius:99px;padding:1px 8px;white-space:nowrap}
+.k-o{background:#C7ECD9;color:#0F5A41}.k-b{background:#D9ECF8;color:#0B4F73}.k-s{background:#FBF0D3;color:#6E4700}.k-r{background:#F8D9DC;color:#8A1B2A}
+#doc .vazio{padding:10px 12px;border:1px dashed #B9C4C9;border-radius:8px;font-size:13px;color:#4A5670}
+#doc .rodadoc{margin-top:26px;padding-top:10px;border-top:1px solid #D5DCE8;font-size:11px;color:#4A5670}
+@media(max-width:700px){main{padding:16px}#doc{padding:18px}}
+@media print{
+  @page{size:A4;margin:14mm 12mm 16mm;@bottom-left{content:"Painel APS · Cajamar";font-size:9px;color:#4A5670}@bottom-right{content:"Página " counter(page) " de " counter(pages);font-size:9px;color:#4A5670}}
+  body{background:#fff}header.topo-site,.ferr,.dica,#rodape-aps,.menu-aps{display:none!important}
+  main{max-width:none;padding:0}#doc{border:0;padding:0;border-radius:0}
+  #doc table{font-size:10.5px}#doc h2{font-size:15px}
+}
+</style>
+<link rel="stylesheet" href="/css/tema.css">
+<script src="/js/publico/tema.js"></script>
+</head>
+<body>
+<header class="topo-site"><div class="topo">
+ <a class="marca" href="/"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
+ <div id="barra"></div>
+</div></header>
+<main>
+ <div class="ferr" role="group" aria-label="Opções do relatório">
+  <label>Relatório<select id="tipo">
+   <option value="geral">Visão geral</option>
+   <option value="federal">Federal (indicadores)</option>
+   <option value="estadual">Estadual (IGM SUS Paulista)</option>
+   <option value="municipal">Acompanhamento municipal</option>
+   <option value="absenteismo">Absenteísmo e filas</option>
+   <option value="completo">Completo (todos)</option>
+  </select></label>
+  <label>Competência<select id="comp"></select></label>
+  <label id="lbUn">Unidade<select id="un"><option value="">Todas</option></select></label>
+  <label id="lbParcela">Parcela estadual<select id="parcela"></select></label>
+  <div class="acoes"><button class="btn" id="imprimir" type="button">Imprimir / salvar em PDF</button><button class="btn sec" id="csv" type="button">Baixar CSV</button></div>
+ </div>
+ <p class="dica">O documento abaixo é o que será impresso ou salvo em PDF (no navegador, escolha “Salvar como PDF”). Só entram totais por município, unidade e equipe; nunca nomes de pacientes nem de profissionais. Cada emissão fica registrada no histórico de quem emitiu.</p>
+ <article id="doc" aria-live="polite"><p class="vazio">Carregando…</p></article>
+</main>
+<script src="/js/sessao.js"></script>
+<script src="/js/catalogo-indicadores.js"></script>
+<script src="/js/estadual-regras.js"></script>
+<script src="/js/federal-calculo.js"></script>
+<script src="/js/estadual-calculo.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+let dados={},ABS={},LANC=[],VAC=[],NESF=null,parcela=PARCELAS[2],ERRO=false,USUARIO=null,FILAS=null,COMPS=[];
+const Q14=19.59;
+const TITULOS={geral:'Visão geral da Atenção Primária',federal:'Cofinanciamento federal · indicadores',estadual:'Cofinanciamento estadual · IGM SUS Paulista',municipal:'Acompanhamento municipal',absenteismo:'Absenteísmo e filas',completo:'Relatório completo da Atenção Primária'};
+const PERFIL={admin:'administrador',gestor:'gestor',leitor:'leitor'};
+const num=(v,c=1)=>v==null||isNaN(v)?'—':v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:c});
+const pct=v=>v==null?'—':num(v,1)+'%';
+const kpill=k=>k?'<span class="cc k-'+k+'">'+NOMEC[k]+'</span>':'';
+const ehGestor=()=>USUARIO&&(USUARIO.perfil==='admin'||USUARIO.perfil==='gestor');
+const med=a=>{if(!a.length)return null;const o=a.slice().sort((x,y)=>x-y),m=Math.floor(o.length/2);return o.length%2?o[m]:Math.round((o[m-1]+o[m])/2)};
+
+// ---------- federal e municipal ----------
+function tabelaCods(cods,comp,un,comEquipes){
+  let corpo='';
+  for(const cod of cods){
+    const ls=linhasDe(cod,[comp],un);if(!ls.length)continue;
+    const cat=(window.CATALOGO||{})[cod]||{nome:cod,tipo:''};
+    const mun=agregar(ls,()=>'M').get(cod+'|M');if(!mun)continue;
+    const vm=resultado(mun,cat.tipo),km=conceito(cod,vm);
+    let eq='';
+    if(comEquipes&&FAIXA[cod]){const c={o:0,b:0,s:0,r:0};let n=0;[...agregar(ls,l=>l.unidade+' · '+l.equipe).values()].filter(g=>g.codigo===cod).forEach(g=>{const k=conceito(cod,resultado(g,cat.tipo));if(k){c[k]++;n++}});
+      eq=n?['o','b','s','r'].filter(k=>c[k]).map(k=>c[k]+' '+NOMEC[k].toLowerCase()).join(' · '):'';}
+    const direto=mun.direto!==undefined;
+    const nu=direto?'—':(cat.tipo==='pontos'?num(mun.pts,0):num(mun.num,0)),de=direto?'—':num(mun.den,0);
+    const aprox=cat.precisao==='aproximado'?' ≈':cat.precisao==='piso'?' (piso)':'';
+    corpo+='<tr><td><b>'+esc(cod)+'</b> · '+esc(nomeSem(cod,cat.nome))+(cat.meta?'<small>Meta: '+esc(cat.meta)+'</small>':'')+'</td><td class="n">'+nu+'</td><td class="n">'+de+'</td><td class="n"><b>'+fmt(vm,cat.tipo)+'</b>'+aprox+'</td><td>'+kpill(km)+(km&&FAIXAX[cod]?' *':'')+'</td>'+(comEquipes?'<td>'+esc(eq)+'</td>':'')+'</tr>';
+  }
+  return corpo?'<table class="csv"><thead><tr><th>Indicador</th><th class="n">Numerador (ou pontos)</th><th class="n">Denominador</th><th class="n">Resultado</th><th>Conceito</th>'+(comEquipes?'<th>Equipes por conceito</th>':'')+'</tr></thead><tbody>'+corpo+'</tbody></table>':'';
+}
+function secFederal(comp,un){
+  let h='<h2>Cofinanciamento federal</h2><p>Indicadores das notas metodológicas do Ministério da Saúde, a partir dos totais coletados do PEC e-SUS no mês. O conceito é uma prévia para acompanhar as equipes; o resultado oficial é o do Ministério.</p>';
+  let algum=false;
+  for(const [gn,gc] of GRUPOS.slice(0,6)){const t=tabelaCods(gc,comp,un,true);if(t){algum=true;h+='<h3>'+esc(gn)+'</h3>'+t}}
+  if(!algum)h+='<p class="vazio">Sem indicadores coletados nesta competência.</p>';
+  if(Object.keys(FAIXAX).some(c=>(dados[comp]||[]).some(l=>l.codigo===c)))h+='<p><small>* Faixa lida do desenho do dashboard, ainda a confirmar com a nota técnica vigente.</small></p>';
+  // por unidade
+  if(!un){
+    const uns=[...new Set((dados[comp]||[]).map(l=>l.unidade).filter(u=>u&&u!=='Município'))].sort();
+    if(uns.length>1){
+      const cods=NOTAS.filter(c=>linhasDe(c,[comp],'').length);
+      let t='<table class="csv"><thead><tr><th>Indicador</th>'+uns.map(u=>'<th class="n">'+esc(u.replace(/^(UBS|ESF|Psf|Usf|Posto de Saude)\s+/i,''))+'</th>').join('')+'</tr></thead><tbody>';
+      for(const cod of cods){const cat=(window.CATALOGO||{})[cod]||{tipo:''};const ls=linhasDe(cod,[comp],'');const m=agregar(ls,l=>l.unidade);
+        t+='<tr><td><b>'+esc(cod)+'</b></td>'+uns.map(u=>{const g=m.get(cod+'|'+u);const v=g?resultado(g,cat.tipo):null;const k=conceito(cod,v);return '<td class="n">'+fmt(v,cat.tipo)+(k?' <span class="cc k-'+k+'">'+NOMEC[k].charAt(0)+'</span>':'')+'</td>'}).join('')+'</tr>'}
+      h+='<h3>Resultado por unidade</h3>'+t+'</tbody></table><p><small>Conceito: O = ótimo, B = bom, S = suficiente, R = regular.</small></p>';
+    }
+  }
+  return h;
+}
+function secMunicipal(comp,un){
+  const g=GRUPOS[6];const t=tabelaCods(g[1],comp,un,false);
+  return '<h2>Acompanhamento municipal</h2><p>Indicadores acompanhados pelo município, fora do cofinanciamento federal.</p>'+(t||'<p class="vazio">Sem dados coletados nesta competência.</p>');
+}
+
+// ---------- estadual ----------
+function secEstadual(){
+  if(ERRO)return '<h2>Cofinanciamento estadual</h2><p class="vazio">Não foi possível carregar os lançamentos.</p>';
+  const c=calcular(),pontos=c.res.reduce((t,r)=>t+(r.pct===null?0:r.peso*r.pct),0),pend=c.linhas.filter(x=>x.r.pct===null);
+  const n=c.linhas.length-pend.length;
+  let h='<h2>Cofinanciamento estadual · '+esc(parcela.n)+'</h2><p>Parte variável do IGM SUS Paulista (CIB 150/2025). Período avaliado: '+NOMEQ(parcela.p)+', comparado com o '+NOMEQ(parcela.ant)+'. Só entram na nota os valores oficiais lançados; a estimativa do PEC aparece ao lado, separada.</p>';
+  h+='<div class="cards"><div class="card"><small>Nota da parte variável</small><div class="v">'+num(c.nota.final*100,1)+'%</div><small>'+num(pontos,2)+' de 10 pontos'+(c.nota.extra?' + ponto extra':'')+'</small></div>'
+   +'<div class="card"><small>Indicadores com dado</small><div class="v">'+n+' de '+c.linhas.length+'</div><small>'+(pend.length?'Faltam lançar: peso '+num(pend.reduce((t,x)=>t+x.it.peso,0),1)+' de 10':'Todos com dado')+'</small></div></div>';
+  h+='<table class="csv"><thead><tr><th>Indicador</th><th class="n">Peso</th><th>Valor</th><th>Comparação</th><th>Resultado</th><th class="n">Pontos</th></tr></thead><tbody>'
+   +c.linhas.map(x=>'<tr><td>'+esc(x.it.nome)+(x.d.origem?'<small>Origem: '+esc(x.d.origem)+'</small>':'')+'</td><td class="n">'+num(x.it.peso,1)+'</td><td>'+mostra(x.it,x.d)+'</td><td>'+ref(x.it,x.d)+'</td><td>'+(x.r.pct===null?'sem dado':Math.round(x.r.pct*100)+'%')+'<small>'+esc(dica(x))+'</small></td><td class="n">'+(x.r.pct===null?'—':num(x.it.peso*x.r.pct,2))+'</td></tr>').join('')
+   +'<tr><td><b>Óbito materno no ano</b></td><td class="n">—</td><td colspan="4">'+(c.ob?(c.ob.valor===0?'sem óbito materno informado':'com óbito materno informado'):'não lançado')+'</td></tr></tbody></table>';
+  return h;
+}
+
+// ---------- absenteísmo e filas ----------
+function secAbsenteismo(comp,un){
+  let h='<h2>Absenteísmo e filas</h2><p>Absenteísmo = faltas ÷ (atendimentos + faltas). Meta de referência do Q14.2.1: até '+num(Q14,2)+'%.</p>';
+  const ls=linhasDe('Q14.2.1',[comp],un);
+  if(ls.length){
+    const mun=agregar(ls,()=>'M').get('Q14.2.1|M'),v=resultado(mun,'percentual');
+    h+='<div class="cards"><div class="card"><small>Absenteísmo de consultas</small><div class="v">'+pct(v)+'</div><small>'+num(mun.num,0)+' faltas em '+num(mun.den,0)+' agendamentos decididos</small></div>'
+      +'<div class="card"><small>Referência</small><div class="v">'+num(Q14,2)+'%</div><small>'+(v==null?'':(v<=Q14?'dentro da meta':'acima da meta'))+'</small></div></div>';
+    const por=agregar(ls,l=>l.unidade),uns=[...new Set(ls.map(l=>l.unidade))].sort();
+    if(!un&&uns.length>1)h+='<h3>Por unidade</h3><table class="csv"><thead><tr><th>Unidade</th><th class="n">Faltas</th><th class="n">Agendamentos</th><th class="n">Absenteísmo</th><th>Meta</th></tr></thead><tbody>'
+      +uns.map(u=>{const g=por.get('Q14.2.1|'+u),r=g?resultado(g,'percentual'):null;return '<tr><td>'+esc(u)+'</td><td class="n">'+num(g.num,0)+'</td><td class="n">'+num(g.den,0)+'</td><td class="n"><b>'+pct(r)+'</b></td><td>'+(r==null?'—':r<=Q14?'dentro':'acima')+'</td></tr>'}).join('')+'</tbody></table>';
+    const eqs=agregar(ls,l=>l.unidade+' · '+l.equipe);
+    h+='<h3>Por equipe</h3><table class="csv"><thead><tr><th>Equipe</th><th class="n">Faltas</th><th class="n">Agendamentos</th><th class="n">Absenteísmo</th></tr></thead><tbody>'
+      +[...eqs.values()].filter(g=>g.codigo==='Q14.2.1').sort((a,b)=>a.rot.localeCompare(b.rot)).map(g=>{const r=resultado(g,'percentual');return '<tr><td>'+esc(g.rot)+'</td><td class="n">'+num(g.num,0)+'</td><td class="n">'+num(g.den,0)+'</td><td class="n"><b>'+pct(r)+'</b></td></tr>'}).join('')+'</tbody></table>';
+  }else h+='<p class="vazio">Sem o indicador Q14.2.1 nesta competência.</p>';
+  // faltas por categoria profissional e tipo (relatório gerencial de absenteísmo)
+  const ab=(ABS[comp]||[]).filter(x=>!un||x.unidade===un);
+  if(ab.length){
+    const g={};for(const x of ab){const k=(x.grupoCBO||x.cbo||'Outros')+'|'+x.tipoFalta;g[k]=(g[k]||0)+(x.n||0)}
+    const grupos=[...new Set(ab.map(x=>x.grupoCBO||x.cbo||'Outros'))].sort(),tipos=[...new Set(ab.map(x=>x.tipoFalta))].sort();
+    h+='<h3>Agendamentos por categoria profissional e situação</h3><table class="csv"><thead><tr><th>Categoria</th>'+tipos.map(t=>'<th class="n">'+esc(t)+'</th>').join('')+'<th class="n">Total</th></tr></thead><tbody>'
+      +grupos.map(gr=>{const t=tipos.map(tp=>g[gr+'|'+tp]||0);return '<tr><td>'+esc(gr)+'</td>'+t.map(v=>'<td class="n">'+num(v,0)+'</td>').join('')+'<td class="n"><b>'+num(t.reduce((a,b)=>a+b,0),0)+'</b></td></tr>'}).join('')+'</tbody></table>';
+  }
+  // filas por equipe (sem nomes de profissionais)
+  if(!ehGestor())h+='<h3>Filas e faltas por equipe</h3><p class="vazio">Esta parte é restrita a administradores e gestores.</p>';
+  else if(!FILAS||!FILAS.profissionais||!FILAS.profissionais.length)h+='<h3>Filas e faltas por equipe</h3><p class="vazio">Sem dados de filas e faltas para esta competência.</p>';
+  else{
+    const gq={};for(const p of FILAS.profissionais){if(un&&p.unidade!==un)continue;const k=p.unidade+'|'+(p.equipe||'Sem equipe');(gq[k]=gq[k]||{un:p.unidade,eq:p.equipe||'Sem equipe',f:0,a:0,d:[],prof:0,semAg:0}).prof++;const o=gq[k];o.f+=p.faltas||0;o.a+=p.atendimentos||0;if(p.agendaLidaEm)o.d.push(p.semVaga?91:p.diasVaga);else o.semAg++}
+    const c1=agregar(linhasDe('C1',[comp],un),l=>l.unidade+'|'+(l.equipe||'Sem equipe'));
+    h+='<h3>Filas e faltas por equipe (médicos e enfermeiros)</h3><p>Faltas e espera por equipe, ao lado da C1 (parcela de consultas de demanda programada). Espera = mediana de dias até a próxima vaga dos profissionais com agenda lida. Não há nomes de profissionais neste documento.</p>'
+     +'<table class="csv"><thead><tr><th>Equipe</th><th class="n">Prof.</th><th class="n">Faltas</th><th class="n">Absenteísmo</th><th class="n">Espera (mediana)</th><th class="n">C1 programada</th></tr></thead><tbody>'
+     +Object.values(gq).sort((a,b)=>(a.un+a.eq).localeCompare(b.un+b.eq,'pt')).map(o=>{const r=o.f+o.a?o.f/(o.f+o.a)*100:null,m=med(o.d),g=c1.get('C1|'+o.un+'|'+o.eq);return '<tr><td>'+esc(o.eq)+'<small>'+esc(o.un)+'</small></td><td class="n">'+o.prof+'</td><td class="n">'+num(o.f,0)+' de '+num(o.f+o.a,0)+'</td><td class="n"><b>'+pct(r)+'</b></td><td class="n">'+(m==null?'agenda não lida':m>90?'90+ dias':m+' d')+'</td><td class="n">'+(g&&g.den?pct(100*g.num/g.den):'—')+'</td></tr>'}).join('')+'</tbody></table>';
+  }
+  return h;
+}
+
+// ---------- visão geral ----------
+function secGeral(comp,un){
+  const todas=(dados[comp]||[]).filter(l=>!un||l.unidade===un);
+  const uns=new Set(todas.map(l=>l.unidade).filter(u=>u&&u!=='Município')),eqs=new Set(todas.filter(l=>l.equipe&&l.equipe!=='Município').map(l=>l.unidade+'|'+l.equipe));
+  const tot={o:0,b:0,s:0,r:0};
+  for(const cod of NOTAS){const ls=linhasDe(cod,[comp],un);if(!ls.length)continue;const cat=(window.CATALOGO||{})[cod]||{tipo:''};
+    [...agregar(ls,l=>l.unidade+' · '+l.equipe).values()].filter(g=>g.codigo===cod).forEach(g=>{const k=conceito(cod,resultado(g,cat.tipo));if(k)tot[k]++})}
+  const nt=tot.o+tot.b+tot.s+tot.r;
+  let h='<h2>Resumo</h2><div class="cards">'
+   +'<div class="card"><small>Cobertura da coleta</small><div class="v">'+uns.size+' unid.</div><small>'+eqs.size+' equipe(s) com dados</small></div>'
+   +(nt?'<div class="card"><small>Conceitos federais (prévia)</small><div class="v">'+nt+'</div><small>'+['o','b','s','r'].map(k=>tot[k]+' '+NOMEC[k].toLowerCase()).join(' · ')+'</small></div>':'');
+  const q=linhasDe('Q14.2.1',[comp],un);
+  if(q.length){const m=agregar(q,()=>'M').get('Q14.2.1|M'),v=resultado(m,'percentual');h+='<div class="card"><small>Absenteísmo de consultas</small><div class="v">'+pct(v)+'</div><small>meta: até '+num(Q14,2)+'%</small></div>'}
+  if(!ERRO&&LANC.length){const c=calcular();h+='<div class="card"><small>Nota estadual · '+esc(parcela.n)+'</small><div class="v">'+num(c.nota.final*100,1)+'%</div><small>'+(c.nota.completo?'todos os itens com dado':'parcial: faltam itens')+'</small></div>'}
+  h+='</div>';
+  const t=tabelaCods(['C1','C2','C3','C4','C5','C6','C7','CVAT','B1','B3','B4','B5','B6','M1','M2','CR1','CR2','CR3','CR4'],comp,un,false);
+  if(t)h+='<h3>Principais indicadores federais</h3>'+t;
+  return h;
+}
+
+// ---------- documento ----------
+const mesLong=c=>{const [a,m]=c.split('-');return ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'][m-1]+' de '+a};
+function desenhar(){
+  const tipo=$('tipo').value,comp=$('comp').value,un=$('un').value;
+  $('lbParcela').hidden=!(tipo==='estadual'||tipo==='completo'||tipo==='geral');
+  $('lbUn').hidden=(tipo==='estadual');
+  if(!comp){$('doc').innerHTML='<p class="vazio">Ainda não há competências coletadas.</p>';return}
+  const quando=new Date();
+  let corpo='';
+  if(tipo==='geral')corpo=secGeral(comp,un);
+  if(tipo==='federal'||tipo==='completo')corpo+=(tipo==='completo'?secGeral(comp,un):'')+secFederal(comp,un);
+  if(tipo==='estadual'||tipo==='completo')corpo+=secEstadual();
+  if(tipo==='municipal'||tipo==='completo')corpo+=secMunicipal(comp,un);
+  if(tipo==='absenteismo'||tipo==='completo')corpo+=secAbsenteismo(comp,un);
+  const id='PAPS-'+comp.replace('-','')+'-'+tipo.slice(0,3).toUpperCase()+'-'+quando.toISOString().slice(0,16).replace(/\D/g,'');
+  $('doc').innerHTML='<div class="capa"><img src="/img/painelaps.svg" alt=""><div><div class="org">Painel APS · Secretaria de Saúde de Cajamar</div><h1>'+esc(TITULOS[tipo])+'</h1></div></div>'
+   +'<dl class="meta"><div><dt>Competência</dt><dd>'+esc(mesLong(comp))+'</dd></div><div><dt>Abrangência</dt><dd>'+(tipo==='estadual'?'Município':(un?esc(un):'Município e todas as unidades'))+'</dd></div>'
+   +'<div><dt>Emitido por</dt><dd>'+esc(USUARIO?USUARIO.nome:'—')+(USUARIO?' ('+(PERFIL[USUARIO.perfil]||USUARIO.perfil)+')':'')+'</dd></div>'
+   +'<div><dt>Emitido em</dt><dd>'+quando.toLocaleDateString('pt-BR')+' às '+quando.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</dd></div>'
+   +'<div><dt>Código do documento</dt><dd>'+id+'</dd></div><div><dt>Fonte</dt><dd>PEC e-SUS APS (coleta pela extensão) e lançamentos oficiais</dd></div></dl>'
+   +corpo
+   +'<div class="rodadoc"><b>Como ler este documento.</b> Os números são totais coletados do PEC e-SUS e calculados pelo Painel APS conforme as notas técnicas e as deliberações citadas; são uma prévia para acompanhamento, e o resultado oficial é o do Ministério da Saúde e da Secretaria de Estado da Saúde. Valores marcados com ≈ são aproximados e “piso” indica que o valor real é igual ou maior. A explicação de cada coleta e de cada cálculo está em Como coletamos e calculamos (rodapé do Painel). Este documento não contém dados de pacientes.</div>';
+  document.title='Relatório · '+TITULOS[tipo]+' · '+comp;
+}
+async function carregarComp(comp){
+  if(!comp)return;
+  if(!dados[comp]){try{const d=await fetch('/api/v1/dados?competencia='+comp,{credentials:'same-origin'});if(d.ok){const j=await d.json();dados[comp]=j.indicadores||[];ABS[comp]=j.absenteismo||[]}}catch(_){}}
+  const uns=[...new Set((dados[comp]||[]).map(l=>l.unidade).filter(u=>u&&u!=='Município'))].sort();
+  const atual=$('un').value;$('un').innerHTML='<option value="">Todas</option>'+uns.map(u=>'<option>'+esc(u)+'</option>').join('');$('un').value=uns.includes(atual)?atual:'';
+  FILAS=null;
+  if(ehGestor()){try{const r=await fetch('/api/v1/filas?competencia='+comp,{credentials:'same-origin'});if(r.ok)FILAS=await r.json()}catch(_){}}
+}
+function csv(){
+  const linhas=[];const lim=s=>'"'+String(s).replace(/\s+/g,' ').trim().replace(/"/g,'""')+'"';
+  linhas.push([lim($('doc').querySelector('h1').textContent)].join(';'));
+  linhas.push(['Competência',lim($('comp').value)].join(';'));
+  $('doc').querySelectorAll('h2,h3,table.csv').forEach(el=>{
+    if(el.tagName==='TABLE')el.querySelectorAll('tr').forEach(tr=>linhas.push([...tr.children].map(c=>lim(c.innerText.replace(/\n+/g,' · '))).join(';')));
+    else{linhas.push('');linhas.push(lim(el.textContent))}});
+  const blob=new Blob(['﻿'+linhas.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='painel-aps-'+$('tipo').value+'-'+$('comp').value+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+function registrar(acao){try{fetch('/api/v1/relatorios/emissao',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({tipo:$('tipo').value,competencia:$('comp').value,formato:acao,unidade:$('un').value||null})})}catch(_){}}
+async function iniciar(){
+  const q=new URLSearchParams(location.search);
+  try{const e=await fetch('/api/v1/auth/eu',{credentials:'same-origin'});if(e.ok)USUARIO=(await e.json()).usuario||null}catch(_){}
+  if(!ehGestor())$('tipo').querySelector('option[value=absenteismo]').textContent='Absenteísmo (sem filas por equipe)';
+  try{const r=await fetch('/api/v1/competencias',{credentials:'same-origin'});if(r.status===401){location.replace('/entrar');return}COMPS=((await r.json()).competencias||[]).map(c=>c.competencia).sort().reverse()}catch(_){}
+  $('comp').innerHTML=COMPS.map(c=>'<option value="'+c+'">'+mesLong(c)+'</option>').join('');
+  const t=q.get('tipo');if(t&&[...$('tipo').options].some(o=>o.value===t))$('tipo').value=t;
+  if(q.get('competencia')&&COMPS.includes(q.get('competencia')))$('comp').value=q.get('competencia');
+  $('parcela').innerHTML=PARCELAS.map((P,i)=>'<option value="'+i+'">'+P.n+'</option>').join('');$('parcela').value='2';
+  try{
+    const [a,b,v]=await Promise.all([fetch('/api/v1/estadual/lancamentos',{credentials:'same-origin'}),fetch('/api/v1/composicao',{credentials:'same-origin'}),fetch('/api/v1/vacinas-pec',{credentials:'same-origin'})]);
+    if(v.ok)VAC=(await v.json()).doses||[];
+    if(a.ok){LANC=(await a.json()).vigentes;ERRO=false}else ERRO=true;
+    if(b.ok){const c=(await b.json()).composicao;NESF=c?(c.unidades||[]).reduce((t,u)=>t+(u.equipes||[]).filter(e=>e.tipo==='ESF').length,0):null}
+    // parcela padrão: a mais recente com algum lançamento
+    for(let i=PARCELAS.length-1;i>=0;i--){if(LANC.some(l=>l.periodo===PARCELAS[i].p)){parcela=PARCELAS[i];$('parcela').value=String(i);break}}
+  }catch(_){ERRO=true}
+  await carregarComp($('comp').value);desenhar();
+  $('tipo').onchange=()=>desenhar();$('un').onchange=()=>desenhar();
+  $('comp').onchange=async()=>{await carregarComp($('comp').value);desenhar()};
+  $('parcela').onchange=()=>{parcela=PARCELAS[+$('parcela').value];desenhar()};
+  $('imprimir').onclick=()=>{registrar('pdf');window.print()};
+  $('csv').onclick=()=>{registrar('csv');csv()};
+}
+iniciar();
+</script>
+</body>
+</html>

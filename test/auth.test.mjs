@@ -513,3 +513,17 @@ test('Como coletamos: página fechada para quem não entrou e texto igual ao da 
   const ext = new URL('../../coletor-aps/shared/extracao.js', import.meta.url);
   if (existsSync(ext)) assert.equal(painel, readFileSync(ext, 'utf8'), 'extracao.js diferente entre extensão e Painel');
 });
+
+test('relatório: emissão fica registrada para quem emitiu e valida o tipo', async () => {
+  const env = comPaginas(ambiente());
+  await admin(env, { login: 'rita', nome: 'Rita', senha: 'Painel#Forte2026' });
+  await env.DB.prepare('UPDATE usuario SET trocar_senha = 0').run();
+  const nav = navegador(env);
+  assert.equal((await nav.pedir('POST', '/api/v1/relatorios/emissao', { tipo: 'geral', competencia: '2026-10' })).status, 401);
+  await nav.pedir('POST', '/api/v1/auth/entrar', { login: 'rita', senha: 'Painel#Forte2026' });
+  assert.equal((await nav.pedir('POST', '/api/v1/relatorios/emissao', { tipo: 'inexistente', competencia: '2026-10' })).status, 400);
+  assert.equal((await nav.pedir('POST', '/api/v1/relatorios/emissao', { tipo: 'federal', competencia: '2026-10', formato: 'csv', unidade: 'UBS A' })).status, 200);
+  const r = await (await nav.pedir('GET', '/api/v1/meus-registros')).json();
+  assert.ok(r.registros.some(x => x.acao === 'relatorio.emitido' && /federal · 2026-10 · csv · UBS A/.test(x.detalhe)));
+  assert.equal((await nav.pedir('GET', '/relatorio')).status, 200);
+});

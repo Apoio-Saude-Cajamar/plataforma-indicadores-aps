@@ -141,59 +141,10 @@ details.regras summary{cursor:pointer;font-weight:700;color:#1F3C72;font-size:16
 </main>
 <script src="/js/sessao.js"></script>
 <script src="/js/estadual-regras.js"></script>
+<script src="/js/estadual-calculo.js"></script>
 <script>
-const R=window.ESTADUAL_REGRAS,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const PARCELAS=[{n:'1ª · maio',p:'2025-Q3',ant:'2025-Q2'},{n:'2ª · setembro',p:'2026-Q1',ant:'2025-Q3'},{n:'3ª · dezembro',p:'2026-Q2',ant:'2026-Q1'}];
-const PERIODOS=['2025-Q2'].concat(PARCELAS.map(x=>x.p));
-const NOMEQ=p=>{const [a,q]=p.split('-Q');return q+'º quadrimestre de '+a};
-const fmt=(v,c=1)=>v==null?'—':v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:c});
+const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let LANC=[],VAC=[],NESF=null,parcela=PARCELAS[2],ERRO=false;
-const vig=(item,per)=>LANC.find(l=>l.item===item&&l.periodo===per)||null;
-function alvo(id,per){const ano=per.slice(0,4);const l=LANC.filter(x=>x.item===id&&x.periodo.startsWith(ano)).sort((a,b)=>b.periodo.localeCompare(a.periodo))[0];return l?l.valor:null}
-function dados(it,P){
-  const l=vig(it.id,P.p),ant=vig(it.id,P.ant);
-  const d={valor:l?l.valor:null,anterior:l&&l.anterior!=null?l.anterior:(ant?ant.valor:null),mediana:l?l.mediana:null,quartil:l?l.quartil:null,quartilAnt:l&&l.quartilAnt!=null?l.quartilAnt:(ant?ant.quartil:null),origem:l?'lançamento':null};
-  if(it.id==='mortalidade'&&l&&l.anterior==null&&ant){d.anterior=ant.valor}
-  if(it.tipo==='vacina'&&R.DEF[it.id]){
-    const est=R.estimativa(it.id,VAC,P.p,alvo(R.DEF[it.id].alvo,P.p));d.est=est;
-    // Sem valor oficial, a estimativa do PEC entra marcada como "estimada" (mediana: a última lançada para o indicador).
-    if(!l&&est&&est.completo&&est.cobertura!=null){const med=LANC.filter(x=>x.item===it.id&&x.mediana!=null).sort((a,b)=>b.periodo.localeCompare(a.periodo))[0];
-      d.valor=est.cobertura;d.mediana=med?med.mediana:null;d.origem='estimativa do PEC (não oficial)'}
-  }
-  if(it.tipo==='esf'){d.nEsf=l?l.valor:NESF;d.origem=l?'lançamento':(NESF!=null?'PEC (composição)':null);d.valor=d.nEsf}
-  return d;
-}
-function calcular(){
-  const linhas=R.ITENS.map(it=>{const d=dados(it,parcela),r=R.pontuar(it,d,R.POP);return {it,d,r}});
-  const res=linhas.map(x=>({peso:x.it.peso,pct:x.r.pct}));
-  const ob=vig('obito_materno',parcela.p);
-  return {linhas,res,nota:R.nota(res,ob?ob.valor===0:undefined),ob};
-}
-function pill(p){if(p===null)return '<span class="pill pn">sem dado</span>';const k=Math.round(p*100);return '<span class="pill p'+k+'">'+k+'%</span>'}
-function mostra(it,d){
-  if(it.tipo==='esf')return d.nEsf==null?'—':fmt(d.nEsf,0)+' eSF · '+fmt(R.cobertura(d.nEsf,R.POP),1)+'%';
-  if(it.tipo==='liraa')return d.valor==null?'—':(d.valor?'realizado':'não realizado');
-  if(it.tipo==='mortalidade')return d.valor==null?'—':fmt(d.valor,2)+' ('+(d.quartil||'?')+'º quartil)';
-  return (d.valor==null?'—':fmt(d.valor,2)+'%')+estPec(it,d);
-}
-function estPec(it,d){
-  const e=d.est;if(!e)return '';
-  const resto=d.origem&&d.origem.startsWith('estimativa')?'':(e.cobertura!=null&&d.valor!=null&&e.completo?' · diferença de '+fmt(Math.abs(e.cobertura-d.valor),1)+' p.p.':'');
-  const cob=e.cobertura==null?'informe a população-alvo para calcular':fmt(e.cobertura,1)+'%';
-  return '<small>PEC (estimativa): '+cob+' · '+fmt(e.doses,0)+' doses'+(e.completo?'':' · só '+e.meses+' de '+e.esperados+' meses coletados')+resto+'</small>';
-}
-function ref(it,d){
-  if(it.tipo==='esf')return '—';
-  if(it.tipo==='liraa'||it.tipo==='sifilis')return '—';
-  if(it.tipo==='mortalidade')return d.anterior==null?'—':fmt(d.anterior,2)+' ('+(d.quartilAnt||'?')+'º quartil)';
-  const a=d.anterior==null?'—':fmt(d.anterior,2)+'%';
-  return it.tipo==='internacoes'?'média estadual: '+(d.mediana==null?'—':fmt(d.mediana,2)):a+(d.mediana!=null?' · mediana '+fmt(d.mediana,2)+'%':'');
-}
-function dica(x){
-  const {it,d,r}=x;
-  if(it.tipo==='esf'&&d.nEsf!=null){const c=R.cobertura(d.nEsf,R.POP),preciso=Math.ceil(0.7*R.POP/R.TETO_ESF);return r.motivo+(c<70?' Faltam '+(preciso-d.nEsf)+' eSF para 70%.':'')}
-  return r.motivo;
-}
 function desenhar(){
   $('parcelas').innerHTML=PARCELAS.map(P=>'<button type="button" class="chip" aria-pressed="'+(P===parcela)+'" data-p="'+P.p+'">'+P.n+'</button>').join('');
   document.querySelectorAll('#parcelas .chip').forEach(b=>b.addEventListener('click',()=>{parcela=PARCELAS.find(x=>x.p===b.dataset.p);desenhar()}));
@@ -201,11 +152,11 @@ function desenhar(){
   const c=calcular(),pontos=c.res.reduce((t,r)=>t+(r.pct===null?0:r.peso*r.pct),0),pend=c.linhas.filter(x=>x.r.pct===null),pesoPend=pend.reduce((t,x)=>t+x.it.peso,0);
   const n=c.linhas.length-pend.length;
   $('cards').innerHTML=
-   '<div class="card"><small>Nota da parte variável</small><div class="v">'+fmt(c.nota.final*100,1)+'%</div><div class="s">'+fmt(pontos,2)+' de 10 pontos'+(c.nota.extra?' + 10 pontos percentuais do ponto extra (sem óbito materno)':'')+'</div></div>'+
-   '<div class="card"><small>Indicadores com dado</small><div class="v">'+n+' de '+c.linhas.length+'</div><div class="s">'+(pend.length?'Faltam lançar: peso '+fmt(pesoPend,1)+' de 10. Máximo possível agora: '+fmt(Math.min(100,(pontos+pesoPend)*10),0)+'%.':'Todos os indicadores têm dado.')+'</div></div>'+
+   '<div class="card"><small>Nota da parte variável</small><div class="v">'+fmtE(c.nota.final*100,1)+'%</div><div class="s">'+fmtE(pontos,2)+' de 10 pontos'+(c.nota.extra?' + 10 pontos percentuais do ponto extra (sem óbito materno)':'')+'</div></div>'+
+   '<div class="card"><small>Indicadores com dado</small><div class="v">'+n+' de '+c.linhas.length+'</div><div class="s">'+(pend.length?'Faltam lançar: peso '+fmtE(pesoPend,1)+' de 10. Máximo possível agora: '+fmtE(Math.min(100,(pontos+pesoPend)*10),0)+'%.':'Todos os indicadores têm dado.')+'</div></div>'+
    '<div class="card"><small>Período avaliado</small><div class="v" style="font-size:20px">'+NOMEQ(parcela.p)+'</div><div class="s">Comparado com o '+NOMEQ(parcela.ant)+'. Pagamento em '+parcela.n.split(' · ')[1]+'.</div></div>';
   $('tab').innerHTML='<thead><tr><th>Indicador</th><th class="n">Peso</th><th>Valor</th><th>Comparação</th><th>Resultado</th><th class="n">Pontos</th></tr></thead><tbody>'+
-   c.linhas.map(x=>'<tr><td>'+esc(x.it.nome)+(x.d.origem?'<small>Origem: '+esc(x.d.origem)+'</small>':'')+'</td><td class="n">'+fmt(x.it.peso,1)+'</td><td>'+mostra(x.it,x.d)+'</td><td>'+ref(x.it,x.d)+'</td><td>'+pill(x.r.pct)+'<small>'+esc(dica(x))+'</small></td><td class="n">'+(x.r.pct===null?'—':fmt(x.it.peso*x.r.pct,2))+'</td></tr>').join('')+
+   c.linhas.map(x=>'<tr><td>'+esc(x.it.nome)+(x.d.origem?'<small>Origem: '+esc(x.d.origem)+'</small>':'')+'</td><td class="n">'+fmtE(x.it.peso,1)+'</td><td>'+mostra(x.it,x.d)+'</td><td>'+ref(x.it,x.d)+'</td><td>'+pill(x.r.pct)+'<small>'+esc(dica(x))+'</small></td><td class="n">'+(x.r.pct===null?'—':fmtE(x.it.peso*x.r.pct,2))+'</td></tr>').join('')+
    '<tr><td><b>Óbito materno no ano</b><small>Ponto extra: sem óbito materno, soma 10 pontos percentuais, se algum indicador não chegou a 100%.</small></td><td class="n">—</td><td colspan="4">'+(c.ob?(c.ob.valor===0?'sem óbito materno informado':'com óbito materno informado'):'não lançado')+'</td></tr></tbody>';
   $('nota-calc').textContent='A nota é a soma de peso × percentual de cada indicador, dividida por 10, aplicada sobre a parte variável (50% do incentivo em 2026). Os percentuais por faixa seguem a CIB 117/2023, mantida pela CIB 150/2025; os valores oficiais valem sobre este cálculo.';
 }

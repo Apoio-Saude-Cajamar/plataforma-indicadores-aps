@@ -9,9 +9,13 @@
     + '#rodape-aps a:focus-visible{outline:3px solid #00A7E7;outline-offset:3px}#rodape-aps .fim{margin-left:auto;opacity:.8}'
     + '@media print{#rodape-aps{display:none}}';
   document.head.appendChild(st);
+  // O relatório já abre no tipo da tela de onde se vem.
+  var ROTAS = { '/indicadores': 'federal', '/notas': 'federal', '/estadual': 'estadual', '/municipal': 'municipal', '/filas': 'absenteismo', '/federal': 'federal' };
+  var tipo = ROTAS[location.pathname.replace(/\/$/, '').replace(/\.html$/, '')] || 'geral';
   var f = document.createElement('footer');
   f.id = 'rodape-aps';
   f.innerHTML = '<b>Painel APS · Cajamar</b>'
+    + '<a href="/relatorio?tipo=' + tipo + '">Exportar relatório (PDF/CSV)</a>'
     + '<a href="/coleta">Como coletamos</a>'
     + '<a href="/coleta#calculamos">Como calculamos</a>'
     + '<a href="/coleta#privacidade">Privacidade dos dados</a>'

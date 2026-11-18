@@ -21,8 +21,8 @@
 //   GET|POST /usuarios · PATCH /usuarios/:id     admin     – administração de usuários
 // "leitura" aceita a chave da extensão ou a sessão de um usuário logado.
 import { VERSAO_API } from './esquema.js';
-import { ErroHttp, json, jsonTexto, lerJson, exigir } from './util.js';
-import { entrar, sair, eu, trocarSenha, listarUsuarios, criarUsuario, alterarUsuario, exigirSessao, sessaoDoPedido, configApoio, retornoApoio } from './auth.js';
+import { ErroHttp, json, jsonTexto, lerJson, exigir, competencia } from './util.js';
+import { entrar, sair, eu, trocarSenha, listarUsuarios, criarUsuario, alterarUsuario, exigirSessao, registrar, sessaoDoPedido, configApoio, retornoApoio } from './auth.js';
 import { criarColeta, gravarEtapa, concluirColeta, listarColetas, etapasDaColeta } from './coletas.js';
 import { situacao, dadosVigentes, competencias } from './consultas.js';
 import { gravarComposicao, lerComposicao } from './composicao.js';
@@ -72,6 +72,16 @@ const ROTAS = [
   // Traz nomes de profissionais: só administrador e gestor.
   ['GET', /^\/filas$/, 'lancar', async (req, env, m, url) => json(await lerFilas(env, url))],
   ['GET', /^\/lancamentos$/, 'leitura', async (req, env, m, url) => json(await listarLancamentos(env, url))],
+  // Emissão de relatório (PDF/CSV) pelo navegador: fica no histórico de quem emitiu. Não guarda o conteúdo do relatório.
+  ['POST', /^\/relatorios\/emissao$/, 'leitura', async (req, env, m, url, quem) => {
+    const c = await lerJson(req);
+    const TIPOS = ['geral', 'federal', 'estadual', 'municipal', 'absenteismo', 'completo'];
+    if (!TIPOS.includes(c.tipo)) throw new ErroHttp(400, 'Tipo de relatório inválido.');
+    const comp = competencia(c.competencia);
+    const formato = c.formato === 'csv' ? 'csv' : 'pdf';
+    await registrar(env, quem && typeof quem === 'object' ? quem.id : quem, 'relatorio.emitido', `${c.tipo} · ${comp} · ${formato}${c.unidade ? ' · ' + String(c.unidade).slice(0, 80) : ''}`, req);
+    return json({ ok: true });
+  }],
   ['GET', /^\/meus-registros$/, 'leitura', async (req, env, m, url, quem) => json(await meusRegistros(env, quem))],
   ['GET', /^\/registros$/, 'usuarios', async (req, env) => json(await registros(env))],
   ['GET', /^\/backups\/estado$/, 'usuarios', async (req, env) => json(await estadoBackup(env))],
