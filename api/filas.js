@@ -37,7 +37,7 @@ const SQL_HORARIO = `CREATE TABLE IF NOT EXISTS fila_horario (
   competencia TEXT NOT NULL, unidade TEXT NOT NULL, equipe TEXT NOT NULL DEFAULT '', cbo TEXT NOT NULL, categoria TEXT NOT NULL, nome TEXT NOT NULL,
   grade TEXT NOT NULL, atualizado_em TEXT NOT NULL, PRIMARY KEY (competencia, unidade, equipe, cbo, nome))`;
 const prontas = new WeakSet();
-async function garantirHorario(env) {
+export async function garantirHorario(env) {
   if (prontas.has(env.DB)) return;
   await env.DB.prepare(SQL_HORARIO).run();
   prontas.add(env.DB);

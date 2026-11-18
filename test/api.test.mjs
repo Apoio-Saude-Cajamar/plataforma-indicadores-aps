@@ -153,6 +153,9 @@ test('backup paginado e restauração devolvem exatamente os mesmos dados', asyn
   const m = await backup('GET', '/backup/manifesto');
   assert.equal(m.formato, 'indicadores-aps-backup');
   assert.equal(m.tabelas.coleta, 1);
+  for (const t of ['lancamento', 'lancamento_estadual', 'vacina_pec', 'fila_profissional', 'fila_horario', 'comunicado', 'publicacao_item']) {
+    assert.equal(typeof m.tabelas[t], 'number', `backup inclui ${t}`);
+  }
   assert.ok(m.ultimaAlteracao);
 
   // páginas de 2 linhas para exercitar a paginação

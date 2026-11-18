@@ -14,7 +14,20 @@ export const TABELAS = {
   cubo_atendimento: ['coleta_id', 'etapa_chave', 'competencia', 'unidade', 'equipe', 'cbo', 'cbo_codigo', 'grupo_cbo', 'tipo_atendimento', 'n'],
   cubo_falta: ['coleta_id', 'etapa_chave', 'competencia', 'unidade', 'equipe', 'cbo', 'cbo_codigo', 'grupo_cbo', 'tipo_falta', 'n'],
   cubo_escuta: ['coleta_id', 'etapa_chave', 'competencia', 'unidade', 'ine', 'equipe', 'categoria', 'escuta', 'periodo_ok'],
-  aviso: ['coleta_id', 'etapa_chave', 'competencia', 'mensagem', 'criado_em']
+  aviso: ['coleta_id', 'etapa_chave', 'competencia', 'mensagem', 'criado_em'],
+  // Lançamentos por formulário, comunicados, publicação e dados de filas/vacinas.
+  // Ficam de fora, de propósito: composição (a extensão recoleta), usuários, sessões, tentativas de login,
+  // registro de acesso e chaves de coleta (hashes e senhas não vão para o Drive).
+  lancamento: ['id', 'tipo', 'item', 'competencia', 'valor', 'obs', 'lancado_por', 'lancado_em'],
+  lancamento_estadual: ['id', 'item', 'periodo', 'valor', 'anterior', 'mediana', 'quartil', 'quartil_ant', 'obs', 'lancado_por', 'lancado_em'],
+  vacina_pec: ['competencia', 'vacina', 'imunobiologico', 'faixa', 'dose', 'n', 'atualizado_em'],
+  fila_profissional: ['competencia', 'unidade', 'equipe', 'cbo', 'categoria', 'nome', 'faltas', 'atendimentos', 'dias_vaga',
+                      'proxima_vaga', 'sem_vaga', 'agenda_lida_em', 'atualizado_em'],
+  fila_horario: ['competencia', 'unidade', 'equipe', 'cbo', 'categoria', 'nome', 'grade', 'atualizado_em'],
+  comunicado: ['id', 'titulo', 'texto', 'nivel', 'publico', 'inicio_em', 'fim_em', 'ativo', 'criado_por', 'criado_em', 'atualizado_em'],
+  comunicado_leitura: ['comunicado_id', 'usuario_id', 'lido_em'],
+  publicacao_item: ['item', 'publicado_em', 'publicado_por'],
+  publicacao_historico: ['id', 'quando', 'usuario_id', 'acao', 'detalhe']
 };
 
 // Tabelas de dados de uma etapa (apagadas e regravadas a cada novo envio da mesma etapa).

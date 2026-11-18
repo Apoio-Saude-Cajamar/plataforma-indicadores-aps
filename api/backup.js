@@ -3,6 +3,15 @@
 // dentro dos limites do plano gratuito do Cloudflare.
 import { TABELAS, VERSAO_ESQUEMA } from './esquema.js';
 import { ErroHttp, agora } from './util.js';
+import { garantir as garantirEstadual, garantirVac } from './estadual.js';
+import { garantirHorario } from './filas.js';
+
+// Tabelas que a API cria no primeiro uso: precisam existir antes de contar, exportar ou apagar.
+async function garantirTabelas(env) {
+  await garantirEstadual(env);
+  await garantirVac(env);
+  await garantirHorario(env);
+}
 
 const LIMITE_PADRAO = 2000;
 const LIMITE_MAXIMO = 5000;
@@ -14,6 +23,7 @@ function tabelaValida(nome) {
 }
 
 export async function manifesto(env) {
+  await garantirTabelas(env);
   const nomes = Object.keys(TABELAS);
   const contagens = await env.DB.prepare(`SELECT ${nomes.map(n => `(SELECT COUNT(*) FROM ${n}) AS ${n}`).join(', ')}`).first();
   const meta = await env.DB.prepare("SELECT chave, valor FROM meta WHERE chave IN ('versao_esquema', 'ultima_alteracao')").all();
@@ -31,6 +41,7 @@ export async function manifesto(env) {
 // Uma página de uma tabela, a partir de um rowid. Devolve { tabela, linhas, proximo }.
 export async function paginaTabela(env, nome, depois, limite) {
   const colunas = tabelaValida(nome);
+  await garantirTabelas(env);
   const apos = Math.max(0, Number.parseInt(depois, 10) || 0);
   const lim = Math.min(LIMITE_MAXIMO, Math.max(1, Number.parseInt(limite, 10) || LIMITE_PADRAO));
   const objeto = colunas.map(c => `'${c}', ${c}`).join(', ');
@@ -49,6 +60,7 @@ export async function iniciarRestauracao(env, corpo) {
   if (Number(corpo.versaoEsquema) !== VERSAO_ESQUEMA) {
     throw new ErroHttp(409, `O backup é da versão ${corpo.versaoEsquema} do esquema; o banco está na versão ${VERSAO_ESQUEMA}.`);
   }
+  await garantirTabelas(env);
   // Apaga na ordem inversa da restauração.
   const nomes = Object.keys(TABELAS).reverse();
   await env.DB.batch(nomes.map(n => env.DB.prepare(`DELETE FROM ${n}`)));

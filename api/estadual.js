@@ -10,7 +10,7 @@ const SQL = `CREATE TABLE IF NOT EXISTS lancamento_estadual (
   valor REAL, anterior REAL, mediana REAL, quartil INTEGER, quartil_ant INTEGER,
   obs TEXT, lancado_por INTEGER, lancado_em TEXT NOT NULL)`;
 const prontas = new WeakSet();
-async function garantir(env) {
+export async function garantir(env) {
   if (prontas.has(env.DB)) return;
   await env.DB.prepare(SQL).run();
   await env.DB.prepare('CREATE INDEX IF NOT EXISTS ix_lancamento_estadual ON lancamento_estadual (item, periodo, id)').run();
@@ -54,7 +54,7 @@ const SQL_VAC = `CREATE TABLE IF NOT EXISTS vacina_pec (
   competencia TEXT NOT NULL, vacina TEXT NOT NULL, imunobiologico TEXT NOT NULL, faixa TEXT NOT NULL, dose TEXT NOT NULL,
   n INTEGER NOT NULL, atualizado_em TEXT NOT NULL, PRIMARY KEY (competencia, imunobiologico, faixa, dose))`;
 const vacProntas = new WeakSet();
-async function garantirVac(env) {
+export async function garantirVac(env) {
   if (vacProntas.has(env.DB)) return;
   await env.DB.prepare(SQL_VAC).run();
   vacProntas.add(env.DB);
