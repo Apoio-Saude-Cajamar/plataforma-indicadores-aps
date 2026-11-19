@@ -301,6 +301,24 @@ test('pendências: conferência da B4 aponta sessão grande, falta de documento 
   assert.ok(!/\d{11,}/.test(JSON.stringify(r)), "nenhum número de documento");
 });
 
+test('produção e notas: página exige login; totais de coletivas (COLET) não viram pendência', async () => {
+  const { analisar } = await import('../api/pendencias.js');
+  const l = (unidade, codigo, numerador, denominador) => ({ unidade, codigo, numerador, denominador, soma_pontos: null });
+  const r = analisar({
+    linhas: [l('U1', 'C1', 5, 10), l('U1', 'COLET', 8, null), l('U2', 'C1', 5, 10)],
+    filas: {}, agenda: {}, horario: {}, composicaoUnidades: ['U1', 'U2'], temComposicao: true, comps: ['2026-10'], comp: '2026-10', agora: Date.UTC(2026, 10, 3),
+  });
+  assert.ok(!r.achados.some((a) => /COLET/.test(a.texto)));
+  const env = comPaginas(ambiente());
+  assert.notEqual((await navegador(env).pedir('GET', '/producao')).status, 200);
+  await admin(env, { login: 'ana', nome: 'Ana', senha: 'Painel#Forte2026', perfil: 'admin' });
+  await env.DB.prepare('UPDATE usuario SET trocar_senha = 0').run();
+  const nav = navegador(env);
+  await nav.pedir('POST', '/api/v1/auth/entrar', { login: 'ana', senha: 'Painel#Forte2026' });
+  assert.equal((await nav.pedir('GET', '/producao')).status, 200);
+  assert.equal((await nav.pedir('POST', '/api/v1/relatorios/emissao', { tipo: 'producao', competencia: '2026-10', formato: 'pdf' })).status, 200);
+});
+
 test('comunicados: administrador publica, usuário vê e marca "Entendi", público respeitado', async () => {
   const env = comPaginas(ambiente());
   await admin(env, { login: 'ana', nome: 'Ana', senha: 'Painel#Forte2026', perfil: 'admin' });

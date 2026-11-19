@@ -4,6 +4,8 @@ import { competencia } from './util.js';
 
 // Indicadores que dependem do tipo de equipe da unidade: a ausência pode ser normal.
 const OPCIONAIS = /^(CR\d|M1$|M2$|B[1-6]$)/;
+// Totais auxiliares que não são indicador (atividades coletivas por equipe, para o relatório Produção e notas).
+const AUXILIARES = new Set(['COLET']);
 // "Piso": o PEC só informa a data do último atendimento, então passar de 100% é esperado.
 const PISO = new Set(['CVAT-ACO', 'CVAT-CAD']);
 const NOTAS = {
@@ -42,6 +44,7 @@ export function analisar({ linhas, filas, agenda, horario, composicaoUnidades, t
 
   const porUn = new Map();
   for (const l of linhas) {
+    if (AUXILIARES.has(l.codigo)) continue;
     const k = norm(l.unidade);
     if (!porUn.has(k)) porUn.set(k, { nome: l.unidade, cods: new Map() });
     porUn.get(k).cods.set(l.codigo, l);

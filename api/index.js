@@ -111,6 +111,7 @@ const ROTAS = [
         'unidades',
         'agrupado',
         'lote',
+        'producao',
       ];
       if (!TIPOS.includes(c.tipo)) throw new ErroHttp(400, 'Tipo de relatório inválido.');
       const comp = competencia(c.competencia);
