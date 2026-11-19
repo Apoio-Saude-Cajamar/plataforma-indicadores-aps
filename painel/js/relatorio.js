@@ -8,6 +8,29 @@ const mesLong = (c) => {
     a
   );
 };
+// Período de referência da competência: o mês inteiro e o quadrimestre do cofinanciamento federal.
+const MESES_CURTOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+function periodoRef(c) {
+  const [a, m] = c.split('-').map(Number);
+  const ult = new Date(Date.UTC(a, m, 0)).getUTCDate();
+  const q = Math.ceil(m / 4);
+  return {
+    mes: '01/' + String(m).padStart(2, '0') + '/' + a + ' a ' + ult + '/' + String(m).padStart(2, '0') + '/' + a,
+    quadrimestre: q + 'º quadrimestre de ' + a + ' (' + MESES_CURTOS[(q - 1) * 4] + ' a ' + MESES_CURTOS[q * 4 - 1] + ')',
+  };
+}
+// Datas em que os dados desta competência foram coletados do PEC (primeira e última etapa usada).
+function datasColeta(comp) {
+  const ds = [...(dados[comp] || []), ...(ABS[comp] || [])]
+    .map((l) => l.coletadoEm)
+    .filter(Boolean)
+    .map((d) => new Date(d))
+    .filter((d) => !isNaN(d))
+    .sort((x, y) => x - y);
+  if (!ds.length) return '—';
+  const f = (d) => d.toLocaleDateString('pt-BR');
+  return f(ds[0]) === f(ds[ds.length - 1]) ? f(ds[0]) : f(ds[0]) + ' a ' + f(ds[ds.length - 1]);
+}
 const SELAG = { unidades: new Set(), equipes: new Set() };
 function montarSelAg() {
   const comp = $('comp').value,
@@ -51,6 +74,12 @@ function moldura(tipo, comp, abr, corpo) {
     '</h1></div></div>' +
     '<dl class="meta"><div><dt>Competência</dt><dd>' +
     esc(mesLong(comp)) +
+    '</dd></div><div><dt>Período de referência</dt><dd>' +
+    esc(periodoRef(comp).mes) +
+    '<br>' +
+    esc(periodoRef(comp).quadrimestre) +
+    '</dd></div><div><dt>Dados coletados do PEC em</dt><dd>' +
+    esc(datasColeta(comp)) +
     '</dd></div><div><dt>Abrangência</dt><dd>' +
     esc(abr) +
     '</dd></div>' +
@@ -67,7 +96,7 @@ function moldura(tipo, comp, abr, corpo) {
     id +
     '</dd></div><div><dt>Fonte</dt><dd>PEC e-SUS APS (coleta pela extensão) e lançamentos oficiais</dd></div></dl>' +
     corpo +
-    '<div class="rodadoc"><b>Como ler este documento.</b> Os números são totais coletados do PEC e-SUS e calculados pelo Painel APS conforme as notas técnicas e as deliberações citadas; são uma prévia para acompanhamento, e o resultado oficial é o do Ministério da Saúde e da Secretaria de Estado da Saúde. Valores marcados com ≈ são aproximados e “piso” indica que o valor real é igual ou maior. A explicação de cada coleta e de cada cálculo está em Como coletamos e calculamos (rodapé do Painel). Este documento não contém dados de pacientes.</div>';
+    '<div class="rodadoc"><b>Como ler este documento.</b> Os números são totais coletados do PEC e-SUS e calculados pelo Painel APS conforme as notas técnicas e as deliberações citadas; são uma prévia para acompanhamento, e o resultado oficial é o do Ministério da Saúde e da Secretaria de Estado da Saúde. Os indicadores de produção (atendimentos, procedimentos e atividades) contam o período de referência; os de acompanhamento de pessoas (por exemplo, C2 a C7 e CVAT) contam a janela da nota (em geral 12 meses) terminando no último dia da competência, sobre as pessoas vinculadas no dia da coleta. Valores marcados com ≈ são aproximados e “piso” indica que o valor real é igual ou maior. A explicação de cada coleta e de cada cálculo está em Como coletamos e calculamos (rodapé do Painel). Este documento não contém dados de pacientes.</div>';
   document.title = 'Relatório · ' + TITULOS[tipo] + ' · ' + comp;
 }
 
@@ -143,6 +172,8 @@ function csv() {
   const lim = (s) => '"' + String(s).replace(/\s+/g, ' ').trim().replace(/"/g, '""') + '"';
   linhas.push([lim($('doc').querySelector('h1').textContent)].join(';'));
   linhas.push(['Competência', lim($('comp').value)].join(';'));
+  linhas.push(['Período de referência', lim(periodoRef($('comp').value).mes), lim(periodoRef($('comp').value).quadrimestre)].join(';'));
+  linhas.push(['Dados coletados do PEC em', lim(datasColeta($('comp').value))].join(';'));
   $('doc')
     .querySelectorAll('h2,h3,table.csv')
     .forEach((el) => {
