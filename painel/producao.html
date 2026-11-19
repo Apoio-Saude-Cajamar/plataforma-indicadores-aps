@@ -16,6 +16,15 @@
       #doc tr.tot td { border-top: 2px solid #1f3c72; font-weight: 700; }
       #doc .vz { color: #8a94a6; }
       #doc .eqcab { margin-top: 26px; break-after: avoid; }
+      #doc .aviso-parcial { margin: 10px 0 0; padding: 7px 10px; border-left: 4px solid #d9a400; background: #fff8e1; font-size: 12px; }
+      #doc tr.tot td:first-child, #doc table.eqs td:first-child { white-space: nowrap !important; }
+      #doc h3 { break-after: avoid; }
+      #doc table.csv tr { break-inside: avoid; }
+      @media print {
+        #doc table.csv.inteira { break-inside: avoid; }
+        #doc .eqcab { break-before: page; margin-top: 0; }
+        #doc .aviso-parcial { background: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      }
       #doc .eqcab h2 { border: 0; margin: 0; }
       #doc th, #doc th.n { white-space: normal; }
       #doc td.n { white-space: normal; }
