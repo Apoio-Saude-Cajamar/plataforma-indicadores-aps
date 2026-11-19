@@ -37,7 +37,16 @@
         color: #14212b;
       }
     </style>
-  </head>
+      <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#1F3C72" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Painel APS" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/css/mobile.css" />
+    <script src="/js/publico/mobile.js" defer></script>
+</head>
   <body>
     <div id="tela"><p id="aviso">Carregando filas e faltas…</p></div>
     <template id="modelo">
@@ -1114,7 +1123,14 @@
           ['/composicao', 'Composição'],
           ['/coleta', 'Como coletamos'],
         ]
-          .concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas']] : [])
+          .concat(
+            USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor')
+              ? [
+                  ['/filas', 'Filas e faltas'],
+                  ['/pendencias', 'Pendências'],
+                ]
+              : [],
+          )
           .map(([href, txt]) => ({ href, txt }));
       const META = 19.59;
       // Evolução e trajetória: usam todas as competências guardadas (carregadas só quando uma dessas abas é aberta).

@@ -1,0 +1,192 @@
+/* Painel APS no celular (até 899 px). Vale para todas as páginas; o botão "☰ Menu" é criado por /js/publico/mobile.js. */
+
+.menu-movel-botao {
+  display: none;
+}
+
+@media screen and (max-width: 899px) {
+  /* ---------- Cabeçalho: uma linha com logo, botão do menu e usuário ---------- */
+  .cab-movel {
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 10px 16px !important;
+  }
+  .cab-movel > a:first-child img {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  .cab-movel > a:first-child,
+  .cab-movel > .marca,
+  .cab-movel > .logo {
+    font-size: 17px !important;
+  }
+  .menu-movel-botao {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    order: 2;
+    font: 600 14px Montserrat, system-ui, sans-serif;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 99px;
+    padding: 8px 14px;
+    min-height: 40px;
+    cursor: pointer;
+  }
+  .menu-movel-botao:focus-visible {
+    outline: 3px solid #00a7e7;
+    outline-offset: 2px;
+  }
+  /* Usuário: só a inicial, ao lado do botão do menu. */
+  .cab-movel > .barra-usuario,
+  .cab-movel > #barra,
+  .cab-movel > details:last-child {
+    order: 3;
+  }
+  .cab-movel > .barra-usuario .usr > summary {
+    font-size: 0 !important;
+    gap: 0 !important;
+    padding: 3px !important;
+  }
+  .cab-movel > .barra-usuario .usr > summary .usr-ini {
+    font-size: 14px;
+  }
+  .cab-movel > details:last-child > summary {
+    font-size: 0 !important;
+    gap: 0 !important;
+    padding: 3px !important;
+  }
+  .cab-movel > details:last-child > summary > span:first-child {
+    font-size: 13px !important;
+  }
+  /* Painéis que abrem a partir do usuário não podem sair da tela. */
+  .cab-movel .usr-painel,
+  .cab-movel > details:last-child > div {
+    right: 0 !important;
+    left: auto !important;
+    max-width: calc(100vw - 32px);
+  }
+
+  /* Menu e tema escondidos até tocar em "Menu"; abertos, ocupam a largura toda abaixo da linha do logo. */
+  .cab-movel > nav[aria-label='Áreas do Painel'],
+  .cab-movel > .tema-aps,
+  .cab-movel > [role='group'][aria-label='Tema'] {
+    display: none !important;
+  }
+  html.menu-movel-aberto .cab-movel > nav[aria-label='Áreas do Painel'] {
+    display: flex !important;
+    order: 10;
+    flex: 1 1 100% !important;
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 2px !important;
+    padding: 6px 0 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+  }
+  html.menu-movel-aberto .cab-movel > nav[aria-label='Áreas do Painel'] a,
+  html.menu-movel-aberto .cab-movel > nav[aria-label='Áreas do Painel'] summary {
+    min-height: 44px !important;
+    border-radius: 10px !important;
+    font-size: 15px !important;
+  }
+  html.menu-movel-aberto .cab-movel > nav[aria-label='Áreas do Painel'] details > div {
+    position: static !important;
+    margin: 2px 0 6px 12px !important;
+    min-width: 0 !important;
+    box-shadow: none !important;
+  }
+  html.menu-movel-aberto .cab-movel > .tema-aps,
+  html.menu-movel-aberto .cab-movel > [role='group'][aria-label='Tema'] {
+    display: inline-flex !important;
+    order: 11;
+    margin-bottom: 4px;
+  }
+
+  /* Abas logo abaixo do cabeçalho: uma linha que rola para o lado, em vez de várias linhas. */
+  nav[aria-label='Visão'],
+  nav[aria-label='Relatórios'],
+  nav.tabs {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    gap: 0 18px !important;
+  }
+  nav[aria-label='Visão']::-webkit-scrollbar,
+  nav[aria-label='Relatórios']::-webkit-scrollbar,
+  nav.tabs::-webkit-scrollbar {
+    display: none;
+  }
+  nav[aria-label='Visão'] > *,
+  nav[aria-label='Relatórios'] > *,
+  nav.tabs > * {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  /* Barras de filtro em linha (ex.: dashboard federal) quebram em várias linhas; painéis suspensos cabem na tela. */
+  [role='search'][aria-label='Filtros'] {
+    flex-wrap: wrap !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  [role='search'][aria-label='Filtros'] > * {
+    max-width: 100%;
+  }
+  [role='search'][aria-label='Filtros'] [role='group'][style*='position: absolute'] {
+    max-width: calc(100vw - 32px) !important;
+  }
+  [role='search'][aria-label='Filtros'] > button[style*='margin-left: auto'] {
+    margin-left: 0 !important;
+  }
+
+  /* ---------- Conteúdo: nada passa da largura da tela ---------- */
+  select,
+  input,
+  textarea,
+  label {
+    max-width: 100% !important;
+  }
+  select {
+    min-width: 0;
+    text-overflow: ellipsis;
+  }
+  /* Tabelas largas rolam para o lado dentro do próprio espaço. */
+  table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  img,
+  svg,
+  canvas {
+    max-width: 100%;
+  }
+}
+
+/* Tela larga: cabeçalho numa linha só, com tema e usuário no canto direito (mesma regra do menu padrão, para as páginas
+   que desenham o próprio cabeçalho, como o dashboard federal e Filas e faltas). */
+@media screen and (min-width: 900px) {
+  .cab-movel {
+    flex-wrap: nowrap !important;
+    gap: 12px !important;
+  }
+  .cab-movel > nav[aria-label='Áreas do Painel'] {
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 2px !important;
+  }
+  .cab-movel > nav[aria-label='Áreas do Painel'] a,
+  .cab-movel > nav[aria-label='Áreas do Painel'] summary {
+    padding: 8px 9px !important;
+    white-space: nowrap;
+    font-size: 13.5px;
+  }
+  .cab-movel > *:not(nav) {
+    flex-shrink: 0;
+  }
+}
