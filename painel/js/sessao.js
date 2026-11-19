@@ -135,8 +135,12 @@
       const st = document.createElement('style');
       st.id = 'estilo-menu';
       st.textContent =
-        '.menu-aps{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;font:600 14px Montserrat,system-ui,sans-serif}' +
-        '.menu-aps a,.menu-aps summary{color:#fff;text-decoration:none;padding:8px 12px;border-radius:99px;cursor:pointer;list-style:none;min-height:36px;display:inline-flex;align-items:center}' +
+        '.menu-aps{display:flex;flex-wrap:wrap;align-items:center;gap:2px 2px;font:600 13.5px Montserrat,system-ui,sans-serif}' +
+        // Em telas largas o cabeçalho fica numa linha só: o menu ocupa o meio e, se não couber, quebra dentro do próprio espaço;
+        // o seletor de tema e o usuário continuam no canto superior direito. Em telas estreitas, tudo pode quebrar normalmente.
+        '@media(min-width:900px){header .topo,header .w{flex-wrap:nowrap;gap:12px}header .topo>.menu-aps,header .w>.menu-aps{flex:1 1 auto;min-width:0}' +
+        'header .topo>*:not(.menu-aps),header .w>*:not(.menu-aps){flex-shrink:0}}' +
+        '.menu-aps a,.menu-aps summary{color:#fff;text-decoration:none;padding:8px 9px;white-space:nowrap;border-radius:99px;cursor:pointer;list-style:none;min-height:36px;display:inline-flex;align-items:center}' +
         '.menu-aps summary::-webkit-details-marker{display:none}' +
         '.menu-aps a:hover,.menu-aps summary:hover{background:rgba(255,255,255,.14)}' +
         '.menu-aps a[aria-current=page],.menu-aps summary[aria-current=page],.menu-aps details[open]>summary{background:rgba(255,255,255,.22)}' +
