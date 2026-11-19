@@ -43,6 +43,7 @@ import { populacaoMunicipio } from './populacao.js';
 import { monitoramento } from './monitoramento.js';
 import { pendencias } from './pendencias.js';
 import { gravarFilas, gravarFilasHorario, lerFilas, lerFilasEvolucao } from './filas.js';
+import { gravarProducao, lerProducao } from './producao.js';
 import { listarLancamentos, criarLancamento } from './lancamentos.js';
 import { listarEstadual, criarEstadual, gravarVacinasPec, lerVacinasPec } from './estadual.js';
 import { meusRegistros, registros, estadoBackup } from './registros.js';
@@ -86,6 +87,8 @@ const ROTAS = [
     async (req, env, m, url, quem) => json(await excluirChave(req, env, Number(m[1]), quem)),
   ],
   ['DELETE', /^\/chaves\/(\d+)$/, 'usuarios', async (req, env, m, url, quem) => json(await revogarChave(req, env, Number(m[1]), quem))],
+  ['PUT', /^\/producao$/, 'coleta', async (req, env) => json(await gravarProducao(env, await lerJson(req)))],
+  ['GET', /^\/producao$/, 'lancar', async (req, env, m, url) => json(await lerProducao(env, url))],
   ['PUT', /^\/filas$/, 'coleta', async (req, env) => json(await gravarFilas(env, await lerJson(req)))],
   ['PUT', /^\/filas\/horarios$/, 'coleta', async (req, env) => json(await gravarFilasHorario(env, await lerJson(req)))],
   // Traz nomes de profissionais: só administrador e gestor.
@@ -111,6 +114,7 @@ const ROTAS = [
         'unidades',
         'agrupado',
         'lote',
+        'producao',
       ];
       if (!TIPOS.includes(c.tipo)) throw new ErroHttp(400, 'Tipo de relatório inválido.');
       const comp = competencia(c.competencia);

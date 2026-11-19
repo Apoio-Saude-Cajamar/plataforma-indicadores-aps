@@ -546,7 +546,7 @@
           todas = (dados[ult] || []).filter((l) => !un || l.unidade === un);
         const uns = new Set(todas.map((l) => l.unidade).filter((u) => u && u !== 'Município')),
           eqs = new Set(todas.filter((l) => l.equipe && l.equipe !== 'Município').map((l) => l.unidade + '|' + l.equipe)),
-          cods = new Set(todas.map((l) => l.codigo));
+          cods = new Set(todas.map((l) => l.codigo).filter((c) => c !== 'COLET'));
         let h =
           '<div class="card"><small>Mês mais recente</small><div class="v">' +
           (ult ? mesNome(ult) : '—') +

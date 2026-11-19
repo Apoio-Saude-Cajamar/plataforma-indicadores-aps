@@ -155,7 +155,7 @@
         a('/lancamentos-vacinas', 'Coberturas vacinais') +
         '<a href="/estadual#t-form">Cofinanciamento estadual</a></div></details>'
       : '';
-    const ACOMP = ['/', '/indicadores', '/notas', '/estadual', '/municipal'];
+    const ACOMP = ['/', '/indicadores', '/notas', '/estadual', '/municipal', '/producao'];
     const acomp =
       '<details><summary' +
       (ACOMP.includes(aqui) ? ' aria-current="page"' : '') +
@@ -165,6 +165,7 @@
       a('/notas', 'Federal · dashboard') +
       a('/estadual', 'Estadual') +
       a('/municipal', 'Municipal') +
+      a('/producao', 'Produção e notas') +
       '</div></details>';
     const nav = document.createElement('nav');
     nav.className = 'menu-aps';

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Produção e notas · Painel APS</title>
+    <link rel="icon" href="/img/painelaps.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap" />
+    <style id="pagina">
+      @page {
+        size: A4 portrait;
+      }
+    </style>
+    <link rel="stylesheet" href="/css/relatorio.css" />
+    <style>
+      #doc tr.tot td { border-top: 2px solid #1f3c72; font-weight: 700; }
+      #doc .vz { color: #8a94a6; }
+      #doc .eqcab { margin-top: 26px; break-after: avoid; }
+      #doc .eqcab h2 { border: 0; margin: 0; }
+      #doc th, #doc th.n { white-space: normal; }
+      #doc td.n { white-space: normal; }
+      #doc td.n:first-child, #doc table.csv td:first-child { white-space: normal; }
+      #doc .cc { white-space: nowrap; }
+      @media print { #doc table.csv th, #doc table.csv td { padding: 4px 6px; } #doc .cc { padding: 0 5px; font-size: 9.5px; } }
+      #doc .evo { margin: 8px 0 14px; max-width: 560px; break-inside: avoid; }
+      #doc .evo small { display: block; font-weight: 700; color: #4a5670; margin-bottom: 4px; }
+      #doc .evl { display: grid; grid-template-columns: 70px 1fr 70px; gap: 8px; align-items: center; font-size: 12px; margin: 3px 0; }
+      #doc .evl b { text-align: right; }
+      #doc table.eqs td, #doc table.eqs th { font-size: 11.5px; }
+      @media print { #doc .evl .bar span { background: #555 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    </style>
+    <link rel="stylesheet" href="/css/tema.css" />
+    <script src="/js/publico/tema.js"></script>
+    <script src="/js/util.js"></script>
+      <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#1F3C72" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Painel APS" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/css/mobile.css" />
+    <script src="/js/publico/mobile.js" defer></script>
+</head>
+  <body>
+    <header class="topo-site">
+      <div class="topo">
+        <a class="marca" href="/"><img src="/img/painelaps.svg" alt="" width="34" height="34" /><span>Painel APS</span></a>
+        <div id="barra"></div>
+      </div>
+    </header>
+    <main>
+      <div class="ferr" role="group" aria-label="Opções do relatório">
+        <label
+          >Recorte<select id="recorte">
+            <option value="unidade">Por unidade</option>
+            <option value="equipe">Por equipe</option>
+            <option value="profissional">Por profissional</option>
+            <option value="categoria">Por categoria profissional</option>
+            <option value="compilado">Compilado (município)</option>
+          </select></label
+        >
+        <label
+          >Tipo de equipe<select id="tipoEq">
+            <option value="">Todas</option>
+            <option value="esf">eSF e eAP</option>
+            <option value="esb">eSB (saúde bucal)</option>
+            <option value="emulti">eMulti</option>
+            <option value="ecr">eCR (Consultório na Rua)</option>
+          </select></label
+        >
+        <label
+          >Período<select id="modo">
+            <option value="mes">Um mês</option>
+            <option value="quad">Quadrimestre</option>
+            <option value="intervalo">Meses escolhidos</option>
+          </select></label
+        >
+        <label id="lbMes">Mês<select id="mes"></select></label>
+        <label id="lbQuad" hidden>Quadrimestre<select id="quad"></select></label>
+        <label id="lbDe" hidden>De<select id="de"></select></label>
+        <label id="lbAte" hidden>Até<select id="ate"></select></label>
+        <label id="lbUn">Unidade<select id="un"><option value="">Todas</option></select></label>
+        <label id="lbEq">Equipe<select id="eq"><option value="">Todas</option></select></label>
+        <label id="lbProf">Profissional<select id="prof"><option value="">Todos</option></select></label>
+        <label id="lbIdent"
+          >Identificação<select id="ident">
+            <option value="nome">Nome e categoria</option>
+            <option value="categoria">Só categoria (sem nomes)</option>
+          </select></label
+        >
+        <div class="acoes">
+          <button class="btn" id="imprimir" type="button">Imprimir / salvar em PDF</button
+          ><button class="btn sec" id="csv" type="button">Baixar CSV</button>
+        </div>
+      </div>
+      <p class="dica">
+        Atendimentos individuais, atividades coletivas e as notas dos indicadores, por unidade, equipe, profissional ou categoria. Com mais de
+        um mês, mostra a evolução mês a mês. As notas são da equipe (não se dividem por profissional). A produção por profissional leva o nome
+        e só aparece para administradores e gestores; para entregar sem nomes, use “Só categoria”. Nenhum dado de paciente. Cada emissão fica
+        registrada no histórico de quem emitiu.
+      </p>
+      <article id="doc" aria-live="polite"><p class="vazio">Carregando…</p></article>
+    </main>
+    <script src="/js/sessao.js"></script>
+    <script src="/js/catalogo-indicadores.js"></script>
+    <script src="/js/federal-calculo.js"></script>
+    <script src="/js/producao.js"></script>
+  </body>
+</html>
