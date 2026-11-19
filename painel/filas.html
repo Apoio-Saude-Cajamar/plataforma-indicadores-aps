@@ -693,6 +693,179 @@
             </section>
           </template>
 
+          <template data-sc="if" value="{{abaEvolucao}}">
+            <section
+              aria-labelledby="t-evo"
+              style="background: #ffffff; border: 1px solid #dce2e0; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px"
+            >
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <h2 id="t-evo" style="margin: 0; font-size: 20px; font-weight: 700">Evolução mês a mês</h2>
+                <span style="font-size: 14px; color: #566370">{{evo.subtitulo}}</span>
+              </div>
+              <template data-sc="if" value="{{evo.carregando}}">
+                <p style="margin: 0; color: #566370">Carregando os meses anteriores…</p>
+              </template>
+              <template data-sc="if" value="{{evo.vazio}}">
+                <p style="margin: 0; color: #566370">{{evo.vazioTxt}}</p>
+              </template>
+              <template data-sc="if" value="{{evo.pronto}}">
+                <div style="display: flex; flex-wrap: wrap; gap: 16px">
+                  <template data-sc="for" list="{{evo.graficos}}" as="gr">
+                    <figure style="flex: 1 1 420px; min-width: 0; margin: 0; border: 1px solid #dce2e0; border-radius: 8px; padding: 12px 14px">
+                      <figcaption style="font-weight: 700; font-size: 15px">{{gr.titulo}}</figcaption>
+                      <span style="font-size: 13px; color: #566370">{{gr.legenda}}</span>
+                      <svg viewBox="0 0 600 230" role="img" aria-label="{{gr.aria}}" style="width: 100%; height: auto; display: block; margin-top: 6px">
+                        <template data-sc="for" list="{{gr.grades}}" as="gl">
+                          <line x1="48" x2="588" y1="{{gl.y}}" y2="{{gl.y}}" stroke="#EEF1F0" stroke-width="1"></line>
+                          <text x="42" y="{{gl.yTxt}}" text-anchor="end" font-size="12" fill="#566370">{{gl.txt}}</text>
+                        </template>
+                        <template data-sc="if" value="{{gr.temMeta}}">
+                          <line x1="48" x2="588" y1="{{gr.metaY}}" y2="{{gr.metaY}}" stroke="#14212B" stroke-width="1.5" stroke-dasharray="6 4"></line>
+                          <text x="54" y="{{gr.metaYTxt}}" text-anchor="start" font-size="12" fill="#14212B">{{gr.metaTxt}}</text>
+                        </template>
+                        <polyline points="{{gr.linha}}" fill="none" stroke="{{gr.cor}}" stroke-width="2.5" stroke-linejoin="round"></polyline>
+                        <template data-sc="for" list="{{gr.pontos}}" as="pt">
+                          <circle cx="{{pt.x}}" cy="{{pt.y}}" r="5" fill="{{pt.cor}}" stroke="#FFFFFF" stroke-width="2"><title>{{pt.titulo}}</title></circle>
+                          <text x="{{pt.x}}" y="{{pt.yTxt}}" text-anchor="middle" font-size="12" font-weight="600" fill="#14212B">{{pt.txt}}</text>
+                        </template>
+                        <template data-sc="for" list="{{gr.eixoX}}" as="ex">
+                          <text x="{{ex.x}}" y="224" text-anchor="middle" font-size="12" fill="#566370">{{ex.txt}}</text>
+                        </template>
+                      </svg>
+                    </figure>
+                  </template>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px">
+                  <h3 style="margin: 0; font-size: 16px; font-weight: 700">{{evo.tabelaTitulo}}</h3>
+                  <span style="font-size: 13px; color: #566370"
+                    >Em cada mês: absenteísmo e, abaixo, a espera até a próxima vaga (mediana nos grupos). A última coluna compara o primeiro e o
+                    último mês com dados.</span
+                  >
+                  <div style="overflow-x: auto; border: 1px solid #dce2e0; border-radius: 8px">
+                    <div role="table" aria-label="{{evo.tabelaTitulo}}" style="display: grid; grid-template-columns: {{evo.colunas}}; min-width: {{evo.larguraMin}}">
+                      <template data-sc="for" list="{{evo.celulas}}" as="c">
+                        <div
+                          role="{{c.papel}}"
+                          title="{{c.titulo}}"
+                          style="padding: 8px 10px; border-bottom: 1px solid #EEF1F0; background: {{c.fundo}}; text-align: {{c.alinha}}; line-height: 1.25; font-variant-numeric: tabular-nums"
+                        >
+                          <span style="font-weight: {{c.peso}}; color: {{c.cor}}; overflow-wrap: anywhere">{{c.l1}}</span><br /><span
+                            style="font-size: 12px; color: {{c.cor2}}"
+                            >{{c.l2}}</span
+                          >
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </section>
+          </template>
+
+          <template data-sc="if" value="{{abaTrajetoria}}">
+            <section
+              aria-labelledby="t-tra"
+              style="background: #ffffff; border: 1px solid #dce2e0; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px"
+            >
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <h2 id="t-tra" style="margin: 0; font-size: 20px; font-weight: 700">Trajetória: quem melhorou e quem piorou</h2>
+                <span style="font-size: 14px; color: #566370"
+                  >Cada seta liga a posição do profissional no primeiro mês à posição no segundo. Seta para baixo e para a esquerda é melhora
+                  (menos faltas, vaga mais rápida). Conta como mudança a partir de 2 pontos percentuais de faltas ou 3 dias de espera.</span
+                >
+              </div>
+              <template data-sc="if" value="{{tra.carregando}}">
+                <p style="margin: 0; color: #566370">Carregando os meses anteriores…</p>
+              </template>
+              <template data-sc="if" value="{{tra.vazio}}">
+                <p style="margin: 0; color: #566370">{{tra.vazioTxt}}</p>
+              </template>
+              <template data-sc="if" value="{{tra.pronto}}">
+                <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end">
+                  <div style="display: flex; flex-direction: column; gap: 4px">
+                    <label for="f-tde" style="font-size: 13px; font-weight: 600; color: #33414c">De</label>
+                    <select id="f-tde" value="{{tra.de}}" onChange="{{tra.escolherDe}}" style="font: inherit; padding: 9px 12px; min-height: 44px; border: 1px solid #b9c4c9; border-radius: 6px; background: #ffffff">
+                      <template data-sc="for" list="{{tra.opcoes}}" as="o"><option value="{{o.id}}">{{o.rotulo}}</option></template>
+                    </select>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 4px">
+                    <label for="f-tpa" style="font-size: 13px; font-weight: 600; color: #33414c">Para</label>
+                    <select id="f-tpa" value="{{tra.para}}" onChange="{{tra.escolherPara}}" style="font: inherit; padding: 9px 12px; min-height: 44px; border: 1px solid #b9c4c9; border-radius: 6px; background: #ffffff">
+                      <template data-sc="for" list="{{tra.opcoes}}" as="o"><option value="{{o.id}}">{{o.rotulo}}</option></template>
+                    </select>
+                  </div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; padding-bottom: 10px">
+                    <template data-sc="for" list="{{tra.resumo}}" as="r">
+                      <span><span style="font-weight: 700; color: {{r.cor}}">{{r.n}}</span> {{r.txt}}</span>
+                    </template>
+                  </div>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+                  <div style="flex: 3 1 520px; min-width: 0">
+                    <svg viewBox="0 0 1000 600" role="img" aria-label="{{tra.aria}}" style="width: 100%; height: auto; display: block">
+                      <defs>
+                        <marker id="seta-melhorou" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2F855A"></path></marker>
+                        <marker id="seta-piorou" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#C0392B"></path></marker>
+                        <marker id="seta-misto" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#B7791F"></path></marker>
+                        <marker id="seta-estavel" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8A979F"></path></marker>
+                      </defs>
+                      <rect x="{{tra.metaX}}" y="40" width="{{tra.metaLarg}}" height="{{tra.meioAlt}}" fill="#FBF1EF"></rect>
+                      <line x1="{{tra.metaX}}" x2="{{tra.metaX}}" y1="40" y2="540" stroke="#14212B" stroke-width="2" stroke-dasharray="7 5"></line>
+                      <line x1="80" x2="980" y1="{{tra.meioY}}" y2="{{tra.meioY}}" stroke="#8A979F" stroke-width="2" stroke-dasharray="7 5"></line>
+                      <line x1="80" x2="80" y1="40" y2="540" stroke="#B9C4C9"></line>
+                      <line x1="80" x2="980" y1="540" y2="540" stroke="#B9C4C9"></line>
+                      <text x="88" y="58" font-size="15" font-weight="600" fill="#6E4D00">Fila longa, poucas faltas</text>
+                      <text x="972" y="58" font-size="15" font-weight="700" fill="#8E2318" text-anchor="end">Fila longa e muitas faltas</text>
+                      <text x="88" y="530" font-size="15" font-weight="600" fill="#1D5A3A">Vaga rápida e poucas faltas</text>
+                      <text x="972" y="530" font-size="15" font-weight="600" fill="#6E4D00" text-anchor="end">Vaga rápida, muitas faltas</text>
+                      <text x="80" y="566" font-size="14" fill="#566370">0%</text>
+                      <text x="980" y="566" font-size="14" fill="#566370" text-anchor="end">50%</text>
+                      <text x="530" y="590" font-size="15" font-weight="600" fill="#33414C" text-anchor="middle">Absenteísmo (meta {{metaTxt}})</text>
+                      <text x="70" y="545" font-size="14" fill="#566370" text-anchor="end">0</text>
+                      <text x="70" y="50" font-size="14" fill="#566370" text-anchor="end">60+</text>
+                      <text x="24" y="290" font-size="15" font-weight="600" fill="#33414C" text-anchor="middle" transform="rotate(-90 24 290)">Dias até a próxima vaga</text>
+                      <template data-sc="for" list="{{tra.setas}}" as="s">
+                        <g opacity="{{s.op}}" style="cursor: pointer" onClick="{{s.destacar}}">
+                          <title>{{s.titulo}}</title>
+                          <circle cx="{{s.x1}}" cy="{{s.y1}}" r="5" fill="#FFFFFF" stroke="{{s.cor}}" stroke-width="2"></circle>
+                          <line x1="{{s.x1}}" y1="{{s.y1}}" x2="{{s.xl}}" y2="{{s.yl}}" stroke="{{s.cor}}" stroke-width="{{s.esp}}" marker-end="{{s.marca}}"></line>
+                          <circle cx="{{s.x2}}" cy="{{s.y2}}" r="{{s.raio}}" fill="{{s.cor}}" stroke="{{s.contorno}}" stroke-width="2"></circle>
+                          <text x="{{s.x2}}" y="{{s.yTxt}}" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">{{s.n}}</text>
+                        </g>
+                      </template>
+                    </svg>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; color: #33414c">
+                      <span><span style="color: #2f855a; font-weight: 700">→</span> melhorou</span>
+                      <span><span style="color: #c0392b; font-weight: 700">→</span> piorou</span>
+                      <span><span style="color: #b7791f; font-weight: 700">→</span> misto (uma medida melhorou, a outra piorou)</span>
+                      <span><span style="color: #8a979f; font-weight: 700">→</span> praticamente igual</span>
+                      <span>○ mês de origem · ● mês de destino (número = posição na lista)</span>
+                      <span>{{tra.foraTxt}}</span>
+                    </div>
+                  </div>
+                  <div style="flex: 1 1 300px; min-width: 0; max-height: 600px; overflow-y: auto; border: 1px solid #dce2e0; border-radius: 8px">
+                    <template data-sc="for" list="{{tra.lista}}" as="g">
+                      <button
+                        type="button"
+                        onClick="{{g.destacar}}"
+                        aria-pressed="{{g.ativo}}"
+                        style="font: inherit; color: inherit; text-align: left; width: 100%; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 8px; align-items: center; padding: 7px 12px; min-height: 44px; border: 0; border-bottom: 1px solid #EEF1F0; background: {{g.fundo}}; cursor: pointer"
+                      >
+                        <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: {{g.cor}}; color: #FFFFFF; font-weight: 700; font-size: 12px">{{g.n}}</span>
+                        <span style="min-width: 0; line-height: 1.3"
+                          ><span style="font-weight: 600; overflow-wrap: anywhere">{{g.nome}}</span> <span style="font-size: 12px; font-weight: 700; color: {{g.cor}}">{{g.veredito}}</span><br /><span
+                            style="font-size: 12px; color: #566370"
+                            >{{g.sub}}</span
+                          ><br /><span style="font-size: 13px; font-variant-numeric: tabular-nums">{{g.valores}}</span></span
+                        >
+                      </button>
+                    </template>
+                  </div>
+                </div>
+              </template>
+            </section>
+          </template>
+
           <template data-sc="if" value="{{abaAcesso}}">
             <section
               aria-labelledby="t-ace"
@@ -918,6 +1091,297 @@
           .concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas']] : [])
           .map(([href, txt]) => ({ href, txt }));
       const META = 19.59;
+      // Evolução e trajetória: usam todas as competências guardadas (carregadas só quando uma dessas abas é aberta).
+      let EVOL = null,
+        EVOL_STATUS = 'nao';
+      async function carregarEvolucao() {
+        if (EVOL_STATUS !== 'nao') return;
+        EVOL_STATUS = 'carregando';
+        try {
+          const r = await fetch('/api/v1/filas/evolucao?meses=24', { credentials: 'same-origin' });
+          if (!r.ok) throw 0;
+          EVOL = await r.json();
+          EVOL_STATUS = 'pronto';
+        } catch (e) {
+          EVOL_STATUS = 'erro';
+        }
+        if (tela) tela.setState({});
+      }
+      // Mesmo profissional em meses diferentes: unidade + nome + código CBO (o texto do CBO pode variar).
+      const codigoCbo = (cbo) => (String(cbo || '').match(/(\d{4}[0-9A-Z]{2})\s*$/) || [, String(cbo || '').trim()])[1];
+      const chaveHist = (p) => p.unidade + '|' + p.nome + '|' + codigoCbo(p.cbo);
+
+      function calcHistorico(ctx) {
+        const { st, set, unidadeSel, equipeSel, profNome, num, diasTxt, mediana, corFaltas, corEspera, mes } = ctx;
+        const MAXF = 50,
+          MAXD = 60;
+        const espera = { carregando: EVOL_STATUS === 'carregando' || EVOL_STATUS === 'nao', vazio: false, pronto: false, vazioTxt: '' };
+        if (EVOL_STATUS === 'erro') Object.assign(espera, { carregando: false, vazio: true, vazioTxt: 'Não foi possível carregar os meses anteriores. Recarregue a página.' });
+        const base = (EVOL && EVOL.profissionais) || [];
+        const comps = (EVOL && EVOL.competencias) || [];
+        if (EVOL_STATUS === 'pronto' && comps.length < 2)
+          Object.assign(espera, {
+            carregando: false,
+            vazio: true,
+            vazioTxt: 'Ainda há só ' + (comps.length ? 'um mês' : 'nenhum mês') + ' guardado. A comparação aparece a partir da segunda coleta mensal.',
+          });
+        const ok = EVOL_STATUS === 'pronto' && comps.length >= 2;
+
+        // Mesmos filtros das outras abas (unidade, equipe, categoria, profissional).
+        const filtra = (p) =>
+          (!unidadeSel || p.unidade === unidadeSel) &&
+          (!equipeSel || (p.equipe || 'Sem equipe') === equipeSel) &&
+          (!st.cat || p.categoria === st.cat) &&
+          (!profNome || p.nome === profNome);
+        const linhasF = base.filter(filtra).map((p) => {
+          const f = p.faltas || 0,
+            a = p.atendimentos || 0;
+          return {
+            comp: p.competencia,
+            un: p.unidade,
+            eq: p.equipe || 'Sem equipe',
+            nome: p.nome,
+            cat: p.categoria,
+            cbo: String(p.cbo || '').replace(/\s*-\s*\S+$/, ''),
+            chave: chaveHist(p),
+            faltas: f,
+            atend: a,
+            pct: f + a ? (f / (f + a)) * 100 : null,
+            dias: p.agendaLidaEm ? (p.semVaga ? 91 : p.diasVaga) : null,
+          };
+        });
+        const agrega = (ps) => {
+          const f = ps.reduce((t, p) => t + p.faltas, 0),
+            a = ps.reduce((t, p) => t + p.atend, 0);
+          return { pct: f + a ? (f / (f + a)) * 100 : null, dias: mediana(ps.filter((p) => p.dias !== null).map((p) => p.dias)), f, base: f + a };
+        };
+        const mesCurto = (c) => {
+          const [a, m] = c.split('-');
+          return ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'][m - 1] + '/' + a.slice(2);
+        };
+
+        // ---------- Evolução ----------
+        let evo = Object.assign({}, espera);
+        if (ok) {
+          const porMes = comps.map((c) => Object.assign({ comp: c }, agrega(linhasF.filter((p) => p.comp === c))));
+          const X = (i) => 48 + 20 + (i * (540 - 40)) / Math.max(1, comps.length - 1);
+          const grafico = (titulo, legenda, cor, valorDe, maxFixo, txtDe, meta) => {
+            const vals = porMes.map(valorDe);
+            const bruto = Math.max(maxFixo, ...vals.filter((v) => v !== null).map((v) => v * 1.15));
+            const passos = 4,
+              ordem = Math.pow(10, Math.floor(Math.log10(bruto / passos))),
+              passo = [1, 2, 2.5, 5, 10].map((m) => m * ordem).find((x) => x * passos >= bruto),
+              vmax = passo * passos;
+            const Y = (v) => 200 - (v / vmax) * 180;
+            const grades = Array.from({ length: passos + 1 }, (_, i) => {
+              const v = passo * i;
+              return { y: Y(v).toFixed(1), yTxt: (Y(v) + 4).toFixed(1), txt: num(v, 0) };
+            });
+            const pts = porMes
+              .map((m, i) => ({ m, i, v: vals[i] }))
+              .filter((o) => o.v !== null)
+              .map((o) => ({
+                x: X(o.i).toFixed(1),
+                y: Y(o.v).toFixed(1),
+                yTxt: (Y(o.v) - 10).toFixed(1),
+                txt: txtDe(o.v),
+                cor,
+                titulo: mes(o.m.comp) + ': ' + txtDe(o.v) + (o.m.base ? ' (' + o.m.f + ' faltas em ' + o.m.base + ' agendados)' : ''),
+              }));
+            return {
+              titulo,
+              legenda,
+              cor,
+              aria: titulo + ': ' + pts.map((p) => p.titulo).join('; '),
+              grades,
+              pontos: pts,
+              linha: pts.map((p) => p.x + ',' + p.y).join(' '),
+              eixoX: comps.map((c, i) => ({ x: X(i).toFixed(1), txt: mesCurto(c) })),
+              temMeta: meta !== null,
+              metaY: meta !== null ? Y(meta).toFixed(1) : 0,
+              metaYTxt: meta !== null ? (Y(meta) - 6).toFixed(1) : 0,
+              metaTxt: meta !== null ? 'meta ' + num(meta, 2) + '%' : '',
+            };
+          };
+          const graficos = [
+            grafico('Absenteísmo', 'faltas ÷ (faltas + atendimentos) do recorte, em cada mês', '#C0392B', (m) => m.pct, 25, (v) => num(v, 1) + '%', META),
+            grafico('Espera até a próxima vaga', 'mediana dos profissionais com agenda lida no mês, em dias', '#0E5E8C', (m) => m.dias, 30, (v) => diasTxt(Math.round(v)), null),
+          ];
+          // Tabela: o nível abaixo do filtro (município → unidades → equipes → profissionais).
+          const nivel = profNome || equipeSel ? 'prof' : unidadeSel ? 'eq' : 'un';
+          const rot = { un: 'Unidade', eq: 'Equipe', prof: 'Profissional' }[nivel];
+          const chaveG = (p) => (nivel === 'un' ? p.un : nivel === 'eq' ? p.eq : p.chave);
+          const grupos = {};
+          linhasF.forEach((p) => {
+            const k = chaveG(p);
+            (grupos[k] = grupos[k] || { nome: nivel === 'prof' ? p.nome : k, sub: nivel === 'prof' ? p.cbo + ' · ' + p.eq : nivel === 'eq' ? p.un : '', ps: [] }).ps.push(p);
+          });
+          const celulas = [];
+          const cab = (l1, alinha) => celulas.push({ papel: 'columnheader', l1, l2: '', titulo: '', fundo: '#F6F9FA', alinha, peso: 700, cor: '#33414C', cor2: '#566370' });
+          cab(rot, 'left');
+          comps.forEach((c) => cab(mesCurto(c), 'center'));
+          cab('Variação', 'center');
+          const ordenados = Object.values(grupos)
+            .map((g) => Object.assign(g, { meses: comps.map((c) => agrega(g.ps.filter((p) => p.comp === c))) }))
+            .sort((a, b) => a.nome.localeCompare(b.nome, 'pt'));
+          ordenados.forEach((g) => {
+            celulas.push({ papel: 'rowheader', l1: g.nome, l2: g.sub, titulo: g.nome, fundo: '#FFFFFF', alinha: 'left', peso: 600, cor: '#14212B', cor2: '#566370' });
+            g.meses.forEach((m, i) =>
+              celulas.push({
+                papel: 'cell',
+                l1: m.pct === null ? '—' : num(m.pct, 1) + '%',
+                l2: m.dias === null ? '' : diasTxt(m.dias),
+                titulo: g.nome + ', ' + mes(comps[i]) + ': ' + (m.pct === null ? 'sem agendados' : m.f + ' faltas em ' + m.base + ' agendados') + (m.dias === null ? '' : '; vaga em ' + diasTxt(m.dias)),
+                fundo: '#FFFFFF',
+                alinha: 'center',
+                peso: 600,
+                cor: corFaltas(m.pct),
+                cor2: m.dias === null ? '#566370' : corEspera(m.dias),
+              }),
+            );
+            const comPct = g.meses.filter((m) => m.pct !== null),
+              comDias = g.meses.filter((m) => m.dias !== null);
+            const dP = comPct.length >= 2 ? comPct[comPct.length - 1].pct - comPct[0].pct : null,
+              dD = comDias.length >= 2 ? comDias[comDias.length - 1].dias - comDias[0].dias : null;
+            const sinal = (v, casas, suf) => (v > 0 ? '+' : v < 0 ? '−' : '±') + num(Math.abs(v), casas) + suf;
+            celulas.push({
+              papel: 'cell',
+              l1: dP === null ? '—' : sinal(dP, 1, ' p.p.'),
+              l2: dD === null ? '' : sinal(dD, 0, ' dias'),
+              titulo: 'Diferença entre o primeiro e o último mês com dados (faltas em pontos percentuais; espera em dias). Negativo é melhora.',
+              fundo: '#F6F9FA',
+              alinha: 'center',
+              peso: 700,
+              cor: dP === null ? '#566370' : dP > 1 ? '#C0392B' : dP < -1 ? '#2F855A' : '#33414C',
+              cor2: dD === null ? '#566370' : dD > 3 ? '#C0392B' : dD < -3 ? '#2F855A' : '#566370',
+            });
+          });
+          evo = {
+            carregando: false,
+            vazio: !linhasF.length,
+            vazioTxt: 'Nenhum dado deste recorte nos meses guardados.',
+            pronto: linhasF.length > 0,
+            subtitulo: 'De ' + mes(comps[0]) + ' a ' + mes(comps[comps.length - 1]) + ' · mesmos filtros das outras abas.',
+            graficos,
+            tabelaTitulo: rot + 's do recorte, mês a mês',
+            colunas: 'minmax(200px, 1.6fr) repeat(' + comps.length + ', minmax(76px, 1fr)) minmax(96px, 1fr)',
+            larguraMin: 200 + comps.length * 76 + 96 + 'px',
+            celulas,
+          };
+        } else evo.subtitulo = 'Absenteísmo e espera até a vaga ao longo dos meses guardados.';
+
+        // ---------- Trajetória ----------
+        let tra = Object.assign({}, espera);
+        if (ok) {
+          const para = comps.indexOf(st.traPara) >= 0 ? st.traPara : comps[comps.length - 1];
+          const anteriores = comps.filter((c) => c < para);
+          const de = anteriores.indexOf(st.traDe) >= 0 ? st.traDe : anteriores[anteriores.length - 1] || comps[0];
+          const A = {},
+            B = {};
+          linhasF.forEach((p) => {
+            if (p.comp === de) A[p.chave] = p;
+            if (p.comp === para) B[p.chave] = p;
+          });
+          const PX = (pct) => 80 + Math.max(0, Math.min(1, pct / MAXF)) * 900;
+          const PY = (d) => 540 - Math.max(0, Math.min(1, d / MAXD)) * 500;
+          const pares = [];
+          let fora = 0;
+          new Set(Object.keys(A).concat(Object.keys(B))).forEach((k) => {
+            const a = A[k],
+              b = B[k];
+            if (!a || !b || a.pct === null || b.pct === null || a.dias === null || b.dias === null) {
+              fora++;
+              return;
+            }
+            // Cada medida conta separado: faltas mudam de verdade a partir de 2 pontos percentuais; espera, a partir de 3 dias.
+            const dF = b.pct - a.pct,
+              dD = Math.min(b.dias, 91) - Math.min(a.dias, 91);
+            const sF = dF > 2 ? 1 : dF < -2 ? -1 : 0,
+              sD = dD > 3 ? 1 : dD < -3 ? -1 : 0;
+            const ver = sF > 0 || sD > 0 ? (sF < 0 || sD < 0 ? 'misto' : 'piorou') : sF < 0 || sD < 0 ? 'melhorou' : 'estavel';
+            const delta = Math.min(b.pct, MAXF) / MAXF + Math.min(b.dias, MAXD) / MAXD - (Math.min(a.pct, MAXF) / MAXF + Math.min(a.dias, MAXD) / MAXD);
+            pares.push({ k, a, b, delta, ver });
+          });
+          const ORDEM = { piorou: 0, misto: 1, estavel: 2, melhorou: 3 };
+          pares.sort((x, y) => ORDEM[x.ver] - ORDEM[y.ver] || y.delta - x.delta);
+          const COR = { piorou: '#C0392B', misto: '#B7791F', melhorou: '#2F855A', estavel: '#8A979F' };
+          const TXT = { piorou: 'piorou', misto: 'misto', melhorou: 'melhorou', estavel: 'igual' };
+          const destaque = pares.some((p) => p.k === st.traDestaque) ? st.traDestaque : '';
+          const destacar = (k) => () => set({ traDestaque: st.traDestaque === k ? '' : k });
+          const val = (p) => num(p.pct, 1) + '% · ' + diasTxt(p.dias);
+          const setas = pares.map((p, i) => {
+            const at = p.k === destaque;
+            const x1 = PX(p.a.pct),
+              y1 = PY(p.a.dias),
+              x2 = PX(p.b.pct),
+              y2 = PY(p.b.dias);
+            // Encurta a linha para a ponta da seta não ficar escondida sob o círculo de destino.
+            const dx = x2 - x1,
+              dy = y2 - y1,
+              L = Math.hypot(dx, dy),
+              enc = L > 26 ? 13 / L : 0;
+            return {
+              n: i + 1,
+              x1: x1.toFixed(1),
+              y1: y1.toFixed(1),
+              x2: x2.toFixed(1),
+              y2: y2.toFixed(1),
+              xl: (x2 - dx * enc).toFixed(1),
+              yl: (y2 - dy * enc).toFixed(1),
+              yTxt: (y2 + 4).toFixed(1),
+              cor: COR[p.ver],
+              marca: L > 26 ? 'url(#seta-' + p.ver + ')' : '',
+              esp: at ? 4 : 2.5,
+              raio: at ? 13 : 11,
+              contorno: at ? '#14212B' : '#FFFFFF',
+              op: destaque && !at ? 0.25 : 1,
+              destacar: destacar(p.k),
+              titulo: i + 1 + ' · ' + p.b.nome + ' (' + p.b.eq + ', ' + p.b.un + '): ' + val(p.a) + ' → ' + val(p.b) + ' (' + TXT[p.ver] + ')',
+            };
+          });
+          const conta = (v) => pares.filter((p) => p.ver === v).length;
+          tra = {
+            carregando: false,
+            vazio: false,
+            pronto: true,
+            de,
+            para,
+            opcoes: comps.map((c) => ({ id: c, rotulo: mes(c) })),
+            escolherDe: (ev) => set({ traDe: ev.target.value }),
+            escolherPara: (ev) => set({ traPara: ev.target.value }),
+            resumo: [
+              { n: conta('piorou'), txt: ' pioraram', cor: COR.piorou },
+              { n: conta('misto'), txt: ' melhoraram numa medida e pioraram na outra', cor: COR.misto },
+              { n: conta('melhorou'), txt: ' melhoraram', cor: COR.melhorou },
+              { n: conta('estavel'), txt: ' praticamente iguais', cor: '#33414C' },
+            ],
+            aria: 'Trajetória de ' + mes(de) + ' para ' + mes(para) + ': ' + pares.length + ' profissionais com as duas medidas nos dois meses.',
+            metaX: PX(META).toFixed(1),
+            metaLarg: (980 - PX(META)).toFixed(1),
+            meioY: PY(30).toFixed(1),
+            meioAlt: (PY(30) - 40).toFixed(1),
+            setas,
+            foraTxt: fora
+              ? fora + (fora === 1 ? ' profissional fica' : ' profissionais ficam') + ' fora por não ter faltas e agenda lida nos dois meses.'
+              : '',
+            lista: pares.map((p, i) => ({
+              n: i + 1,
+              nome: p.b.nome,
+              sub: p.b.cbo + ' · ' + p.b.eq + ' · ' + p.b.un,
+              valores: val(p.a) + '  →  ' + val(p.b),
+              veredito: TXT[p.ver],
+              cor: COR[p.ver],
+              fundo: p.k === destaque ? '#E7EEF3' : '#FFFFFF',
+              ativo: p.k === destaque ? 'true' : 'false',
+              destacar: destacar(p.k),
+            })),
+          };
+          if (de === para) Object.assign(tra, { pronto: false, vazio: true, vazioTxt: 'Escolha dois meses diferentes.' });
+          else if (!pares.length) Object.assign(tra, { pronto: true });
+        }
+        return { evo, tra };
+      }
+
       class Filas extends DCLogic {
         constructor(props) {
           super(props);
@@ -1403,6 +1867,22 @@
               a
             );
           };
+          const hist =
+            st.aba === 'evolucao' || st.aba === 'trajetoria'
+              ? calcHistorico({
+                  st,
+                  set: (o) => this.setState(o),
+                  unidadeSel,
+                  equipeSel,
+                  profNome: profSel ? (todos.find((p) => p.id === profSel) || {}).nome : '',
+                  num,
+                  diasTxt,
+                  mediana,
+                  corFaltas,
+                  corEspera,
+                  mes,
+                })
+              : { evo: {}, tra: {} };
           const lidas = FILAS.profissionais
             .map((p) => p.agendaLidaEm)
             .filter(Boolean)
@@ -1432,6 +1912,10 @@
             abaMapa: st.aba === 'mapa',
             abaHorario: st.aba === 'horario',
             abaAcesso: st.aba === 'acesso',
+            abaEvolucao: st.aba === 'evolucao',
+            abaTrajetoria: st.aba === 'trajetoria',
+            evo: hist.evo,
+            tra: hist.tra,
             linhasAcesso,
             resumoAcesso,
             horTem,
@@ -1466,13 +1950,18 @@
               ['mapa', 'Mapa: onde agir primeiro'],
               ['horario', 'Faltas por horário'],
               ['acesso', 'Faltas × acesso'],
+              ['evolucao', 'Evolução mês a mês'],
+              ['trajetoria', 'Trajetória entre meses'],
             ].map(([id, titulo]) => ({
               titulo,
               pressionado: st.aba === id ? 'true' : 'false',
               borda: st.aba === id ? '#00A7E7' : 'transparent',
               cor: st.aba === id ? '#FFFFFF' : 'rgba(255,255,255,.85)',
               peso: st.aba === id ? 700 : 400,
-              escolher: () => this.setState({ aba: id }),
+              escolher: () => {
+                this.setState({ aba: id });
+                if (id === 'evolucao' || id === 'trajetoria') carregarEvolucao();
+              },
             })),
             temDestaque: !!d,
             destaque: d

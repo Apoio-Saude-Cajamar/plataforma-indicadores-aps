@@ -136,3 +136,29 @@ export async function lerFilas(env, url) {
   });
   return { competencias: lista, competencia: comp, profissionais: results, horarios };
 }
+
+// Evolução: as competências mais recentes (até 24) de uma vez, para comparar mês a mês e desenhar trajetórias.
+// Só leitura; mesmos campos de lerFilas, com a competência em cada linha.
+export async function lerFilasEvolucao(env, url) {
+  const ate = url.searchParams.get('ate');
+  const meses = Math.min(24, Math.max(2, Number(url.searchParams.get('meses')) || 12));
+  const fim = ate ? competencia(ate) : null;
+  const lista = (
+    await env.DB.prepare(
+      `SELECT DISTINCT competencia FROM fila_profissional ${fim ? 'WHERE competencia <= ?' : ''} ORDER BY competencia DESC LIMIT ?`,
+    )
+      .bind(...(fim ? [fim, meses] : [meses]))
+      .all()
+  ).results
+    .map((x) => x.competencia)
+    .reverse();
+  if (!lista.length) return { competencias: [], profissionais: [] };
+  const { results } = await env.DB.prepare(
+    `SELECT competencia, unidade, equipe, cbo, categoria, nome, faltas, atendimentos, dias_vaga AS diasVaga,
+      sem_vaga AS semVaga, agenda_lida_em AS agendaLidaEm FROM fila_profissional
+      WHERE competencia >= ? AND competencia <= ? ORDER BY competencia, unidade, equipe, nome`,
+  )
+    .bind(lista[0], lista[lista.length - 1])
+    .all();
+  return { competencias: lista, profissionais: results };
+}
