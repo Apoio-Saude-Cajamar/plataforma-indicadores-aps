@@ -281,6 +281,26 @@ test('pendências: exige login, aponta unidade sem composição e valor acima do
   assert.equal((await nav.pedir('GET', '/pendencias')).status, 200);
 });
 
+test('pendências: conferência da B4 aponta sessão grande, falta de documento e salto', async () => {
+  const { conferirB4 } = await import('../api/pendencias.js');
+  const conf = (o) => Object.assign({ atividades: 2, participacoes: 40, participacoesFaixa: 30, criancas: 20, semDocumento: 0, maiorAtividade: 25, criancasEmOutraEquipe: 0, semDentista: 0, semCbo: 0 }, o);
+  const r = conferirB4(
+    [
+      { unidade: 'U1', equipe: 'ESB 1', ine: '1', numerador: 20, denominador: 100, conferencia: conf({ maiorAtividade: 90, participacoes: 120, semDocumento: 20 }) },
+      { unidade: 'U2', equipe: 'ESB 2', ine: '2', numerador: 90, denominador: 100, conferencia: conf({ criancas: 90, participacoesFaixa: 95 }) },
+      { unidade: 'U3', equipe: 'ESB 3', ine: '3', numerador: 5, denominador: 100, conferencia: null },
+    ],
+    [{ unidade: 'U2', equipe: 'ESB 2', ine: '2', numerador: 20, conferencia: null }],
+  );
+  const t = r.achados.map((a) => a.unidade + '|' + a.texto);
+  assert.ok(t.some((x) => x.startsWith('U1|') && /média de 60/.test(x)));
+  assert.ok(t.some((x) => x.startsWith('U1|') && /uma atividade com 90/.test(x)));
+  assert.ok(t.some((x) => x.startsWith('U1|') && /40% das participações/.test(x)));
+  assert.ok(t.some((x) => x.startsWith('U2|') && /de 20 no mês anterior para 90/.test(x)));
+  assert.equal(r.linhas.find((l) => l.ine === '3').semConferencia, true);
+  assert.ok(!/\d{11,}/.test(JSON.stringify(r)), "nenhum número de documento");
+});
+
 test('comunicados: administrador publica, usuário vê e marca "Entendi", público respeitado', async () => {
   const env = comPaginas(ambiente());
   await admin(env, { login: 'ana', nome: 'Ana', senha: 'Painel#Forte2026', perfil: 'admin' });
@@ -422,6 +442,39 @@ test('recoleta do mesmo mês: vale a linha mais recente de cada indicador e equi
   const d = await (await n.pedir('GET', '/api/v1/dados?competencia=2026-10', undefined, { headers: { authorization: 'Bearer ' + CHAVES.TOKEN_COLETA } })).json();
   const por = Object.fromEntries(d.indicadores.map(l => [l.codigo, l.numerador]));
   assert.deepEqual(por, { C1: 55, B2: 30 });
+});
+
+test('recoleta com "substituir todos": só vale o que a nova coleta trouxe, e só se ela terminar completa', async () => {
+  const env = comPaginas(ambiente());
+  const H = { headers: { authorization: 'Bearer ' + CHAVES.TOKEN_COLETA } };
+  const n = navegador(env);
+  const enviar = async (id, quando, unidade, linhas) => {
+    await n.pedir('POST', '/api/v1/coletas', { id, competencia: '2026-10', tipo: 'completa', versaoExtensao: 't', iniciadoEm: quando }, H);
+    assert.equal((await n.pedir('PUT', `/api/v1/coletas/${id}/etapa`, { chave: 'unidade:' + unidade, bloco: 'unidade', unidade, status: 'ok', coletadoEm: quando, linhas }, H)).status, 200);
+  };
+  const L = (unidade, codigo, numerador) => ({ codigo, unidade, equipe: 'EQ 1', numerador, denominador: 100 });
+  const ler = async () => {
+    const d = await (await n.pedir('GET', '/api/v1/dados?competencia=2026-10', undefined, H)).json();
+    return Object.fromEntries(d.indicadores.map((l) => [l.unidade + '|' + l.codigo, l.numerador]));
+  };
+  await enviar('c1', '2026-11-01T10:00:00.000Z', 'UBS A', [L('UBS A', 'C1', 40), L('UBS A', 'B2', 30)]);
+  await enviar('c1', '2026-11-01T10:00:00.000Z', 'UBS B', [L('UBS B', 'C1', 20)]);
+  await n.pedir('POST', '/api/v1/coletas/c1/concluir', { status: 'concluida' }, H);
+  // Parcial com "todos": nada é substituído.
+  await enviar('c2', '2026-11-05T10:00:00.000Z', 'UBS A', [L('UBS A', 'C1', 55)]);
+  const p = await (await n.pedir('POST', '/api/v1/coletas/c2/concluir', { status: 'parcial', substituir: 'todos' }, H)).json();
+  assert.equal(p.substituidas, 0);
+  assert.deepEqual(await ler(), { 'UBS A|C1': 55, 'UBS A|B2': 30, 'UBS B|C1': 20 });
+  // Completa com "todos": o que a nova coleta não trouxe deixa de valer.
+  await enviar('c3', '2026-11-10T10:00:00.000Z', 'UBS A', [L('UBS A', 'C1', 60)]);
+  const r = await (await n.pedir('POST', '/api/v1/coletas/c3/concluir', { status: 'concluida', substituir: 'todos' }, H)).json();
+  assert.equal(r.substituidas, 3);
+  assert.deepEqual(await ler(), { 'UBS A|C1': 60 });
+  // Nada foi apagado: as etapas antigas continuam no banco, marcadas como substituídas.
+  const lista = await (await n.pedir('GET', '/api/v1/coletas?competencia=2026-10', undefined, H)).json();
+  const c1 = lista.coletas.find((c) => c.id === 'c1');
+  assert.equal(c1.etapasSubstituidas, 2);
+  assert.equal(c1.etapasComFalha, 0);
 });
 
 test('filas e faltas: a extensão envia por profissional, a recoleta parcial não apaga, só admin e gestor leem', async () => {

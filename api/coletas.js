@@ -178,16 +178,31 @@ export async function gravarEtapa(env, coletaId, corpo) {
   };
 }
 
+export const MARCA_SUBSTITUIDA = 'Substituída pela coleta ';
+
 export async function concluirColeta(env, coletaId, corpo) {
   await buscarColeta(env, coletaId);
   const status = corpo.status || 'concluida';
   if (!STATUS_FINAIS.has(status)) throw new ErroHttp(400, 'Status final deve ser concluida, parcial ou cancelada.');
   const quando = agora();
   const concluido = dataIso(corpo.concluidoEm || quando, 'concluidoEm');
-  await env.DB.batch([
-    env.DB.prepare('UPDATE coleta SET status = ?, concluido_em = ? WHERE id = ?').bind(status, concluido, coletaId),
-    marcarAlteracao(env, quando),
-  ]);
+  const ops = [env.DB.prepare('UPDATE coleta SET status = ?, concluido_em = ? WHERE id = ?').bind(status, concluido, coletaId)];
+  // "Substituir todos": numa coleta completa, as etapas das coletas anteriores da mesma competência deixam de valer.
+  // Nada é apagado: as etapas antigas ficam marcadas como substituídas (status "falhou" com o motivo), e por isso
+  // saem dos dados vigentes. Coletas iniciadas depois desta (por exemplo, um "Refazer") continuam valendo.
+  const substituir = corpo.substituir === 'todos' && status === 'concluida';
+  if (substituir)
+    ops.push(
+      env.DB.prepare(
+        `UPDATE etapa SET status = 'falhou', erro = ?
+         WHERE status = 'ok' AND coleta_id <> ? AND competencia = (SELECT competencia FROM coleta WHERE id = ?)
+           AND coleta_id IN (SELECT a.id FROM coleta a JOIN coleta n ON n.id = ?
+                             WHERE a.competencia = n.competencia AND a.id <> n.id AND a.iniciado_em <= n.iniciado_em)`,
+      ).bind(MARCA_SUBSTITUIDA + coletaId + '.', coletaId, coletaId, coletaId),
+    );
+  ops.push(marcarAlteracao(env, quando));
+  const feitos = await env.DB.batch(ops);
+  const substituidas = substituir ? feitos[1].meta?.changes || 0 : 0;
   const resumo = await env.DB.prepare(
     `SELECT
       SUM(status = 'ok') AS ok, SUM(status = 'falhou') AS falhas, COUNT(*) AS total
@@ -195,7 +210,7 @@ export async function concluirColeta(env, coletaId, corpo) {
   )
     .bind(coletaId)
     .first();
-  return { id: coletaId, status, etapas: { ok: resumo.ok || 0, falhas: resumo.falhas || 0, total: resumo.total || 0 } };
+  return { id: coletaId, status, substituidas, etapas: { ok: resumo.ok || 0, falhas: resumo.falhas || 0, total: resumo.total || 0 } };
 }
 
 export async function listarColetas(env, comp) {
@@ -203,7 +218,8 @@ export async function listarColetas(env, comp) {
   const stmt = env.DB.prepare(`SELECT c.id, c.competencia, c.tipo, c.versao_extensao AS versaoExtensao, c.iniciado_em AS iniciadoEm,
            c.concluido_em AS concluidoEm, c.status,
            (SELECT COUNT(*) FROM etapa e WHERE e.coleta_id = c.id AND e.status = 'ok') AS etapasOk,
-           (SELECT COUNT(*) FROM etapa e WHERE e.coleta_id = c.id AND e.status = 'falhou') AS etapasComFalha
+           (SELECT COUNT(*) FROM etapa e WHERE e.coleta_id = c.id AND e.status = 'falhou' AND COALESCE(e.erro, '') NOT LIKE 'Substituída%') AS etapasComFalha,
+           (SELECT COUNT(*) FROM etapa e WHERE e.coleta_id = c.id AND e.status = 'falhou' AND e.erro LIKE 'Substituída%') AS etapasSubstituidas
     FROM coleta c ${filtro} ORDER BY c.iniciado_em DESC LIMIT 200`);
   const { results } = comp ? await stmt.bind(competencia(comp)).all() : await stmt.all();
   return { coletas: results };
