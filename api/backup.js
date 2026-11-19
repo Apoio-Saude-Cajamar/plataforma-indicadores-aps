@@ -5,12 +5,14 @@ import { TABELAS, VERSAO_ESQUEMA } from './esquema.js';
 import { ErroHttp, agora } from './util.js';
 import { garantir as garantirEstadual, garantirVac } from './estadual.js';
 import { garantirHorario } from './filas.js';
+import { garantirProducao } from './producao.js';
 
 // Tabelas que a API cria no primeiro uso: precisam existir antes de contar, exportar ou apagar.
 async function garantirTabelas(env) {
   await garantirEstadual(env);
   await garantirVac(env);
   await garantirHorario(env);
+  await garantirProducao(env);
 }
 
 const LIMITE_PADRAO = 2000;

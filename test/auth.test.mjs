@@ -319,6 +319,29 @@ test('produção e notas: página exige login; totais de coletivas (COLET) não 
   assert.equal((await nav.pedir('POST', '/api/v1/relatorios/emissao', { tipo: 'producao', competencia: '2026-10', formato: 'pdf' })).status, 200);
 });
 
+test('produção por profissional: a extensão troca o mês com a chave; só admin e gestor leem; período limitado', async () => {
+  const env = comPaginas(ambiente());
+  const H = { headers: { authorization: 'Bearer ' + CHAVES.TOKEN_COLETA } };
+  const n = navegador(env);
+  const P = (nome, ind) => ({ unidade: 'UBS A', equipe: 'EMULTI 1', ine: '9', cbo: '251510', cboNome: 'PSICOLOGO CLINICO', nome, individuais: ind, compartilhados: 2, porTipo: { 'CONSULTA AGENDADA': ind }, coletivasResponsavel: 1, coletivasEnvolvido: 0, participacoes: 10 });
+  assert.equal((await n.pedir('PUT', '/api/v1/producao', { competencia: '2026-10', profissionais: [P('Ana', 30), P('Bia', 20), P('Ana', 5)] }, H)).status, 200);
+  assert.equal((await n.pedir('PUT', '/api/v1/producao', { competencia: '2026-10', profissionais: [P('Ana', 40)] }, H)).status, 200);
+  assert.equal((await n.pedir('PUT', '/api/v1/producao', { competencia: '2026-11', profissionais: [P('Ana', 50)] }, H)).status, 200);
+  assert.notEqual((await n.pedir('GET', '/api/v1/producao', undefined, H)).status, 200);
+  await admin(env, { login: 'gil', nome: 'Gil', senha: 'Painel#Forte2026', perfil: 'gestor' });
+  await admin(env, { login: 'leo', nome: 'Leo', senha: 'Painel#Forte2026', perfil: 'leitor' });
+  await env.DB.prepare('UPDATE usuario SET trocar_senha = 0').run();
+  const g = navegador(env);
+  await g.pedir('POST', '/api/v1/auth/entrar', { login: 'gil', senha: 'Painel#Forte2026' });
+  const d = await (await g.pedir('GET', '/api/v1/producao?de=2026-10&ate=2026-11')).json();
+  assert.deepEqual(d.profissionais.map((p) => [p.competencia, p.nome, p.individuais]), [['2026-10', 'Ana', 40], ['2026-11', 'Ana', 50]]);
+  assert.equal(d.profissionais[0].porTipo['CONSULTA AGENDADA'], 40);
+  assert.equal((await g.pedir('GET', '/api/v1/producao?de=2024-01&ate=2026-11')).status, 400);
+  const l = navegador(env);
+  await l.pedir('POST', '/api/v1/auth/entrar', { login: 'leo', senha: 'Painel#Forte2026' });
+  assert.equal((await l.pedir('GET', '/api/v1/producao')).status, 403);
+});
+
 test('comunicados: administrador publica, usuário vê e marca "Entendi", público respeitado', async () => {
   const env = comPaginas(ambiente());
   await admin(env, { login: 'ana', nome: 'Ana', senha: 'Painel#Forte2026', perfil: 'admin' });

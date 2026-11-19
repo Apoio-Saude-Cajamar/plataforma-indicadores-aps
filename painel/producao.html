@@ -53,6 +53,7 @@
           >Recorte<select id="recorte">
             <option value="unidade">Por unidade</option>
             <option value="equipe">Por equipe</option>
+            <option value="profissional">Por profissional</option>
             <option value="categoria">Por categoria profissional</option>
             <option value="compilado">Compilado (município)</option>
           </select></label
@@ -79,15 +80,23 @@
         <label id="lbAte" hidden>Até<select id="ate"></select></label>
         <label id="lbUn">Unidade<select id="un"><option value="">Todas</option></select></label>
         <label id="lbEq">Equipe<select id="eq"><option value="">Todas</option></select></label>
+        <label id="lbProf">Profissional<select id="prof"><option value="">Todos</option></select></label>
+        <label id="lbIdent"
+          >Identificação<select id="ident">
+            <option value="nome">Nome e categoria</option>
+            <option value="categoria">Só categoria (sem nomes)</option>
+          </select></label
+        >
         <div class="acoes">
           <button class="btn" id="imprimir" type="button">Imprimir / salvar em PDF</button
           ><button class="btn sec" id="csv" type="button">Baixar CSV</button>
         </div>
       </div>
       <p class="dica">
-        Atendimentos individuais por categoria profissional, atividades coletivas e as notas dos indicadores de cada equipe. Com mais de um
-        mês, mostra a evolução mês a mês. As notas são da equipe; a categoria mostra a produção dela dentro da equipe. Só totais, sem nomes de
-        pacientes nem de profissionais. Cada emissão fica registrada no histórico de quem emitiu.
+        Atendimentos individuais, atividades coletivas e as notas dos indicadores, por unidade, equipe, profissional ou categoria. Com mais de
+        um mês, mostra a evolução mês a mês. As notas são da equipe (não se dividem por profissional). A produção por profissional leva o nome
+        e só aparece para administradores e gestores; para entregar sem nomes, use “Só categoria”. Nenhum dado de paciente. Cada emissão fica
+        registrada no histórico de quem emitiu.
       </p>
       <article id="doc" aria-live="polite"><p class="vazio">Carregando…</p></article>
     </main>

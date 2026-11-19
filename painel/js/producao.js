@@ -5,7 +5,10 @@ const $ = (id) => document.getElementById(id);
 let dados = {}; // competência -> linhas de indicador (usada também por federal-calculo.js)
 const ATEND = {}; // competência -> cubo de atendimentos (unidade, equipe, cbo, tipoAtendimento, n)
 let COMPS = [],
-  USUARIO = null;
+  USUARIO = null,
+  PROD = null, // produção por profissional do período (null = sem acesso ou sem dados)
+  PROD_FAIXA = '';
+const ehGestor = () => USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor');
 
 const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 const mesLong = (c) => MESES[Number(c.slice(5)) - 1] + ' de ' + c.slice(0, 4);
@@ -69,6 +72,16 @@ function rotuloPeriodo(ms) {
 
 // ---------- carga ----------
 async function carregar(ms) {
+  const faixa = ms[0] + '..' + ms[ms.length - 1];
+  if (ehGestor() && PROD_FAIXA !== faixa) {
+    PROD_FAIXA = faixa;
+    try {
+      const r = await fetch('/api/v1/producao?de=' + ms[0] + '&ate=' + ms[ms.length - 1], { credentials: 'same-origin' });
+      PROD = r.ok ? (await r.json()).profissionais || [] : null;
+    } catch (_) {
+      PROD = null;
+    }
+  }
   await Promise.all(
     ms
       .filter((c) => !dados[c])
@@ -143,6 +156,129 @@ function porCategoria(ms, chaves) {
       m.set(cat, o);
     }
   return [...m.values()].sort((a, b) => b.total - a.total || ordPt(a.cat, b.cat));
+}
+
+// ---------- profissionais ----------
+// Produção de cada profissional no período: chave unidade|equipe|cbo|nome -> { meses: { comp -> números }, tipos }.
+function profissionais(ms, chaves) {
+  const m = new Map();
+  for (const r of PROD || []) {
+    if (!ms.includes(r.competencia)) continue;
+    const tk = N(r.unidade) + '|' + N(r.equipe);
+    if (chaves && !chaves.has(tk)) continue;
+    const k = tk + '|' + r.cbo + '|' + N(r.nome);
+    const o = m.get(k) || { k, tk, u: r.unidade, e: r.equipe, cbo: r.cbo, cat: categoria(r.cboNome || r.cbo), nome: r.nome, meses: {}, tipos: {} };
+    const z = (o.meses[r.competencia] = o.meses[r.competencia] || { ind: 0, comp: 0, cr: 0, ce: 0, part: 0 });
+    z.ind += r.individuais || 0;
+    z.comp += r.compartilhados || 0;
+    z.cr += r.coletivasResponsavel || 0;
+    z.ce += r.coletivasEnvolvido || 0;
+    z.part += r.participacoes || 0;
+    Object.entries(r.porTipo || {}).forEach(([t, n]) => (o.tipos[t] = (o.tipos[t] || 0) + n));
+    m.set(k, o);
+  }
+  const lista = [...m.values()];
+  for (const o of lista) o.tot = ms.reduce((t, c) => (Object.entries(o.meses[c] || {}).forEach(([x, n]) => (t[x] += n)), t), { ind: 0, comp: 0, cr: 0, ce: 0, part: 0 });
+  // Só categoria: o nome dá lugar à categoria numerada dentro da equipe.
+  const porCat = {};
+  lista
+    .sort((a, b) => ordPt(a.u, b.u) || ordPt(a.e, b.e) || ordPt(a.cat, b.cat) || b.tot.ind - a.tot.ind || ordPt(a.nome, b.nome))
+    .forEach((o) => {
+      const c = o.tk + '|' + o.cat;
+      porCat[c] = (porCat[c] || 0) + 1;
+      o.rotCat = o.cat + ' ' + porCat[c];
+    });
+  return lista;
+}
+const semNomes = () => $('ident').value === 'categoria';
+const rotProf = (o) => (semNomes() ? o.rotCat : o.nome + ' · ' + o.cat);
+function tabProfissionais(ms, chaves, comEquipe) {
+  if (!PROD) return '';
+  const ps = profissionais(ms, chaves);
+  if (!ps.length)
+    return '<h3>Produção por profissional</h3><p class="vazio">Sem produção por profissional neste período (chega com a extensão 0.9.8, item “Produção por profissional”).</p>';
+  const cab =
+    '<tr><th>' +
+    (semNomes() ? 'Profissional (categoria)' : 'Profissional') +
+    '</th>' +
+    (comEquipe ? '<th>Equipe</th>' : '') +
+    '<th class="n">Atend. individuais</th><th class="n">Compartilhados</th><th class="n">Coletivas (responsável)</th><th class="n">Coletivas (participou)</th><th class="n">Participações</th>' +
+    (ms.length > 1 ? '<th class="n">Individuais por mês</th>' : '') +
+    '</tr>';
+  const corpo = ps
+    .map(
+      (o) =>
+        '<tr><td>' +
+        esc(rotProf(o)) +
+        '</td>' +
+        (comEquipe ? '<td>' + esc(o.e || 'Sem equipe') + '</td>' : '') +
+        ['ind', 'comp', 'cr', 'ce', 'part'].map((x) => '<td class="n">' + inteiro(o.tot[x]) + '</td>').join('') +
+        (ms.length > 1 ? '<td class="n">' + ms.map((c) => inteiro((o.meses[c] || {}).ind || 0)).join(' · ') + '</td>' : '') +
+        '</tr>',
+    )
+    .join('');
+  return '<h3>Produção por profissional</h3><table class="csv"><thead>' + cab + '</thead><tbody>' + corpo + '</tbody></table>';
+}
+
+// ---------- eMulti: pessoas atendidas e compartilhamento ----------
+// M1 traz, acumulado no quadrimestre até o mês: atendimentos individuais, participações em coletivas e pessoas diferentes
+// (individual + coletiva, sem repetir). M2 traz, no mês: atendimentos compartilhados e coletivas com 2 ou mais profissionais.
+function tabEmulti(ms, chaves) {
+  const linhas = ms.map((c) => {
+    const o = { c, ind: 0, part: 0, pes: 0, min: 0, max: 0, comp: 0, indM: 0, col: 0, col2: 0, tem: false };
+    for (const l of dados[c] || []) {
+      if (!chaves.has(N(l.unidade) + '|' + N(l.equipe))) continue;
+      const x = l.extras || {};
+      if (l.codigo === 'M1') {
+        const d = x.detalhe || {};
+        o.tem = true;
+        o.ind += d.atendimentosIndividuais || 0;
+        o.part += d.participacoesColetivas || 0;
+        o.pes += l.denominador || 0;
+        o.min += d.pessoasMin != null ? d.pessoasMin : l.denominador || 0;
+        o.max += d.pessoasMax != null ? d.pessoasMax : l.denominador || 0;
+      }
+      if (l.codigo === 'M2') {
+        o.tem = true;
+        o.comp += (x.individuais && x.individuais.compartilhados) || 0;
+        o.indM += (x.individuais && x.individuais.total) || 0;
+        o.col += (x.coletivas && x.coletivas.total) || 0;
+        o.col2 += (x.coletivas && x.coletivas.compartilhadas) || 0;
+      }
+    }
+    return o;
+  });
+  if (!linhas.some((o) => o.tem)) return '';
+  const pc = (a, b) => (b ? ((100 * a) / b).toFixed(1).replace('.', ',') + '%' : '—');
+  return (
+    '<h3>eMulti · pessoas atendidas e trabalho compartilhado</h3><table class="csv"><thead><tr><th>Mês</th>' +
+    '<th class="n">Pessoas atendidas (individual + coletiva, sem repetir)¹</th><th class="n">Atend. individuais¹</th><th class="n">Participações em coletivas¹</th>' +
+    '<th class="n">Atend. compartilhados no mês</th><th class="n">% compartilhados</th><th class="n">Coletivas com 2+ profissionais no mês</th></tr></thead><tbody>' +
+    linhas
+      .map(
+        (o) =>
+          '<tr><td>' +
+          mesNome(o.c) +
+          '</td><td class="n"><b>' +
+          inteiro(o.pes) +
+          '</b>' +
+          (o.max > o.min ? '<br><small>entre ' + inteiro(o.min) + ' e ' + inteiro(o.max) + '</small>' : '') +
+          '</td><td class="n">' +
+          inteiro(o.ind) +
+          '</td><td class="n">' +
+          inteiro(o.part) +
+          '</td><td class="n">' +
+          inteiro(o.comp) +
+          '</td><td class="n">' +
+          pc(o.comp, o.indM) +
+          '</td><td class="n">' +
+          inteiro(o.col2) +
+          (o.col ? ' de ' + inteiro(o.col) : '') +
+          '</td></tr>',
+      )
+      .join('') +
+    '</tbody></table><p><small>¹ Acumulado do quadrimestre até o mês, como no indicador M1 (não se soma entre meses). As pessoas são contadas uma vez, juntando atendimento individual e participação em atividade coletiva; quando parte dos atendimentos só está em ficha CDS, o valor é uma estimativa e aparece a faixa. Com várias equipes, a soma pode contar duas vezes quem foi atendido por mais de uma eMulti.</small></p>'
+  );
 }
 
 // ---------- notas ----------
@@ -397,6 +533,7 @@ function montar(ms) {
       un ? un : 'Município de Cajamar',
       sel.length + ' equipe(s)' + ($('tipoEq').value ? ' · ' + NOME_GRUPO[$('tipoEq').value] : ''),
       tabProducao(ms, ch, 'Produção no período') +
+        tabEmulti(ms, chavesDe(sel.filter((t) => t.grupo === 'emulti'))) +
         tabCategorias(ms, ch) +
         grupos.map((g) => tabNotas(ms, chavesDe(sel.filter((t) => t.grupo === g)), g, 'Notas · ' + NOME_GRUPO[g] + ' (conjunto das equipes)')).join('') +
         tabEquipes(ms, sel, true),
@@ -411,7 +548,9 @@ function montar(ms) {
         u,
         ts.length + ' equipe(s)',
         tabProducao(ms, ch, 'Produção da unidade') +
+          tabEmulti(ms, chavesDe(ts.filter((t) => t.grupo === 'emulti'))) +
           tabCategorias(ms, ch) +
+          tabProfissionais(ms, ch, true) +
           grupos.map((g) => tabNotas(ms, chavesDe(ts.filter((t) => t.grupo === g)), g, 'Notas · ' + NOME_GRUPO[g] + ' (conjunto da unidade)')).join('') +
           tabEquipes(ms, ts, true),
       );
@@ -423,7 +562,43 @@ function montar(ms) {
         'Equipe',
         t.e,
         t.u + (t.tipo ? ' · ' + t.tipo : ''),
-        tabProducao(ms, ch, 'Produção da equipe') + tabCategorias(ms, ch) + tabNotas(ms, ch, t.grupo),
+        tabProducao(ms, ch, 'Produção da equipe') +
+          (t.grupo === 'emulti' ? tabEmulti(ms, ch) : '') +
+          tabCategorias(ms, ch) +
+          tabProfissionais(ms, ch, false) +
+          tabNotas(ms, ch, t.grupo),
+      );
+    }
+  } else if (rec === 'profissional') {
+    if (!PROD) return '<p class="vazio">A produção por profissional só aparece para administradores e gestores.</p>';
+    const porTk = new Map(sel.map((t) => [t.k, t]));
+    let ps = profissionais(ms, chavesDe(sel));
+    if ($('prof').value) ps = ps.filter((o) => o.k === $('prof').value);
+    if (!ps.length) return '<p class="vazio">Sem produção por profissional neste período (chega com a extensão 0.9.8, item “Produção por profissional”).</p>';
+    for (const o of ps) {
+      const t = porTk.get(o.tk);
+      const cab =
+        '<tr><th>Mês</th><th class="n">Atend. individuais</th><th class="n">Compartilhados</th><th class="n">Coletivas (responsável)</th><th class="n">Coletivas (participou)</th><th class="n">Participações</th></tr>';
+      const lin = (rot, z, forte) =>
+        '<tr' + (forte ? ' class="tot"' : '') + '><td>' + rot + '</td>' + ['ind', 'comp', 'cr', 'ce', 'part'].map((x) => '<td class="n">' + inteiro((z || {})[x] || 0) + '</td>').join('') + '</tr>';
+      const tipos = Object.entries(o.tipos).sort((a, b) => b[1] - a[1]);
+      out += dossie(
+        'Profissional',
+        semNomes() ? o.rotCat : o.nome,
+        (semNomes() ? '' : o.cat + ' · ') + (o.e || 'Sem equipe') + ' · ' + o.u,
+        '<h3>Produção</h3><table class="csv"><thead>' +
+          cab +
+          '</thead><tbody>' +
+          ms.map((c) => lin(mesNome(c), o.meses[c])).join('') +
+          (ms.length > 1 ? lin('<b>Total do período</b>', o.tot, true) : '') +
+          '</tbody></table>' +
+          (ms.length > 1 ? barras(ms.map((c) => [mesNome(c), (o.meses[c] || {}).ind || 0])) : '') +
+          (tipos.length
+            ? '<h3>Atendimentos individuais por tipo</h3><table class="csv"><thead><tr><th>Tipo</th><th class="n">Atendimentos</th></tr></thead><tbody>' +
+              tipos.map(([x, n]) => '<tr><td>' + esc(x) + '</td><td class="n">' + inteiro(n) + '</td></tr>').join('') +
+              '</tbody></table>'
+            : '') +
+          (t ? tabNotas(ms, new Set([t.k]), t.grupo, 'Notas da equipe ' + t.e) : ''),
       );
     }
   } else {
@@ -479,6 +654,7 @@ const TITULOS = {
   unidade: 'Produção e notas · por unidade',
   equipe: 'Produção e notas · por equipe',
   categoria: 'Produção e notas · por categoria profissional',
+  profissional: 'Produção e notas · por profissional',
   compilado: 'Produção e notas · compilado',
 };
 async function desenhar() {
@@ -524,7 +700,7 @@ async function desenhar() {
     id +
     '</dd></div></dl>' +
     corpo +
-    '<div class="rodadoc"><b>Como ler este documento.</b> Atendimentos individuais: relatório gerencial de atendimentos do PEC, por equipe e categoria (CBO) do profissional. Atividades coletivas: atividades registradas no mês com profissional da equipe (uma atividade com profissionais de duas equipes conta para as duas). As notas são da equipe, calculadas pelo Painel APS conforme as notas técnicas; com mais de um mês, os indicadores de produção somam os meses e os de acompanhamento de pessoas (C2 a C7, CVAT, M1…) usam o último mês. É uma prévia para acompanhamento; o resultado oficial é o do Ministério da Saúde. Este documento não contém dados de pacientes nem nomes de profissionais.</div>';
+    '<div class="rodadoc"><b>Como ler este documento.</b> Atendimentos individuais: relatório gerencial de atendimentos do PEC, por equipe e categoria (CBO) do profissional. Atividades coletivas: atividades registradas no mês com profissional da equipe (uma atividade com profissionais de duas equipes conta para as duas). As notas são da equipe, calculadas pelo Painel APS conforme as notas técnicas; com mais de um mês, os indicadores de produção somam os meses e os de acompanhamento de pessoas (C2 a C7, CVAT, M1…) usam o último mês. É uma prévia para acompanhamento; o resultado oficial é o do Ministério da Saúde. ' + (PROD && !semNomes() ? 'Este documento traz nomes de profissionais (produção por profissional, só para gestão) e nenhum dado de paciente.' : 'Este documento não contém dados de pacientes nem nomes de profissionais.') + '</div>';
   document.title = TITULOS[$('recorte').value] + ' · ' + (ms.length === 1 ? ms[0] : ms[0] + ' a ' + comp);
 }
 function preencherFiltros(ms) {
@@ -539,6 +715,15 @@ function preencherFiltros(ms) {
     '<option value="">Todas</option>' +
     eqs.map((t) => '<option value="' + esc(t.k) + '">' + esc(($('un').value ? '' : t.u + ' · ') + t.e) + '</option>').join('');
   $('eq').value = eqs.some((t) => t.k === e0) ? e0 : '';
+  const p0 = $('prof').value;
+  const ch = new Set(eqs.filter((t) => !$('eq').value || t.k === $('eq').value).map((t) => t.k));
+  const ps = PROD ? profissionais(ms, ch).sort((a, b) => ordPt(semNomes() ? a.rotCat : a.nome, semNomes() ? b.rotCat : b.nome)) : [];
+  $('prof').innerHTML =
+    '<option value="">Todos</option>' +
+    ps.map((o) => '<option value="' + esc(o.k) + '">' + esc(rotProf(o) + ($('eq').value ? '' : ' · ' + (o.e || o.u))) + '</option>').join('');
+  $('prof').value = ps.some((o) => o.k === p0) ? p0 : '';
+  $('lbProf').hidden = $('recorte').value !== 'profissional';
+  $('lbIdent').hidden = !PROD;
 }
 function mostrarPeriodo() {
   const m = $('modo').value;
@@ -601,7 +786,12 @@ async function iniciar() {
   const q = new URLSearchParams(location.search);
   if (q.get('recorte') && [...$('recorte').options].some((o) => o.value === q.get('recorte'))) $('recorte').value = q.get('recorte');
   mostrarPeriodo();
-  ['recorte', 'mes', 'quad', 'de', 'ate', 'eq'].forEach((id) => $(id).addEventListener('change', desenhar));
+  ['recorte', 'mes', 'quad', 'de', 'ate', 'prof', 'ident'].forEach((id) => $(id).addEventListener('change', desenhar));
+  $('eq').addEventListener('change', () => {
+    $('prof').value = '';
+    desenhar();
+  });
+  if (!ehGestor()) $('recorte').querySelector('option[value=profissional]').remove();
   $('modo').addEventListener('change', () => {
     mostrarPeriodo();
     desenhar();
@@ -612,6 +802,7 @@ async function iniciar() {
   });
   $('un').addEventListener('change', () => {
     $('eq').value = '';
+    $('prof').value = '';
     desenhar();
   });
   $('imprimir').addEventListener('click', () => {

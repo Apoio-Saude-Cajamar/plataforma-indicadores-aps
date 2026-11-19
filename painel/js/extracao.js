@@ -60,6 +60,11 @@
     { id: 'optFilasHora', finalidade: 'municipal', nome: 'Filas e faltas · faltas por horário', indicadores: 'Painel de filas e faltas', escopo: 'unidade',
       fonte: 'Agenda do mês de cada médico e enfermeiro com agenda ativa.', como: 'Uma consulta por profissional; de cada agendamento vêm só o horário, a situação e o tipo.',
       sai: 'Grade por dia da semana e hora: agendados, atendidos e faltas.', pessoal: 'Totais por profissional e horário. Nenhum dado de paciente.' },
+    { id: 'optProducao', finalidade: 'municipal', nome: 'Produção por profissional (individual e coletiva)', indicadores: 'Relatório "Produção e notas"', escopo: 'municipio',
+      fonte: 'Relatório gerencial de atendimentos (por profissional, tipo de atendimento e atendimento compartilhado) e atividades coletivas do mês.',
+      como: 'Duas consultas para o município inteiro e a mesma leitura das atividades coletivas usada na B4 e na eMulti.',
+      sai: 'Por profissional: nome, cargo, unidade e equipe; atendimentos individuais (por tipo), compartilhados, atividades coletivas como responsável e como participante e participações de cidadãos.',
+      pessoal: 'Totais por profissional (nome e cargo). Nenhum dado de paciente. Só administradores e gestores veem; o relatório pode sair só com a categoria, sem nomes.' },
     { id: 'optComposicao', finalidade: 'municipal', nome: 'Composição das equipes', indicadores: 'Árvore município › unidade › equipe › profissional', escopo: 'unidade',
       fonte: 'Quadro de lotações da unidade, no relatório clássico do PEC.', como: 'Uma passada por unidade. Coletas parciais se somam às unidades já recebidas no mês.',
       sai: 'Unidades, equipes, nome e cargo de cada profissional e avisos (por exemplo, profissional em mais de uma equipe).', pessoal: 'Nome e cargo dos profissionais. Nenhum dado de paciente.' }
