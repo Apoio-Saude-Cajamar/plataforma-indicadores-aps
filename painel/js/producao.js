@@ -141,6 +141,7 @@ function producao(ms, chaves) {
       }
       if (l.codigo === 'M2' && x.individuais) p.comp += x.individuais.compartilhados || 0;
     }
+    p.colComp = Math.min(p.colComp, p.col); // nunca mais coletivas com 2+ profissionais do que coletivas
     porMes[c] = p;
   }
   return porMes;
@@ -221,12 +222,37 @@ function tabProfissionais(ms, chaves, comEquipe) {
         '</tr>',
     )
     .join('');
+  const soma = (x) => ps.reduce((t, o) => t + (o.tot[x] || 0), 0);
+  const total =
+    ps.length > 1
+      ? '<tr class="tot"><td>Total dos profissionais</td>' +
+        (comEquipe ? '<td></td>' : '') +
+        ['ind', 'comp', 'cr', 'ce', 'part'].map((x) => '<td class="n">' + inteiro(soma(x)) + '</td>').join('') +
+        (ms.length > 1 ? '<td class="n">' + ms.map((c) => inteiro(ps.reduce((t, o) => t + ((o.meses[c] || {}).ind || 0), 0))).join(' · ') + '</td>' : '') +
+        '</tr>'
+      : '';
+  // Confere com o total da equipe (relatório de atendimentos): pode diferir por profissional em mais de uma equipe ou sem identificação.
+  let confere = '';
+  if (chaves) {
+    const pm = producao(ms, chaves);
+    const eq = ms.reduce((t, c) => t + pm[c].ind, 0);
+    if (eq && eq !== soma('ind'))
+      confere =
+        '<p><small><b>Conferência:</b> a soma dos profissionais (' +
+        inteiro(soma('ind')) +
+        ') é diferente do total de atendimentos individuais da equipe (' +
+        inteiro(eq) +
+        '). Isso pode ocorrer quando o profissional atua em mais de uma equipe ou quando há atendimentos sem profissional identificado; vale o total da equipe.</small></p>';
+  }
   return (
     '<h3>Produção por profissional</h3><table class="csv"><thead>' +
     cab +
     '</thead><tbody>' +
     corpo +
-    '</tbody></table><p><small>Individuais: atendimentos individuais; Compart.: atendimentos compartilhados; Colet. resp.: atividades coletivas como responsável; Colet. part.: atividades coletivas em que participou; Particip.: participações de cidadãos nessas atividades.</small></p>'
+    total +
+    '</tbody></table>' +
+    confere +
+    '<p><small>Individuais: atendimentos individuais; Compart.: atendimentos compartilhados; Colet. resp.: atividades coletivas como responsável; Colet. part.: atividades coletivas em que participou; Particip.: participações de cidadãos nessas atividades.</small></p>'
   );
 }
 
@@ -263,7 +289,7 @@ function tabEmulti(ms, chaves) {
   return (
     '<h3>eMulti · pessoas atendidas e trabalho compartilhado</h3><table class="csv"><thead><tr><th>Mês</th>' +
     '<th class="n">Pessoas atendidas, sem repetir¹</th><th class="n">Individuais¹</th><th class="n">Particip. em coletivas¹</th>' +
-    '<th class="n">Compart. no mês</th><th class="n">% compart.</th><th class="n">Colet. com 2+ prof. no mês</th></tr></thead><tbody>' +
+    '<th class="n">Compart. no mês</th><th class="n">% compart.</th><th class="n">Colet. com 2+ prof. no mês (M2)</th></tr></thead><tbody>' +
     linhas
       .map(
         (o) =>
@@ -287,7 +313,7 @@ function tabEmulti(ms, chaves) {
           '</td></tr>',
       )
       .join('') +
-    '</tbody></table><p><small>Pessoas atendidas: individual + coletiva, cada pessoa uma vez. Compart.: atendimentos individuais compartilhados. ¹ Acumulado do quadrimestre até o mês, como no indicador M1 (não se soma entre meses). As pessoas são contadas uma vez, juntando atendimento individual e participação em atividade coletiva; quando parte dos atendimentos só está em ficha CDS, o valor é uma estimativa e aparece a faixa. Com várias equipes, a soma pode contar duas vezes quem foi atendido por mais de uma eMulti.</small></p>'
+    '</tbody></table><p><small>Pessoas atendidas: individual + coletiva, cada pessoa uma vez. Compart.: atendimentos individuais compartilhados. ¹ Acumulado do quadrimestre até o mês, como no indicador M1 (não se soma entre meses). As pessoas são contadas uma vez, juntando atendimento individual e participação em atividade coletiva; quando parte dos atendimentos só está em ficha CDS, o valor é uma estimativa e aparece a faixa. Com várias equipes, a soma pode contar duas vezes quem foi atendido por mais de uma eMulti. Os números de coletivas deste quadro seguem o critério dos indicadores M1 e M2 e podem diferir da tabela “Produção da equipe”, que conta as atividades coletivas registradas no PEC com profissional da equipe.</small></p>'
   );
 }
 
@@ -470,7 +496,7 @@ function tabNotas(ms, chaves, grupo, titulo, lista) {
 }
 const tabMunicipal = (ms, chaves, titulo) => tabNotas(ms, chaves, null, titulo || 'Acompanhamento municipal', MUNICIPAIS);
 // Uma linha por equipe com o total do período e as notas (compilado e páginas de unidade).
-function tabEquipes(ms, lista, comNotas) {
+function tabEquipes(ms, lista, comNotas, semUnidade) {
   if (!lista.length) return '';
   const grupos = [...new Set(lista.map((t) => t.grupo))];
   return grupos
@@ -479,7 +505,7 @@ function tabEquipes(ms, lista, comNotas) {
       // Só os indicadores com resultado em alguma equipe do grupo.
       const cods = (comNotas ? INDICADORES[g] : []).filter((c) => ts.some((t) => nota(c, ms, new Set([t.k]))));
       const cab =
-        '<tr><th>Unidade</th><th>Equipe</th><th class="n">Atend. individuais</th><th class="n">Coletivas</th>' +
+        '<tr>' + (semUnidade ? '' : '<th>Unidade</th>') + '<th>Equipe</th><th class="n">Atend. individuais</th><th class="n">Coletivas</th>' +
         cods.map((c) => '<th class="n">' + c + '</th>').join('') +
         '</tr>';
       const corpo = ts
@@ -489,9 +515,9 @@ function tabEquipes(ms, lista, comNotas) {
           const soma = (k) => ms.reduce((s, c) => s + (pm[c][k] || 0), 0);
           const temCol = ms.some((c) => pm[c].temCol);
           return (
-            '<tr><td>' +
-            esc(t.u) +
-            '</td><td>' +
+            '<tr>' +
+            (semUnidade ? '' : '<td>' + esc(t.u) + '</td>') +
+            '<td>' +
             esc(t.e) +
             '</td><td class="n">' +
             inteiro(soma('ind')) +
@@ -582,7 +608,7 @@ function montar(ms) {
         'Unidade',
         u,
         ts.length + ' equipe(s)',
-        '<h2>Resumo da unidade</h2>' + tabProducao(ms, ch, 'Produção da unidade (todas as equipes)') + tabEquipes(ms, ts, true) + '<h2>Equipes</h2>' + blocos,
+        tabProducao(ms, ch, 'Produção da unidade (todas as equipes)') + tabEquipes(ms, ts, true, true) + blocos,
       );
     }
   } else if (rec === 'equipe') {
@@ -708,6 +734,16 @@ async function desenhar() {
     .filter(Boolean)
     .sort();
   const fmtD = (d) => new Date(d).toLocaleDateString('pt-BR');
+  // Mês em andamento: última coleta do mês anterior ao último dia dele.
+  const parciais = ms.filter((c) => {
+    const ds = (dados[c] || []).map((l) => l.coletadoEm).filter(Boolean).sort();
+    if (!ds.length) return false;
+    const [a, m] = c.split('-').map(Number);
+    return new Date(ds[ds.length - 1]) < new Date(a, m - 1, new Date(a, m, 0).getDate(), 23, 59);
+  });
+  const aviso = parciais.length
+    ? '<div class="aviso-parcial"><b>Mês em andamento:</b> ' + parciais.map(mesNome).join(', ') + ' foi coletado antes do fim do mês; os números ainda são parciais.</div>'
+    : '';
   $('doc').innerHTML =
     '<div class="capa"><img src="/img/painelaps.svg" alt=""><div><div class="org">Painel APS · Secretaria de Saúde de Cajamar</div><h1>' +
     esc(TITULOS[$('recorte').value]) +
@@ -730,8 +766,12 @@ async function desenhar() {
     '</dd></div><div><dt>Código do documento</dt><dd>' +
     id +
     '</dd></div></dl>' +
+    aviso +
     corpo +
-    '<div class="rodadoc"><b>Como ler este documento.</b> Atendimentos individuais: relatório gerencial de atendimentos do PEC, por equipe e categoria (CBO) do profissional. Atividades coletivas: atividades registradas no mês com profissional da equipe (uma atividade com profissionais de duas equipes conta para as duas). As notas são da equipe, calculadas pelo Painel APS conforme as notas técnicas; com mais de um mês, os indicadores de produção somam os meses e os de acompanhamento de pessoas (C2 a C7, CVAT, M1…) usam o último mês. É uma prévia para acompanhamento; o resultado oficial é o do Ministério da Saúde. ' + (PROD && !semNomes() ? 'Este documento traz nomes de profissionais (produção por profissional, só para gestão) e nenhum dado de paciente.' : 'Este documento não contém dados de pacientes nem nomes de profissionais.') + '</div>';
+    '<div class="rodadoc"><b>Como ler este documento.</b> Atendimentos individuais: relatório gerencial de atendimentos do PEC, por equipe e categoria (CBO) do profissional. Atividades coletivas: atividades registradas no mês com profissional da equipe (uma atividade com profissionais de duas equipes conta para as duas). As notas são da equipe, calculadas pelo Painel APS conforme as notas técnicas; com mais de um mês, os indicadores de produção somam os meses e os de acompanhamento de pessoas (C2 a C7, CVAT, M1…) usam o último mês. É uma prévia para acompanhamento; o resultado oficial é o do Ministério da Saúde. ' + (corpo.includes('<abbr') ? '* Faixa de conceito a confirmar com a nota técnica vigente. ' : '') + (PROD && !semNomes() ? 'Este documento traz nomes de profissionais (produção por profissional, só para gestão) e nenhum dado de paciente.' : 'Este documento não contém dados de pacientes nem nomes de profissionais.') + '</div>';
+  $('doc').querySelectorAll('table.csv').forEach((t) => {
+    if (!t.classList.contains('eqs') && t.tBodies[0] && t.tBodies[0].rows.length <= 12) t.classList.add('inteira');
+  });
   document.title = TITULOS[$('recorte').value] + ' · ' + (ms.length === 1 ? ms[0] : ms[0] + ' a ' + comp);
 }
 function preencherFiltros(ms) {
