@@ -185,6 +185,8 @@ export function conferirB4(atual, anterior = []) {
       denominador: l.denominador || 0,
     };
     linhas.push(r);
+    if (c.documentoNaoLido)
+      add('atencao', r, 'o PEC não devolveu CPF nem CNS dos participantes no acesso usado; a B4 foi contada sem conferir o documento.');
     if (r.mediaPorAtividade !== null && r.mediaPorAtividade > L.mediaPorAtividade)
       add('atencao', r, `média de ${r.mediaPorAtividade.toFixed(0)} participantes por atividade; confira se a lista de presença é de uma só sessão.`);
     if (r.maiorAtividade > L.maiorAtividade)
