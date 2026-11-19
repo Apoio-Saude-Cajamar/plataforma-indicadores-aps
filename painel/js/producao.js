@@ -25,6 +25,10 @@ const semEquipe = (e) => !e || e === 'Município' || /^sem equipe$/i.test(String
 // Tipos de equipe e os indicadores de cada um.
 const GRUPO_TIPO = { ESF: 'esf', EAP: 'esf', ESB: 'esb', EMULTI: 'emulti', ECR: 'ecr' };
 const NOME_GRUPO = { esf: 'eSF e eAP', esb: 'eSB (saúde bucal)', emulti: 'eMulti', ecr: 'eCR (Consultório na Rua)', outra: 'Outras equipes' };
+// Indicadores principais (tabela de equipes) e, nas notas da equipe, também os itens que os compõem.
+const SUBITENS = { C7: ['C7-A', 'C7-B', 'C7-C', 'C7-D'], CVAT: ['CVAT-CAD', 'CVAT-ACO'] };
+// Acompanhamento municipal por equipe (fora do cofinanciamento federal).
+const MUNICIPAIS = ['Q14.2.1', 'Q12.2', 'S3', 'S4', 'S20', 'VINC6A12', 'TERR-ATU', 'TERR-COMP', 'TERR-VIS', 'TERR-FA'];
 const INDICADORES = {
   esf: ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'CVAT'],
   esb: ['B1', 'B2', 'B3', 'B4', 'B5', 'B6'],
@@ -418,19 +422,24 @@ function tabCategorias(ms, chaves) {
   );
 }
 // Notas de um grupo de equipes (mesmo tipo): linhas = indicadores, colunas = meses e período.
-function tabNotas(ms, chaves, grupo, titulo) {
-  const cods = INDICADORES[grupo] || [];
+function tabNotas(ms, chaves, grupo, titulo, lista) {
+  const cods = lista || (INDICADORES[grupo] || []).flatMap((c) => [c, ...(SUBITENS[c] || [])]);
   if (!cods.length) return '';
+  const sub = (cod) => /^(C7|CVAT)-/.test(cod);
   const linhas = cods
     .map((cod) => {
       const porMes = ms.map((c) => nota(cod, [c], chaves));
       const per = ms.length > 1 ? nota(cod, ms, chaves) : porMes[0];
       if (!per && porMes.every((x) => !x)) return '';
+      const meta = lista && CATALOGO[cod] && CATALOGO[cod].meta ? ' <small>(meta ' + esc(CATALOGO[cod].meta) + ')</small>' : '';
       return (
-        '<tr><td><b>' +
+        '<tr' +
+        (sub(cod) ? ' class="filho"' : '') +
+        '><td><b>' +
         cod +
         '</b> · ' +
         esc(nomeInd(cod)) +
+        meta +
         '</td>' +
         (ms.length > 1 ? porMes.map((r) => '<td class="n">' + celNota(r) + '</td>').join('') : '') +
         '<td class="n">' +
@@ -440,7 +449,7 @@ function tabNotas(ms, chaves, grupo, titulo) {
       );
     })
     .join('');
-  if (!linhas) return '<h3>' + (titulo || 'Notas dos indicadores') + '</h3><p class="vazio">Sem indicadores deste tipo de equipe no período.</p>';
+  if (!linhas) return lista ? '' : '<h3>' + (titulo || 'Notas dos indicadores') + '</h3><p class="vazio">Sem indicadores deste tipo de equipe no período.</p>';
   return (
     '<h3>' +
     (titulo || 'Notas dos indicadores') +
@@ -453,6 +462,7 @@ function tabNotas(ms, chaves, grupo, titulo) {
     '</tbody></table>'
   );
 }
+const tabMunicipal = (ms, chaves, titulo) => tabNotas(ms, chaves, null, titulo || 'Acompanhamento municipal', MUNICIPAIS);
 // Uma linha por equipe com o total do período e as notas (compilado e páginas de unidade).
 function tabEquipes(ms, lista, comNotas) {
   if (!lista.length) return '';
@@ -536,6 +546,7 @@ function montar(ms) {
         tabEmulti(ms, chavesDe(sel.filter((t) => t.grupo === 'emulti'))) +
         tabCategorias(ms, ch) +
         grupos.map((g) => tabNotas(ms, chavesDe(sel.filter((t) => t.grupo === g)), g, 'Notas · ' + NOME_GRUPO[g] + ' (conjunto das equipes)')).join('') +
+        tabMunicipal(ms, ch, 'Acompanhamento municipal (conjunto das equipes)') +
         tabEquipes(ms, sel, true),
     );
   } else if (rec === 'unidade') {
@@ -552,6 +563,7 @@ function montar(ms) {
           tabCategorias(ms, ch) +
           tabProfissionais(ms, ch, true) +
           grupos.map((g) => tabNotas(ms, chavesDe(ts.filter((t) => t.grupo === g)), g, 'Notas · ' + NOME_GRUPO[g] + ' (conjunto da unidade)')).join('') +
+          tabMunicipal(ms, ch, 'Acompanhamento municipal (conjunto da unidade)') +
           tabEquipes(ms, ts, true),
       );
     }
@@ -566,7 +578,8 @@ function montar(ms) {
           (t.grupo === 'emulti' ? tabEmulti(ms, ch) : '') +
           tabCategorias(ms, ch) +
           tabProfissionais(ms, ch, false) +
-          tabNotas(ms, ch, t.grupo),
+          tabNotas(ms, ch, t.grupo) +
+          tabMunicipal(ms, ch),
       );
     }
   } else if (rec === 'profissional') {
@@ -598,7 +611,7 @@ function montar(ms) {
               tipos.map(([x, n]) => '<tr><td>' + esc(x) + '</td><td class="n">' + inteiro(n) + '</td></tr>').join('') +
               '</tbody></table>'
             : '') +
-          (t ? tabNotas(ms, new Set([t.k]), t.grupo, 'Notas da equipe ' + t.e) : ''),
+          (t ? tabNotas(ms, new Set([t.k]), t.grupo, 'Notas da equipe ' + t.e) + tabMunicipal(ms, new Set([t.k]), 'Acompanhamento municipal da equipe') : ''),
       );
     }
   } else {
