@@ -23,14 +23,16 @@ function montarDC(modelo, Classe, alvo, props) {
   function desenha(no, escopo, pai) {
     if (no.nodeType === 3) { pai.appendChild(document.createTextNode(no.nodeValue.indexOf('{{') < 0 ? no.nodeValue : String(valorDe(no.nodeValue, escopo) ?? ''))); return; }
     if (no.nodeType !== 1) return;
-    if (no.tagName === 'TEMPLATE') {
-      const filhos = no.content.childNodes, tipo = no.getAttribute('data-sc');
+    // Dentro de um <svg> o navegador lê <template> como elemento SVG comum (sem .content): trata do mesmo jeito.
+    if (no.tagName === 'TEMPLATE' || (no.localName === 'template' && no.hasAttribute('data-sc'))) {
+      const filhos = (no.content || no).childNodes, tipo = no.getAttribute('data-sc');
       if (tipo === 'for') { const lista = busca(no.getAttribute('list').replace(/[{}]/g, ''), escopo) || [], nome = no.getAttribute('as');
         lista.forEach(item => filhos.forEach(f => desenha(f, escopo.concat([{ [nome]: item }]), pai))); }
       else if (busca(no.getAttribute('value').replace(/[{}]/g, ''), escopo)) filhos.forEach(f => desenha(f, escopo, pai));
       return;
     }
-    const el = document.createElement(no.tagName.toLowerCase());
+    // Elementos de SVG precisam do espaço de nomes do SVG para aparecer (gráficos desenhados na marcação).
+    const el = no.namespaceURI === 'http://www.w3.org/2000/svg' ? document.createElementNS(no.namespaceURI, no.localName) : document.createElement(no.tagName.toLowerCase());
     let valorSel;
     for (const a of no.attributes) {
       if (a.name.indexOf('hint-') === 0) continue;

@@ -439,6 +439,25 @@ test('filas e faltas: a extensão envia por profissional, a recoleta parcial nã
   assert.deepEqual([d.profissionais[0].faltas, d.profissionais[0].atendimentos, d.profissionais[0].diasVaga], [10, 90, 12]);
 });
 
+test('filas: evolução devolve os meses guardados em ordem, com limite e corte por competência; só admin e gestor leem', async () => {
+  const env = comPaginas(ambiente());
+  const H = { headers: { authorization: 'Bearer ' + CHAVES.TOKEN_COLETA } };
+  const n = navegador(env);
+  const P = (x) => Object.assign({ unidade: 'UBS A', equipe: 'EQ 1', cbo: 'MÉDICO DA ESTRATÉGIA DE SAÚDE DA FAMÍLIA - 225142', categoria: 'Médico', nome: 'Profissional Um' }, x);
+  for (const [c, f] of [['2026-08', 5], ['2026-09', 9], ['2026-10', 12]])
+    assert.equal((await n.pedir('PUT', '/api/v1/filas', { competencia: c, profissionais: [P({ faltas: f, atendimentos: 50 })] }, H)).status, 200);
+  const criar = async (login, perfil) => { const u = await admin(env, { login, nome: login, perfil }); env.DB.prepare('UPDATE usuario SET trocar_senha = 0').run(); const v = navegador(env); assert.equal((await v.pedir('POST', '/api/v1/auth/entrar', { login, senha: u.senhaProvisoria })).status, 200); return v; };
+  const gestor = await criar('gestor.evo', 'gestor'), leitor = await criar('leitor.evo', 'leitor');
+  assert.equal((await leitor.pedir('GET', '/api/v1/filas/evolucao')).status, 403);
+  const d = await (await gestor.pedir('GET', '/api/v1/filas/evolucao')).json();
+  assert.deepEqual(d.competencias, ['2026-08', '2026-09', '2026-10']);
+  assert.deepEqual(d.profissionais.map((p) => [p.competencia, p.faltas]), [['2026-08', 5], ['2026-09', 9], ['2026-10', 12]]);
+  const d2 = await (await gestor.pedir('GET', '/api/v1/filas/evolucao?ate=2026-09&meses=2')).json();
+  assert.deepEqual(d2.competencias, ['2026-08', '2026-09']);
+  assert.equal(d2.profissionais.length, 2);
+  assert.equal((await gestor.pedir('GET', '/api/v1/filas/evolucao?ate=2026-13')).status, 400);
+});
+
 test('faltas por horário: a extensão envia a grade por profissional, grade inválida fica de fora, só admin e gestor leem', async () => {
   const env = comPaginas(ambiente());
   const H = { headers: { authorization: 'Bearer ' + CHAVES.TOKEN_COLETA } };

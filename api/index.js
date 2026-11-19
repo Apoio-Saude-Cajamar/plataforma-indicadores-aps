@@ -42,7 +42,7 @@ import { gravarComposicao, lerComposicao } from './composicao.js';
 import { populacaoMunicipio } from './populacao.js';
 import { monitoramento } from './monitoramento.js';
 import { pendencias } from './pendencias.js';
-import { gravarFilas, gravarFilasHorario, lerFilas } from './filas.js';
+import { gravarFilas, gravarFilasHorario, lerFilas, lerFilasEvolucao } from './filas.js';
 import { listarLancamentos, criarLancamento } from './lancamentos.js';
 import { listarEstadual, criarEstadual, gravarVacinasPec, lerVacinasPec } from './estadual.js';
 import { meusRegistros, registros, estadoBackup } from './registros.js';
@@ -90,6 +90,7 @@ const ROTAS = [
   ['PUT', /^\/filas\/horarios$/, 'coleta', async (req, env) => json(await gravarFilasHorario(env, await lerJson(req)))],
   // Traz nomes de profissionais: só administrador e gestor.
   ['GET', /^\/filas$/, 'lancar', async (req, env, m, url) => json(await lerFilas(env, url))],
+  ['GET', /^\/filas\/evolucao$/, 'lancar', async (req, env, m, url) => json(await lerFilasEvolucao(env, url))],
   ['GET', /^\/lancamentos$/, 'leitura', async (req, env, m, url) => json(await listarLancamentos(env, url))],
   // Emissão de relatório (PDF/CSV) pelo navegador: fica no histórico de quem emitiu. Não guarda o conteúdo do relatório.
   [
