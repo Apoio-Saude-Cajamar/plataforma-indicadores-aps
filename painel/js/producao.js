@@ -206,8 +206,8 @@ function tabProfissionais(ms, chaves, comEquipe) {
     (semNomes() ? 'Profissional (categoria)' : 'Profissional') +
     '</th>' +
     (comEquipe ? '<th>Equipe</th>' : '') +
-    '<th class="n">Atend. individuais</th><th class="n">Compartilhados</th><th class="n">Coletivas (responsável)</th><th class="n">Coletivas (participou)</th><th class="n">Participações</th>' +
-    (ms.length > 1 ? '<th class="n">Individuais por mês</th>' : '') +
+    '<th class="n">Individuais</th><th class="n">Compart.</th><th class="n">Colet. resp.</th><th class="n">Colet. part.</th><th class="n">Particip.</th>' +
+    (ms.length > 1 ? '<th class="n">Indiv. por mês</th>' : '') +
     '</tr>';
   const corpo = ps
     .map(
@@ -221,7 +221,13 @@ function tabProfissionais(ms, chaves, comEquipe) {
         '</tr>',
     )
     .join('');
-  return '<h3>Produção por profissional</h3><table class="csv"><thead>' + cab + '</thead><tbody>' + corpo + '</tbody></table>';
+  return (
+    '<h3>Produção por profissional</h3><table class="csv"><thead>' +
+    cab +
+    '</thead><tbody>' +
+    corpo +
+    '</tbody></table><p><small>Individuais: atendimentos individuais; Compart.: atendimentos compartilhados; Colet. resp.: atividades coletivas como responsável; Colet. part.: atividades coletivas em que participou; Particip.: participações de cidadãos nessas atividades.</small></p>'
+  );
 }
 
 // ---------- eMulti: pessoas atendidas e compartilhamento ----------
@@ -256,8 +262,8 @@ function tabEmulti(ms, chaves) {
   const pc = (a, b) => (b ? ((100 * a) / b).toFixed(1).replace('.', ',') + '%' : '—');
   return (
     '<h3>eMulti · pessoas atendidas e trabalho compartilhado</h3><table class="csv"><thead><tr><th>Mês</th>' +
-    '<th class="n">Pessoas atendidas (individual + coletiva, sem repetir)¹</th><th class="n">Atend. individuais¹</th><th class="n">Participações em coletivas¹</th>' +
-    '<th class="n">Atend. compartilhados no mês</th><th class="n">% compartilhados</th><th class="n">Coletivas com 2+ profissionais no mês</th></tr></thead><tbody>' +
+    '<th class="n">Pessoas atendidas, sem repetir¹</th><th class="n">Individuais¹</th><th class="n">Particip. em coletivas¹</th>' +
+    '<th class="n">Compart. no mês</th><th class="n">% compart.</th><th class="n">Colet. com 2+ prof. no mês</th></tr></thead><tbody>' +
     linhas
       .map(
         (o) =>
@@ -281,7 +287,7 @@ function tabEmulti(ms, chaves) {
           '</td></tr>',
       )
       .join('') +
-    '</tbody></table><p><small>¹ Acumulado do quadrimestre até o mês, como no indicador M1 (não se soma entre meses). As pessoas são contadas uma vez, juntando atendimento individual e participação em atividade coletiva; quando parte dos atendimentos só está em ficha CDS, o valor é uma estimativa e aparece a faixa. Com várias equipes, a soma pode contar duas vezes quem foi atendido por mais de uma eMulti.</small></p>'
+    '</tbody></table><p><small>Pessoas atendidas: individual + coletiva, cada pessoa uma vez. Compart.: atendimentos individuais compartilhados. ¹ Acumulado do quadrimestre até o mês, como no indicador M1 (não se soma entre meses). As pessoas são contadas uma vez, juntando atendimento individual e participação em atividade coletiva; quando parte dos atendimentos só está em ficha CDS, o valor é uma estimativa e aparece a faixa. Com várias equipes, a soma pode contar duas vezes quem foi atendido por mais de uma eMulti.</small></p>'
   );
 }
 
@@ -550,21 +556,33 @@ function montar(ms) {
         tabEquipes(ms, sel, true),
     );
   } else if (rec === 'unidade') {
+    // Unidade: resumo (produção somada e quadro das equipes) e, em seguida, cada equipe separada.
     for (const u of [...new Set(sel.map((t) => t.u))]) {
       const ts = sel.filter((t) => t.u === u);
       const ch = chavesDe(ts);
-      const grupos = [...new Set(ts.map((t) => t.grupo))];
+      const blocos = ts
+        .map((t) => {
+          const c1 = new Set([t.k]);
+          return (
+            '<div class="eqcab"><h2>' +
+            esc(t.e) +
+            '</h2><small>' +
+            esc(NOME_GRUPO[t.grupo] + (t.tipo ? ' · ' + t.tipo : '')) +
+            '</small></div>' +
+            tabProducao(ms, c1, 'Produção da equipe') +
+            (t.grupo === 'emulti' ? tabEmulti(ms, c1) : '') +
+            tabCategorias(ms, c1) +
+            tabProfissionais(ms, c1, false) +
+            tabNotas(ms, c1, t.grupo) +
+            tabMunicipal(ms, c1)
+          );
+        })
+        .join('');
       out += dossie(
         'Unidade',
         u,
         ts.length + ' equipe(s)',
-        tabProducao(ms, ch, 'Produção da unidade') +
-          tabEmulti(ms, chavesDe(ts.filter((t) => t.grupo === 'emulti'))) +
-          tabCategorias(ms, ch) +
-          tabProfissionais(ms, ch, true) +
-          grupos.map((g) => tabNotas(ms, chavesDe(ts.filter((t) => t.grupo === g)), g, 'Notas · ' + NOME_GRUPO[g] + ' (conjunto da unidade)')).join('') +
-          tabMunicipal(ms, ch, 'Acompanhamento municipal (conjunto da unidade)') +
-          tabEquipes(ms, ts, true),
+        '<h2>Resumo da unidade</h2>' + tabProducao(ms, ch, 'Produção da unidade (todas as equipes)') + tabEquipes(ms, ts, true) + '<h2>Equipes</h2>' + blocos,
       );
     }
   } else if (rec === 'equipe') {
