@@ -444,6 +444,39 @@ test('recoleta do mesmo mês: vale a linha mais recente de cada indicador e equi
   assert.deepEqual(por, { C1: 55, B2: 30 });
 });
 
+test('recoleta com "substituir todos": só vale o que a nova coleta trouxe, e só se ela terminar completa', async () => {
+  const env = comPaginas(ambiente());
+  const H = { headers: { authorization: 'Bearer ' + CHAVES.TOKEN_COLETA } };
+  const n = navegador(env);
+  const enviar = async (id, quando, unidade, linhas) => {
+    await n.pedir('POST', '/api/v1/coletas', { id, competencia: '2026-10', tipo: 'completa', versaoExtensao: 't', iniciadoEm: quando }, H);
+    assert.equal((await n.pedir('PUT', `/api/v1/coletas/${id}/etapa`, { chave: 'unidade:' + unidade, bloco: 'unidade', unidade, status: 'ok', coletadoEm: quando, linhas }, H)).status, 200);
+  };
+  const L = (unidade, codigo, numerador) => ({ codigo, unidade, equipe: 'EQ 1', numerador, denominador: 100 });
+  const ler = async () => {
+    const d = await (await n.pedir('GET', '/api/v1/dados?competencia=2026-10', undefined, H)).json();
+    return Object.fromEntries(d.indicadores.map((l) => [l.unidade + '|' + l.codigo, l.numerador]));
+  };
+  await enviar('c1', '2026-11-01T10:00:00.000Z', 'UBS A', [L('UBS A', 'C1', 40), L('UBS A', 'B2', 30)]);
+  await enviar('c1', '2026-11-01T10:00:00.000Z', 'UBS B', [L('UBS B', 'C1', 20)]);
+  await n.pedir('POST', '/api/v1/coletas/c1/concluir', { status: 'concluida' }, H);
+  // Parcial com "todos": nada é substituído.
+  await enviar('c2', '2026-11-05T10:00:00.000Z', 'UBS A', [L('UBS A', 'C1', 55)]);
+  const p = await (await n.pedir('POST', '/api/v1/coletas/c2/concluir', { status: 'parcial', substituir: 'todos' }, H)).json();
+  assert.equal(p.substituidas, 0);
+  assert.deepEqual(await ler(), { 'UBS A|C1': 55, 'UBS A|B2': 30, 'UBS B|C1': 20 });
+  // Completa com "todos": o que a nova coleta não trouxe deixa de valer.
+  await enviar('c3', '2026-11-10T10:00:00.000Z', 'UBS A', [L('UBS A', 'C1', 60)]);
+  const r = await (await n.pedir('POST', '/api/v1/coletas/c3/concluir', { status: 'concluida', substituir: 'todos' }, H)).json();
+  assert.equal(r.substituidas, 3);
+  assert.deepEqual(await ler(), { 'UBS A|C1': 60 });
+  // Nada foi apagado: as etapas antigas continuam no banco, marcadas como substituídas.
+  const lista = await (await n.pedir('GET', '/api/v1/coletas?competencia=2026-10', undefined, H)).json();
+  const c1 = lista.coletas.find((c) => c.id === 'c1');
+  assert.equal(c1.etapasSubstituidas, 2);
+  assert.equal(c1.etapasComFalha, 0);
+});
+
 test('filas e faltas: a extensão envia por profissional, a recoleta parcial não apaga, só admin e gestor leem', async () => {
   const env = comPaginas(ambiente());
   const H = { headers: { authorization: 'Bearer ' + CHAVES.TOKEN_COLETA } };
