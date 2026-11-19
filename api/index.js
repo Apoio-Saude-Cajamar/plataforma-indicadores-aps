@@ -213,6 +213,10 @@ const PUBLICAS = [
   /^\/publico(\.html)?$/,
   /^\/favicon\.(ico|svg)$/,
   /^\/robots\.txt$/,
+  // App instalável: manifesto, service worker e aviso de sem conexão (nenhum dado).
+  /^\/manifest\.webmanifest$/,
+  /^\/sw\.js$/,
+  /^\/offline(\.html)?$/,
 ];
 const SO_ADMIN = [
   /^\/usuarios(\.html)?$/,
