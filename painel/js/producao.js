@@ -261,7 +261,7 @@ function tabProfissionais(ms, chaves, comEquipe) {
 // (individual + coletiva, sem repetir). M2 traz, no mês: atendimentos compartilhados e coletivas com 2 ou mais profissionais.
 function tabEmulti(ms, chaves) {
   const linhas = ms.map((c) => {
-    const o = { c, ind: 0, part: 0, pes: 0, min: 0, max: 0, comp: 0, indM: 0, col: 0, col2: 0, tem: false };
+    const o = { c, ind: 0, part: 0, pes: 0, min: 0, max: 0, comp: 0, indM: 0, col: 0, col2: 0, cuid: 0, tem: false };
     for (const l of dados[c] || []) {
       if (!chaves.has(N(l.unidade) + '|' + N(l.equipe))) continue;
       const x = l.extras || {};
@@ -280,6 +280,7 @@ function tabEmulti(ms, chaves) {
         o.indM += (x.individuais && x.individuais.total) || 0;
         o.col += (x.coletivas && x.coletivas.total) || 0;
         o.col2 += (x.coletivas && x.coletivas.compartilhadas) || 0;
+        o.cuid += x.cuidado || 0;
       }
     }
     return o;
@@ -289,7 +290,7 @@ function tabEmulti(ms, chaves) {
   return (
     '<h3>eMulti · pessoas atendidas e trabalho compartilhado</h3><table class="csv"><thead><tr><th>Mês</th>' +
     '<th class="n">Pessoas atendidas, sem repetir¹</th><th class="n">Individuais¹</th><th class="n">Particip. em coletivas¹</th>' +
-    '<th class="n">Compart. no mês</th><th class="n">% compart.</th><th class="n">Colet. com 2+ prof. no mês (M2)</th></tr></thead><tbody>' +
+    '<th class="n">Compart. no mês</th><th class="n">% compart.</th><th class="n">Colet. compartilhadas no mês (M2)</th><th class="n">Cuidado compartilhado respondido (M2)</th></tr></thead><tbody>' +
     linhas
       .map(
         (o) =>
@@ -310,6 +311,8 @@ function tabEmulti(ms, chaves) {
           '</td><td class="n">' +
           inteiro(o.col2) +
           (o.col ? ' de ' + inteiro(o.col) : '') +
+          '</td><td class="n">' +
+          inteiro(o.cuid) +
           '</td></tr>',
       )
       .join('') +

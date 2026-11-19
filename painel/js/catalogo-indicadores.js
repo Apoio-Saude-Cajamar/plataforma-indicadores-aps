@@ -196,12 +196,12 @@ var CATALOGO = {
   M2: {
     nome: 'Ações interprofissionais da eMulti',
     tipo: 'percentual',
-    fonte: 'Gerencial de atendimentos (atendimento compartilhado) + atividades coletivas',
+    fonte: 'Gerencial de atendimentos (atendimento compartilhado) + atividades coletivas + compartilhamento do cuidado (PEC)',
     formula:
-      '(atendimentos individuais compartilhados + atividades coletivas com 2 ou mais profissionais) ÷ (atendimentos individuais + atividades coletivas)',
+      '(atendimentos individuais compartilhados + atividades coletivas compartilhadas + compartilhamentos do cuidado respondidos) ÷ (atendimentos individuais + atividades coletivas + compartilhamentos do cuidado respondidos), por equipe (NT 44/2026)',
     precisao: 'aproximado',
     margem:
-      'Exato para os registros da própria eMulti. Quando o profissional da eMulti é o segundo profissional num atendimento registrado por outra equipe, o registro fica com a outra equipe e não entra aqui. Só entram os CBOs da eMulti listados na NT 44/2026. Ainda não entram: reuniões com o tema discussão de caso/PTS, atendimento odontológico compartilhado, o compartilhamento virtual de cuidado respondido pela eMulti e o desconto de registros em duplicata. O cálculo é mensal, para acompanhamento; a nota oficial usa os últimos 4 meses. Faixas da nota: Ótimo > 5; Bom > 2,5 e ≤ 5; Suficiente > 1 e ≤ 2,5; Regular ≤ 1 (a nota não deixa claro em que unidade; por isso o Painel mostra o percentual sem classificar).',
+      'Atividade coletiva compartilhada: 2 ou mais profissionais de nível superior ou médio, pessoas diferentes (CPF/CNS), pelo menos 1 com CBO de eMulti; reunião só conta com o tema discussão de caso/PTS. O compartilhamento do cuidado é a contagem das solicitações respondidas pela eMulti no mês (a data usada é a do filtro do PEC). O atendimento individual compartilhado usa o campo do relatório do PEC, que pode não coincidir com a regra da nota (2 ou mais profissionais de nível superior com CNS diferentes); quando o profissional da eMulti é o segundo profissional num atendimento registrado por outra equipe, o registro fica com a outra equipe e não entra aqui. Ainda não entram: atendimento odontológico compartilhado e o desconto de registros em duplicata no mesmo dia. O cálculo é mensal, para acompanhamento; a nota oficial usa os últimos 4 meses. Faixas da nota: Ótimo > 5; Bom > 2,5 e ≤ 5; Suficiente > 1 e ≤ 2,5; Regular ≤ 1 (a nota não deixa claro em que unidade; por isso o Painel mostra o percentual sem classificar).',
   },
   M1: {
     nome: 'Média de atendimentos por pessoa (eMulti)',
@@ -211,7 +211,7 @@ var CATALOGO = {
       '(atendimentos individuais + participações em atividades coletivas) ÷ pessoas diferentes atendidas, nos últimos 4 meses até o mês da coleta (NT 43/2026)',
     precisao: 'aproximado',
     margem:
-      'Pessoas diferentes vêm da lista de atendimentos do PEC e dos participantes das atividades. Atendimentos lançados só em ficha CDS não mostram a pessoa: foram estimados com a mesma proporção de pessoas por atendimento. A faixa vai do caso em que todos são pessoas já contadas (média maior) ao caso em que todos são pessoas novas (média menor). Só entram os CBOs da eMulti listados na NT 43/2026. Cada pessoa conta uma vez por equipe eMulti no denominador, mesmo com vários atendimentos em dias diferentes (o numerador conta todos). A nota usa só pessoas com CPF ou CNS válido; o numerador do gerencial pode incluir atendimentos sem pessoa identificada, e atendimentos em que o profissional da eMulti é secundário em outra equipe não entram. Faixas: Ótimo > 3; Bom > 2 e ≤ 3; Suficiente > 1 e ≤ 2; Regular ≤ 1.',
+      'Pessoas diferentes vêm da lista de atendimentos do PEC e dos participantes das atividades. Atendimentos lançados só em ficha CDS não mostram a pessoa: foram estimados com a mesma proporção de pessoas por atendimento. A faixa vai do caso em que todos são pessoas já contadas (média maior) ao caso em que todos são pessoas novas (média menor). Só entram os CBOs da eMulti listados na NT 43/2026. Cada pessoa conta uma vez por equipe eMulti no denominador, mesmo com vários atendimentos em dias diferentes (o numerador conta todos). Na parte coletiva, só entram participantes com CPF ou CNS válido (como pede a nota). A nota usa só pessoas com CPF ou CNS válido; o numerador do gerencial pode incluir atendimentos sem pessoa identificada, e atendimentos em que o profissional da eMulti é secundário em outra equipe não entram. Faixas: Ótimo > 3; Bom > 2 e ≤ 3; Suficiente > 1 e ≤ 2; Regular ≤ 1.',
   },
 };
 
@@ -286,8 +286,8 @@ var DEFINICAO = {
     'pessoas diferentes atendidas ou participantes, nos mesmos 4 meses',
   ],
   M2: [
-    'atendimentos individuais compartilhados + atividades coletivas com 2 ou mais profissionais',
-    'atendimentos individuais + atividades coletivas da eMulti',
+    'atendimentos individuais compartilhados + atividades coletivas compartilhadas + compartilhamentos do cuidado respondidos',
+    'atendimentos individuais + atividades coletivas + compartilhamentos do cuidado respondidos',
   ],
 };
 Object.keys(DEFINICAO).forEach(function (c) {
