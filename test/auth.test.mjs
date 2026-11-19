@@ -281,6 +281,26 @@ test('pendências: exige login, aponta unidade sem composição e valor acima do
   assert.equal((await nav.pedir('GET', '/pendencias')).status, 200);
 });
 
+test('pendências: conferência da B4 aponta sessão grande, falta de documento e salto', async () => {
+  const { conferirB4 } = await import('../api/pendencias.js');
+  const conf = (o) => Object.assign({ atividades: 2, participacoes: 40, participacoesFaixa: 30, criancas: 20, semDocumento: 0, maiorAtividade: 25, criancasEmOutraEquipe: 0, semDentista: 0, semCbo: 0 }, o);
+  const r = conferirB4(
+    [
+      { unidade: 'U1', equipe: 'ESB 1', ine: '1', numerador: 20, denominador: 100, conferencia: conf({ maiorAtividade: 90, participacoes: 120, semDocumento: 20 }) },
+      { unidade: 'U2', equipe: 'ESB 2', ine: '2', numerador: 90, denominador: 100, conferencia: conf({ criancas: 90, participacoesFaixa: 95 }) },
+      { unidade: 'U3', equipe: 'ESB 3', ine: '3', numerador: 5, denominador: 100, conferencia: null },
+    ],
+    [{ unidade: 'U2', equipe: 'ESB 2', ine: '2', numerador: 20, conferencia: null }],
+  );
+  const t = r.achados.map((a) => a.unidade + '|' + a.texto);
+  assert.ok(t.some((x) => x.startsWith('U1|') && /média de 60/.test(x)));
+  assert.ok(t.some((x) => x.startsWith('U1|') && /uma atividade com 90/.test(x)));
+  assert.ok(t.some((x) => x.startsWith('U1|') && /40% das participações/.test(x)));
+  assert.ok(t.some((x) => x.startsWith('U2|') && /de 20 no mês anterior para 90/.test(x)));
+  assert.equal(r.linhas.find((l) => l.ine === '3').semConferencia, true);
+  assert.ok(!/\d{11,}/.test(JSON.stringify(r)), "nenhum número de documento");
+});
+
 test('comunicados: administrador publica, usuário vê e marca "Entendi", público respeitado', async () => {
   const env = comPaginas(ambiente());
   await admin(env, { login: 'ana', nome: 'Ana', senha: 'Painel#Forte2026', perfil: 'admin' });

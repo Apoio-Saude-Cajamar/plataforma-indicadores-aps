@@ -145,6 +145,98 @@ export function analisar({ linhas, filas, agenda, horario, composicaoUnidades, t
   return { unidades: unidades.length, achados };
 }
 
+// Conferência da B4 (escovação supervisionada), por equipe: só totais enviados pela extensão (v0.9.7+).
+// atual/anterior: [{ unidade, equipe, ine, numerador, denominador, conferencia }] da competência e do mês anterior.
+export const LIMITES_B4 = { mediaPorAtividade: 40, maiorAtividade: 60, semDocumento: 0.2, repeticao: 5, salto: 2, saltoMinimo: 30 };
+export function conferirB4(atual, anterior = []) {
+  const L = LIMITES_B4;
+  const pct = (x) => (100 * x).toFixed(0) + '%';
+  const arred = (x, c = 2) => (x === null ? null : Math.round(x * 10 ** c) / 10 ** c);
+  const ant = new Map(anterior.map((l) => [l.ine || l.equipe, l]));
+  const linhas = [],
+    achados = [];
+  const add = (nivel, l, texto) => achados.push({ nivel, unidade: l.unidade || 'Geral', tema: 'Escovação (B4) · ' + (l.equipe || l.ine), texto });
+  for (const l of atual) {
+    const c = l.conferencia;
+    if (!c) {
+      linhas.push({ unidade: l.unidade, equipe: l.equipe, ine: l.ine, criancas: l.numerador || 0, semConferencia: true });
+      continue;
+    }
+    const a = ant.get(l.ine || l.equipe);
+    const criancasAnt = a ? (a.conferencia ? a.conferencia.criancas : a.numerador) || 0 : null;
+    const faixaTotal = (c.participacoesFaixa || 0) + (c.semDocumento || 0);
+    const r = {
+      unidade: l.unidade,
+      equipe: l.equipe,
+      ine: l.ine,
+      criancas: c.criancas || 0,
+      participacoesFaixa: c.participacoesFaixa || 0,
+      atividades: c.atividades || 0,
+      participacoes: c.participacoes || 0,
+      vezesPorCrianca: c.criancas ? arred(c.participacoesFaixa / c.criancas) : null,
+      mediaPorAtividade: c.atividades ? arred(c.participacoes / c.atividades, 1) : null,
+      maiorAtividade: c.maiorAtividade || 0,
+      semDocumento: c.semDocumento || 0,
+      pctSemDocumento: faixaTotal ? arred((c.semDocumento || 0) / faixaTotal, 3) : null,
+      criancasEmOutraEquipe: c.criancasEmOutraEquipe || 0,
+      semDentista: c.semDentista || 0,
+      semCbo: c.semCbo || 0,
+      criancasMesAnterior: criancasAnt,
+      denominador: l.denominador || 0,
+    };
+    linhas.push(r);
+    if (r.mediaPorAtividade !== null && r.mediaPorAtividade > L.mediaPorAtividade)
+      add('atencao', r, `média de ${r.mediaPorAtividade.toFixed(0)} participantes por atividade; confira se a lista de presença é de uma só sessão.`);
+    if (r.maiorAtividade > L.maiorAtividade)
+      add('atencao', r, `uma atividade com ${r.maiorAtividade} participantes; sessões muito grandes costumam ser registro de turma inteira ou de vários dias.`);
+    if (r.pctSemDocumento !== null && r.pctSemDocumento > L.semDocumento)
+      add('atencao', r, `${pct(r.pctSemDocumento)} das participações de 6 a 12 anos (${r.semDocumento}) sem CPF ou CNS válido; não contam na B4.`);
+    if (r.vezesPorCrianca !== null && r.vezesPorCrianca > L.repeticao)
+      add('info', r, `cada criança aparece em média ${r.vezesPorCrianca.toFixed(1).replace('.', ',')} vezes no mês; a B4 conta a criança uma vez.`);
+    if (r.criancasEmOutraEquipe)
+      add('info', r, `${r.criancasEmOutraEquipe} criança(s) também contada(s) em outra equipe no mês (atividade com profissionais de mais de uma eSB).`);
+    if (r.semCbo) add('info', r, `${r.semCbo} escovação(ões) sem profissional com CBO aceito pela nota; não contam.`);
+    if (criancasAnt !== null) {
+      const sobe = criancasAnt > 0 && r.criancas >= criancasAnt * L.salto && r.criancas - criancasAnt >= L.saltoMinimo;
+      const cai = r.criancas > 0 && criancasAnt >= r.criancas * L.salto && criancasAnt - r.criancas >= L.saltoMinimo;
+      const zerou = criancasAnt >= L.saltoMinimo && r.criancas === 0;
+      if (sobe || cai || zerou)
+        add('atencao', r, `crianças passaram de ${criancasAnt} no mês anterior para ${r.criancas}; confira o registro ou a coleta.`);
+    }
+  }
+  linhas.sort((x, y) => String(x.unidade).localeCompare(String(y.unidade), 'pt') || String(x.equipe).localeCompare(String(y.equipe), 'pt'));
+  return { linhas, achados };
+}
+
+const anteriorDe = (comp) => {
+  const [a, m] = comp.split('-').map(Number);
+  return m === 1 ? `${a - 1}-12` : `${a}-${String(m - 1).padStart(2, '0')}`;
+};
+
+async function lerB4(ler, comp) {
+  try {
+    const rs = await ler(
+      `SELECT unidade, equipe, ine, numerador, denominador, extras FROM (
+         SELECT i.unidade, i.equipe, i.ine, i.numerador, i.denominador, i.extras, ROW_NUMBER() OVER (
+           PARTITION BY i.recorte, i.unidade, i.equipe ORDER BY e.coletado_em DESC, i.coleta_id DESC) AS ordem
+         FROM indicador_equipe i JOIN etapa e ON e.coleta_id = i.coleta_id AND e.chave = i.etapa_chave
+         WHERE i.competencia = ? AND e.status = 'ok' AND i.recorte = 'situacao' AND i.codigo = 'B4') WHERE ordem = 1`,
+      comp,
+    );
+    return rs.map((r) => {
+      let x = {};
+      try {
+        x = r.extras ? JSON.parse(r.extras) : {};
+      } catch (_) {
+        /* extras ilegíveis */
+      }
+      return { unidade: r.unidade, equipe: r.equipe, ine: r.ine, numerador: r.numerador, denominador: r.denominador, conferencia: x.conferencia || null };
+    });
+  } catch (_) {
+    return [];
+  }
+}
+
 export async function pendencias(env, pedido, agora = Date.now()) {
   let comps = [];
   try {
@@ -199,6 +291,12 @@ export async function pendencias(env, pedido, agora = Date.now()) {
   }
 
   const r = analisar({ linhas, filas, agenda, horario, composicaoUnidades, temComposicao: !!c, comps, comp, agora });
+  const b4 = conferirB4(await lerB4(ler, comp), await lerB4(ler, anteriorDe(comp)));
+  if (b4.achados.length) {
+    const ordem = { erro: 0, atencao: 1, info: 2 };
+    r.achados.push(...b4.achados);
+    r.achados.sort((a, b) => ordem[a.nivel] - ordem[b.nivel] || a.unidade.localeCompare(b.unidade, 'pt') || a.tema.localeCompare(b.tema, 'pt'));
+  }
   const totais = { erro: 0, atencao: 0, info: 0 };
   r.achados.forEach((a) => {
     totais[a.nivel]++;
@@ -210,5 +308,6 @@ export async function pendencias(env, pedido, agora = Date.now()) {
     unidades: r.unidades,
     totais,
     achados: r.achados,
+    b4: b4.linhas,
   };
 }

@@ -394,7 +394,7 @@
     <script>
       const ESC = { municipio: 'município · uma consulta', unidade: 'por unidade', ambos: 'município + unidade' };
       document.getElementById('lgpd').textContent =
-        'A extensão usa a sessão que o usuário já abriu no PEC. Nenhum nome de paciente, CPF ou prontuário é guardado ou enviado. Composição e filas levam nome e cargo de profissionais; o eMulti usa um resumo irreversível, só em memória, para contar pessoas diferentes.';
+        'A extensão usa a sessão que o usuário já abriu no PEC. Nenhum nome de paciente, CPF ou prontuário é guardado ou enviado. Composição e filas levam nome e cargo de profissionais; o eMulti usa um resumo irreversível, só em memória, para contar pessoas diferentes; na escovação supervisionada (B4), o CPF ou CNS do participante só tem os dígitos verificadores conferidos na memória e é descartado.';
       let h = '';
       for (const [f, nome] of Object.entries(EXTRACAO.FINALIDADES)) {
         const itens = EXTRACAO.ITENS.filter((i) => i.finalidade === f);

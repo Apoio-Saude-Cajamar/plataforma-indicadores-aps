@@ -420,6 +420,13 @@
       .ach b {
         font-weight: 700;
       }
+      .rolagem {
+        overflow-x: auto;
+      }
+      #b4tab td,
+      #b4tab th {
+        white-space: nowrap;
+      }
       .un h3 {
         margin: 16px 0 4px;
         font-size: 16px;
@@ -451,13 +458,22 @@
       <h1>Pendências da coleta</h1>
       <p class="intro">
         Mostra, por unidade, o que ficou faltando ou parece estranho nos dados que já chegaram ao Painel: indicadores ausentes, valores
-        acima de 100%, agendas, grades de horário e composição. Só aparecem contagens e nomes de unidades.
+        acima de 100%, agendas, grades de horário, composição e a conferência da escovação supervisionada (B4). Só aparecem contagens e nomes de unidades.
       </p>
       <div class="sel">
         <label>Competência<select id="comp"></select></label>
       </div>
       <div class="cards" id="cards"></div>
       <section class="bloco" id="lista" aria-live="polite">Carregando…</section>
+      <section class="bloco" id="b4" hidden>
+        <h2>Conferência da escovação supervisionada (B4)</h2>
+        <p class="d">
+          Por equipe de saúde bucal, só totais. Crianças: de 6 a 12 anos com CPF ou CNS válido, contadas uma vez no mês (é o numerador).
+          Sinais de registro a conferir: muitas vezes por criança, sessões muito grandes, participações sem documento, criança contada
+          em mais de uma equipe e saltos em relação ao mês anterior.
+        </p>
+        <div class="rolagem"><table id="b4tab"></table></div>
+      </section>
     </main>
     <script src="/js/sessao.js"></script>
     <script>
@@ -485,6 +501,7 @@
                 '<div class="card"><small>' + c[0] + '</small><div class="v">' + c[1] + '</div><div class="s">' + c[2] + '</div></div>',
             )
             .join('');
+          mostrarB4(d.b4 || []);
           if (!d.achados.length) return void ($('#lista').textContent = 'Nada pendente nesta competência.');
           const por = {};
           d.achados.forEach((a) => (por[a.unidade] = por[a.unidade] || []).push(a));
@@ -514,6 +531,27 @@
         } catch {
           $('#lista').textContent = 'Não foi possível carregar as pendências agora.';
         }
+      }
+      function mostrarB4(ls) {
+        $('#b4').hidden = !ls.length;
+        if (!ls.length) return;
+        const n = (v, c = 0) => (v === null || v === undefined ? '–' : Number(v).toFixed(c).replace('.', ','));
+        const p = (v) => (v === null || v === undefined ? '–' : (100 * v).toFixed(0) + '%');
+        const cab = ['Unidade', 'Equipe', 'Crianças', 'Mês anterior', 'Vezes por criança', 'Atividades', 'Média por atividade', 'Maior atividade', 'Sem CPF/CNS', 'Em outra equipe', 'Só ASB/TSB'];
+        $('#b4tab').innerHTML =
+          '<thead><tr>' + cab.map((c) => '<th>' + c + '</th>').join('') + '</tr></thead><tbody>' +
+          ls
+            .map((l) =>
+              l.semConferencia
+                ? '<tr><td>' + esc(l.unidade) + '</td><td>' + esc(l.equipe) + '</td><td>' + n(l.criancas) +
+                  '</td><td colspan="8">Coleta anterior à extensão v0.9.7: sem os totais da conferência.</td></tr>'
+                : '<tr><td>' + esc(l.unidade) + '</td><td>' + esc(l.equipe) + '</td><td>' + n(l.criancas) + '</td><td>' + n(l.criancasMesAnterior) +
+                  '</td><td>' + n(l.vezesPorCrianca, 1) + '</td><td>' + n(l.atividades) + '</td><td>' + n(l.mediaPorAtividade) + '</td><td>' +
+                  n(l.maiorAtividade) + '</td><td>' + n(l.semDocumento) + ' (' + p(l.pctSemDocumento) + ')</td><td>' + n(l.criancasEmOutraEquipe) +
+                  '</td><td>' + n(l.semDentista) + '</td></tr>',
+            )
+            .join('') +
+          '</tbody>';
       }
       $('#comp').addEventListener('change', carregar);
       carregar();
