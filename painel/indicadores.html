@@ -516,6 +516,7 @@
         <button class="chip" role="tab" data-a="resumo" aria-pressed="true">Resumo</button>
         <button class="chip" role="tab" data-a="evol" aria-pressed="false">Evolução mensal</button>
         <button class="chip" role="tab" data-a="detalhe" aria-pressed="false">Detalhe e equipes</button>
+        <button class="chip" role="tab" data-a="repasse" aria-pressed="false">Prévia do repasse</button>
         <button class="chip" role="tab" data-a="ajuda" aria-pressed="false">Como ler</button>
       </nav>
       <div id="dash">
@@ -539,6 +540,7 @@
         </div>
       </div>
       <div data-aba="detalhe" id="grupos" hidden></div>
+      <div data-aba="repasse" id="rep" hidden></div>
       <div data-aba="ajuda" hidden>
         <section class="bloco">
           <h2>Como ler</h2>
@@ -558,7 +560,7 @@
             </li>
             <li>
               C1, B1, B3, B4, B5, B6 e M2 usam faixas lidas do desenho do dashboard, marcadas com asterisco (*): confirme com a nota técnica
-              vigente. B2 aparece só com o resultado, sem conceito, por ainda não termos faixa definida.
+              vigente.
             </li>
           </ul>
         </section>
@@ -567,6 +569,7 @@
     <script src="/js/sessao.js"></script>
     <script src="/js/catalogo-indicadores.js"></script>
     <script src="/js/federal-calculo.js"></script>
+    <script src="/js/repasse.js"></script>
     <script>
       const $ = (id) => document.getElementById(id);
       let dados = {}; // competencia -> linhas
@@ -737,6 +740,147 @@
             '</tbody></table>'
           : '';
       }
+      // ---------- prévia do repasse (componente de qualidade) ----------
+      const rs = (n) => 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const dec = (n) => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const faixaRs = (a, b) => (a === b ? rs(a) : rs(a) + ' a ' + rs(b));
+      function repassePainel(comps, un) {
+        const ult = comps[comps.length - 1],
+          varios = comps.length > 1,
+          teams = new Map();
+        for (const cod of new Set(Object.values(REPASSE.pesos).flatMap((o) => Object.keys(o)))) {
+          const usar = varios && NAO_SOMA_MESES.has(cod) ? [ult] : comps;
+          for (const l of linhasDe(cod, usar, un)) {
+            if (!l.equipe || l.equipe === 'Município') continue;
+            const key = l.unidade + ' · ' + l.equipe;
+            let t = teams.get(key);
+            if (!t) teams.set(key, (t = { key, equipe: l.equipe, tipo: l.tipoEquipe, por: new Map() }));
+            if (!t.tipo && l.tipoEquipe) t.tipo = l.tipoEquipe;
+            if (!t.por.has(cod)) t.por.set(cod, []);
+            t.por.get(cod).push(l);
+          }
+        }
+        const linhas = [];
+        let fora = 0;
+        for (const t of teams.values()) {
+          const tr = tipoRepasse(t.tipo, t.equipe);
+          if (!tr) {
+            fora++;
+            continue;
+          }
+          const classes = {};
+          for (const cod of Object.keys(REPASSE.pesos[tr.pesos])) {
+            const ls = t.por.get(cod);
+            if (!ls) continue;
+            const g = agregar(ls, () => 'x').get(cod + '|x');
+            classes[cod] = g ? conceito(cod, resultado(g, ((window.CATALOGO || {})[cod] || {}).tipo)) : null;
+          }
+          const n = notaEquipe(tr.pesos, classes),
+            vmin = valorMensal(tr.valor, n.cmin),
+            vmax = valorMensal(tr.valor, n.cmax);
+          linhas.push({
+            t,
+            tr,
+            n,
+            classes,
+            vmin,
+            vmax,
+            bom: valorMensal(tr.valor, 'b'),
+            otimo: valorMensal(tr.valor, 'o'),
+            total: Object.keys(REPASSE.pesos[tr.pesos]).length,
+          });
+        }
+        const el = $('rep');
+        if (!linhas.length) {
+          el.innerHTML = '<section class="bloco"><h2>Prévia do repasse</h2><p class="d">Sem equipes com indicadores de qualidade neste recorte.</p></section>';
+          return;
+        }
+        const soma = (f) => linhas.reduce((a, l) => a + f(l), 0),
+          tMin = soma((l) => l.vmin),
+          tMax = soma((l) => l.vmax),
+          tBom = soma((l) => l.bom),
+          tOtimo = soma((l) => l.otimo),
+          completas = linhas.filter((l) => l.n.completa).length,
+          dist = { o: 0, b: 0, s: 0, r: 0 };
+        linhas.forEach((l) => l.n.cmin === l.n.cmax && dist[l.n.cmin]++);
+        const ordTipo = ['esf', 'eap20', 'eap30', 'esb', 'emultiCom', 'emultiEst', 'emultiAmp'];
+        linhas.sort(
+          (a, b) =>
+            ordTipo.indexOf(a.tr.valor) - ordTipo.indexOf(b.tr.valor) || a.t.key.localeCompare(b.t.key, 'pt-BR'),
+        );
+        let corpo = '',
+          atual = '';
+        for (const l of linhas) {
+          if (l.tr.valor !== atual) {
+            atual = l.tr.valor;
+            const gl = linhas.filter((x) => x.tr.valor === atual);
+            corpo +=
+              '<tr class="dir"><td colspan="5">' +
+              esc(REPASSE.valores[atual].nome) +
+              ' · ' +
+              gl.length +
+              ' equipe(s) · valor por classe: ' +
+              ORDEM_CLASSE.map((k, i) => NOMEC[k] + ' ' + rs(REPASSE.valores[atual].v[i])).join(' · ') +
+              '</td></tr>';
+          }
+          const cods = Object.keys(REPASSE.pesos[l.tr.pesos]),
+            nota = l.n.completa ? dec(l.n.min) : dec(l.n.min) + ' a ' + dec(l.n.max),
+            conc =
+              l.n.cmin === l.n.cmax
+                ? '<span class="pill ' + PILL[l.n.cmin] + '">' + NOMEC[l.n.cmin] + '</span>'
+                : '<span class="pill ' + PILL[l.n.cmin] + '">' + NOMEC[l.n.cmin] + '</span> a <span class="pill ' + PILL[l.n.cmax] + '">' + NOMEC[l.n.cmax] + '</span>';
+          corpo +=
+            '<tr><td>' +
+            esc(l.t.key) +
+            '</td><td>' +
+            cods
+              .map((c) =>
+                l.classes[c]
+                  ? '<span class="pill ' + PILL[l.classes[c]] + '" title="' + esc(c + ' · peso ' + REPASSE.pesos[l.tr.pesos][c]) + '">' + esc(c) + '</span>'
+                  : '<span class="pill" style="background:#eef1f6;color:#4a5670" title="' + esc(c + ': sem conceito neste recorte') + '">' + esc(c) + ' ?</span>',
+              )
+              .join(' ') +
+            '</td><td class="n">' +
+            nota +
+            '</td><td>' +
+            conc +
+            '</td><td class="n"><b>' +
+            faixaRs(l.vmin, l.vmax) +
+            '</b></td></tr>';
+        }
+        el.innerHTML =
+          '<section class="cards">' +
+          '<div class="card"><small>Repasse mensal estimado · qualidade</small><div class="v">' +
+          faixaRs(tMin, tMax) +
+          '</div><div class="s">' +
+          linhas.length +
+          ' equipe(s); ' +
+          completas +
+          ' com todos os indicadores' +
+          (completas < linhas.length ? ' (nas demais, a faixa vai do pior ao melhor caso)' : '') +
+          '</div></div>' +
+          '<div class="card"><small>Se todas ficassem em Bom</small><div class="v">' +
+          rs(tBom) +
+          '</div><div class="s">referência: valor pago na faixa "Bom"</div></div>' +
+          '<div class="card"><small>Potencial (todas Ótimo)</small><div class="v">' +
+          rs(tOtimo) +
+          '</div><div class="s">' +
+          (tOtimo - tMax > 0 ? rs(tOtimo - tMax) + ' por mês acima da estimativa' : 'estimativa já no teto') +
+          '</div></div></section>' +
+          '<section class="bloco"><h2>Prévia do repasse federal · componente de qualidade</h2>' +
+          '<p class="d">Cada equipe recebe a nota final = soma de (pontos do conceito × peso do indicador): Regular 0,25, Suficiente 0,50, Bom 0,75, Ótimo 1,00. ' +
+          'A nota (máximo 10) define a classe: Ótimo acima de 7,5; Bom de 5 a 7,5; Suficiente acima de 2,5 e abaixo de 5; Regular até 2,5. ' +
+          'Cada classe tem um valor mensal por tipo de equipe. Com indicador sem conceito (?) a nota fica entre o pior e o melhor caso.</p>' +
+          '<div class="tab"><table><thead><tr><th>Equipe</th><th>Conceito por indicador</th><th class="n">Nota (0 a 10)</th><th>Classe</th><th class="n">Repasse/mês</th></tr></thead><tbody>' +
+          corpo +
+          '</tbody></table></div>' +
+          '<ul class="nota"><li>Fontes: Nota Técnica nº 6/2025-DEAPS/SAPS/MS (pesos, pontos e faixas da nota) e Portaria GM/MS nº 3.493/2024, Anexo III (valores por classe). O resultado e o valor oficiais são os do Ministério (Siaps).</li>' +
+          '<li>O desempenho é do quadrimestre (média dos meses) e o incentivo é pago nos quatro meses seguintes. Aqui vale o período escolhido no filtro; para uma prévia fiel, escolha os meses do quadrimestre.</li>' +
+          '<li>Premissas a confirmar: eSB tratada como "eSB I comum", sem ajuste de carga horária; eAP como 20 h (30 h só se o nome indicar); eMulti como complementar, salvo "estratégica" ou "ampliada" no nome da equipe. ' +
+          (fora ? fora + ' equipe(s) de outro tipo (ex.: Consultório na Rua) ficaram fora, por não terem valores e pesos nesta prévia. ' : '') +
+          'Não inclui o componente fixo (depende do estrato IED), o de vínculo e acompanhamento territorial, o incentivo anual adicional nem suspensões por ausência de profissionais ou falta de envio ao Sisab.</li>' +
+          '<li>Equipes recém-homologadas recebem o valor de "Bom" até o segundo recálculo, e o Ministério repassa o valor de "Bom" quando não divulga os dados de um indicador.</li></ul></section>';
+      }
       function desenhar() {
         const comps = Object.keys(dados)
           .sort()
@@ -745,6 +889,7 @@
         FILTRO_EQ = $('eq').value;
         const varios = comps.length > 1;
         painel(comps, un);
+        repassePainel(comps, un);
         let html = '';
         let algum = false;
         for (const [nome, cods] of GRUPOS) {

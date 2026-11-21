@@ -118,6 +118,7 @@ const FAIXA = {
   C7: 'bp',
   CVAT: 'cvat',
   B1: 'x',
+  B2: 'bp', // nota B2: Ótimo >75, Bom >50, Suficiente >25, Regular ≤25 (em %)
   B3: 'x',
   B4: 'x',
   B5: 'x',

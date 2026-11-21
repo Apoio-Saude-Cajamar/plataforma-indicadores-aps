@@ -216,6 +216,8 @@ O administrador publica avisos em `/comunicados` (título, texto, destinatários
 
 ## Município e classificação por equipe
 
+**Prévia do repasse** (aba em `/indicadores`, `painel/js/repasse.js`): nota final da equipe = soma de (pontos do conceito × peso do indicador), com Regular 0,25, Suficiente 0,50, Bom 0,75 e Ótimo 1,00 (NT nº 6/2025-DEAPS/SAPS/MS); classe da nota: Ótimo > 7,5, Bom de 5 a 7,5, Suficiente > 2,5 e < 5, Regular ≤ 2,5; valor mensal por classe e tipo de equipe da Portaria GM/MS nº 3.493/2024 (Anexo III). Indicador sem conceito dá uma faixa (pior e melhor caso). Premissas a confirmar: eSB como "eSB I comum", eAP como 20 h, eMulti complementar salvo "estratégica"/"ampliada" no nome; não inclui componente fixo, vínculo (CVAT) nem incentivo anual.
+
 As notas metodológicas são por equipe. Onde há mais de uma equipe (município, unidade ou seleção), o Painel mostra o valor **agregado** (soma de numeradores ÷ soma de denominadores) e, em vez de uma classe só, **quantas equipes estão em cada classe**; a classe única aparece só quando o recorte é uma equipe. Vale para `/notas` (lista de equipes na própria nota, pior primeiro), `/indicadores` e o relatório (tabelas, réguas, dossiê por unidade). Funções: `distEquipes` e `pcAgg` em `painel/js/federal-calculo.js`; `kpillDist` em `relatorio-base.js`.
 
 ## Pendências da coleta

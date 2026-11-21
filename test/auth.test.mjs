@@ -350,6 +350,27 @@ test('faixas federais: B4 em percentual e fronteiras como nas notas do MS', asyn
   for (const [c, v, e] of casos) assert.equal(conceito(c, v), e, c + ' ' + v);
 });
 
+test('prévia do repasse: nota final, faixas e valores como na NT 6/2025 e na Portaria 3.493', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../painel/js/repasse.js', import.meta.url), 'utf8');
+  const r = new Function(src + ';return { REPASSE, classeDaNota, tipoRepasse, notaEquipe, valorMensal }')();
+  for (const [g, p] of Object.entries(r.REPASSE.pesos)) assert.equal(Object.values(p).reduce((a, b) => a + b, 0), 10, 'pesos de ' + g + ' somam 10');
+  const casos = [[7.51, 'o'], [7.5, 'b'], [5, 'b'], [4.75, 's'], [2.75, 's'], [2.5, 'r'], [2.5 + 1e-9, 's']];
+  for (const [n, k] of casos) assert.equal(r.classeDaNota(n), k, 'nota ' + n);
+  const todos = (k) => Object.fromEntries(Object.keys(r.REPASSE.pesos.esf).map((c) => [c, k]));
+  assert.equal(r.notaEquipe('esf', todos('o')).min, 10);
+  assert.equal(r.notaEquipe('esf', todos('r')).min, 2.5);
+  const parcial = r.notaEquipe('esf', { ...todos('b'), C7: null });
+  assert.deepEqual([parcial.completa, parcial.faltam, parcial.min, parcial.max], [false, ['C7'], 6.5, 8]);
+  assert.deepEqual([parcial.cmin, parcial.cmax], ['b', 'o']);
+  assert.equal(r.valorMensal('esf', 'b'), 6000);
+  assert.equal(r.valorMensal('esb', 'o'), 2449);
+  assert.equal(r.tipoRepasse('EMULTI', 'eMulti Estratégica 1').valor, 'emultiEst');
+  assert.equal(r.tipoRepasse('EMULTI', 'eMulti Complementar 2').valor, 'emultiCom');
+  assert.equal(r.tipoRepasse('EAP', 'eAP Jordanésia').valor, 'eap20');
+  assert.equal(r.tipoRepasse('ECR', 'Consultório na Rua'), null);
+});
+
 test('comunicados: administrador publica, usuário vê e marca "Entendi", público respeitado', async () => {
   const env = comPaginas(ambiente());
   await admin(env, { login: 'ana', nome: 'Ana', senha: 'Painel#Forte2026', perfil: 'admin' });
