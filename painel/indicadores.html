@@ -94,10 +94,11 @@
         max-width: 760px;
       }
       .sel {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
         gap: 16px 18px;
         margin-bottom: 20px;
+        max-width: 960px;
       }
       .sel label {
         display: flex;
@@ -121,7 +122,13 @@
         border-radius: 10px;
         background: #fff;
         color: #1b2340;
-        min-width: 150px;
+        min-width: 0;
+        width: 100%;
+      }
+      .sel select:disabled {
+        background: #eef1f6;
+        color: #6b7690;
+        cursor: not-allowed;
       }
       .cards {
         display: grid;
@@ -484,8 +491,8 @@
           </select></label
         >
         <label
-          >Equipe<select id="eq">
-            <option value="">Todas</option>
+          >Equipe<select id="eq" disabled>
+            <option value="">Escolha a unidade</option>
           </select></label
         >
         <label
@@ -902,11 +909,15 @@
             if (l.equipe && l.equipe !== 'Município' && l.unidade && l.unidade !== 'Município' && (!un || l.unidade === un))
               eqs.set(l.unidade + '|' + l.equipe, un ? l.equipe : l.unidade + ' · ' + l.equipe);
           });
-        const lista = [...eqs].sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'));
+        const lista = (un ? [...eqs] : []).sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'));
+        // A equipe só é liberada depois de escolher a unidade (as equipes vêm da unidade).
+        $('eq').disabled = !un;
         $('eq').innerHTML =
-          '<option value="">Todas</option>' +
+          '<option value="">' +
+          (un ? 'Todas as equipes' : 'Escolha a unidade') +
+          '</option>' +
           lista.map(([v, t]) => '<option value="' + esc(v) + '">' + esc(t) + '</option>').join('');
-        $('eq').value = eqs.has(antes) ? antes : '';
+        $('eq').value = un && eqs.has(antes) ? antes : '';
       }
       $('un').addEventListener('change', opcoesEquipe);
       ['de', 'ate', 'un', 'eq', 'gr', 'co'].forEach((i) =>
