@@ -233,6 +233,22 @@ function distEquipes(cod, ls, tipo) {
     });
   return { c, n };
 }
+// Quais equipes estão em cada classe, com o valor de cada uma (pior primeiro nas classes ruins fica a cargo do chamador).
+function equipesPorClasse(cod, ls, tipo) {
+  const r = { o: [], b: [], s: [], r: [] };
+  for (const [chave, g] of agregar(ls, (l) => l.unidade + ' · ' + l.equipe)) {
+    if (g.codigo !== cod) continue;
+    const v = resultado(g, tipo),
+      k = conceito(cod, v);
+    if (k) r[k].push({ nome: chave.slice(chave.indexOf('|') + 1), v });
+  }
+  Object.values(r).forEach((a) => a.sort((x, y) => x.nome.localeCompare(y.nome, 'pt-BR')));
+  return r;
+}
+const nomesDe = (cod, ls, tipo, k) =>
+  equipesPorClasse(cod, ls, tipo)[k]
+    .map((e) => e.nome)
+    .join('\n');
 const NOMEC = { o: 'Ótimo', b: 'Bom', s: 'Suficiente', r: 'Regular' },
   PILL = { o: 'c-o', b: 'c-b', s: 'c-s', r: 'c-r' };
 const aconf = (cod) =>
@@ -249,7 +265,10 @@ const pcAgg = (cod, v, ls, tipo) => {
     '<br><small style="color:#4A5670;font-weight:600">por equipe:</small> ' +
     ['o', 'b', 's', 'r']
       .filter((k) => d.c[k])
-      .map((k) => '<span class="pill ' + PILL[k] + '" style="margin:2px 4px 0 0">' + d.c[k] + ' ' + NOMEC[k] + '</span>')
+      .map(
+        (k) =>
+          '<span class="pill ' + PILL[k] + '" style="margin:2px 4px 0 0" title="' + esc(nomesDe(cod, ls, tipo, k)) + '">' + d.c[k] + ' ' + NOMEC[k] + '</span>',
+      )
       .join('') +
     aconf(cod)
   );

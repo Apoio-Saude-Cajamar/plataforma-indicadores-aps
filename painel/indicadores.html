@@ -385,6 +385,32 @@
         font-size: 13px;
         color: #4a5670;
       }
+      details.eqd summary {
+        cursor: pointer;
+        list-style: none;
+      }
+      details.eqd summary::-webkit-details-marker {
+        display: none;
+      }
+      details.eqd summary::after {
+        content: ' ▾';
+        color: #4a5670;
+        font-size: 12px;
+      }
+      details.eqd[open] summary::after {
+        content: ' ▴';
+      }
+      .eql {
+        margin: 6px 0 2px;
+        font-size: 13px;
+      }
+      .eql ul {
+        margin: 4px 0 4px 4px;
+        padding-left: 16px;
+      }
+      .eql li {
+        margin: 1px 0;
+      }
       tr.un td {
         font-weight: 700;
       }
@@ -606,10 +632,32 @@
               (km ? ' <span class="pill ' + PILL[km] + '">' + NOMEC[km] + '</span>' + aconf(cod) : '') +
               '</td><td style="min-width:200px">' +
               (n
-                ? ['o', 'b', 's', 'r']
-                    .filter((k) => c[k])
-                    .map((k) => '<span class="pill ' + PILL[k] + '" style="margin:0 6px 4px 0">' + c[k] + ' ' + NOMEC[k] + '</span>')
-                    .join('')
+                ? (() => {
+                    const pe = equipesPorClasse(cod, ls, cat.tipo),
+                      ks = ['o', 'b', 's', 'r'].filter((k) => c[k]);
+                    const pills = ks
+                      .map((k) => '<span class="pill ' + PILL[k] + '" style="margin:0 6px 4px 0">' + c[k] + ' ' + NOMEC[k] + '</span>')
+                      .join('');
+                    // Clique nas classes: abre a lista de quais equipes estão em cada uma, com o valor de cada equipe.
+                    return (
+                      '<details class="eqd"><summary title="Clique para ver quais equipes">' +
+                      pills +
+                      '</summary>' +
+                      ks
+                        .map(
+                          (k) =>
+                            '<div class="eql"><span class="pill ' +
+                            PILL[k] +
+                            '">' +
+                            NOMEC[k] +
+                            '</span><ul>' +
+                            pe[k].map((e) => '<li>' + esc(e.nome) + ' <b>' + fmt(e.v, cat.tipo) + '</b></li>').join('') +
+                            '</ul></div>',
+                        )
+                        .join('') +
+                      '</details>'
+                    );
+                  })()
                 : '<span style="color:#4A5670;font-size:13px">sem faixa definida</span>') +
               '</td><td class="n">' +
               ne +
