@@ -136,7 +136,7 @@
       st.id = 'estilo-menu';
       st.textContent =
         // Cabeçalho igual em todas as páginas: mesma largura, mesmo espaçamento e mesma marca.
-        'header .topo,header .w{max-width:1280px!important;padding:14px 32px!important;box-sizing:border-box}' +
+        'header .topo,header .w{max-width:1360px!important;padding:14px 28px!important;box-sizing:border-box}' +
         'header .marca,header .logo{display:flex;align-items:center;gap:12px;font:800 19px Montserrat,system-ui,sans-serif;color:#fff;text-decoration:none}' +
         'header .marca img,header .logo img{width:34px;height:34px}header .logo b{font:inherit}' +
         '.menu-aps{display:flex;flex-wrap:wrap;align-items:center;gap:2px 2px;font:600 13.5px Montserrat,system-ui,sans-serif}' +
@@ -144,7 +144,7 @@
         // o seletor de tema e o usuário continuam no canto superior direito. Em telas estreitas, tudo pode quebrar normalmente.
         '@media(min-width:900px){header .topo,header .w{flex-wrap:nowrap;gap:12px}header .topo>.menu-aps,header .w>.menu-aps{flex:1 1 auto;min-width:0}' +
         'header .topo>*:not(.menu-aps),header .w>*:not(.menu-aps){flex-shrink:0}}' +
-        '.menu-aps a,.menu-aps summary{color:#fff;text-decoration:none;padding:8px 9px;white-space:nowrap;border-radius:99px;cursor:pointer;list-style:none;min-height:36px;display:inline-flex;align-items:center}' +
+        '.menu-aps a,.menu-aps summary{color:#fff;text-decoration:none;padding:8px 8px;white-space:nowrap;border-radius:99px;cursor:pointer;list-style:none;min-height:36px;display:inline-flex;align-items:center}' +
         '.menu-aps summary::-webkit-details-marker{display:none}' +
         '.menu-aps a:hover,.menu-aps summary:hover{background:rgba(255,255,255,.14)}' +
         '.menu-aps a[aria-current=page],.menu-aps summary[aria-current=page],.menu-aps details[open]>summary{background:rgba(255,255,255,.22)}' +

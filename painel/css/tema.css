@@ -55,7 +55,8 @@ html[data-tema='claro'] header {
 html[data-tema='claro'] header .barra-usuario,
 html[data-tema='claro'] header .menu-aps a,
 html[data-tema='claro'] header .menu-aps summary,
-html[data-tema='claro'] header .marca {
+html[data-tema='claro'] header .marca,
+html[data-tema='claro'] header .logo {
   color: #14212b;
 }
 html[data-tema='claro'] header .barra-usuario a,
