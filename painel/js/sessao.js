@@ -135,6 +135,10 @@
       const st = document.createElement('style');
       st.id = 'estilo-menu';
       st.textContent =
+        // Cabeçalho igual em todas as páginas: mesma largura, mesmo espaçamento e mesma marca.
+        'header .topo,header .w{max-width:1280px!important;padding:14px 32px!important;box-sizing:border-box}' +
+        'header .marca,header .logo{display:flex;align-items:center;gap:12px;font:800 19px Montserrat,system-ui,sans-serif;color:#fff;text-decoration:none}' +
+        'header .marca img,header .logo img{width:34px;height:34px}header .logo b{font:inherit}' +
         '.menu-aps{display:flex;flex-wrap:wrap;align-items:center;gap:2px 2px;font:600 13.5px Montserrat,system-ui,sans-serif}' +
         // Em telas largas o cabeçalho fica numa linha só: o menu ocupa o meio e, se não couber, quebra dentro do próprio espaço;
         // o seletor de tema e o usuário continuam no canto superior direito. Em telas estreitas, tudo pode quebrar normalmente.
@@ -173,6 +177,7 @@
     nav.innerHTML =
       acomp +
       a('/composicao', 'Composição de Usuários') +
+      a('/coleta', 'Como coletamos') +
       (gestor ? a('/filas', 'Filas e faltas') + a('/pendencias', 'Pendências') : '') +
       lanc;
     const alvo = topo.querySelector('#barra');

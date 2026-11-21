@@ -14,6 +14,8 @@ function tabelaCods(cods, comp, un, comEquipes) {
     let km = conceito(cod, vm),
       porEquipe = false;
     let eq = '';
+    const dEq = km ? distEquipes(cod, ls, cat.tipo) : { c: {}, n: 0 };
+    if (dEq.n > 1) porEquipe = true;
     if (comEquipes && FAIXA[cod]) {
       const c = { o: 0, b: 0, s: 0, r: 0 };
       let n = 0;
@@ -55,7 +57,7 @@ function tabelaCods(cods, comp, un, comEquipes) {
       '</b>' +
       aprox +
       '</td><td>' +
-      (porEquipe ? '<small>por equipe →</small>' : kpill(km) + (km && FAIXAX[cod] ? ' *' : '')) +
+      (porEquipe ? (comEquipes ? '<small>por equipe →</small>' : kpillDist(dEq)) : kpill(km) + (km && FAIXAX[cod] ? ' *' : '')) +
       '</td>' +
       (comEquipes ? '<td>' + esc(eq) + '</td>' : '') +
       '</tr>';

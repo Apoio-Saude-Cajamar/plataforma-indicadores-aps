@@ -37,7 +37,7 @@
         color: #14212b;
       }
     </style>
-      <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#1F3C72" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" />
     <link rel="stylesheet" href="/css/mobile.css" />
     <script src="/js/publico/mobile.js" defer></script>
-</head>
+  </head>
   <body>
     <div id="tela"><p id="aviso">Carregando filas e faltas…</p></div>
     <template id="modelo">
@@ -67,7 +67,7 @@
             style="
               max-width: 1280px;
               margin: 0 auto;
-              padding: 14px 24px;
+              padding: 14px 32px;
               display: flex;
               align-items: center;
               justify-content: space-between;
@@ -90,19 +90,83 @@
             >
             <nav
               aria-label="Áreas do Painel"
-              style="display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; font-weight: 600; font-size: 14px"
+              style="
+                display: flex;
+                flex-wrap: nowrap;
+                white-space: nowrap;
+                align-items: center;
+                gap: 2px 2px;
+                font-weight: 600;
+                font-size: 13.5px;
+              "
             >
+              <details style="position: relative">
+                <summary
+                  style="
+                    color: #ffffff;
+                    padding: 8px 9px;
+                    min-height: 36px;
+                    display: inline-flex;
+                    align-items: center;
+                    border-radius: 99px;
+                    cursor: pointer;
+                    list-style: none;
+                  "
+                >
+                  Acompanhamentos ▾
+                </summary>
+                <div
+                  style="
+                    position: absolute;
+                    z-index: 20;
+                    top: 100%;
+                    left: 0;
+                    min-width: 230px;
+                    margin-top: 6px;
+                    background: #ffffff;
+                    border: 2px solid #d5dce8;
+                    border-radius: 12px;
+                    padding: 6px;
+                    box-shadow: 0 8px 24px rgba(20, 33, 43, 0.18);
+                    display: flex;
+                    flex-direction: column;
+                  "
+                >
+                  <a href="/" style="color: #1b2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap"
+                    >Visão geral</a
+                  >
+                  <a
+                    href="/indicadores"
+                    style="color: #1b2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap"
+                    >Federal · indicadores</a
+                  >
+                  <a href="/notas" style="color: #1b2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap"
+                    >Federal · dashboard</a
+                  >
+                  <a
+                    href="/estadual"
+                    style="color: #1b2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap"
+                    >Estadual</a
+                  >
+                  <a
+                    href="/municipal"
+                    style="color: #1b2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap"
+                    >Municipal</a
+                  >
+                </div>
+              </details>
               <template data-sc="for" list="{{menuSite}}" as="ms"
                 ><a
                   href="{{ms.href}}"
                   style="
                     color: #ffffff;
                     text-decoration: none;
-                    padding: 8px 12px;
+                    padding: 8px 9px;
                     min-height: 36px;
                     display: inline-flex;
                     align-items: center;
                     border-radius: 99px;
+                    background: {{ms.fundo}};
                   "
                   >{{ms.txt}}</a
                 ></template
@@ -112,7 +176,7 @@
                   <summary
                     style="
                       color: #ffffff;
-                      padding: 8px 12px;
+                      padding: 8px 9px;
                       min-height: 36px;
                       display: inline-flex;
                       align-items: center;
@@ -705,7 +769,15 @@
           <template data-sc="if" value="{{abaEvolucao}}">
             <section
               aria-labelledby="t-evo"
-              style="background: #ffffff; border: 1px solid #dce2e0; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px"
+              style="
+                background: #ffffff;
+                border: 1px solid #dce2e0;
+                border-radius: 12px;
+                padding: 18px 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+              "
             >
               <div style="display: flex; flex-direction: column; gap: 2px">
                 <h2 id="t-evo" style="margin: 0; font-size: 20px; font-weight: 700">Evolução mês a mês</h2>
@@ -720,22 +792,47 @@
               <template data-sc="if" value="{{evo.pronto}}">
                 <div style="display: flex; flex-wrap: wrap; gap: 16px">
                   <template data-sc="for" list="{{evo.graficos}}" as="gr">
-                    <figure style="flex: 1 1 420px; min-width: 0; margin: 0; border: 1px solid #dce2e0; border-radius: 8px; padding: 12px 14px">
+                    <figure
+                      style="flex: 1 1 420px; min-width: 0; margin: 0; border: 1px solid #dce2e0; border-radius: 8px; padding: 12px 14px"
+                    >
                       <figcaption style="font-weight: 700; font-size: 15px">{{gr.titulo}}</figcaption>
                       <span style="font-size: 13px; color: #566370">{{gr.legenda}}</span>
-                      <svg viewBox="0 0 600 230" role="img" aria-label="{{gr.aria}}" style="width: 100%; height: auto; display: block; margin-top: 6px">
+                      <svg
+                        viewBox="0 0 600 230"
+                        role="img"
+                        aria-label="{{gr.aria}}"
+                        style="width: 100%; height: auto; display: block; margin-top: 6px"
+                      >
                         <template data-sc="for" list="{{gr.grades}}" as="gl">
                           <line x1="48" x2="588" y1="{{gl.y}}" y2="{{gl.y}}" stroke="#EEF1F0" stroke-width="1"></line>
                           <text x="42" y="{{gl.yTxt}}" text-anchor="end" font-size="12" fill="#566370">{{gl.txt}}</text>
                         </template>
                         <template data-sc="if" value="{{gr.temMeta}}">
-                          <line x1="48" x2="588" y1="{{gr.metaY}}" y2="{{gr.metaY}}" stroke="#14212B" stroke-width="1.5" stroke-dasharray="6 4"></line>
+                          <line
+                            x1="48"
+                            x2="588"
+                            y1="{{gr.metaY}}"
+                            y2="{{gr.metaY}}"
+                            stroke="#14212B"
+                            stroke-width="1.5"
+                            stroke-dasharray="6 4"
+                          ></line>
                           <text x="54" y="{{gr.metaYTxt}}" text-anchor="start" font-size="12" fill="#14212B">{{gr.metaTxt}}</text>
                         </template>
-                        <polyline points="{{gr.linha}}" fill="none" stroke="{{gr.cor}}" stroke-width="2.5" stroke-linejoin="round"></polyline>
+                        <polyline
+                          points="{{gr.linha}}"
+                          fill="none"
+                          stroke="{{gr.cor}}"
+                          stroke-width="2.5"
+                          stroke-linejoin="round"
+                        ></polyline>
                         <template data-sc="for" list="{{gr.pontos}}" as="pt">
-                          <circle cx="{{pt.x}}" cy="{{pt.y}}" r="5" fill="{{pt.cor}}" stroke="#FFFFFF" stroke-width="2"><title>{{pt.titulo}}</title></circle>
-                          <text x="{{pt.x}}" y="{{pt.yTxt}}" text-anchor="middle" font-size="12" font-weight="600" fill="#14212B">{{pt.txt}}</text>
+                          <circle cx="{{pt.x}}" cy="{{pt.y}}" r="5" fill="{{pt.cor}}" stroke="#FFFFFF" stroke-width="2">
+                            <title>{{pt.titulo}}</title>
+                          </circle>
+                          <text x="{{pt.x}}" y="{{pt.yTxt}}" text-anchor="middle" font-size="12" font-weight="600" fill="#14212B">
+                            {{pt.txt}}
+                          </text>
                         </template>
                         <template data-sc="for" list="{{gr.eixoX}}" as="ex">
                           <text x="{{ex.x}}" y="224" text-anchor="middle" font-size="12" fill="#566370">{{ex.txt}}</text>
@@ -747,11 +844,15 @@
                 <div style="display: flex; flex-direction: column; gap: 6px">
                   <h3 style="margin: 0; font-size: 16px; font-weight: 700">{{evo.tabelaTitulo}}</h3>
                   <span style="font-size: 13px; color: #566370"
-                    >Em cada mês: absenteísmo e, abaixo, a espera até a próxima vaga (mediana nos grupos). A última coluna compara o primeiro e o
-                    último mês com dados.</span
+                    >Em cada mês: absenteísmo e, abaixo, a espera até a próxima vaga (mediana nos grupos). A última coluna compara o
+                    primeiro e o último mês com dados.</span
                   >
                   <div style="overflow-x: auto; border: 1px solid #dce2e0; border-radius: 8px">
-                    <div role="table" aria-label="{{evo.tabelaTitulo}}" style="display: grid; grid-template-columns: {{evo.colunas}}; min-width: {{evo.larguraMin}}">
+                    <div
+                      role="table"
+                      aria-label="{{evo.tabelaTitulo}}"
+                      style="display: grid; grid-template-columns: {{evo.colunas}}; min-width: {{evo.larguraMin}}"
+                    >
                       <template data-sc="for" list="{{evo.celulas}}" as="c">
                         <div
                           role="{{c.papel}}"
@@ -774,7 +875,15 @@
           <template data-sc="if" value="{{abaTrajetoria}}">
             <section
               aria-labelledby="t-mud"
-              style="background: #ffffff; border: 1px solid #dce2e0; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px"
+              style="
+                background: #ffffff;
+                border: 1px solid #dce2e0;
+                border-radius: 12px;
+                padding: 18px 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+              "
             >
               <div style="display: flex; flex-direction: column; gap: 2px">
                 <h2 id="t-mud" style="margin: 0; font-size: 20px; font-weight: 700">Quem mudou</h2>
@@ -806,44 +915,98 @@
                   </template>
                 </div>
                 <template data-sc="if" value="{{tra.temSel}}">
-                  <div style="border: 2px solid #1f3c72; border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; background: #F7F9FC">
+                  <div
+                    style="
+                      border: 2px solid #1f3c72;
+                      border-radius: 10px;
+                      padding: 12px 14px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 10px;
+                      background: #f7f9fc;
+                    "
+                  >
                     <div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start">
                       <div style="line-height: 1.3">
-                        <span style="font-weight: 700; font-size: 17px">{{tra.sel.nome}}</span><br /><span style="font-size: 13px; color: #566370">{{tra.sel.sub}}</span>
+                        <span style="font-weight: 700; font-size: 17px">{{tra.sel.nome}}</span><br /><span
+                          style="font-size: 13px; color: #566370"
+                          >{{tra.sel.sub}}</span
+                        >
                       </div>
                       <button
                         type="button"
                         onClick="{{tra.sel.fechar}}"
-                        style="font: inherit; font-size: 14px; padding: 6px 12px; min-height: 40px; border: 1px solid #b9c4c9; border-radius: 6px; background: #ffffff; cursor: pointer"
+                        style="
+                          font: inherit;
+                          font-size: 14px;
+                          padding: 6px 12px;
+                          min-height: 40px;
+                          border: 1px solid #b9c4c9;
+                          border-radius: 6px;
+                          background: #ffffff;
+                          cursor: pointer;
+                        "
                       >
                         Fechar
                       </button>
                     </div>
                     <div style="display: flex; flex-wrap: wrap; gap: 16px">
-                  <template data-sc="for" list="{{tra.sel.graficos}}" as="gr">
-                    <figure style="flex: 1 1 420px; min-width: 0; margin: 0; border: 1px solid #dce2e0; border-radius: 8px; padding: 12px 14px">
-                      <figcaption style="font-weight: 700; font-size: 15px">{{gr.titulo}}</figcaption>
-                      <span style="font-size: 13px; color: #566370">{{gr.legenda}}</span>
-                      <svg viewBox="0 0 600 230" role="img" aria-label="{{gr.aria}}" style="width: 100%; height: auto; display: block; margin-top: 6px">
-                        <template data-sc="for" list="{{gr.grades}}" as="gl">
-                          <line x1="48" x2="588" y1="{{gl.y}}" y2="{{gl.y}}" stroke="#EEF1F0" stroke-width="1"></line>
-                          <text x="42" y="{{gl.yTxt}}" text-anchor="end" font-size="12" fill="#566370">{{gl.txt}}</text>
-                        </template>
-                        <template data-sc="if" value="{{gr.temMeta}}">
-                          <line x1="48" x2="588" y1="{{gr.metaY}}" y2="{{gr.metaY}}" stroke="#14212B" stroke-width="1.5" stroke-dasharray="6 4"></line>
-                          <text x="54" y="{{gr.metaYTxt}}" text-anchor="start" font-size="12" fill="#14212B">{{gr.metaTxt}}</text>
-                        </template>
-                        <polyline points="{{gr.linha}}" fill="none" stroke="{{gr.cor}}" stroke-width="2.5" stroke-linejoin="round"></polyline>
-                        <template data-sc="for" list="{{gr.pontos}}" as="pt">
-                          <circle cx="{{pt.x}}" cy="{{pt.y}}" r="5" fill="{{pt.cor}}" stroke="#FFFFFF" stroke-width="2"><title>{{pt.titulo}}</title></circle>
-                          <text x="{{pt.x}}" y="{{pt.yTxt}}" text-anchor="middle" font-size="12" font-weight="600" fill="#14212B">{{pt.txt}}</text>
-                        </template>
-                        <template data-sc="for" list="{{gr.eixoX}}" as="ex">
-                          <text x="{{ex.x}}" y="224" text-anchor="middle" font-size="12" fill="#566370">{{ex.txt}}</text>
-                        </template>
-                      </svg>
-                    </figure>
-                  </template>
+                      <template data-sc="for" list="{{tra.sel.graficos}}" as="gr">
+                        <figure
+                          style="
+                            flex: 1 1 420px;
+                            min-width: 0;
+                            margin: 0;
+                            border: 1px solid #dce2e0;
+                            border-radius: 8px;
+                            padding: 12px 14px;
+                          "
+                        >
+                          <figcaption style="font-weight: 700; font-size: 15px">{{gr.titulo}}</figcaption>
+                          <span style="font-size: 13px; color: #566370">{{gr.legenda}}</span>
+                          <svg
+                            viewBox="0 0 600 230"
+                            role="img"
+                            aria-label="{{gr.aria}}"
+                            style="width: 100%; height: auto; display: block; margin-top: 6px"
+                          >
+                            <template data-sc="for" list="{{gr.grades}}" as="gl">
+                              <line x1="48" x2="588" y1="{{gl.y}}" y2="{{gl.y}}" stroke="#EEF1F0" stroke-width="1"></line>
+                              <text x="42" y="{{gl.yTxt}}" text-anchor="end" font-size="12" fill="#566370">{{gl.txt}}</text>
+                            </template>
+                            <template data-sc="if" value="{{gr.temMeta}}">
+                              <line
+                                x1="48"
+                                x2="588"
+                                y1="{{gr.metaY}}"
+                                y2="{{gr.metaY}}"
+                                stroke="#14212B"
+                                stroke-width="1.5"
+                                stroke-dasharray="6 4"
+                              ></line>
+                              <text x="54" y="{{gr.metaYTxt}}" text-anchor="start" font-size="12" fill="#14212B">{{gr.metaTxt}}</text>
+                            </template>
+                            <polyline
+                              points="{{gr.linha}}"
+                              fill="none"
+                              stroke="{{gr.cor}}"
+                              stroke-width="2.5"
+                              stroke-linejoin="round"
+                            ></polyline>
+                            <template data-sc="for" list="{{gr.pontos}}" as="pt">
+                              <circle cx="{{pt.x}}" cy="{{pt.y}}" r="5" fill="{{pt.cor}}" stroke="#FFFFFF" stroke-width="2">
+                                <title>{{pt.titulo}}</title>
+                              </circle>
+                              <text x="{{pt.x}}" y="{{pt.yTxt}}" text-anchor="middle" font-size="12" font-weight="600" fill="#14212B">
+                                {{pt.txt}}
+                              </text>
+                            </template>
+                            <template data-sc="for" list="{{gr.eixoX}}" as="ex">
+                              <text x="{{ex.x}}" y="224" text-anchor="middle" font-size="12" fill="#566370">{{ex.txt}}</text>
+                            </template>
+                          </svg>
+                        </figure>
+                      </template>
                     </div>
                   </div>
                 </template>
@@ -851,11 +1014,22 @@
                   <div role="table" aria-label="Profissionais e evolução" style="min-width: 760px">
                     <div
                       role="row"
-                      style="display: grid; grid-template-columns: minmax(200px, 1.6fr) 150px 88px 150px 88px 110px; gap: 10px; padding: 8px 12px; background: #F6F9FA; font-size: 13px; font-weight: 700; color: #33414c; border-bottom: 1px solid #dce2e0"
+                      style="
+                        display: grid;
+                        grid-template-columns: minmax(200px, 1.6fr) 150px 88px 150px 88px 110px;
+                        gap: 10px;
+                        padding: 8px 12px;
+                        background: #f6f9fa;
+                        font-size: 13px;
+                        font-weight: 700;
+                        color: #33414c;
+                        border-bottom: 1px solid #dce2e0;
+                      "
                     >
                       <span role="columnheader">Profissional</span><span role="columnheader">Absenteísmo por mês</span
                       ><span role="columnheader" style="text-align: right">Último</span><span role="columnheader">Espera por mês</span
-                      ><span role="columnheader" style="text-align: right">Último</span><span role="columnheader" style="text-align: center">Mudança</span>
+                      ><span role="columnheader" style="text-align: right">Último</span
+                      ><span role="columnheader" style="text-align: center">Mudança</span>
                     </div>
                     <template data-sc="for" list="{{tra.linhas}}" as="l">
                       <button
@@ -867,26 +1041,60 @@
                         style="font: inherit; color: inherit; text-align: left; width: 100%; display: grid; grid-template-columns: minmax(200px, 1.6fr) 150px 88px 150px 88px 110px; gap: 10px; align-items: center; padding: 8px 12px; min-height: 52px; border: 0; border-bottom: 1px solid #EEF1F0; background: {{l.fundo}}; cursor: pointer"
                       >
                         <span style="min-width: 0; line-height: 1.25"
-                          ><span style="font-weight: 600; overflow-wrap: anywhere">{{l.nome}}</span><br /><span style="font-size: 12px; color: #566370">{{l.sub}}</span></span
+                          ><span style="font-weight: 600; overflow-wrap: anywhere">{{l.nome}}</span><br /><span
+                            style="font-size: 12px; color: #566370"
+                            >{{l.sub}}</span
+                          ></span
                         >
                         <svg viewBox="0 0 140 36" width="140" height="36" aria-hidden="true">
                           <template data-sc="if" value="{{l.miniF.temMeta}}">
-                            <line x1="0" x2="140" y1="{{l.miniF.metaY}}" y2="{{l.miniF.metaY}}" stroke="#14212B" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"></line>
+                            <line
+                              x1="0"
+                              x2="140"
+                              y1="{{l.miniF.metaY}}"
+                              y2="{{l.miniF.metaY}}"
+                              stroke="#14212B"
+                              stroke-width="1"
+                              stroke-dasharray="3 3"
+                              opacity="0.5"
+                            ></line>
                           </template>
-                          <polyline points="{{l.miniF.linha}}" fill="none" stroke="{{l.miniF.cor}}" stroke-width="2" stroke-linejoin="round"></polyline>
-                          <template data-sc="for" list="{{l.miniF.pontos}}" as="pt"><circle cx="{{pt.x}}" cy="{{pt.y}}" r="1.8" fill="{{l.miniF.cor}}"></circle></template>
+                          <polyline
+                            points="{{l.miniF.linha}}"
+                            fill="none"
+                            stroke="{{l.miniF.cor}}"
+                            stroke-width="2"
+                            stroke-linejoin="round"
+                          ></polyline>
+                          <template data-sc="for" list="{{l.miniF.pontos}}" as="pt">
+                            <circle cx="{{pt.x}}" cy="{{pt.y}}" r="1.8" fill="{{l.miniF.cor}}"></circle>
+                          </template>
                           <circle cx="{{l.miniF.ux}}" cy="{{l.miniF.uy}}" r="3.5" fill="{{l.miniF.cor}}"></circle>
                         </svg>
                         <span style="text-align: right; line-height: 1.2; font-variant-numeric: tabular-nums"
-                          ><span style="font-weight: 700; color: {{l.ultFCor}}">{{l.ultF}}</span><br /><span style="font-size: 12px; color: #566370">{{l.varF}}</span></span
+                          ><span style="font-weight: 700; color: {{l.ultFCor}}">{{l.ultF}}</span><br /><span
+                            style="font-size: 12px; color: #566370"
+                            >{{l.varF}}</span
+                          ></span
                         >
                         <svg viewBox="0 0 140 36" width="140" height="36" aria-hidden="true">
-                          <polyline points="{{l.miniD.linha}}" fill="none" stroke="{{l.miniD.cor}}" stroke-width="2" stroke-linejoin="round"></polyline>
-                          <template data-sc="for" list="{{l.miniD.pontos}}" as="pt"><circle cx="{{pt.x}}" cy="{{pt.y}}" r="1.8" fill="{{l.miniD.cor}}"></circle></template>
+                          <polyline
+                            points="{{l.miniD.linha}}"
+                            fill="none"
+                            stroke="{{l.miniD.cor}}"
+                            stroke-width="2"
+                            stroke-linejoin="round"
+                          ></polyline>
+                          <template data-sc="for" list="{{l.miniD.pontos}}" as="pt">
+                            <circle cx="{{pt.x}}" cy="{{pt.y}}" r="1.8" fill="{{l.miniD.cor}}"></circle>
+                          </template>
                           <circle cx="{{l.miniD.ux}}" cy="{{l.miniD.uy}}" r="3.5" fill="{{l.miniD.cor}}"></circle>
                         </svg>
                         <span style="text-align: right; line-height: 1.2; font-variant-numeric: tabular-nums"
-                          ><span style="font-weight: 700; color: {{l.ultDCor}}">{{l.ultD}}</span><br /><span style="font-size: 12px; color: #566370">{{l.varD}}</span></span
+                          ><span style="font-weight: 700; color: {{l.ultDCor}}">{{l.ultD}}</span><br /><span
+                            style="font-size: 12px; color: #566370"
+                            >{{l.varD}}</span
+                          ></span
                         >
                         <span style="text-align: center; font-size: 13px; font-weight: 700; color: {{l.corV}}">{{l.veredito}}</span>
                       </button>
@@ -894,8 +1102,9 @@
                   </div>
                 </div>
                 <span style="font-size: 13px; color: #566370"
-                  >Linha vermelha: absenteísmo (tracejado = meta {{metaTxt}}). Linha azul: dias até a próxima vaga. O ponto maior é o último mês. Conta
-                  como mudança a partir de 2 pontos percentuais de faltas ou 3 dias de espera. Clique num profissional para ver os gráficos grandes.</span
+                  >Linha vermelha: absenteísmo (tracejado = meta {{metaTxt}}). Linha azul: dias até a próxima vaga. O ponto maior é o último
+                  mês. Conta como mudança a partir de 2 pontos percentuais de faltas ou 3 dias de espera. Clique num profissional para ver
+                  os gráficos grandes.</span
                 >
               </template>
             </section>
@@ -1119,7 +1328,6 @@
       };
       const MENU_SITE = () =>
         [
-          ['/', 'Acompanhamentos'],
           ['/composicao', 'Composição de Usuários'],
           ['/coleta', 'Como coletamos'],
         ]
@@ -1131,7 +1339,11 @@
                 ]
               : [],
           )
-          .map(([href, txt]) => ({ href, txt }));
+          .map(([href, txt]) => ({
+            href,
+            txt,
+            fundo: location.pathname.replace(/\.html$/, '') === href ? 'rgba(255,255,255,.22)' : 'transparent',
+          }));
       const META = 19.59;
       // Evolução e trajetória: usam todas as competências guardadas (carregadas só quando uma dessas abas é aberta).
       let EVOL = null,
@@ -1158,14 +1370,22 @@
         const MAXF = 50,
           MAXD = 60;
         const espera = { carregando: EVOL_STATUS === 'carregando' || EVOL_STATUS === 'nao', vazio: false, pronto: false, vazioTxt: '' };
-        if (EVOL_STATUS === 'erro') Object.assign(espera, { carregando: false, vazio: true, vazioTxt: 'Não foi possível carregar os meses anteriores. Recarregue a página.' });
+        if (EVOL_STATUS === 'erro')
+          Object.assign(espera, {
+            carregando: false,
+            vazio: true,
+            vazioTxt: 'Não foi possível carregar os meses anteriores. Recarregue a página.',
+          });
         const base = (EVOL && EVOL.profissionais) || [];
         const comps = (EVOL && EVOL.competencias) || [];
         if (EVOL_STATUS === 'pronto' && comps.length < 2)
           Object.assign(espera, {
             carregando: false,
             vazio: true,
-            vazioTxt: 'Ainda há só ' + (comps.length ? 'um mês' : 'nenhum mês') + ' guardado. A comparação aparece a partir da segunda coleta mensal.',
+            vazioTxt:
+              'Ainda há só ' +
+              (comps.length ? 'um mês' : 'nenhum mês') +
+              ' guardado. A comparação aparece a partir da segunda coleta mensal.',
           });
         const ok = EVOL_STATUS === 'pronto' && comps.length >= 2;
 
@@ -1195,7 +1415,12 @@
         const agrega = (ps) => {
           const f = ps.reduce((t, p) => t + p.faltas, 0),
             a = ps.reduce((t, p) => t + p.atend, 0);
-          return { pct: f + a ? (f / (f + a)) * 100 : null, dias: mediana(ps.filter((p) => p.dias !== null).map((p) => p.dias)), f, base: f + a };
+          return {
+            pct: f + a ? (f / (f + a)) * 100 : null,
+            dias: mediana(ps.filter((p) => p.dias !== null).map((p) => p.dias)),
+            f,
+            base: f + a,
+          };
         };
         const mesCurto = (c) => {
           const [a, m] = c.split('-');
@@ -1243,8 +1468,27 @@
             };
           };
           return [
-            grafico(porMes, 'Absenteísmo', 'faltas ÷ (faltas + atendimentos) ' + quem + ', em cada mês', '#C0392B', (m) => m.pct, 25, (v) => num(v, 1) + '%', META),
-            grafico(porMes, 'Espera até a próxima vaga', (quem === 'do recorte' ? 'mediana dos profissionais com agenda lida no mês' : 'dias até a próxima vaga na leitura do mês') + ', em dias', '#0E5E8C', (m) => m.dias, 30, (v) => diasTxt(Math.round(v)), null),
+            grafico(
+              porMes,
+              'Absenteísmo',
+              'faltas ÷ (faltas + atendimentos) ' + quem + ', em cada mês',
+              '#C0392B',
+              (m) => m.pct,
+              25,
+              (v) => num(v, 1) + '%',
+              META,
+            ),
+            grafico(
+              porMes,
+              'Espera até a próxima vaga',
+              (quem === 'do recorte' ? 'mediana dos profissionais com agenda lida no mês' : 'dias até a próxima vaga na leitura do mês') +
+                ', em dias',
+              '#0E5E8C',
+              (m) => m.dias,
+              30,
+              (v) => diasTxt(Math.round(v)),
+              null,
+            ),
           ];
         };
         // ---------- Evolução ----------
@@ -1259,10 +1503,25 @@
           const grupos = {};
           linhasF.forEach((p) => {
             const k = chaveG(p);
-            (grupos[k] = grupos[k] || { nome: nivel === 'prof' ? p.nome : k, sub: nivel === 'prof' ? p.cbo + ' · ' + p.eq : nivel === 'eq' ? p.un : '', ps: [] }).ps.push(p);
+            (grupos[k] = grupos[k] || {
+              nome: nivel === 'prof' ? p.nome : k,
+              sub: nivel === 'prof' ? p.cbo + ' · ' + p.eq : nivel === 'eq' ? p.un : '',
+              ps: [],
+            }).ps.push(p);
           });
           const celulas = [];
-          const cab = (l1, alinha) => celulas.push({ papel: 'columnheader', l1, l2: '', titulo: '', fundo: '#F6F9FA', alinha, peso: 700, cor: '#33414C', cor2: '#566370' });
+          const cab = (l1, alinha) =>
+            celulas.push({
+              papel: 'columnheader',
+              l1,
+              l2: '',
+              titulo: '',
+              fundo: '#F6F9FA',
+              alinha,
+              peso: 700,
+              cor: '#33414C',
+              cor2: '#566370',
+            });
           cab(rot, 'left');
           comps.forEach((c) => cab(mesCurto(c), 'center'));
           cab('Variação', 'center');
@@ -1270,13 +1529,29 @@
             .map((g) => Object.assign(g, { meses: comps.map((c) => agrega(g.ps.filter((p) => p.comp === c))) }))
             .sort((a, b) => a.nome.localeCompare(b.nome, 'pt'));
           ordenados.forEach((g) => {
-            celulas.push({ papel: 'rowheader', l1: g.nome, l2: g.sub, titulo: g.nome, fundo: '#FFFFFF', alinha: 'left', peso: 600, cor: '#14212B', cor2: '#566370' });
+            celulas.push({
+              papel: 'rowheader',
+              l1: g.nome,
+              l2: g.sub,
+              titulo: g.nome,
+              fundo: '#FFFFFF',
+              alinha: 'left',
+              peso: 600,
+              cor: '#14212B',
+              cor2: '#566370',
+            });
             g.meses.forEach((m, i) =>
               celulas.push({
                 papel: 'cell',
                 l1: m.pct === null ? '—' : num(m.pct, 1) + '%',
                 l2: m.dias === null ? '' : diasTxt(m.dias),
-                titulo: g.nome + ', ' + mes(comps[i]) + ': ' + (m.pct === null ? 'sem agendados' : m.f + ' faltas em ' + m.base + ' agendados') + (m.dias === null ? '' : '; vaga em ' + diasTxt(m.dias)),
+                titulo:
+                  g.nome +
+                  ', ' +
+                  mes(comps[i]) +
+                  ': ' +
+                  (m.pct === null ? 'sem agendados' : m.f + ' faltas em ' + m.base + ' agendados') +
+                  (m.dias === null ? '' : '; vaga em ' + diasTxt(m.dias)),
                 fundo: '#FFFFFF',
                 alinha: 'center',
                 peso: 600,
@@ -1293,7 +1568,8 @@
               papel: 'cell',
               l1: dP === null ? '—' : sinal(dP, 1, ' p.p.'),
               l2: dD === null ? '' : sinal(dD, 0, ' dias'),
-              titulo: 'Diferença entre o primeiro e o último mês com dados (faltas em pontos percentuais; espera em dias). Negativo é melhora.',
+              titulo:
+                'Diferença entre o primeiro e o último mês com dados (faltas em pontos percentuais; espera em dias). Negativo é melhora.',
               fundo: '#F6F9FA',
               alinha: 'center',
               peso: 700,
@@ -1320,7 +1596,15 @@
         if (ok) {
           const porProf = {};
           linhasF.forEach((p) => {
-            const g = (porProf[p.chave] = porProf[p.chave] || { k: p.chave, nome: p.nome, cbo: p.cbo, eq: p.eq, un: p.un, cat: p.cat, ps: [] });
+            const g = (porProf[p.chave] = porProf[p.chave] || {
+              k: p.chave,
+              nome: p.nome,
+              cbo: p.cbo,
+              eq: p.eq,
+              un: p.un,
+              cat: p.cat,
+              ps: [],
+            });
             g.ps.push(p);
             if (p.comp >= (g.ultimo || '')) Object.assign(g, { ultimo: p.comp, cbo: p.cbo, eq: p.eq });
           });
@@ -1395,7 +1679,11 @@
             vazioTxt: 'Nenhum profissional deste recorte nos meses guardados.',
             pronto: linhas.length > 0,
             subtitulo:
-              'Cada linha mostra os meses de ' + mes(comps[0]) + ' a ' + mes(comps[comps.length - 1]) + '. A mudança compara o último mês com o anterior.',
+              'Cada linha mostra os meses de ' +
+              mes(comps[0]) +
+              ' a ' +
+              mes(comps[comps.length - 1]) +
+              '. A mudança compara o último mês com o anterior.',
             resumo: [
               { n: conta('piorou'), txt: ' pioraram', cor: COR.piorou },
               { n: conta('misto'), txt: ' melhoraram numa medida e pioraram na outra', cor: COR.misto },
@@ -1424,8 +1712,18 @@
               return {
                 nome: l.g.nome,
                 sub: l.g.cbo + ' · ' + l.g.eq + ' · ' + l.g.un,
-                miniF: mini(l.meses.map((m) => m.pct), 30, META, '#C0392B'),
-                miniD: mini(l.meses.map((m) => m.dias), 30, null, '#0E5E8C'),
+                miniF: mini(
+                  l.meses.map((m) => m.pct),
+                  30,
+                  META,
+                  '#C0392B',
+                ),
+                miniD: mini(
+                  l.meses.map((m) => m.dias),
+                  30,
+                  null,
+                  '#0E5E8C',
+                ),
                 ultF: l.ultP === null ? '—' : num(l.ultP, 1) + '%',
                 ultFCor: corFaltas(l.ultP),
                 ultD: l.ultD === null ? '—' : diasTxt(l.ultD),
