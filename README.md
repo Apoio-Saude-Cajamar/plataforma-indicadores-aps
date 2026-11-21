@@ -214,6 +214,10 @@ Os testes usam o SQLite embutido no Node para imitar o D1 (`test/d1-local.mjs`).
 
 O administrador publica avisos em `/comunicados` (título, texto, destinatários, importância e período opcional). Cada usuário vê uma faixa no topo das páginas até marcar "Entendi"; o administrador vê quantos já leram. Requer a migração `migrations/0004_comunicados.sql`.
 
+## Município e classificação por equipe
+
+As notas metodológicas são por equipe. Onde há mais de uma equipe (município, unidade ou seleção), o Painel mostra o valor **agregado** (soma de numeradores ÷ soma de denominadores) e, em vez de uma classe só, **quantas equipes estão em cada classe**; a classe única aparece só quando o recorte é uma equipe. Vale para `/notas` (lista de equipes na própria nota, pior primeiro), `/indicadores` e o relatório (tabelas, réguas, dossiê por unidade). Funções: `distEquipes` e `pcAgg` em `painel/js/federal-calculo.js`; `kpillDist` em `relatorio-base.js`.
+
 ## Pendências da coleta
 
 `/pendencias` (gestor e administrador) e `GET /api/v1/pendencias?competencia=AAAA-MM` conferem, só com os dados já gravados, o que falta ou parece estranho: unidade sem indicadores, indicadores ausentes na maioria das unidades, numerador maior que o denominador, filas/agendas/horários e composição por unidade, e se a coleta do mês anterior já chegou (atenção a partir do primeiro dia útil, pendência após o dia 10). As regras ficam em `api/pendencias.js` (`analisar`, função pura testada). Só saem contagens e nomes de unidades.

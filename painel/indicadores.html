@@ -423,7 +423,7 @@
     <link rel="stylesheet" href="/css/tema.css" />
     <script src="/js/publico/tema.js"></script>
     <script src="/js/util.js"></script>
-      <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#1F3C72" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -432,7 +432,7 @@
     <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" />
     <link rel="stylesheet" href="/css/mobile.css" />
     <script src="/js/publico/mobile.js" defer></script>
-</head>
+  </head>
   <body>
     <header>
       <div class="topo">
@@ -587,8 +587,10 @@
               });
             const mun = agregar(ls, () => 'M').get(cod + '|M'),
               vm = mun ? resultado(mun, cat.tipo) : null,
-              km = conceito(cod, vm);
-            if (!passa(cod, vm)) continue;
+              km = n > 1 ? null : conceito(cod, vm);
+            // Filtro por conceito: com várias equipes vale "tem equipe nessa classe" (a classe é da equipe, não do agregado).
+            const f = $('co').value;
+            if (n > 1 ? f && (f === 'n' || !c[f]) : !passa(cod, vm)) continue;
             sub +=
               '<tr><td><b>' +
               esc(cod) +
@@ -748,7 +750,7 @@
               '</td><td class="n"><b>' +
               fmt(resultado(tot, cat.tipo), cat.tipo) +
               '</b>' +
-              pc(cod, resultado(tot, cat.tipo)) +
+              pcAgg(cod, resultado(tot, cat.tipo), ls, cat.tipo) +
               '</td></tr>';
             if (ab) {
               const m = agregar(ls, (l) => l.unidade + ' · ' + l.equipe);

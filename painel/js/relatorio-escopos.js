@@ -79,7 +79,8 @@ function corpoEscopo(comp, E, csvl) {
       const g = agregar(ls, () => 'T').get(cod + '|T');
       if (!g) continue;
       const v = resultado(g, cat.tipo),
-        k = conceito(cod, v);
+        dEq = distEquipes(cod, ls, cat.tipo),
+        k = dEq.n > 1 ? null : conceito(cod, v);
       const gm = E.ref ? agregar(todas, () => 'M').get(cod + '|M') : null,
         vm = gm ? resultado(gm, cat.tipo) : null;
       const direto = g.direto !== undefined,
@@ -103,7 +104,15 @@ function corpoEscopo(comp, E, csvl) {
           '</td><td>' +
           fmt(v, cat.tipo) +
           '</td><td>' +
-          (k ? NOMEC[k] : '') +
+          (k
+            ? NOMEC[k]
+            : dEq.n > 1
+              ? 'por equipe: ' +
+                ['o', 'b', 's', 'r']
+                  .filter((x) => dEq.c[x])
+                  .map((x) => dEq.c[x] + ' ' + NOMEC[x])
+                  .join(', ')
+              : '') +
           '</td><td>' +
           (E.ref ? fmt(vm, cat.tipo) : '') +
           '</td></tr>',
@@ -118,7 +127,7 @@ function corpoEscopo(comp, E, csvl) {
           '<div class="vl"><b>' +
           fmt(v, cat.tipo) +
           '</b>' +
-          kpill(k) +
+          (dEq.n > 1 ? kpillDist(dEq) : kpill(k)) +
           (FAIXAX[cod] ? '*' : '') +
           (E.ref ? '<span>município: ' + fmt(vm, cat.tipo) + '</span>' : '') +
           '</div></div><div>' +

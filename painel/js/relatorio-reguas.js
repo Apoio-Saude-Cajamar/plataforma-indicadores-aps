@@ -114,6 +114,7 @@ function secRegua(comp, un) {
         .filter((g) => g.codigo === cod)
         .map((g) => resultado(g, cat.tipo))
         .filter((v) => v != null);
+      const dEq = distEquipes(cod, ls, cat.tipo);
       const reg = reguaHtml(cod, vm, { vals: eqs });
       if (!reg) continue;
       n++;
@@ -135,7 +136,7 @@ function secRegua(comp, un) {
         '<div class="vl"><b>' +
         fmt(vm, cat.tipo) +
         '</b>' +
-        kpill(km) +
+        (eqs.length > 1 && dEq.n > 1 ? kpillDist(dEq) : kpill(km)) +
         (FAIXAX[cod] ? '*' : '') +
         faixa +
         '</div></div><div>' +

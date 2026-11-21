@@ -24,7 +24,13 @@ const semEquipe = (e) => !e || e === 'Município' || /^sem equipe$/i.test(String
 
 // Tipos de equipe e os indicadores de cada um.
 const GRUPO_TIPO = { ESF: 'esf', EAP: 'esf', ESB: 'esb', EMULTI: 'emulti', ECR: 'ecr' };
-const NOME_GRUPO = { esf: 'eSF e eAP', esb: 'eSB (saúde bucal)', emulti: 'eMulti', ecr: 'eCR (Consultório na Rua)', outra: 'Outras equipes' };
+const NOME_GRUPO = {
+  esf: 'eSF e eAP',
+  esb: 'eSB (saúde bucal)',
+  emulti: 'eMulti',
+  ecr: 'eCR (Consultório na Rua)',
+  outra: 'Outras equipes',
+};
 // Indicadores principais (tabela de equipes) e, nas notas da equipe, também os itens que os compõem.
 const SUBITENS = { C7: ['C7-A', 'C7-B', 'C7-C', 'C7-D'], CVAT: ['CVAT-CAD', 'CVAT-ACO'] };
 // Acompanhamento municipal por equipe (fora do cofinanciamento federal).
@@ -172,7 +178,17 @@ function profissionais(ms, chaves) {
     const tk = N(r.unidade) + '|' + N(r.equipe);
     if (chaves && !chaves.has(tk)) continue;
     const k = tk + '|' + r.cbo + '|' + N(r.nome);
-    const o = m.get(k) || { k, tk, u: r.unidade, e: r.equipe, cbo: r.cbo, cat: categoria(r.cboNome || r.cbo), nome: r.nome, meses: {}, tipos: {} };
+    const o = m.get(k) || {
+      k,
+      tk,
+      u: r.unidade,
+      e: r.equipe,
+      cbo: r.cbo,
+      cat: categoria(r.cboNome || r.cbo),
+      nome: r.nome,
+      meses: {},
+      tipos: {},
+    };
     const z = (o.meses[r.competencia] = o.meses[r.competencia] || { ind: 0, comp: 0, cr: 0, ce: 0, part: 0 });
     z.ind += r.individuais || 0;
     z.comp += r.compartilhados || 0;
@@ -183,7 +199,14 @@ function profissionais(ms, chaves) {
     m.set(k, o);
   }
   const lista = [...m.values()];
-  for (const o of lista) o.tot = ms.reduce((t, c) => (Object.entries(o.meses[c] || {}).forEach(([x, n]) => (t[x] += n)), t), { ind: 0, comp: 0, cr: 0, ce: 0, part: 0 });
+  for (const o of lista)
+    o.tot = ms.reduce((t, c) => (Object.entries(o.meses[c] || {}).forEach(([x, n]) => (t[x] += n)), t), {
+      ind: 0,
+      comp: 0,
+      cr: 0,
+      ce: 0,
+      part: 0,
+    });
   // Só categoria: o nome dá lugar à categoria numerada dentro da equipe.
   const porCat = {};
   lista
@@ -228,7 +251,9 @@ function tabProfissionais(ms, chaves, comEquipe) {
       ? '<tr class="tot"><td>Total dos profissionais</td>' +
         (comEquipe ? '<td></td>' : '') +
         ['ind', 'comp', 'cr', 'ce', 'part'].map((x) => '<td class="n">' + inteiro(soma(x)) + '</td>').join('') +
-        (ms.length > 1 ? '<td class="n">' + ms.map((c) => inteiro(ps.reduce((t, o) => t + ((o.meses[c] || {}).ind || 0), 0))).join(' · ') + '</td>' : '') +
+        (ms.length > 1
+          ? '<td class="n">' + ms.map((c) => inteiro(ps.reduce((t, o) => t + ((o.meses[c] || {}).ind || 0), 0))).join(' · ') + '</td>'
+          : '') +
         '</tr>'
       : '';
   // Confere com o total da equipe (relatório de atendimentos): pode diferir por profissional em mais de uma equipe ou sem identificação.
@@ -334,7 +359,9 @@ function nota(cod, meses, chaves) {
   return v == null || isNaN(v) ? null : { cod, v, tipo, k: conceito(cod, v) };
 }
 const celNota = (r) =>
-  r ? fmt(r.v, r.tipo) + (r.k ? ' <span class="cc k-' + r.k + '">' + NOMEC[r.k] + '</span>' + aconf(r.cod) : '') : '<span class="vz">—</span>';
+  r
+    ? fmt(r.v, r.tipo) + (r.k ? ' <span class="cc k-' + r.k + '">' + NOMEC[r.k] + '</span>' + aconf(r.cod) : '')
+    : '<span class="vz">—</span>';
 const nomeInd = (cod) => (CATALOGO[cod] ? nomeSem(cod, CATALOGO[cod].nome) : cod);
 
 // ---------- blocos do documento ----------
@@ -381,7 +408,9 @@ function tabProducao(ms, chaves, titulo) {
     corpo +
     '</tbody></table>' +
     evol +
-    (temCol ? '' : '<p><small>Atividades coletivas: ainda sem dados neste período (chegam com a extensão 0.9.8, coletando B4 ou eMulti).</small></p>')
+    (temCol
+      ? ''
+      : '<p><small>Atividades coletivas: ainda sem dados neste período (chegam com a extensão 0.9.8, coletando B4 ou eMulti).</small></p>')
   );
 }
 // Evolução dos atendimentos individuais: barras horizontais simples (imprimem bem em preto e branco).
@@ -409,10 +438,7 @@ function tabCategorias(ms, chaves) {
   if (!cs.length) return '<h3>Atendimentos por categoria profissional</h3><p class="vazio">Sem atendimentos individuais no período.</p>';
   let cab, linha;
   if (ms.length > 1) {
-    cab =
-      '<tr><th>Categoria</th>' +
-      ms.map((c) => '<th class="n">' + mesNome(c) + '</th>').join('') +
-      '<th class="n">Total</th></tr>';
+    cab = '<tr><th>Categoria</th>' + ms.map((c) => '<th class="n">' + mesNome(c) + '</th>').join('') + '<th class="n">Total</th></tr>';
     linha = (o) =>
       '<tr><td>' +
       esc(o.cat) +
@@ -484,7 +510,10 @@ function tabNotas(ms, chaves, grupo, titulo, lista) {
       );
     })
     .join('');
-  if (!linhas) return lista ? '' : '<h3>' + (titulo || 'Notas dos indicadores') + '</h3><p class="vazio">Sem indicadores deste tipo de equipe no período.</p>';
+  if (!linhas)
+    return lista
+      ? ''
+      : '<h3>' + (titulo || 'Notas dos indicadores') + '</h3><p class="vazio">Sem indicadores deste tipo de equipe no período.</p>';
   return (
     '<h3>' +
     (titulo || 'Notas dos indicadores') +
@@ -508,7 +537,9 @@ function tabEquipes(ms, lista, comNotas, semUnidade) {
       // Só os indicadores com resultado em alguma equipe do grupo.
       const cods = (comNotas ? INDICADORES[g] : []).filter((c) => ts.some((t) => nota(c, ms, new Set([t.k]))));
       const cab =
-        '<tr>' + (semUnidade ? '' : '<th>Unidade</th>') + '<th>Equipe</th><th class="n">Atend. individuais</th><th class="n">Coletivas</th>' +
+        '<tr>' +
+        (semUnidade ? '' : '<th>Unidade</th>') +
+        '<th>Equipe</th><th class="n">Atend. individuais</th><th class="n">Coletivas</th>' +
         cods.map((c) => '<th class="n">' + c + '</th>').join('') +
         '</tr>';
       const corpo = ts
@@ -533,13 +564,7 @@ function tabEquipes(ms, lista, comNotas, semUnidade) {
         })
         .join('');
       return (
-        '<h3>Equipes · ' +
-        esc(NOME_GRUPO[g]) +
-        '</h3><table class="csv eqs"><thead>' +
-        cab +
-        '</thead><tbody>' +
-        corpo +
-        '</tbody></table>'
+        '<h3>Equipes · ' + esc(NOME_GRUPO[g]) + '</h3><table class="csv eqs"><thead>' + cab + '</thead><tbody>' + corpo + '</tbody></table>'
       );
     })
     .join('');
@@ -580,7 +605,9 @@ function montar(ms) {
       tabProducao(ms, ch, 'Produção no período') +
         tabEmulti(ms, chavesDe(sel.filter((t) => t.grupo === 'emulti'))) +
         tabCategorias(ms, ch) +
-        grupos.map((g) => tabNotas(ms, chavesDe(sel.filter((t) => t.grupo === g)), g, 'Notas · ' + NOME_GRUPO[g] + ' (conjunto das equipes)')).join('') +
+        grupos
+          .map((g) => tabNotas(ms, chavesDe(sel.filter((t) => t.grupo === g)), g, 'Notas · ' + NOME_GRUPO[g] + ' (conjunto das equipes)'))
+          .join('') +
         tabMunicipal(ms, ch, 'Acompanhamento municipal (conjunto das equipes)') +
         tabEquipes(ms, sel, true),
     );
@@ -634,13 +661,20 @@ function montar(ms) {
     const porTk = new Map(sel.map((t) => [t.k, t]));
     let ps = profissionais(ms, chavesDe(sel));
     if ($('prof').value) ps = ps.filter((o) => o.k === $('prof').value);
-    if (!ps.length) return '<p class="vazio">Sem produção por profissional neste período (chega com a extensão 0.9.8, item “Produção por profissional”).</p>';
+    if (!ps.length)
+      return '<p class="vazio">Sem produção por profissional neste período (chega com a extensão 0.9.8, item “Produção por profissional”).</p>';
     for (const o of ps) {
       const t = porTk.get(o.tk);
       const cab =
         '<tr><th>Mês</th><th class="n">Atend. individuais</th><th class="n">Compartilhados</th><th class="n">Coletivas (responsável)</th><th class="n">Coletivas (participou)</th><th class="n">Participações</th></tr>';
       const lin = (rot, z, forte) =>
-        '<tr' + (forte ? ' class="tot"' : '') + '><td>' + rot + '</td>' + ['ind', 'comp', 'cr', 'ce', 'part'].map((x) => '<td class="n">' + inteiro((z || {})[x] || 0) + '</td>').join('') + '</tr>';
+        '<tr' +
+        (forte ? ' class="tot"' : '') +
+        '><td>' +
+        rot +
+        '</td>' +
+        ['ind', 'comp', 'cr', 'ce', 'part'].map((x) => '<td class="n">' + inteiro((z || {})[x] || 0) + '</td>').join('') +
+        '</tr>';
       const tipos = Object.entries(o.tipos).sort((a, b) => b[1] - a[1]);
       out += dossie(
         'Profissional',
@@ -658,7 +692,10 @@ function montar(ms) {
               tipos.map(([x, n]) => '<tr><td>' + esc(x) + '</td><td class="n">' + inteiro(n) + '</td></tr>').join('') +
               '</tbody></table>'
             : '') +
-          (t ? tabNotas(ms, new Set([t.k]), t.grupo, 'Notas da equipe ' + t.e) + tabMunicipal(ms, new Set([t.k]), 'Acompanhamento municipal da equipe') : ''),
+          (t
+            ? tabNotas(ms, new Set([t.k]), t.grupo, 'Notas da equipe ' + t.e) +
+              tabMunicipal(ms, new Set([t.k]), 'Acompanhamento municipal da equipe')
+            : ''),
       );
     }
   } else {
@@ -739,13 +776,18 @@ async function desenhar() {
   const fmtD = (d) => new Date(d).toLocaleDateString('pt-BR');
   // Mês em andamento: última coleta do mês anterior ao último dia dele.
   const parciais = ms.filter((c) => {
-    const ds = (dados[c] || []).map((l) => l.coletadoEm).filter(Boolean).sort();
+    const ds = (dados[c] || [])
+      .map((l) => l.coletadoEm)
+      .filter(Boolean)
+      .sort();
     if (!ds.length) return false;
     const [a, m] = c.split('-').map(Number);
     return new Date(ds[ds.length - 1]) < new Date(a, m - 1, new Date(a, m, 0).getDate(), 23, 59);
   });
   const aviso = parciais.length
-    ? '<div class="aviso-parcial"><b>Mês em andamento:</b> ' + parciais.map(mesNome).join(', ') + ' foi coletado antes do fim do mês; os números ainda são parciais.</div>'
+    ? '<div class="aviso-parcial"><b>Mês em andamento:</b> ' +
+      parciais.map(mesNome).join(', ') +
+      ' foi coletado antes do fim do mês; os números ainda são parciais.</div>'
     : '';
   $('doc').innerHTML =
     '<div class="capa"><img src="/img/painelaps.svg" alt=""><div><div class="org">Painel APS · Secretaria de Saúde de Cajamar</div><h1>' +
@@ -754,12 +796,20 @@ async function desenhar() {
     esc(rotuloPeriodo(ms)) +
     '</dd></div><div><dt>Abrangência</dt><dd>' +
     esc(
-      [$('un').value || 'Todas as unidades', $('eq').value ? $('eq').selectedOptions[0].textContent : '', $('tipoEq').value ? NOME_GRUPO[$('tipoEq').value] : '']
+      [
+        $('un').value || 'Todas as unidades',
+        $('eq').value ? $('eq').selectedOptions[0].textContent : '',
+        $('tipoEq').value ? NOME_GRUPO[$('tipoEq').value] : '',
+      ]
         .filter(Boolean)
         .join(' · '),
     ) +
     '</dd></div><div><dt>Dados coletados do PEC em</dt><dd>' +
-    (ultimas.length ? (fmtD(ultimas[0]) === fmtD(ultimas[ultimas.length - 1]) ? fmtD(ultimas[0]) : fmtD(ultimas[0]) + ' a ' + fmtD(ultimas[ultimas.length - 1])) : '—') +
+    (ultimas.length
+      ? fmtD(ultimas[0]) === fmtD(ultimas[ultimas.length - 1])
+        ? fmtD(ultimas[0])
+        : fmtD(ultimas[0]) + ' a ' + fmtD(ultimas[ultimas.length - 1])
+      : '—') +
     '</dd></div><div><dt>Emitido por</dt><dd>' +
     esc(USUARIO ? USUARIO.nome : '—') +
     '</dd></div><div><dt>Emitido em</dt><dd>' +
@@ -771,10 +821,17 @@ async function desenhar() {
     '</dd></div></dl>' +
     aviso +
     corpo +
-    '<div class="rodadoc"><b>Como ler este documento.</b> Atendimentos individuais: relatório gerencial de atendimentos do PEC, por equipe e categoria (CBO) do profissional. Atividades coletivas: atividades registradas no mês com profissional da equipe (uma atividade com profissionais de duas equipes conta para as duas). As notas são da equipe, calculadas pelo Painel APS conforme as notas técnicas; com mais de um mês, os indicadores de produção somam os meses e os de acompanhamento de pessoas (C2 a C7, CVAT, M1…) usam o último mês. É uma prévia para acompanhamento; o resultado oficial é o do Ministério da Saúde. ' + (corpo.includes('<abbr') ? '* Faixa de conceito a confirmar com a nota técnica vigente. ' : '') + (PROD && !semNomes() ? 'Este documento traz nomes de profissionais (produção por profissional, só para gestão) e nenhum dado de paciente.' : 'Este documento não contém dados de pacientes nem nomes de profissionais.') + '</div>';
-  $('doc').querySelectorAll('table.csv').forEach((t) => {
-    if (!t.classList.contains('eqs') && t.tBodies[0] && t.tBodies[0].rows.length <= 12) t.classList.add('inteira');
-  });
+    '<div class="rodadoc"><b>Como ler este documento.</b> Atendimentos individuais: relatório gerencial de atendimentos do PEC, por equipe e categoria (CBO) do profissional. Atividades coletivas: atividades registradas no mês com profissional da equipe (uma atividade com profissionais de duas equipes conta para as duas). As notas são da equipe, calculadas pelo Painel APS conforme as notas técnicas; com mais de um mês, os indicadores de produção somam os meses e os de acompanhamento de pessoas (C2 a C7, CVAT, M1…) usam o último mês. É uma prévia para acompanhamento; o resultado oficial é o do Ministério da Saúde. ' +
+    (corpo.includes('<abbr') ? '* Faixa de conceito a confirmar com a nota técnica vigente. ' : '') +
+    (PROD && !semNomes()
+      ? 'Este documento traz nomes de profissionais (produção por profissional, só para gestão) e nenhum dado de paciente.'
+      : 'Este documento não contém dados de pacientes nem nomes de profissionais.') +
+    '</div>';
+  $('doc')
+    .querySelectorAll('table.csv')
+    .forEach((t) => {
+      if (!t.classList.contains('eqs') && t.tBodies[0] && t.tBodies[0].rows.length <= 12) t.classList.add('inteira');
+    });
   document.title = TITULOS[$('recorte').value] + ' · ' + (ms.length === 1 ? ms[0] : ms[0] + ' a ' + comp);
 }
 function preencherFiltros(ms) {
@@ -794,7 +851,9 @@ function preencherFiltros(ms) {
   const ps = PROD ? profissionais(ms, ch).sort((a, b) => ordPt(semNomes() ? a.rotCat : a.nome, semNomes() ? b.rotCat : b.nome)) : [];
   $('prof').innerHTML =
     '<option value="">Todos</option>' +
-    ps.map((o) => '<option value="' + esc(o.k) + '">' + esc(rotProf(o) + ($('eq').value ? '' : ' · ' + (o.e || o.u))) + '</option>').join('');
+    ps
+      .map((o) => '<option value="' + esc(o.k) + '">' + esc(rotProf(o) + ($('eq').value ? '' : ' · ' + (o.e || o.u))) + '</option>')
+      .join('');
   $('prof').value = ps.some((o) => o.k === p0) ? p0 : '';
   $('lbProf').hidden = $('recorte').value !== 'profissional';
   $('lbIdent').hidden = !PROD;
@@ -822,11 +881,15 @@ function registrar(formato) {
 }
 function csv() {
   const lim = (s) => '"' + String(s).replace(/\s+/g, ' ').trim().replace(/"/g, '""') + '"';
-  const linhas = [lim($('doc').querySelector('h1') ? $('doc').querySelector('h1').textContent : 'Produção e notas'), 'Período;' + lim(rotuloPeriodo(mesesDoPeriodo()))];
+  const linhas = [
+    lim($('doc').querySelector('h1') ? $('doc').querySelector('h1').textContent : 'Produção e notas'),
+    'Período;' + lim(rotuloPeriodo(mesesDoPeriodo())),
+  ];
   $('doc')
     .querySelectorAll('.ebn b, h3, table.csv')
     .forEach((el) => {
-      if (el.tagName === 'TABLE') el.querySelectorAll('tr').forEach((tr) => linhas.push([...tr.children].map((c) => lim(c.textContent)).join(';')));
+      if (el.tagName === 'TABLE')
+        el.querySelectorAll('tr').forEach((tr) => linhas.push([...tr.children].map((c) => lim(c.textContent)).join(';')));
       else {
         linhas.push('');
         linhas.push(lim(el.textContent));
@@ -847,7 +910,10 @@ async function iniciar() {
   } catch (_) {}
   try {
     const r = await fetch('/api/v1/competencias', { credentials: 'same-origin' });
-    COMPS = ((await r.json()).competencias || []).map((c) => c.competencia).sort().reverse();
+    COMPS = ((await r.json()).competencias || [])
+      .map((c) => c.competencia)
+      .sort()
+      .reverse();
   } catch (_) {}
   const opt = (c) => '<option value="' + c + '">' + mesLong(c) + '</option>';
   $('mes').innerHTML = COMPS.map(opt).join('');

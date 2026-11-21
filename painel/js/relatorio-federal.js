@@ -10,8 +10,9 @@ function tabelaCods(cods, comp, un, comEquipes) {
     const cat = (window.CATALOGO || {})[cod] || { nome: cod, tipo: '' };
     const mun = agregar(ls, () => 'M').get(cod + '|M');
     if (!mun) continue;
-    const vm = resultado(mun, cat.tipo),
-      km = conceito(cod, vm);
+    const vm = resultado(mun, cat.tipo);
+    let km = conceito(cod, vm),
+      porEquipe = false;
     let eq = '';
     if (comEquipes && FAIXA[cod]) {
       const c = { o: 0, b: 0, s: 0, r: 0 };
@@ -25,6 +26,7 @@ function tabelaCods(cods, comp, un, comEquipes) {
             n++;
           }
         });
+      porEquipe = n > 1;
       eq = n
         ? ['o', 'b', 's', 'r']
             .filter((k) => c[k])
@@ -53,8 +55,7 @@ function tabelaCods(cods, comp, un, comEquipes) {
       '</b>' +
       aprox +
       '</td><td>' +
-      kpill(km) +
-      (km && FAIXAX[cod] ? ' *' : '') +
+      (porEquipe ? '<small>por equipe →</small>' : kpill(km) + (km && FAIXAX[cod] ? ' *' : '')) +
       '</td>' +
       (comEquipes ? '<td>' + esc(eq) + '</td>' : '') +
       '</tr>';
@@ -107,11 +108,17 @@ function secFederal(comp, un) {
                     const cat = (window.CATALOGO || {})[cod] || { tipo: '' };
                     const g = agregar(linhasDe(cod, [comp], ''), (l) => l.unidade).get(cod + '|' + u);
                     const v = g ? resultado(g, cat.tipo) : null;
-                    const k = conceito(cod, v);
+                    const dU = distEquipes(cod, linhasDe(cod, [comp], u), cat.tipo),
+                      k = dU.n > 1 ? null : conceito(cod, v);
+                    // Unidade com várias equipes: o valor é o agregado e as letras contam as equipes (ex.: 1B 2R).
+                    const letras = ['o', 'b', 's', 'r']
+                      .filter((x) => dU.c[x])
+                      .map((x) => '<span class="cc k-' + x + '">' + dU.c[x] + NOMEC[x].charAt(0) + '</span>')
+                      .join(' ');
                     return (
                       '<td class="n">' +
                       fmt(v, cat.tipo) +
-                      (k ? ' <span class="cc k-' + k + '">' + NOMEC[k].charAt(0) + '</span>' : '') +
+                      (dU.n > 1 ? ' ' + letras : k ? ' <span class="cc k-' + k + '">' + NOMEC[k].charAt(0) + '</span>' : '') +
                       '</td>'
                     );
                   })
@@ -124,7 +131,7 @@ function secFederal(comp, un) {
       h +=
         '<h3>Resultado por unidade</h3>' +
         t +
-        '<p><small>Conceito: O = ótimo, B = bom, S = suficiente, R = regular. Colunas vazias de conceito: indicador sem faixa definida.</small></p>';
+        '<p><small>Conceito: O = ótimo, B = bom, S = suficiente, R = regular. Em unidades com mais de uma equipe, o valor é o agregado e as letras contam as equipes (1B 2R = uma equipe em Bom e duas em Regular). Colunas vazias de conceito: indicador sem faixa definida.</small></p>';
     }
   }
   return h;

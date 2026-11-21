@@ -217,6 +217,22 @@ function conceito(cod, v) {
   }
   return null;
 }
+// As notas são por equipe. Em mais de uma equipe (município, unidade, seleção) o valor é o agregado e a classe é de cada equipe:
+// devolve quantas equipes caem em cada classe (n = equipes com faixa).
+function distEquipes(cod, ls, tipo) {
+  const c = { o: 0, b: 0, s: 0, r: 0 };
+  let n = 0;
+  [...agregar(ls, (l) => l.unidade + ' · ' + l.equipe).values()]
+    .filter((g) => g.codigo === cod)
+    .forEach((g) => {
+      const k = conceito(cod, resultado(g, tipo));
+      if (k) {
+        c[k]++;
+        n++;
+      }
+    });
+  return { c, n };
+}
 const NOMEC = { o: 'Ótimo', b: 'Bom', s: 'Suficiente', r: 'Regular' },
   PILL = { o: 'c-o', b: 'c-b', s: 'c-s', r: 'c-r' };
 const aconf = (cod) =>
@@ -224,6 +240,19 @@ const aconf = (cod) =>
 const pc = (cod, v) => {
   const k = conceito(cod, v);
   return k ? ' <span class="pill ' + PILL[k] + '">' + NOMEC[k] + '</span>' + aconf(cod) : '';
+};
+// Valor agregado de mais de uma equipe: em vez de uma classe só, quantas equipes em cada classe (com uma equipe só, a classe dela).
+const pcAgg = (cod, v, ls, tipo) => {
+  const d = distEquipes(cod, ls, tipo);
+  if (d.n < 2) return pc(cod, v);
+  return (
+    '<br><small style="color:#4A5670;font-weight:600">por equipe:</small> ' +
+    ['o', 'b', 's', 'r']
+      .filter((k) => d.c[k])
+      .map((k) => '<span class="pill ' + PILL[k] + '" style="margin:2px 4px 0 0">' + d.c[k] + ' ' + NOMEC[k] + '</span>')
+      .join('') +
+    aconf(cod)
+  );
 };
 function linhasDe(cod, comps, un) {
   let ls = [];

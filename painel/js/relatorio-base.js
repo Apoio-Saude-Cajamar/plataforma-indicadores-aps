@@ -27,6 +27,15 @@ const TITULOS = {
 const PERFIL = { admin: 'administrador', gestor: 'gestor', leitor: 'leitor' };
 const num = (v, c = 1) => (v == null || isNaN(v) ? '—' : v.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: c }));
 const pct = (v) => (v == null ? '—' : num(v, 1) + '%');
+// Mais de uma equipe: quantas em cada classe (a nota é por equipe; o valor ao lado é o agregado).
+const kpillDist = (d) =>
+  d && d.n > 1
+    ? '<small>por equipe:</small> ' +
+      ['o', 'b', 's', 'r']
+        .filter((k) => d.c[k])
+        .map((k) => '<span class="cc k-' + k + '">' + d.c[k] + ' ' + NOMEC[k] + '</span>')
+        .join(' ')
+    : '';
 const kpill = (k) => (k ? '<span class="cc k-' + k + '">' + NOMEC[k] + '</span>' : '');
 const ehGestor = () => USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor');
 const med = (a) => {
