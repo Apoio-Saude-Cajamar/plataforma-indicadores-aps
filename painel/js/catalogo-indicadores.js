@@ -152,7 +152,7 @@ var CATALOGO = {
     tipo: 'percentual',
     fonte: 'Atividades coletivas · Escovação dental supervisionada',
     formula:
-      'crianças de 6 a 12 anos nas escovações com cirurgião-dentista da APS (CBO 223293 ou 223208) ÷ crianças de 6 a 12 anos vinculadas à eSF/eAP de referência',
+      'crianças de 6 a 12 anos nas escovações supervisionadas da eSB (dentista, TSB ou ASB, com CPF ou CNS válido) ÷ crianças de 6 a 12 anos vinculadas à eSF/eAP de referência',
   },
   B5: {
     nome: 'Procedimentos odontológicos preventivos',

@@ -342,6 +342,14 @@ test('produção por profissional: a extensão troca o mês com a chave; só adm
   assert.equal((await l.pedir('GET', '/api/v1/producao')).status, 403);
 });
 
+test('faixas federais: B4 em percentual e fronteiras como nas notas do MS', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../painel/js/federal-calculo.js', import.meta.url), 'utf8');
+  const { conceito } = new Function(src + ';return { conceito }')();
+  const casos = [['B4', 54.38, 'b'], ['B4', 50, 's'], ['B4', 100, 'b'], ['B4', 100.1, 'o'], ['B6', 8, 'b'], ['B6', 3, 'r'], ['B3', 3, 'o'], ['B5', 85, 'o'], ['B5', 85.1, 'r'], ['C1', 70, 'o'], ['C1', 70.1, 'r'], ['M2', 5, 'b']];
+  for (const [c, v, e] of casos) assert.equal(conceito(c, v), e, c + ' ' + v);
+});
+
 test('comunicados: administrador publica, usuário vê e marca "Entendi", público respeitado', async () => {
   const env = comPaginas(ambiente());
   await admin(env, { login: 'ana', nome: 'Ana', senha: 'Painel#Forte2026', perfil: 'admin' });

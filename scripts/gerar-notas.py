@@ -129,7 +129,7 @@ const ITENS_USUARIO = () => {{
   if (USUARIO.perfil === 'admin') ls.push(['', 'Configurações'], ['/usuarios', 'Usuários'], ['/monitoramento', 'Monitoramento das coletas'], ['/comunicados', 'Comunicados'], ['/publicacao', 'Página pública'], ['/chaves', 'Chaves da extensão'], ['/extensao', 'Extensões do Chrome'], ['/historico', 'Histórico de acessos'], ['/backups', 'Backups']);
   return ls.map(([href, txt]) => ({{ href: href || '#', txt, peso: href ? 600 : 800 }}));
 }};
-const MENU_SITE = () => [['/composicao', 'Composição'], ['/coleta', 'Como coletamos']].concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas']] : []).map(([href, txt]) => ({{ href, txt }}));
+const MENU_SITE = () => [['/composicao', 'Composição de Usuários'], ['/coleta', 'Como coletamos']].concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas']] : []).map(([href, txt]) => ({{ href, txt }}));
 {js}
 (async () => {{
   const aviso = (t) => {{ document.getElementById('tela').innerHTML = '<p id="aviso">' + t + ' <a href="/">Voltar ao início</a></p>'; }};

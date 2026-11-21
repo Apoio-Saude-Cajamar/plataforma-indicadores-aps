@@ -18,8 +18,15 @@
         --alerta-bg: #fbf0d3;
         --chip: #eaf1f8;
       }
+      /* Tema: vale o escolhido no Painel (data-tema); sem escolha, vale o modo do sistema. */
+      html[data-tema='escuro'] {
+        --fio: #4b5d6e;
+        --alerta: #f3d27a;
+        --alerta-bg: #3a2f12;
+        --chip: #283247;
+      }
       @media (prefers-color-scheme: dark) {
-        :root {
+        html:not([data-tema]) {
           --fio: #4b5d6e;
           --alerta: #f3d27a;
           --alerta-bg: #3a2f12;
@@ -32,7 +39,7 @@
         border-bottom: 4px solid #00a7e7;
       }
       .w {
-        max-width: 1280px;
+        max-width: 1840px;
         margin: 0 auto;
         padding: 12px 16px;
         display: flex;
@@ -70,7 +77,7 @@
         text-decoration: none;
       }
       main {
-        max-width: 1280px;
+        max-width: 1840px;
         margin: 0 auto;
         padding: 20px 16px 48px;
       }
@@ -313,7 +320,7 @@
       }
       .no {
         flex: 0 0 auto;
-        width: 250px;
+        width: 290px;
         background: var(--no);
         border: 1px solid var(--line);
         border-radius: 10px;
@@ -388,7 +395,8 @@
         margin: 0;
         padding: 0 10px 8px 28px;
         display: block;
-        font-size: 12px;
+        font-size: 13px;
+        line-height: 1.4;
         color: var(--alerta);
       }
       .no ul.avisos::before,
@@ -415,10 +423,10 @@
       }
       .n3 {
         border-left: 5px solid #1c9c76;
-        width: 230px;
+        width: 270px;
       }
       .n4 {
-        width: 220px;
+        width: 260px;
         border-style: dashed;
       }
       .chip {

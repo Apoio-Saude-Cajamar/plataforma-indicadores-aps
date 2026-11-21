@@ -171,7 +171,7 @@
     nav.className = 'menu-aps';
     nav.setAttribute('aria-label', 'Áreas do Painel');
     nav.innerHTML =
-      acomp + a('/composicao', 'Composição') + (gestor ? a('/filas', 'Filas e faltas') + a('/pendencias', 'Pendências') : '') + lanc;
+      acomp + a('/composicao', 'Composição de Usuários') + (gestor ? a('/filas', 'Filas e faltas') + a('/pendencias', 'Pendências') : '') + lanc;
     const alvo = topo.querySelector('#barra');
     topo.insertBefore(nav, alvo || null);
     const tm = topo.querySelector('.tema-aps');

@@ -151,11 +151,12 @@ const FAIXAX = {
     [12, 14, 's'],
     [14, 1e9, 'r'],
   ],
+  // B4: a nota do MS traz os limites como razão (0,25 / 0,5 / 1) e a tela mostra percentual; aqui o valor é percentual, então 25 / 50 / 100.
   B4: [
-    [0, 0.25, 'r'],
-    [0.25, 0.5, 's'],
-    [0.5, 1, 'b'],
-    [1, 1e9, 'o'],
+    [0, 25, 'r'],
+    [25, 50, 's'],
+    [50, 100, 'b'],
+    [100, 1e9, 'o'],
   ],
   B5: [
     [0, 40, 'r'],
@@ -199,6 +200,7 @@ const NOTAS = [
   'CR3',
   'CR4',
 ];
+const ABERTA_ESQ = new Set(['C1', 'B1', 'B4', 'B6', 'M2']);
 const grupoDe = (cod) => (GRUPOS.find((g) => g[1].includes(cod)) || [''])[0];
 function conceito(cod, v) {
   if (v == null || isNaN(v)) return null;
@@ -207,7 +209,10 @@ function conceito(cod, v) {
   if (f === 'cvat') return v > 8.5 ? 'o' : v >= 7 ? 'b' : v >= 5 ? 's' : 'r';
   if (f === 'm1') return v > 3 ? 'o' : v > 2 ? 'b' : v > 1 ? 's' : 'r';
   if (f === 'x') {
-    const t = FAIXAX[cod].find(([a, b]) => v >= a && v < b);
+    // Fronteiras como nas notas do MS: C1, B1, B4, B6 e M2 usam "> a e ≤ b"; B3 e B5 usam "≥ a e < b" (na B5 o 85 ainda é Ótimo).
+    if (cod === 'B5' && v === 85) return 'o';
+    const abertaEsq = ABERTA_ESQ.has(cod);
+    const t = FAIXAX[cod].find(([a, b]) => (abertaEsq ? (v > a || (a === 0 && v >= 0)) && v <= b : v >= a && v < b));
     return t ? t[2] : null;
   }
   return null;
