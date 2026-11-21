@@ -110,6 +110,15 @@ pagina = f'''<!doctype html>
 <link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
 {helm.strip()}
 <style>#aviso{{font:16px/1.5 'Source Sans 3','Segoe UI',system-ui,sans-serif;max-width:640px;margin:48px auto;padding:0 24px;color:#14212B}}#aviso a{{color:#0E5E8C}}</style>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#1F3C72" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Painel APS" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/css/mobile.css" />
+    <script src="/js/publico/mobile.js" defer></script>
 </head>
 <body>
 <!-- Gerado por scripts/gerar-notas.py a partir de desenho/Notas.dc.html. Não edite à mão. -->
@@ -129,7 +138,7 @@ const ITENS_USUARIO = () => {{
   if (USUARIO.perfil === 'admin') ls.push(['', 'Configurações'], ['/usuarios', 'Usuários'], ['/monitoramento', 'Monitoramento das coletas'], ['/comunicados', 'Comunicados'], ['/publicacao', 'Página pública'], ['/chaves', 'Chaves da extensão'], ['/extensao', 'Extensões do Chrome'], ['/historico', 'Histórico de acessos'], ['/backups', 'Backups']);
   return ls.map(([href, txt]) => ({{ href: href || '#', txt, peso: href ? 600 : 800 }}));
 }};
-const MENU_SITE = () => [['/composicao', 'Composição de Usuários'], ['/coleta', 'Como coletamos']].concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas']] : []).map(([href, txt]) => ({{ href, txt }}));
+const MENU_SITE = () => [['/composicao', 'Composição de Usuários'], ['/coleta', 'Como coletamos']].concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas'], ['/pendencias', 'Pendências']] : []).map(([href, txt]) => ({{ href, txt }}));
 {js}
 (async () => {{
   const aviso = (t) => {{ document.getElementById('tela').innerHTML = '<p id="aviso">' + t + ' <a href="/">Voltar ao início</a></p>'; }};

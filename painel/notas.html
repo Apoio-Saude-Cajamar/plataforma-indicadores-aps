@@ -479,12 +479,12 @@ class Component extends DCLogic {
         fonte: 'Origem: PEC, primeiras consultas odontológicas programadas de cada equipe de saúde bucal (eSB 20h e 30h incluídas).', f: [[0, 0.25, 'regular'], [0.25, 0.75, 'suficiente'], [0.75, 1.25, 'bom'], [1.25, 2, 'otimo']] }),
       nota({ g: 'bucal', cod: 'B2', nome: 'Tratamento concluído', mun: 48.0, ant: 45.5, un: '%', tipos: ['eSB'], exemplo: true, apura: 'razao',
         fonte: 'Origem: PEC, tratamentos odontológicos concluídos pelas equipes de saúde bucal.' }),
-      nota({ g: 'bucal', cod: 'B3', nome: 'Taxa de exodontia', mun: 8.1, ant: 8.6, max: 20, d: 0, un: '%', tipos: ['eSB'], exemplo: true, apura: 'razao', sentido: 'Ótimo entre 3% e 10%; muito abaixo ou muito acima perde pontos.',
+      nota({ ge: true, g: 'bucal', cod: 'B3', nome: 'Taxa de exodontia', mun: 8.1, ant: 8.6, max: 20, d: 0, un: '%', tipos: ['eSB'], exemplo: true, apura: 'razao', sentido: 'Ótimo entre 3% e 10%; muito abaixo ou muito acima perde pontos.',
         fonte: 'Origem: PEC, procedimentos odontológicos das equipes de saúde bucal (TSB entra no denominador desde 2026).', f: [[0, 3, 'regular'], [3, 10, 'otimo'], [10, 12, 'bom'], [12, 14, 'suficiente'], [14, 20, 'regular']] }),
-      nota({ g: 'bucal', cod: 'B4', nome: 'Escovação supervisionada em faixa etária escolar (6 a 12 anos)', mun: 0.31, ant: 0.18, max: 2, fmt: 2, un: '%', tipos: ['eSB'], exemplo: true, apura: 'razao',
-        fonte: 'Origem: PEC, atividades coletivas de escovação supervisionada.', f: [[0, 0.25, 'regular'], [0.25, 0.5, 'suficiente'], [0.5, 1, 'bom'], [1, 2, 'otimo']] }),
-      nota({ g: 'bucal', cod: 'B5', nome: 'Procedimentos odontológicos preventivos', mun: 71, ant: 73, d: 0, fmt: 0, un: '%', tipos: ['eSB'], exemplo: true, apura: 'razao', sentido: 'Ótimo entre 65% e 85%; acima de 85% volta a Regular.',
-        fonte: 'Origem: PEC, procedimentos odontológicos das equipes de saúde bucal.', f: [[0, 40, 'regular'], [40, 55, 'suficiente'], [55, 65, 'bom'], [65, 85, 'otimo'], [85, 100, 'regular']] }),
+      nota({ g: 'bucal', cod: 'B4', nome: 'Escovação supervisionada em faixa etária escolar (6 a 12 anos)', mun: 31, ant: 18, max: 150, fmt: 1, un: '%', tipos: ['eSB'], exemplo: true, apura: 'razao',
+        fonte: 'Origem: PEC, atividades coletivas de escovação supervisionada.', f: [[0, 25, 'regular'], [25, 50, 'suficiente'], [50, 100, 'bom'], [100, 150, 'otimo']] }),
+      nota({ ge: true, g: 'bucal', cod: 'B5', nome: 'Procedimentos odontológicos preventivos', mun: 71, ant: 73, d: 0, fmt: 0, un: '%', tipos: ['eSB'], exemplo: true, apura: 'razao', sentido: 'Ótimo entre 65% e 85%; acima de 85% volta a Regular.',
+        fonte: 'Origem: PEC, procedimentos odontológicos das equipes de saúde bucal.', f: [[0, 40, 'regular'], [40, 55, 'suficiente'], [55, 65, 'bom'], [65, 85.01, 'otimo'], [85.01, 100, 'regular']] }),
       nota({ g: 'bucal', cod: 'B6', nome: 'Tratamento restaurador atraumático', mun: 4.2, ant: 3.9, max: 12, un: '%', tipos: ['eSB'], exemplo: true, apura: 'razao',
         fonte: 'Origem: PEC, procedimentos restauradores das equipes de saúde bucal.', f: [[0, 3, 'regular'], [3, 6, 'suficiente'], [6, 8, 'bom'], [8, 12, 'otimo']] }),
       nota({ g: 'emulti', cod: 'M1', nome: 'Média de atendimentos por pessoa pela eMulti', mun: 2.4, ant: 2.2, max: 4, niveis: ['municipio', 'equipe'], tipos: ['eMulti'], exemplo: true, apura: 'razao',
@@ -611,7 +611,7 @@ class Component extends DCLogic {
     // Faixa, ordenação e régua.
     const faixaDe = (n, v) => {
       if (!n.f) return { k: 'neutro', rot: 'Sem faixa oficial' };
-      const s = n.f.find((s, k) => (k === 0 ? v >= s[0] : v > s[0]) && v <= s[1]) || n.f[n.f.length - 1];
+      const s = n.f.find((s, k) => n.ge ? v >= s[0] && (v < s[1] || (k === n.f.length - 1 && v <= s[1])) : (k === 0 ? v >= s[0] : v > s[0]) && v <= s[1]) || n.f[n.f.length - 1];
       return { k: s[2], rot: s[3] || nomeF[s[2]] };
     };
     const centroOtimo = (n) => { const s = (n.f || []).find((s) => s[2] === 'otimo'); return s ? (s[0] + s[1]) / 2 : (n.min + n.max) / 2; };
@@ -755,9 +755,18 @@ class Component extends DCLogic {
       foraTxt = Object.keys(porMotivo).length ? 'Não aparecem aqui: ' + Object.keys(porMotivo).map((m) => resumirCodigos(porMotivo[m], visiveis) + ' (' + m + ')').join('; ') + '.' : '';
       const itens = visiveis.filter((c) => !motivoFora(N[c])).map((c) => {
         const nn = N[c], ls = visao === 'municipio' ? [MUN] : locaisDa(nn), v = vG(c, ls, periodo);
-        return { c, nn, ls, v, a: temComp ? vG(c, ls, mesesAnt) : null, fx: faixaDe(nn, v), ac: acompanhar(c, ls) };
+        // No município as notas são por equipe: o valor é o agregado (soma de numeradores e denominadores) e a classificação é de cada equipe.
+        const eq = visao === 'municipio' && nn.f && nn.niveis.indexOf('equipe') >= 0
+          ? todasEquipes.filter((t) => aplica(nn, { u: t.u, e: t.nome, tipo: t.tipo })).map((t) => ({ id: t.id, u: t.u, e: t.nome, nome: t.nome, tipo: t.tipo, sub: t.tipo + ' · ' + t.u }))
+              .map((l) => ({ ...l, vv: vL(c, l, periodo) })).sort((x, y) => peso[faixaDe(nn, x.vv).k] - peso[faixaDe(nn, y.vv).k] || x.nome.localeCompare(y.nome, 'pt'))
+          : [];
+        const grupo = eq.length > 1 ? eq : ls;
+        const ks = eq.length > 1 ? eq.map((l) => faixaDe(nn, l.vv).k) : [];
+        const bonsEq = ks.filter((k) => k === 'bom' || k === 'otimo').length, regEq = ks.filter((k) => k === 'regular').length;
+        const fx = eq.length > 1 ? { k: bonsEq * 2 >= ks.length ? 'bom' : regEq * 2 > ks.length ? 'regular' : 'suficiente', rot: '' } : faixaDe(nn, v);
+        return { c, nn, ls, eq, grupo, v, a: temComp ? vG(c, ls, mesesAnt) : null, fx, ac: acompanhar(c, ls) };
       });
-      const multis = itens.filter((x) => x.ls.length > 1).map((x) => x.c);
+      const multis = itens.filter((x) => x.grupo.length > 1).map((x) => x.c);
       const abertas = st.abertas || {};
       const algumaAberta = multis.some((c) => abertas[c]);
       const variosGrupos = GRUPOS.filter((g) => itens.some((x) => x.nn.g === g.id)).length > 1;
@@ -766,19 +775,20 @@ class Component extends DCLogic {
         if (!doGrupo.length) return;
         if (variosGrupos) linhas.push({ cab: true, normal: false, nome: g.titulo, sub: g.sigla + ' · ' + g.quem + ' · ' + pubGrupo(g) });
         doGrupo.forEach((x) => {
-          const multi = x.ls.length > 1, aberta = multi && !!abertas[x.c];
+          const multi = x.grupo.length > 1, aberta = multi && !!abertas[x.c], porEq = x.eq.length > 1;
           const seg = segmentos(x.nn, x.nn.min, x.nn.max);
           let sub = x.fx.rot + (quadAberto ? ' até agora' : '');
           if (multi) {
-            const fxs = x.ls.map((l) => faixaDe(x.nn, vL(x.c, l, periodo)).k);
+            const fxs = x.grupo.map((l) => faixaDe(x.nn, vL(x.c, l, periodo)).k);
             const cont = ['otimo', 'bom', 'suficiente', 'regular'].map((k) => [k, fxs.filter((f) => f === k).length]).filter((p) => p[1]).map((p) => p[1] + ' em ' + nomeF[p[0]]).join(', ');
-            sub = (x.nn.f ? sub + ' com as ' + x.ls.length + ' juntas' : 'as ' + x.ls.length + ' juntas') + (cont ? ' · ' + cont : '');
+            sub = porEq ? 'Valor agregado · ' + x.eq.length + ' equipes (' + cont + ')'
+              : (x.nn.f ? sub + ' com as ' + x.ls.length + ' juntas' : 'as ' + x.ls.length + ' juntas') + (cont ? ' · ' + cont : '');
           } else if (varios) sub += ' · só ' + x.ls[0].nome;
           linhas.push(linha({ nome: x.nn.cod + ' · ' + x.nn.nome, sub, exemplo: x.nn.exemplo, info: 'n-' + x.c, infoTxt: infoNota(x.nn) + REAL.calculo(x.nn, x.ls, periodo),
             v: x.v, a: x.a, n: x.nn, lo: x.nn.min, hi: x.nn.max, ref: null, segmentos: seg, un: x.nn.un, acomp: x.ac, realce: aberta,
             alternar: multi ? () => { const o = { ...(this.state.abertas || {}) }; if (o[x.c]) delete o[x.c]; else o[x.c] = true; this.setState({ abertas: o }); } : null,
-            expandido: aberta, rotuloAbrir: x.nn.cod + (aberta ? ': fechar ' : ': ver cada uma das ') + quemPl }));
-          if (aberta) x.ls.forEach((l) => {
+            expandido: aberta, rotuloAbrir: x.nn.cod + (aberta ? ': fechar ' : ': ver cada uma das ') + (porEq ? 'equipes' : quemPl) }));
+          if (aberta) x.grupo.forEach((l) => {
             const vl = vL(x.c, l, periodo);
             linhas.push(linha({ tipo: 'filho', nome: l.nome, sub: (l.e ? l.sub + ' · ' : '') + faixaDe(x.nn, vl).rot, v: vl, a: temComp ? vL(x.c, l, mesesAnt) : null,
               n: x.nn, lo: x.nn.min, hi: x.nn.max, ref: x.v, segmentos: seg, un: x.nn.un, acomp: acompanhar(x.c, [l]) }));
@@ -797,8 +807,8 @@ class Component extends DCLogic {
       const pior = temComp ? itens.slice().sort((x, y) => mudanca(x.nn, x.v, x.a) - mudanca(y.nn, y.v, y.a))[0] : null;
       const exemplos = itens.filter((x) => x.nn.exemplo).length;
       if (itens.length) resumo = [
-        { grande: bons + ' de ' + comF.length, texto: 'notas em Bom ou Ótimo' + (varios ? ' (contando as ' + quemPl + ' juntas)' : '') },
-        { grande: regulares.length ? (regulares.length > 4 ? regulares.length + ' notas' : regulares.join(', ')) : 'nenhuma', texto: regulares.length ? 'em Regular' : 'nota em Regular' },
+        { grande: bons + ' de ' + comF.length, texto: itens.some((x) => x.eq.length > 1) ? 'notas com a maioria das equipes em Bom ou Ótimo' : 'notas em Bom ou Ótimo' + (varios ? ' (contando as ' + quemPl + ' juntas)' : '') },
+        { grande: regulares.length ? (regulares.length > 4 ? regulares.length + ' notas' : regulares.join(', ')) : 'nenhuma', texto: regulares.length ? (itens.some((x) => x.eq.length > 1) ? 'com a maioria das equipes em Regular' : 'em Regular') : 'nota em Regular' },
         temComp
           ? (pior && mudanca(pior.nn, pior.v, pior.a) < 0 ? { grande: pior.c + ' ' + sinal(pior.v - pior.a, pior.nn.fmt) + unidMedida(pior.nn), texto: 'maior piora em relação a ' + compTxt }
             : { grande: 'nenhuma', texto: 'nota piorou em relação a ' + compTxt })
