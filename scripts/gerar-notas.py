@@ -23,9 +23,9 @@ marc = troca(marc, '<div style="width: 40px; height: 40px; border-radius: 8px; b
   '<a href="/" aria-label="Voltar ao início do Painel APS" style="width: 40px; height: 40px; border-radius: 8px; background: {{tSelo}}; color: {{tSeloTexto}}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; letter-spacing: .04em; text-decoration: none">APS</a>')
 # Barra do Painel (a mesma das demais páginas) acima do cabeçalho próprio das notas; o selo "APS" sai, pois a barra já traz o logo.
 marc = troca(marc, '  <header style="background: {{tTopoFundo}}', '''  <div style="background: #1F3C72; border-bottom: 4px solid #00A7E7; color: #FFFFFF; font-family: 'Montserrat', system-ui, sans-serif">
-    <div style="max-width: 1100px; margin: 0 auto; padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+    <div style="max-width: 1280px; margin: 0 auto; padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
       <a href="/" style="display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 19px; color: #FFFFFF; text-decoration: none"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
-      <nav aria-label="Áreas do Painel" style="display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; font-weight: 600; font-size: 14px">
+      <nav aria-label="Áreas do Painel" style="display: flex; flex-wrap: nowrap; white-space: nowrap; align-items: center; gap: 2px 6px; font-weight: 600; font-size: 14px">
         <details style="position: relative"><summary style="color: #FFFFFF; padding: 8px 12px; min-height: 36px; display: inline-flex; align-items: center; border-radius: 99px; cursor: pointer; list-style: none; background: rgba(255,255,255,.22)">Acompanhamentos ▾</summary>
           <div style="position: absolute; z-index: 20; top: 100%; left: 0; min-width: 230px; margin-top: 6px; background: #FFFFFF; border: 2px solid #D5DCE8; border-radius: 12px; padding: 6px; box-shadow: 0 8px 24px rgba(20,33,43,.18); display: flex; flex-direction: column">
             <a href="/" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Visão geral</a>
