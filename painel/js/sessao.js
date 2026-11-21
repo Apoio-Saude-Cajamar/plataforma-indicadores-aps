@@ -11,45 +11,99 @@
           document.body.appendChild(rs);
         });
   }
+  // O cabeçalho (usuário e menu) é desenhado na hora com o último usuário conhecido nesta aba e depois confirmado no servidor:
+  // ao trocar de página o menu já aparece pronto, sem esperar a resposta nem mexer no layout. Só nome e perfil ficam guardados (a
+  // permissão de verdade é sempre a do servidor).
+  const CHAVE = 'painelaps:usuario';
+  const lerCache = () => {
+    try {
+      return JSON.parse(sessionStorage.getItem(CHAVE) || 'null');
+    } catch (_) {
+      return null;
+    }
+  };
+  const guardar = (u) => {
+    try {
+      if (u) sessionStorage.setItem(CHAVE, JSON.stringify({ nome: u.nome, perfil: u.perfil, origem: u.origem }));
+      else sessionStorage.removeItem(CHAVE);
+    } catch (_) {}
+  };
+  function montar(u) {
+    let alvo = document.getElementById('barra');
+    if (!alvo) {
+      alvo = document.createElement('div');
+      const top = document.querySelector('header .top > div:last-child') || document.querySelector('header');
+      top.appendChild(alvo);
+    }
+    alvo.className = 'barra-usuario';
+    alvo.innerHTML = menuUsuario(u);
+    document.getElementById('btnSair').addEventListener('click', async () => {
+      guardar(null);
+      try {
+        await fetch('/api/v1/auth/sair', { method: 'POST', credentials: 'same-origin' });
+      } finally {
+        location.replace('/entrar');
+      }
+    });
+    document.addEventListener('click', (e) => {
+      const d = alvo.querySelector('details[open]');
+      if (d && !d.contains(e.target)) d.removeAttribute('open');
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const d = alvo.querySelector('details[open]');
+        if (d) {
+          d.removeAttribute('open');
+          d.querySelector('summary').focus();
+        }
+      }
+    });
+    document.querySelectorAll('header .menu-aps').forEach((n) => n.remove());
+    menu(u);
+  }
+  const antes = lerCache();
+  const desenhar = () => {
+    if (antes && antes.nome) montar(antes);
+  };
+  // Menu e usuário dependem de funções declaradas mais abaixo: desenha depois que o script termina de carregar, ainda antes da primeira pintura.
+  queueMicrotask(desenhar);
   fetch('/api/v1/auth/eu', { credentials: 'same-origin' })
     .then((r) => (r.ok ? r.json() : null))
     .then((d) => {
-      if (!d || !d.usuario) return;
+      if (!d || !d.usuario) {
+        guardar(null);
+        return;
+      }
       const u = d.usuario;
       window.PAINELAPS_USUARIO = u;
       document.dispatchEvent(new CustomEvent('painelaps:usuario', { detail: u }));
-      let alvo = document.getElementById('barra');
-      if (!alvo) {
-        alvo = document.createElement('div');
-        const top = document.querySelector('header .top > div:last-child') || document.querySelector('header');
-        top.appendChild(alvo);
-      }
-      alvo.className = 'barra-usuario';
-      alvo.innerHTML = menuUsuario(u);
-      document.getElementById('btnSair').addEventListener('click', async () => {
-        try {
-          await fetch('/api/v1/auth/sair', { method: 'POST', credentials: 'same-origin' });
-        } finally {
-          location.replace('/entrar');
-        }
-      });
-      document.addEventListener('click', (e) => {
-        const d = alvo.querySelector('details[open]');
-        if (d && !d.contains(e.target)) d.removeAttribute('open');
-      });
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          const d = alvo.querySelector('details[open]');
-          if (d) {
-            d.removeAttribute('open');
-            d.querySelector('summary').focus();
-          }
-        }
-      });
-      menu(u);
+      const mudou = !antes || antes.nome !== u.nome || antes.perfil !== u.perfil || antes.origem !== u.origem;
+      guardar(u);
+      if (mudou) montar(u);
       avisos();
     })
     .catch(() => {});
+
+  // Páginas do Painel carregadas antecipadamente quando a pessoa aponta para o link (Chrome): a troca de tela fica instantânea.
+  if (HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules') && !document.querySelector('script[type=speculationrules]')) {
+    const sr = document.createElement('script');
+    sr.type = 'speculationrules';
+    sr.textContent = JSON.stringify({
+      prerender: [
+        {
+          where: {
+            and: [
+              { href_matches: '/*' },
+              { not: { href_matches: ['/api/*', '/downloads/*', '/entrar*', '/trocar-senha*', '/relatorio*', '/producao*'] } },
+              { not: { selector_matches: '[download], [target=_blank]' } },
+            ],
+          },
+          eagerness: 'moderate',
+        },
+      ],
+    });
+    document.head.appendChild(sr);
+  }
 
   // Menu do usuário (à direita): perfil, senha, ajuda, configurações do administrador e sair.
   const I = {
