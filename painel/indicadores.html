@@ -491,8 +491,8 @@
           </select></label
         >
         <label
-          >Equipe<select id="eq" disabled>
-            <option value="">Escolha a unidade</option>
+          >Equipe<select id="eq">
+            <option value="">Todas as equipes</option>
           </select></label
         >
         <label
@@ -898,7 +898,15 @@
         }
       }
       $('gr').innerHTML = '<option value="">Todos</option>' + GRUPOS.map((g) => '<option>' + esc(g[0]) + '</option>').join('');
-      // Equipes da unidade escolhida (ou de todas, com o nome da unidade na frente).
+      // Equipes agrupadas por tipo. Sem unidade escolhida, todas aparecem (eMulti atendem várias unidades, então não dá para exigir a unidade antes);
+      // com unidade escolhida, só as equipes dela.
+      const GRUPOS_EQ = [
+        ['ESF', 'eSF e eAP'],
+        ['EAP', 'eSF e eAP'],
+        ['ESB', 'Saúde bucal (eSB)'],
+        ['EMULTI', 'eMulti (complementares e estratégicas)'],
+        ['ECR', 'Consultório na Rua'],
+      ];
       function opcoesEquipe() {
         const un = $('un').value,
           antes = $('eq').value,
@@ -907,17 +915,35 @@
           .flat()
           .forEach((l) => {
             if (l.equipe && l.equipe !== 'Município' && l.unidade && l.unidade !== 'Município' && (!un || l.unidade === un))
-              eqs.set(l.unidade + '|' + l.equipe, un ? l.equipe : l.unidade + ' · ' + l.equipe);
+              eqs.set(l.unidade + '|' + l.equipe, {
+                t: un ? l.equipe : l.unidade + ' · ' + l.equipe,
+                g: (GRUPOS_EQ.find((x) => x[0] === String(l.tipoEquipe || '').toUpperCase()) || [0, 'Outras equipes'])[1],
+              });
           });
-        const lista = (un ? [...eqs] : []).sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'));
-        // A equipe só é liberada depois de escolher a unidade (as equipes vêm da unidade).
-        $('eq').disabled = !un;
+        const porGrupo = new Map();
+        [...eqs].forEach(([v, o]) => {
+          if (!porGrupo.has(o.g)) porGrupo.set(o.g, []);
+          porGrupo.get(o.g).push([v, o.t]);
+        });
+        const ordem = [...new Set(GRUPOS_EQ.map((x) => x[1])), 'Outras equipes'];
         $('eq').innerHTML =
-          '<option value="">' +
-          (un ? 'Todas as equipes' : 'Escolha a unidade') +
-          '</option>' +
-          lista.map(([v, t]) => '<option value="' + esc(v) + '">' + esc(t) + '</option>').join('');
-        $('eq').value = un && eqs.has(antes) ? antes : '';
+          '<option value="">Todas as equipes</option>' +
+          ordem
+            .filter((g) => porGrupo.has(g))
+            .map(
+              (g) =>
+                '<optgroup label="' +
+                esc(g) +
+                '">' +
+                porGrupo
+                  .get(g)
+                  .sort((x, y) => x[1].localeCompare(y[1], 'pt-BR'))
+                  .map(([v, t]) => '<option value="' + esc(v) + '">' + esc(t) + '</option>')
+                  .join('') +
+                '</optgroup>',
+            )
+            .join('');
+        $('eq').value = eqs.has(antes) ? antes : '';
       }
       $('un').addEventListener('change', opcoesEquipe);
       ['de', 'ate', 'un', 'eq', 'gr', 'co'].forEach((i) =>
