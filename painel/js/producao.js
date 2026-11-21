@@ -760,7 +760,7 @@ async function desenhar() {
     $('doc').innerHTML = '<p class="vazio">Escolha um período com dados coletados.</p>';
     return;
   }
-  $('doc').innerHTML = '<p class="vazio">Carregando…</p>';
+  $('doc').innerHTML = '<p class="vazio"><span class="carr">Carregando…</span></p>';
   await carregar(ms);
   preencherFiltros(ms);
   const pagina = document.getElementById('pagina');

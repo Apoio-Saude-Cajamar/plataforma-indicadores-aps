@@ -1,0 +1,115 @@
+/* Painel APS · tela de carregamento e transição entre páginas (mesma identidade em todas as telas). */
+@media (prefers-reduced-motion: no-preference) {
+  /* Navegação entre páginas do Painel com troca suave (o cabeçalho fica no lugar) em navegadores que suportam. */
+  @view-transition {
+    navigation: auto;
+  }
+  header {
+    view-transition-name: cabecalho;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.18s;
+  }
+}
+/* Tela inteira: marca, três barras no ritmo do logo e o texto do que está sendo carregado. */
+.carr-tela {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 48px 24px;
+  text-align: center;
+  font: 600 16px/1.5 Montserrat, 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+  color: var(--ink, #1b2340);
+}
+.carr-tela .carr-marca {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font: 800 22px Montserrat, system-ui, sans-serif;
+  color: var(--primary, #1f3c72);
+}
+.carr-tela .carr-marca img {
+  width: 40px;
+  height: 40px;
+}
+.carr-tela p {
+  margin: 0;
+  max-width: 460px;
+  color: var(--muted, #5a6478);
+  font-weight: 500;
+}
+.carr-tela a {
+  color: var(--link, #1f3c72);
+}
+.carr-barras,
+.carr::before {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 28px;
+}
+.carr-barras i {
+  width: 8px;
+  height: 100%;
+  border-radius: 3px 3px 0 0;
+  background: #00a7e7;
+  transform-origin: bottom;
+  animation: carr-sobe 1s ease-in-out infinite;
+}
+.carr-barras i:nth-child(2) {
+  background: #1c9c76;
+  animation-delay: 0.15s;
+}
+.carr-barras i:nth-child(3) {
+  background: #1f3c72;
+  animation-delay: 0.3s;
+}
+html[data-tema='escuro'] .carr-barras i:nth-child(3) {
+  background: #86a7ff;
+}
+/* Em linha (listas e tabelas): três barrinhas antes do texto. */
+.carr {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted, #5a6478);
+  font-weight: 600;
+}
+.carr::before {
+  content: '';
+  width: 22px;
+  height: 18px;
+  background:
+    linear-gradient(#00a7e7, #00a7e7) 0 100% / 5px 100% no-repeat,
+    linear-gradient(#1c9c76, #1c9c76) 8px 100% / 5px 100% no-repeat,
+    linear-gradient(#1f3c72, #1f3c72) 16px 100% / 5px 100% no-repeat;
+  animation: carr-pulsa 1s ease-in-out infinite;
+}
+@keyframes carr-sobe {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+@keyframes carr-pulsa {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .carr-barras i,
+  .carr::before {
+    animation: none;
+  }
+}

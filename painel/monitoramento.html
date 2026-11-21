@@ -384,6 +384,7 @@
       }
     </style>
     <link rel="stylesheet" href="/css/tema.css" />
+    <link rel="stylesheet" href="/css/carregando.css" />
     <script src="/js/publico/tema.js"></script>
     <script src="/js/util.js"></script>
       <link rel="manifest" href="/manifest.webmanifest" />
@@ -414,7 +415,7 @@
         <span class="pill" id="sit"></span><span class="nota" id="quando"></span
         ><button class="btn2" id="atualizar" type="button">Verificar agora</button>
       </div>
-      <section class="bloco" id="lista" aria-live="polite">Carregando…</section>
+      <section class="bloco" id="lista" aria-live="polite"><span class="carr">Carregando…</span></section>
       <section class="bloco">
         <h2>O que é verificado</h2>
         <ul class="nota">
@@ -435,7 +436,7 @@
       const $ = (s) => document.querySelector(s);
       const NIV = { erro: 'Atenção: falhou', atencao: 'Para conferir', ok: 'Em ordem' };
       async function carregar() {
-        $('#lista').textContent = 'Carregando…';
+        $('#lista').innerHTML = '<span class="carr">Carregando…</span>';
         try {
           const r = await fetch('/api/v1/monitoramento', { credentials: 'same-origin' });
           if (!r.ok) throw 0;

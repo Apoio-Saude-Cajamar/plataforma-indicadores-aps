@@ -1,8 +1,8 @@
 // Service worker do Painel APS (app instalável).
 // Guarda só arquivos visuais (CSS, scripts, imagens) e a página "sem conexão".
 // Páginas e dados (/api/) sempre vêm da rede e nunca ficam no aparelho.
-const VERSAO = 'painelaps-v1';
-const BASICOS = ['/offline.html', '/css/tema.css', '/css/painelaps.css', '/css/mobile.css', '/img/painelaps.svg', '/img/icone-192.png'];
+const VERSAO = 'painelaps-v2';
+const BASICOS = ['/offline.html', '/css/tema.css', '/css/painelaps.css', '/css/mobile.css', '/css/carregando.css', '/img/painelaps.svg', '/img/icone-192.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(

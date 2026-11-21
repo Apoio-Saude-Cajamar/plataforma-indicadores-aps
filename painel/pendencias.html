@@ -434,6 +434,7 @@
       }
     </style>
     <link rel="stylesheet" href="/css/tema.css" />
+    <link rel="stylesheet" href="/css/carregando.css" />
     <script src="/js/publico/tema.js"></script>
     <script src="/js/util.js"></script>
       <link rel="manifest" href="/manifest.webmanifest" />
@@ -464,7 +465,7 @@
         <label>Competência<select id="comp"></select></label>
       </div>
       <div class="cards" id="cards"></div>
-      <section class="bloco" id="lista" aria-live="polite">Carregando…</section>
+      <section class="bloco" id="lista" aria-live="polite"><span class="carr">Carregando…</span></section>
       <section class="bloco" id="b4" hidden>
         <h2>Conferência da escovação supervisionada (B4)</h2>
         <p class="d">
@@ -480,7 +481,7 @@
       const $ = (s) => document.querySelector(s);
       const NOME = { erro: 'Pendente', atencao: 'Conferir', info: 'Informação' };
       async function carregar() {
-        $('#lista').textContent = 'Carregando…';
+        $('#lista').innerHTML = '<span class="carr">Carregando…</span>';
         try {
           const q = $('#comp').value ? '?competencia=' + encodeURIComponent($('#comp').value) : '';
           const r = await fetch('/api/v1/pendencias' + q, { credentials: 'same-origin' });

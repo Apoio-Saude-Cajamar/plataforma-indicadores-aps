@@ -118,11 +118,12 @@ pagina = f'''<!doctype html>
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" />
     <link rel="stylesheet" href="/css/mobile.css" />
+    <link rel="stylesheet" href="/css/carregando.css" />
     <script src="/js/publico/mobile.js" defer></script>
 </head>
 <body>
 <!-- Gerado por scripts/gerar-notas.py a partir de desenho/Notas.dc.html. Não edite à mão. -->
-<div id="tela"><p id="aviso">Carregando os indicadores coletados…</p></div>
+<div id="tela"><div class="carr-tela" role="status" aria-live="polite"><div class="carr-marca"><img src="/img/painelaps.svg" alt="" width="40" height="40"><span>Painel APS</span></div><div class="carr-barras" aria-hidden="true"><i></i><i></i><i></i></div><p id="aviso">Carregando os indicadores coletados…</p></div></div>
 <template id="modelo">{marc}</template>
 <script src="/js/dc-mini.js"></script>
 <script src="/js/catalogo-indicadores.js"></script>
