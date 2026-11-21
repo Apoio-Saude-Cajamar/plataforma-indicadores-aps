@@ -254,6 +254,9 @@ const pcAgg = (cod, v, ls, tipo) => {
     aconf(cod)
   );
 };
+// Filtro opcional de equipe ("unidade|equipe"), definido pela página de indicadores.
+let FILTRO_EQ = '';
+const doEq = (l) => !FILTRO_EQ || l.unidade + '|' + l.equipe === FILTRO_EQ;
 function linhasDe(cod, comps, un) {
   let ls = [];
   comps.forEach((c) =>
@@ -264,5 +267,6 @@ function linhasDe(cod, comps, un) {
     ),
   );
   ls = ls.filter((l) => l.recorte !== 'desfecho' || cod === 'C2' || cod === 'C3');
+  if (FILTRO_EQ) ls = ls.filter(doEq);
   return un ? ls.filter((l) => l.unidade === un) : ls;
 }

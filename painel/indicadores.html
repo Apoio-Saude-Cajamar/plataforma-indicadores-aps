@@ -458,6 +458,11 @@
           </select></label
         >
         <label
+          >Equipe<select id="eq">
+            <option value="">Todas</option>
+          </select></label
+        >
+        <label
           >Grupo<select id="gr">
             <option value="">Todos</option>
           </select></label
@@ -543,7 +548,7 @@
       const grupoOk = (cod) => !$('gr').value || grupoDe(cod) === $('gr').value;
       function painel(comps, un) {
         const ult = comps[comps.length - 1],
-          todas = (dados[ult] || []).filter((l) => !un || l.unidade === un);
+          todas = (dados[ult] || []).filter((l) => (!un || l.unidade === un) && doEq(l));
         const uns = new Set(todas.map((l) => l.unidade).filter((u) => u && u !== 'Município')),
           eqs = new Set(todas.filter((l) => l.equipe && l.equipe !== 'Município').map((l) => l.unidade + '|' + l.equipe)),
           cods = new Set(todas.map((l) => l.codigo).filter((c) => c !== 'COLET'));
@@ -682,6 +687,7 @@
           .sort()
           .filter((c) => c >= $('de').value && c <= $('ate').value);
         const un = $('un').value;
+        FILTRO_EQ = $('eq').value;
         const varios = comps.length > 1;
         painel(comps, un);
         let html = '';
@@ -703,6 +709,7 @@
             );
             ls = ls.filter((l) => l.recorte !== 'desfecho' || cod === 'C2' || cod === 'C3');
             if (un) ls = ls.filter((l) => l.unidade === un);
+            ls = ls.filter(doEq);
             if (!ls.length) continue;
             const pega = (m, r) => m.get(cod + '|' + r);
             const tot = pega(
@@ -828,6 +835,7 @@
             ),
           ].sort();
           $('un').innerHTML = '<option value="">Todas</option>' + uns.map((u) => '<option>' + esc(u) + '</option>').join('');
+          opcoesEquipe();
           desenhar();
         } catch (e) {
           $('grupos').innerHTML =
@@ -835,7 +843,25 @@
         }
       }
       $('gr').innerHTML = '<option value="">Todos</option>' + GRUPOS.map((g) => '<option>' + esc(g[0]) + '</option>').join('');
-      ['de', 'ate', 'un', 'gr', 'co'].forEach((i) =>
+      // Equipes da unidade escolhida (ou de todas, com o nome da unidade na frente).
+      function opcoesEquipe() {
+        const un = $('un').value,
+          antes = $('eq').value,
+          eqs = new Map();
+        Object.values(dados)
+          .flat()
+          .forEach((l) => {
+            if (l.equipe && l.equipe !== 'Município' && l.unidade && l.unidade !== 'Município' && (!un || l.unidade === un))
+              eqs.set(l.unidade + '|' + l.equipe, un ? l.equipe : l.unidade + ' · ' + l.equipe);
+          });
+        const lista = [...eqs].sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'));
+        $('eq').innerHTML =
+          '<option value="">Todas</option>' +
+          lista.map(([v, t]) => '<option value="' + esc(v) + '">' + esc(t) + '</option>').join('');
+        $('eq').value = eqs.has(antes) ? antes : '';
+      }
+      $('un').addEventListener('change', opcoesEquipe);
+      ['de', 'ate', 'un', 'eq', 'gr', 'co'].forEach((i) =>
         $(i).addEventListener('change', () => {
           if ($('de').value > $('ate').value) $('ate').value = $('de').value;
           desenhar();
