@@ -190,7 +190,7 @@
       st.id = 'estilo-menu';
       st.textContent =
         // Cabeçalho igual em todas as páginas: mesma largura, mesmo espaçamento e mesma marca.
-        'header .topo,header .w{max-width:1360px!important;padding:14px 28px!important;box-sizing:border-box}' +
+        'header .topo,header .w{max-width:1560px!important;padding:14px 28px!important;box-sizing:border-box}' +
         'header .marca,header .logo{display:flex;align-items:center;gap:12px;font:800 19px Montserrat,system-ui,sans-serif;color:#fff;text-decoration:none}' +
         'header .marca img,header .logo img{width:34px;height:34px}header .logo b{font:inherit}' +
         '.menu-aps{display:flex;flex-wrap:wrap;align-items:center;gap:2px 2px;font:600 13.5px Montserrat,system-ui,sans-serif}' +
@@ -256,7 +256,7 @@
           const st = document.createElement('style');
           st.id = 'estilo-comunicados';
           st.textContent =
-            '#comunicados{max-width:1100px;margin:16px auto 0;padding:0 32px;display:flex;flex-direction:column;gap:10px}' +
+            '#comunicados{max-width:1560px;margin:16px auto 0;padding:0 32px;display:flex;flex-direction:column;gap:10px}' +
             '.comunicado{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;background:#E1F4FC;border:2px solid #9AD6F0;border-left:8px solid #00A7E7;border-radius:12px;padding:14px 18px;color:#0B3A52;font-family:Montserrat,system-ui,sans-serif}' +
             '.comunicado.importante{background:#FBF0D3;border-color:#E8C873;border-left-color:#E0A41B;color:#5C3D00}' +
             '.comunicado b{display:block;font-size:15px;margin-bottom:2px}.comunicado p{margin:0;font-size:14px;line-height:1.5;white-space:pre-wrap}' +

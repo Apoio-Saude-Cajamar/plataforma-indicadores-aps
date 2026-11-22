@@ -4,7 +4,7 @@
   if (document.getElementById('rodape-aps')) return;
   var st = document.createElement('style');
   st.textContent =
-    '#rodape-aps{max-width:1100px;margin:32px auto 0;padding:16px 32px 28px;border-top:1px solid rgba(120,130,150,.35);' +
+    '#rodape-aps{max-width:1560px;margin:32px auto 0;padding:16px 32px 28px;border-top:1px solid rgba(120,130,150,.35);' +
     'font:500 13px/1.5 Montserrat,system-ui,sans-serif;color:inherit;display:flex;flex-wrap:wrap;gap:6px 20px;align-items:center}' +
     '#rodape-aps b{font-weight:700}#rodape-aps a{color:inherit;text-decoration:underline;text-underline-offset:3px}' +
     '#rodape-aps a:focus-visible{outline:3px solid #00A7E7;outline-offset:3px}#rodape-aps .fim{margin-left:auto;opacity:.8}' +
