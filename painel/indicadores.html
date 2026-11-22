@@ -509,37 +509,70 @@
         align-items: center;
         gap: 8px;
       }
+      .dist {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 8px;
+        margin: 4px 0 2px;
+        font-size: 13px;
+        color: #4a5670;
+      }
+      .dist .pill {
+        font-size: 13px;
+        padding: 4px 12px;
+      }
       .atencao {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
-        gap: 16px 22px;
-        margin-top: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+        gap: 6px 26px;
+        margin-top: 12px;
       }
       .at h3 {
-        margin: 0 0 4px;
+        margin: 0;
         font-size: 14px;
         color: #1f3c72;
       }
-      .at p {
-        margin: 0 0 4px;
-        font-size: 12.5px;
-        color: #4a5670;
-        line-height: 1.45;
-      }
       .at ul {
-        margin: 4px 0 0;
-        padding-left: 18px;
-        font-size: 13px;
-        line-height: 1.5;
+        list-style: none;
+        margin: 6px 0 0;
+        padding: 0;
       }
       .at li {
-        margin-bottom: 4px;
+        padding: 6px 0;
+        border-top: 1px solid #e3e8f0;
+        font-size: 13px;
+        line-height: 1.35;
       }
-      .at li.mais {
-        list-style: none;
-        margin-left: -18px;
+      .at li b,
+      .at li span {
+        display: block;
+      }
+      .at li span {
         color: #4a5670;
         font-size: 12px;
+        margin-top: 1px;
+      }
+      .at li.mais {
+        color: #4a5670;
+        font-size: 12px;
+      }
+      .tambem {
+        display: grid;
+        gap: 6px;
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid #e3e8f0;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+      .tambem p {
+        margin: 0;
+      }
+      .rodape-at {
+        margin: 12px 0 0;
+        font-size: 12px;
+        color: #6b7690;
       }
       .so-impressao {
         display: none;
@@ -611,12 +644,14 @@
         .ci-meta {
           display: flex;
           flex-wrap: wrap;
-          gap: 4px 26px;
+          gap: 2px 22px;
           margin: 0 0 10px;
-          padding: 6px 8px;
-          border: 1px solid #b9c4d4;
-          border-radius: 6px;
           font-size: 10px;
+        }
+        .ci-meta div {
+          display: flex;
+          gap: 5px;
+          align-items: baseline;
         }
         .ci-meta dt {
           font-weight: 700;
@@ -629,12 +664,16 @@
           margin: 0;
           font-weight: 600;
         }
-        .card,
-        .bloco {
-          border: 1px solid #8a94a6;
+        .card {
+          border: 1px solid #b9c4d4;
           border-radius: 6px;
-          padding: 9px 11px;
-          break-inside: auto;
+          padding: 8px 10px;
+        }
+        .bloco {
+          border: 0;
+          border-radius: 0;
+          padding: 0;
+          margin-bottom: 12px;
         }
         .cards {
           grid-template-columns: repeat(3, 1fr);
@@ -659,21 +698,51 @@
         }
         .bloco h2 {
           font-size: 13px;
+          margin-bottom: 6px;
+          padding-bottom: 3px;
+          border-bottom: 1px solid #b9c4d4;
         }
         .at h3 {
-          font-size: 11px;
+          font-size: 10.5px;
         }
         .atencao {
-          display: block;
-          column-count: 2;
-          column-gap: 22px;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 4px 20px;
+          margin-top: 8px;
         }
         .at {
           break-inside: avoid;
-          margin-bottom: 8px;
         }
+        .at li {
+          padding: 3px 0;
+          font-size: 9.5px;
+        }
+        .at li span,
         .at li.mais {
           font-size: 9px;
+        }
+        .dist,
+        .dist .pill {
+          font-size: 9.5px;
+        }
+        .dist .pill {
+          padding: 2px 9px;
+        }
+        .tambem {
+          margin-top: 8px;
+          padding-top: 6px;
+          font-size: 9.5px;
+          gap: 3px;
+        }
+        .rodape-at {
+          margin-top: 6px;
+          font-size: 8.5px;
+        }
+        .so-tela {
+          display: none !important;
+        }
+        #atencao + .bloco {
+          break-before: page;
         }
         .at li {
           margin-bottom: 2px;
@@ -1079,97 +1148,77 @@
       const nomeIndicador = (cod) => esc(cod) + ' · ' + esc(nomeSem(cod, ((window.CATALOGO || {})[cod] || {}).nome || cod));
       const pontos = (n) => dec(n) + (n <= 1 + 1e-9 ? ' ponto' : ' pontos');
       const pl = (n, um, varios) => n + ' ' + (n === 1 ? um : varios);
-      // Onde dar mais atenção: indicadores que mais tiraram nota, equipes de classe baixa, as mais perto de subir, as que podem cair, dados que faltam e vínculo.
+      // Onde dar mais atenção, só o essencial: os indicadores que mais tiraram nota, as equipes mais perto de subir, as em risco de cair
+      // e, em linhas curtas, quem está abaixo de Bom, os dados que faltam e o vínculo abaixo de Bom.
       function atencaoHtml(linhas) {
         const A = pontosAtencao(
           linhas.map((l) => ({ nome: l.t.key, grupo: l.tr.pesos, valor: l.tr.valor, classes: l.classes, n: l.n, vin: l.vin, vmin: l.vmin, vmax: l.vmax })),
         );
-        const pill = (k) => '<span class="pill ' + PILL[k] + '">' + NOMEC[k] + '</span>',
-          bloco = (titulo, dica, itens, max, unidade) => {
+        const lista = (titulo, itens, max, unidade) => {
             if (!itens.length) return '';
             const mostra = itens.slice(0, max),
               resto = itens.length - mostra.length;
             return (
-              '<div class="at"><h3>' + titulo + '</h3>' + (dica ? '<p>' + dica + '</p>' : '') + '<ul>' +
-              mostra.map((t) => '<li>' + t + '</li>').join('') +
+              '<div class="at"><h3>' + titulo + '</h3><ul>' +
+              mostra.map(([a, b]) => '<li><b>' + a + '</b><span>' + b + '</span></li>').join('') +
               (resto > 0 ? '<li class="mais">e mais ' + pl(resto, unidade[0], unidade[1]) + '</li>' : '') +
               '</ul></div>'
             );
           },
-          eq = ['equipe', 'equipes'],
-          ind = ['indicador', 'indicadores'];
-        const tiles = A.comNota
-          ? '<p class="d" style="margin:0 0 4px">Classe das ' + pl(A.comNota, 'equipe com todos', 'equipes com todos') + ' os indicadores de qualidade:</p><div class="cg">' +
-            ORDEM_CLASSE.map(
-              (k) => '<div class="ct ' + PILL[k] + '"><b>' + A.dist[k] + '</b><span>' + NOMEC[k] + '</span><i>' + Math.round((100 * A.dist[k]) / A.comNota) + '%</i></div>',
-            ).join('') +
+          resumo = (xs, max, f) => xs.slice(0, max).map(f).join('; ') + (xs.length > max ? '; e mais ' + (xs.length - max) : ''),
+          eqs = ['equipe', 'equipes'],
+          inds = ['indicador', 'indicadores'];
+        const dist = A.comNota
+          ? '<div class="dist">Classe das ' + pl(A.comNota, 'equipe com todos', 'equipes com todos') + ' os indicadores: ' +
+            ORDEM_CLASSE.map((k) => '<span class="pill ' + PILL[k] + '">' + A.dist[k] + ' ' + NOMEC[k] + '</span>').join('') +
             '</div>'
           : '<p class="d">Nenhuma equipe tem todos os indicadores de qualidade neste recorte; as classes aparecem como faixa na tabela.</p>';
-        const partes = [
-          bloco(
+        const listas =
+          lista(
             'Indicadores que mais tiraram nota',
-            'Pontos da nota (máximo 10 por equipe) perdidos em cada indicador, somando as equipes. Foque onde o peso e o número de equipes abaixo de Bom são maiores.',
-            A.indicadores.map(
-              (x) => '<b>' + nomeIndicador(x.cod) + '</b>: tirou ' + pontos(x.perdidos) + ' da nota das equipes · ' + x.baixas + ' de ' + x.equipes + ' equipes em Regular ou Suficiente',
-            ),
-            4,
-            ind,
-          ),
-          bloco(
-            'Equipes nas classes mais baixas',
-            'Regular ou Suficiente, da menor nota para a maior.',
-            A.baixas.map((x) => '<b>' + esc(x.nome) + '</b>: nota ' + dec(x.nota) + ' ' + pill(x.k)),
-            5,
-            eq,
-          ),
-          bloco(
+            A.indicadores.map((x) => [nomeIndicador(x.cod), 'tirou ' + pontos(x.perdidos) + ' da nota · ' + x.baixas + ' de ' + x.equipes + ' equipes abaixo de Bom']),
+            3,
+            inds,
+          ) +
+          lista(
             'Mais perto de subir de classe',
-            'Quanto falta de nota para a classe seguinte e o ganho mensal. "Maior efeito" são os indicadores de maior peso ainda abaixo de Ótimo.',
-            A.subir.map(
-              (x) =>
-                '<b>' + esc(x.nome) + '</b>: nota ' + dec(x.nota) + ' ' + pill(x.k) + ' · faltam ' + pontos(x.falta) + ' para ' + NOMEC[x.para] + ' (+' + rs(x.ganho) + '/mês)' +
-                (x.alavancas.length ? '. Maior efeito: ' + x.alavancas.map((a) => esc(a.cod) + ' (peso ' + a.peso + ', hoje ' + NOMEC[a.k] + ')').join(', ') : ''),
-            ),
-            5,
-            eq,
-          ),
-          bloco(
+            A.subir.map((x) => [
+              esc(x.nome),
+              NOMEC[x.k] + ' → ' + NOMEC[x.para] + ' · faltam ' + pontos(x.falta) + ' · +' + rs(x.ganho) + '/mês' +
+                (x.alavancas.length ? ' · foco: ' + x.alavancas.map((a) => esc(a.cod)).join(', ') : ''),
+            ]),
+            4,
+            eqs,
+          ) +
+          lista(
             'Em risco de cair de classe',
-            'Equipes a até 0,50 ponto do limite inferior da classe: um conceito a menos em um indicador de peso 2 já as rebaixa.',
-            A.risco.map(
-              (x) =>
-                '<b>' + esc(x.nome) + '</b>: nota ' + dec(x.nota) + ' ' + pill(x.k) + ' · ' +
-                (x.margem === 0 ? 'no limite exato' : 'só ' + pontos(x.margem) + ' acima do limite') +
-                ' · cair para ' + NOMEC[x.para] + ' custa ' + rs(x.perda) + '/mês',
-            ),
-            5,
-            eq,
-          ),
-          bloco(
-            'Dados que faltam',
-            A.semDado.length
-              ? pl(A.semDado.length, 'equipe tem', 'equipes têm') + ' indicador sem conceito ou vínculo sem nota; por isso a estimativa vira faixa, com até ' + rs(A.emJogo) + '/mês de diferença entre pior e melhor caso.'
-              : '',
-            (A.semDadoPorIndicador.length
-              ? ['Mais frequentes: ' + A.semDadoPorIndicador.slice(0, 5).map((x) => '<b>' + esc(x.cod) + '</b> (' + pl(x.n, 'equipe', 'equipes') + ')').join(', ')]
-              : []
-            ).concat(A.semDado.map((x) => '<b>' + esc(x.nome) + '</b>: sem ' + x.faltam.map(esc).join(', '))),
-            5,
-            eq,
-          ),
-          bloco(
-            'Vínculo (CVAT) abaixo de Bom',
-            'eSF e eAP com vínculo em Suficiente ou Regular; subir para Bom acrescenta o valor mensal indicado.',
-            A.vinculo.map((x) => '<b>' + esc(x.nome) + '</b>: nota ' + dec(x.sc) + ' ' + pill(x.k) + ' · chegar a Bom vale +' + rs(x.ganho) + '/mês'),
-            5,
-            eq,
-          ),
-        ].join('');
+            A.risco.map((x) => [
+              esc(x.nome),
+              NOMEC[x.k] + ' · ' + (x.margem === 0 ? 'sem folga' : 'folga de ' + pontos(x.margem)) + ' · cair custa ' + rs(x.perda) + '/mês',
+            ]),
+            4,
+            eqs,
+          );
+        const tambem = [
+          A.baixas.length &&
+            '<p><b>Abaixo de Bom:</b> ' + resumo(A.baixas, 5, (x) => esc(x.nome) + ' (nota ' + dec(x.nota) + ')') + '.</p>',
+          A.semDado.length &&
+            '<p><b>Dados que faltam:</b> ' + pl(A.semDado.length, 'equipe', 'equipes') + ' sem ' +
+            A.semDadoPorIndicador.slice(0, 5).map((x) => esc(x.cod)).join(', ') +
+            '; a estimativa varia até ' + rs(A.emJogo) + '/mês. ' +
+            resumo(A.semDado, 4, (x) => esc(x.nome)) + '.</p>',
+          A.vinculo.length &&
+            '<p><b>Vínculo (CVAT) abaixo de Bom:</b> ' + resumo(A.vinculo, 4, (x) => esc(x.nome) + ' (' + NOMEC[x.k] + ')') +
+            '; chegar a Bom vale +' + rs(A.vinculo.reduce((a, x) => a + x.ganho, 0)) + '/mês.</p>',
+        ]
+          .filter(Boolean)
+          .join('');
         return (
           '<section class="bloco" id="atencao"><h2>Onde dar mais atenção</h2>' +
-          '<p class="d">Calculado só com as equipes e os meses do recorte escolhido. Valores em reais são por mês; pontos são da nota final.</p>' +
-          tiles +
-          (partes ? '<div class="atencao">' + partes + '</div>' : '') +
+          dist +
+          (listas ? '<div class="atencao">' + listas + '</div>' : '') +
+          (tambem ? '<div class="tambem">' + tambem + '</div>' : '') +
+          '<p class="rodape-at">Calculado com as equipes e os meses do recorte. Pontos são da nota final (máximo 10). Foco: indicadores de maior peso ainda abaixo de Ótimo. Risco: até 0,50 ponto acima do limite da classe.</p>' +
           '</section>'
         );
       }
@@ -1305,12 +1354,11 @@
           '<div class="card"><small>Repasse mensal estimado · qualidade + vínculo</small><div class="v">' +
           faixaRs(tMin, tMax) +
           '</div><div class="s">' +
-          linhas.length +
-          ' equipe(s); ' +
+          pl(linhas.length, 'equipe', 'equipes') +
+          ' · ' +
           completas +
-          ' com todos os indicadores de qualidade' +
-          (completas < linhas.length ? ' (nas demais, a faixa vai do pior ao melhor caso)' : '') +
-          '<br>Valor <b>por mês</b>; em 4 parcelas (quadrimestre): ' +
+          ' com todos os indicadores' +
+          '<br>Em 4 parcelas: ' +
           faixaRs(tMin * 4, tMax * 4) +
           '<br>' +
           (() => {
@@ -1318,18 +1366,9 @@
               tem = q.meses.filter((m) => comps.includes(m)),
               fora = comps.filter((m) => !q.meses.includes(m));
             return (
-              'Referente ao quadrimestre <b>' +
-              mesNome(q.meses[0]) +
-              ' a ' +
-              mesNome(q.meses[3]) +
-              '</b> (' +
-              tem.length +
-              ' de 4 meses com dados); se mantido, <b>pago de ' +
-              mesNome(q.pagoDe) +
-              ' a ' +
-              mesNome(q.pagoAte) +
-              '</b>.' +
-              (fora.length ? ' O período escolhido inclui meses de outro quadrimestre (' + fora.map(mesNome).join(', ') + ').' : '')
+              'Quadrimestre <b>' + mesNome(q.meses[0]) + ' a ' + mesNome(q.meses[3]) + '</b> (' + tem.length + ' de 4 meses com dados) · pago de <b>' +
+              mesNome(q.pagoDe) + ' a ' + mesNome(q.pagoAte) + '</b>' +
+              (fora.length ? '<br>O período inclui meses de outro quadrimestre (' + fora.map(mesNome).join(', ') + ').' : '')
             );
           })() +
           '</div></div>' +
@@ -1343,10 +1382,10 @@
           '</div></div></section>' +
           atencaoHtml(linhas) +
           '<section class="bloco"><h2>Prévia do repasse federal · qualidade e vínculo</h2>' +
-          '<p class="d">Cada equipe recebe a nota final = soma de (pontos do conceito × peso do indicador): Regular 0,25, Suficiente 0,50, Bom 0,75, Ótimo 1,00. ' +
-          'A nota (máximo 10) define a classe: Ótimo acima de 7,5; Bom de 5 a 7,5; Suficiente acima de 2,5 e abaixo de 5; Regular até 2,5. ' +
-          'Cada classe tem um valor mensal por tipo de equipe, pago por 4 meses depois de cada avaliação quadrimestral (por isso o total do ciclo é 4 vezes o mensal). Com indicador sem conceito (?) a nota fica entre o pior e o melhor caso. ' +
-          'Nas eSF e eAP soma-se o componente de vínculo e acompanhamento territorial (CVAT): nota de 0 a 10, Ótimo acima de 8,5, Bom de 7 a 8,5, Suficiente de 5 a 6,9 e Regular abaixo de 5, com os mesmos valores por classe.</p>' +
+          '<p class="d">Nota final = soma de (pontos do conceito × peso do indicador), máximo 10; Regular vale 0,25, Suficiente 0,50, Bom 0,75 e Ótimo 1,00. ' +
+          'Classe: Ótimo acima de 7,5 · Bom de 5 a 7,5 · Suficiente acima de 2,5 e abaixo de 5 · Regular até 2,5. Indicador sem conceito (?) deixa a nota entre o pior e o melhor caso. ' +
+          'eSF e eAP somam o vínculo (CVAT), nota de 0 a 10: Ótimo acima de 8,5 · Bom de 7 a 8,5 · Suficiente de 5 a 6,9 · Regular abaixo de 5. ' +
+          'O valor mensal por classe depende do tipo de equipe e é pago por 4 meses depois de cada avaliação quadrimestral.</p>' +
           '<p class="d so-impressao">Conceito por indicador: Ót = Ótimo, Bom, Suf = Suficiente, Reg = Regular; "?" = sem conceito neste recorte. Pesos na nota (soma 10): ' +
           [['esf', 'eSF e eAP'], ['esb', 'eSB'], ['emulti', 'eMulti']]
             .filter(([g]) => linhas.some((l) => l.tr.pesos === g))
@@ -1357,11 +1396,11 @@
           corpo +
           '</tbody></table></div>' +
           '<ul class="nota"><li>Fontes: Nota Técnica nº 6/2025-DEAPS/SAPS/MS (pesos, pontos e faixas da nota) e Portaria GM/MS nº 3.493/2024, Anexo III (valores por classe). O resultado e o valor oficiais são os do Ministério (Siaps).</li>' +
-          '<li>O desempenho é do quadrimestre (média dos meses) e o incentivo é pago nos quatro meses seguintes. Aqui vale o período escolhido no filtro; para uma prévia fiel, escolha os meses do quadrimestre.</li>' +
+          '<li class="so-tela">O desempenho é do quadrimestre (média dos meses) e o incentivo é pago nos quatro meses seguintes. Aqui vale o período escolhido no filtro; para uma prévia fiel, escolha os meses do quadrimestre.</li>' +
           '<li>Premissas a confirmar: eSB tratada como "eSB I comum", sem ajuste de carga horária; eAP como 20 h (30 h só se o nome indicar); eMulti como complementar, salvo "estratégica" ou "ampliada" no nome da equipe. ' +
           (fora ? fora + ' equipe(s) de outro tipo (ex.: Consultório na Rua) ficaram fora, por não terem valores e pesos nesta prévia. ' : '') +
           'O vínculo (CVAT) vem sem o bônus de satisfação do usuário (até 0,30 ponto), que este Painel não considera, e sem o limite por população vinculada acima do parâmetro (a classe não passa de "Bom"). Não inclui o componente fixo (depende do estrato IED), o incentivo anual adicional nem suspensões por ausência de profissionais ou falta de envio ao Sisab.</li>' +
-          '<li>Equipes recém-homologadas recebem o valor de "Bom" até o segundo recálculo, e o Ministério repassa o valor de "Bom" quando não divulga os dados de um indicador.</li></ul></section>';
+          '<li class="so-tela">Equipes recém-homologadas recebem o valor de "Bom" até o segundo recálculo, e o Ministério repassa o valor de "Bom" quando não divulga os dados de um indicador.</li></ul></section>';
       }
       function desenhar() {
         resumoFiltros();
