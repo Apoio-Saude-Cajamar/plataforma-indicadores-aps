@@ -1573,7 +1573,6 @@
           '</div><div class="s">' +
           (tOtimo - tMax > 0 ? rs(tOtimo - tMax) + ' por mês acima da estimativa' : 'estimativa já no teto') +
           '</div></div></section>' +
-          atencaoHtml(linhas, A) +
           unidadesHtml(A) +
           '<section class="bloco"><h2>Prévia do repasse federal · qualidade e vínculo</h2>' +
           '<p class="d">Nota final = soma de (pontos do conceito × peso do indicador), máximo 10; Regular vale 0,25, Suficiente 0,50, Bom 0,75 e Ótimo 1,00. ' +
@@ -1594,7 +1593,9 @@
           '<li>Premissas a confirmar: eSB tratada como "eSB I comum", sem ajuste de carga horária; eAP como 20 h (30 h só se o nome indicar); eMulti como complementar, salvo "estratégica" ou "ampliada" no nome da equipe. ' +
           (cob.fora.length ? 'Ficaram fora ' + esc(foraTexto) + ', por não terem valores e pesos nesta prévia. ' : '') +
           'O vínculo (CVAT) vem sem o bônus de satisfação do usuário (até 0,30 ponto), que este Painel não considera, e sem o limite por população vinculada acima do parâmetro (a classe não passa de "Bom"). Não inclui o componente fixo (depende do estrato IED), o incentivo anual adicional nem suspensões por ausência de profissionais ou falta de envio ao Sisab.</li>' +
-          '<li class="so-tela">Equipes recém-homologadas recebem o valor de "Bom" até o segundo recálculo, e o Ministério repassa o valor de "Bom" quando não divulga os dados de um indicador.</li></ul></section>';
+          '<li class="so-tela">Equipes recém-homologadas recebem o valor de "Bom" até o segundo recálculo, e o Ministério repassa o valor de "Bom" quando não divulga os dados de um indicador.</li></ul></section>' +
+          // "Onde dar mais atenção" fecha a página: primeiro os números, depois o que fazer com eles.
+          atencaoHtml(linhas, A);
       }
       function desenhar() {
         resumoFiltros();
