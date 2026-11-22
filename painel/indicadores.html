@@ -331,9 +331,23 @@
       .tab {
         overflow-x: auto;
       }
+      /* "Por unidade": contagens centralizadas (valores em R$ continuam à direita) e colunas separadas em grupos: equipes | classes | reais | risco. */
+      #unidades th.c,
+      #unidades td.c {
+        text-align: center;
+      }
+      #unidades .sep {
+        border-left: 1px solid rgba(120, 130, 150, 0.3);
+      }
       @media screen {
         #unidades td:first-child {
           white-space: nowrap;
+        }
+        #unidades tbody tr:nth-child(even):not(.tot) {
+          background: rgba(100, 116, 139, 0.07);
+        }
+        #unidades tbody tr:not(.tot):hover {
+          background: rgba(0, 167, 231, 0.1);
         }
       }
       .leg {
@@ -1360,17 +1374,17 @@
           ),
           n0 = (n) => (n ? n : '<span style="color:#8a94a6">–</span>'),
           linha = (nome, u, forte) =>
-            '<tr' + (forte ? ' class="tot"' : '') + '><td>' + nome + '</td><td class="n">' + u.equipes + '</td>' +
-            ORDEM_CLASSE.map((k) => '<td class="n">' + n0(u.dist[k]) + '</td>').join('') +
-            '<td class="n">' + n0(u.incompletas) + '</td>' +
-            '<td class="n">' + faixaRs(u.vmin, u.vmax) + '</td><td class="n">' + rs(u.falta) + '</td><td class="n">' + n0(u.risco) + '</td></tr>';
+            '<tr' + (forte ? ' class="tot"' : '') + '><td>' + nome + '</td><td class="c">' + u.equipes + '</td>' +
+            ORDEM_CLASSE.map((k, i) => '<td class="c' + (i === 0 ? ' sep' : '') + '">' + n0(u.dist[k]) + '</td>').join('') +
+            '<td class="c">' + n0(u.incompletas) + '</td>' +
+            '<td class="n sep">' + faixaRs(u.vmin, u.vmax) + '</td><td class="n">' + rs(u.falta) + '</td><td class="c sep">' + n0(u.risco) + '</td></tr>';
         return (
           '<section class="bloco" id="unidades"><h2>Por unidade</h2>' +
           '<p class="d">Ordenadas pelo que falta para o potencial (todas as equipes em Ótimo, qualidade e vínculo). As colunas de classe contam só as equipes com todos os indicadores; as demais ficam em "Sem classe" (a estimativa delas vira uma faixa).</p>' +
-          '<div class="tab"><table><thead><tr><th>Unidade</th><th class="n">Equipes</th>' +
-          ORDEM_CLASSE.map((k) => '<th class="n">' + NOMEC[k] + '</th>').join('') +
-          '<th class="n" title="Equipes com algum indicador de qualidade sem conceito neste recorte">Sem classe</th>' +
-          '<th class="n">Estimativa/mês</th><th class="n">Falta p/ potencial</th><th class="n">Em risco</th></tr></thead><tbody>' +
+          '<div class="tab"><table><thead><tr><th>Unidade</th><th class="c">Equipes</th>' +
+          ORDEM_CLASSE.map((k, i) => '<th class="c' + (i === 0 ? ' sep' : '') + '">' + NOMEC[k] + '</th>').join('') +
+          '<th class="c" title="Equipes com algum indicador de qualidade sem conceito neste recorte">Sem classe</th>' +
+          '<th class="n sep">Estimativa/mês</th><th class="n">Falta p/ potencial</th><th class="c sep">Em risco</th></tr></thead><tbody>' +
           A.porUnidade.map((u) => linha(esc(unidadeCurta(u.unidade)), u, false)).join('') +
           linha('Total', tot, true) +
           '</tbody></table></div></section>'
