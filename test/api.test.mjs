@@ -189,3 +189,26 @@ test('backup paginado e restauração devolvem exatamente os mesmos dados', asyn
   const depois = await chamar('GET', '/dados?competencia=2026-10');
   assert.deepEqual(depois, antes);
 });
+
+test('mesma equipe (INE) em unidades diferentes entre coletas vale uma vez; eMulti sai em "Município"', async () => {
+  const env = ambiente();
+  const chamar = cliente(env);
+  const etapa = (coleta, unidade, quando, linhas) => chamar('PUT', `/coletas/${coleta}/etapa`, { chave: 'unidade:' + unidade, bloco: 'unidade',
+    unidade, status: 'ok', coletadoEm: quando, linhas });
+  const m1 = (unidade, den) => ({ codigo: 'M1', unidade, equipe: 'COMPLEMENTAR 3', ine: '0002526255', numerador: 2874, denominador: den });
+  const c6 = (unidade, eq, ine, den) => ({ codigo: 'C6', unidade, equipe: eq, ine, denominador: den, somaPontos: den * 50 });
+  const q = (unidade, equipe, num, den) => ({ codigo: 'Q14.2.1', unidade, equipe, numerador: num, denominador: den });
+  await chamar('POST', '/coletas', { id: 'a', competencia: '2026-10', iniciadoEm: '2026-11-16T15:00:00Z' });
+  await etapa('a', 'Município', '2026-11-16T15:00:00Z', [m1('Município', 1776)]);
+  await etapa('a', 'UBS A', '2026-11-16T15:00:00Z', [c6('UBS A', 'ESF 1', '0001', 10), q('UBS A', 'ESF 1', 3, 30)]);
+  await chamar('POST', '/coletas', { id: 'b', competencia: '2026-10', iniciadoEm: '2026-11-19T19:00:00Z' });
+  await etapa('b', 'UBS B', '2026-11-19T19:00:00Z', [m1('UBS B', 969), c6('UBS B', 'ESF 2', '0002', 20)]);
+  const d = await chamar('GET', '/dados?competencia=2026-10');
+  const M1 = d.indicadores.filter(l => l.codigo === 'M1');
+  assert.equal(M1.length, 1, 'uma linha de M1 por equipe eMulti');
+  assert.equal(M1[0].denominador, 969, 'a da coleta mais recente');
+  assert.equal(M1[0].unidade, 'Município');
+  // Equipes diferentes continuam separadas; linha sem INE segue pelo nome.
+  assert.deepEqual(d.indicadores.filter(l => l.codigo === 'C6').map(l => l.unidade).sort(), ['UBS A', 'UBS B']);
+  assert.equal(d.indicadores.filter(l => l.codigo === 'Q14.2.1').length, 1);
+});

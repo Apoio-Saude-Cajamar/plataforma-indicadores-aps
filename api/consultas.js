@@ -1,6 +1,7 @@
 // Consultas de leitura: situação das etapas de uma competência e dados vigentes.
 // Os resultados são montados como JSON pelo próprio banco, para poupar CPU do Worker.
 import { competencia } from './util.js';
+import { CHAVE_EQUIPE, UNIDADE_EXIBIDA } from './vigente.js';
 
 // Para cada etapa da competência: a versão vigente (última bem-sucedida) ou,
 // se nunca deu certo, a última falha. É o que a extensão usa para "tentar de novo as falhas".
@@ -25,18 +26,19 @@ export async function situacao(env, comp) {
 }
 
 const CONSULTAS_VIGENTES = {
-  // Por indicador, recorte, unidade e equipe vale a linha da coleta bem-sucedida mais recente. Assim uma recoleta
-  // do mesmo mês atualiza o que trouxe e não apaga o que só a coleta anterior tinha (unidade que falhou, indicador desmarcado).
+  // Por indicador, recorte e equipe (pelo INE, ou unidade e nome sem INE) vale a linha da coleta bem-sucedida mais recente.
+  // Assim uma recoleta do mesmo mês atualiza o que trouxe e não apaga o que só a coleta anterior tinha (unidade que falhou,
+  // indicador desmarcado), e uma equipe que mudou de unidade entre coletas não conta duas vezes.
   indicadores: `
     SELECT json_group_array(json_object(
-      'codigo', codigo, 'recorte', recorte, 'unidade', unidade, 'unidadeCnes', unidade_cnes,
+      'codigo', codigo, 'recorte', recorte, 'unidade', unidade_exibida, 'unidadeCnes', unidade_cnes,
       'equipe', equipe, 'ine', ine, 'tipoEquipe', tipo_equipe,
       'numerador', numerador, 'denominador', denominador, 'somaPontos', soma_pontos, 'valor', valor,
       'excluidos', excluidos, 'itens', json(itens), 'extras', json(extras),
       'coletadoEm', coletado_em, 'coletaId', coleta_id)) AS dados
     FROM (
-      SELECT i.*, e.coletado_em AS coletado_em, ROW_NUMBER() OVER (
-        PARTITION BY i.codigo, i.recorte, i.unidade, i.equipe
+      SELECT i.*, e.coletado_em AS coletado_em, ${UNIDADE_EXIBIDA()} AS unidade_exibida, ROW_NUMBER() OVER (
+        PARTITION BY i.codigo, i.recorte, ${CHAVE_EQUIPE()}
         ORDER BY e.coletado_em DESC, i.coleta_id DESC) AS ordem
       FROM indicador_equipe i
       JOIN etapa e ON e.coleta_id = i.coleta_id AND e.chave = i.etapa_chave

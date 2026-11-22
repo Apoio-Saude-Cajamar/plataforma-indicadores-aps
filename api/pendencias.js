@@ -1,5 +1,6 @@
 // Pendências de uma competência: o que ficou faltando ou parece inconsistente nos dados já gravados.
 // Só lê (nada é alterado) e só devolve contagens e nomes de unidade; nenhum nome de profissional ou de paciente.
+import { CHAVE_EQUIPE, UNIDADE_EXIBIDA } from './vigente.js';
 import { competencia } from './util.js';
 
 // Indicadores que dependem do tipo de equipe da unidade: a ausência pode ser normal.
@@ -14,8 +15,8 @@ const NOTAS = {
 };
 
 const vigentes = `
-  SELECT i.unidade, i.codigo, i.numerador, i.denominador, i.soma_pontos, ROW_NUMBER() OVER (
-    PARTITION BY i.codigo, i.recorte, i.unidade, i.equipe ORDER BY e.coletado_em DESC, i.coleta_id DESC) AS ordem
+  SELECT ${UNIDADE_EXIBIDA()} AS unidade, i.codigo, i.numerador, i.denominador, i.soma_pontos, ROW_NUMBER() OVER (
+    PARTITION BY i.codigo, i.recorte, ${CHAVE_EQUIPE()} ORDER BY e.coletado_em DESC, i.coleta_id DESC) AS ordem
   FROM indicador_equipe i JOIN etapa e ON e.coleta_id = i.coleta_id AND e.chave = i.etapa_chave
   WHERE i.competencia = ? AND e.status = 'ok' AND i.recorte = 'situacao' AND i.unidade IS NOT NULL AND i.unidade <> ''`;
 
@@ -223,7 +224,7 @@ async function lerB4(ler, comp) {
     const rs = await ler(
       `SELECT unidade, equipe, ine, numerador, denominador, extras FROM (
          SELECT i.unidade, i.equipe, i.ine, i.numerador, i.denominador, i.extras, ROW_NUMBER() OVER (
-           PARTITION BY i.recorte, i.unidade, i.equipe ORDER BY e.coletado_em DESC, i.coleta_id DESC) AS ordem
+           PARTITION BY i.recorte, ${CHAVE_EQUIPE()} ORDER BY e.coletado_em DESC, i.coleta_id DESC) AS ordem
          FROM indicador_equipe i JOIN etapa e ON e.coleta_id = i.coleta_id AND e.chave = i.etapa_chave
          WHERE i.competencia = ? AND e.status = 'ok' AND i.recorte = 'situacao' AND i.codigo = 'B4') WHERE ordem = 1`,
       comp,
