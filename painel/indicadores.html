@@ -749,7 +749,7 @@
         const ult = comps[comps.length - 1],
           varios = comps.length > 1,
           teams = new Map();
-        for (const cod of new Set(Object.values(REPASSE.pesos).flatMap((o) => Object.keys(o)))) {
+        for (const cod of new Set([...Object.values(REPASSE.pesos).flatMap((o) => Object.keys(o)), 'CVAT'])) {
           const usar = varios && NAO_SOMA_MESES.has(cod) ? [ult] : comps;
           for (const l of linhasDe(cod, usar, un)) {
             if (!l.equipe || l.equipe === 'Município') continue;
@@ -776,18 +776,31 @@
             const g = agregar(ls, () => 'x').get(cod + '|x');
             classes[cod] = g ? conceito(cod, resultado(g, ((window.CATALOGO || {})[cod] || {}).tipo)) : null;
           }
-          const n = notaEquipe(tr.pesos, classes),
-            vmin = valorMensal(tr.valor, n.cmin),
-            vmax = valorMensal(tr.valor, n.cmax);
+          const n = notaEquipe(tr.pesos, classes);
+          // Vínculo e acompanhamento territorial (CVAT): só eSF e eAP; mesma tabela de valores da qualidade. Sem o bônus de satisfação.
+          let vin = null;
+          if (tr.pesos === 'esf') {
+            const lc = t.por.get('CVAT'),
+              gc = lc ? agregar(lc, () => 'x').get('CVAT|x') : null,
+              sc = gc ? resultado(gc, 'escore') : null,
+              kc = sc == null ? null : conceito('CVAT', sc);
+            vin = { sc, k: kc, vmin: valorMensal(tr.valor, kc || 'r'), vmax: valorMensal(tr.valor, kc || 'o') };
+          }
+          const vm = vin ? 1 : 0,
+            vmin = valorMensal(tr.valor, n.cmin) + (vin ? vin.vmin : 0),
+            vmax = valorMensal(tr.valor, n.cmax) + (vin ? vin.vmax : 0);
           linhas.push({
             t,
             tr,
             n,
+            vin,
             classes,
             vmin,
             vmax,
-            bom: valorMensal(tr.valor, 'b'),
-            otimo: valorMensal(tr.valor, 'o'),
+            qmin: valorMensal(tr.valor, n.cmin),
+            qmax: valorMensal(tr.valor, n.cmax),
+            bom: valorMensal(tr.valor, 'b') * (1 + vm),
+            otimo: valorMensal(tr.valor, 'o') * (1 + vm),
             total: Object.keys(REPASSE.pesos[tr.pesos]).length,
           });
         }
@@ -816,7 +829,7 @@
             atual = l.tr.valor;
             const gl = linhas.filter((x) => x.tr.valor === atual);
             corpo +=
-              '<tr class="dir"><td colspan="5">' +
+              '<tr class="dir"><td colspan="6">' +
               esc(REPASSE.valores[atual].nome) +
               ' · ' +
               gl.length +
@@ -824,7 +837,13 @@
               ORDEM_CLASSE.map((k, i) => NOMEC[k] + ' ' + rs(REPASSE.valores[atual].v[i])).join(' · ') +
               '</td></tr>';
           }
-          const cods = Object.keys(REPASSE.pesos[l.tr.pesos]),
+          const vinc = l.vin
+              ? (l.vin.sc == null ? '<span style="color:#4a5670">sem dado</span>' : dec(l.vin.sc) + ' <span class="pill ' + PILL[l.vin.k] + '">' + NOMEC[l.vin.k] + '</span>') +
+                '<br><small>' +
+                faixaRs(l.vin.vmin, l.vin.vmax) +
+                '</small>'
+              : '<span style="color:#4a5670">—</span>',
+            cods = Object.keys(REPASSE.pesos[l.tr.pesos]),
             nota = l.n.completa ? dec(l.n.min) : dec(l.n.min) + ' a ' + dec(l.n.max),
             conc =
               l.n.cmin === l.n.cmax
@@ -845,20 +864,26 @@
             nota +
             '</td><td>' +
             conc +
+            '<br><small>' +
+            faixaRs(l.qmin, l.qmax) +
+            '</small></td><td>' +
+            vinc +
             '</td><td class="n"><b>' +
             faixaRs(l.vmin, l.vmax) +
             '</b></td></tr>';
         }
         el.innerHTML =
           '<section class="cards">' +
-          '<div class="card"><small>Repasse mensal estimado · qualidade</small><div class="v">' +
+          '<div class="card"><small>Repasse mensal estimado · qualidade + vínculo</small><div class="v">' +
           faixaRs(tMin, tMax) +
           '</div><div class="s">' +
           linhas.length +
           ' equipe(s); ' +
           completas +
-          ' com todos os indicadores' +
+          ' com todos os indicadores de qualidade' +
           (completas < linhas.length ? ' (nas demais, a faixa vai do pior ao melhor caso)' : '') +
+          '<br>Valor <b>por mês</b>; em 4 parcelas (quadrimestre): ' +
+          faixaRs(tMin * 4, tMax * 4) +
           '</div></div>' +
           '<div class="card"><small>Se todas ficassem em Bom</small><div class="v">' +
           rs(tBom) +
@@ -868,18 +893,19 @@
           '</div><div class="s">' +
           (tOtimo - tMax > 0 ? rs(tOtimo - tMax) + ' por mês acima da estimativa' : 'estimativa já no teto') +
           '</div></div></section>' +
-          '<section class="bloco"><h2>Prévia do repasse federal · componente de qualidade</h2>' +
+          '<section class="bloco"><h2>Prévia do repasse federal · qualidade e vínculo</h2>' +
           '<p class="d">Cada equipe recebe a nota final = soma de (pontos do conceito × peso do indicador): Regular 0,25, Suficiente 0,50, Bom 0,75, Ótimo 1,00. ' +
           'A nota (máximo 10) define a classe: Ótimo acima de 7,5; Bom de 5 a 7,5; Suficiente acima de 2,5 e abaixo de 5; Regular até 2,5. ' +
-          'Cada classe tem um valor mensal por tipo de equipe. Com indicador sem conceito (?) a nota fica entre o pior e o melhor caso.</p>' +
-          '<div class="tab"><table><thead><tr><th>Equipe</th><th>Conceito por indicador</th><th class="n">Nota (0 a 10)</th><th>Classe</th><th class="n">Repasse/mês</th></tr></thead><tbody>' +
+          'Cada classe tem um valor mensal por tipo de equipe, pago por 4 meses depois de cada avaliação quadrimestral (por isso o total do ciclo é 4 vezes o mensal). Com indicador sem conceito (?) a nota fica entre o pior e o melhor caso. ' +
+          'Nas eSF e eAP soma-se o componente de vínculo e acompanhamento territorial (CVAT): nota de 0 a 10, Ótimo acima de 8,5, Bom de 7 a 8,5, Suficiente de 5 a 6,9 e Regular abaixo de 5, com os mesmos valores por classe.</p>' +
+          '<div class="tab"><table><thead><tr><th>Equipe</th><th>Conceito por indicador</th><th class="n">Nota (0 a 10)</th><th>Classe e valor da qualidade</th><th>Vínculo (CVAT): nota, classe e valor</th><th class="n">Total/mês</th></tr></thead><tbody>' +
           corpo +
           '</tbody></table></div>' +
           '<ul class="nota"><li>Fontes: Nota Técnica nº 6/2025-DEAPS/SAPS/MS (pesos, pontos e faixas da nota) e Portaria GM/MS nº 3.493/2024, Anexo III (valores por classe). O resultado e o valor oficiais são os do Ministério (Siaps).</li>' +
           '<li>O desempenho é do quadrimestre (média dos meses) e o incentivo é pago nos quatro meses seguintes. Aqui vale o período escolhido no filtro; para uma prévia fiel, escolha os meses do quadrimestre.</li>' +
           '<li>Premissas a confirmar: eSB tratada como "eSB I comum", sem ajuste de carga horária; eAP como 20 h (30 h só se o nome indicar); eMulti como complementar, salvo "estratégica" ou "ampliada" no nome da equipe. ' +
           (fora ? fora + ' equipe(s) de outro tipo (ex.: Consultório na Rua) ficaram fora, por não terem valores e pesos nesta prévia. ' : '') +
-          'Não inclui o componente fixo (depende do estrato IED), o de vínculo e acompanhamento territorial, o incentivo anual adicional nem suspensões por ausência de profissionais ou falta de envio ao Sisab.</li>' +
+          'O vínculo (CVAT) vem sem o bônus de satisfação do usuário (até 0,30 ponto), que este Painel não considera, e sem o limite por população vinculada acima do parâmetro (a classe não passa de "Bom"). Não inclui o componente fixo (depende do estrato IED), o incentivo anual adicional nem suspensões por ausência de profissionais ou falta de envio ao Sisab.</li>' +
           '<li>Equipes recém-homologadas recebem o valor de "Bom" até o segundo recálculo, e o Ministério repassa o valor de "Bom" quando não divulga os dados de um indicador.</li></ul></section>';
       }
       function desenhar() {
