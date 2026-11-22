@@ -360,7 +360,7 @@ test('faixas federais: B4 em percentual e fronteiras como nas notas do MS', asyn
 test('prévia do repasse: nota final, faixas e valores como na NT 6/2025 e na Portaria 3.493', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../painel/js/repasse.js', import.meta.url), 'utf8');
-  const r = new Function(src + ';return { REPASSE, classeDaNota, tipoRepasse, notaEquipe, valorMensal, quadrimestreRepasse }')();
+  const r = new Function(src + ';return { REPASSE, classeDaNota, tipoRepasse, notaEquipe, valorMensal, quadrimestreRepasse, pontosAtencao }')();
   for (const [g, p] of Object.entries(r.REPASSE.pesos)) assert.equal(Object.values(p).reduce((a, b) => a + b, 0), 10, 'pesos de ' + g + ' somam 10');
   const casos = [[7.51, 'o'], [7.5, 'b'], [5, 'b'], [4.75, 's'], [2.75, 's'], [2.5, 'r'], [2.5 + 1e-9, 's']];
   for (const [n, k] of casos) assert.equal(r.classeDaNota(n), k, 'nota ' + n);
@@ -380,6 +380,30 @@ test('prévia do repasse: nota final, faixas e valores como na NT 6/2025 e na Po
   assert.deepEqual(r.quadrimestreRepasse('2026-03'), { meses: ['2026-01', '2026-02', '2026-03', '2026-04'], pagoDe: '2026-05', pagoAte: '2026-08' });
   assert.deepEqual([r.quadrimestreRepasse('2026-06').pagoDe, r.quadrimestreRepasse('2026-06').pagoAte], ['2026-09', '2026-12']);
   assert.deepEqual([r.quadrimestreRepasse('2026-10').meses[0], r.quadrimestreRepasse('2026-10').pagoDe, r.quadrimestreRepasse('2026-10').pagoAte], ['2026-09', '2027-01', '2027-04']);
+  // pontos de atenção: o que mais tirou nota, quem está perto de subir ou de cair, o que falta de dado e o vínculo abaixo de Bom
+  const eq = (nome, classes, extra = {}) => ({ nome, grupo: 'esf', valor: 'esf', classes, n: r.notaEquipe('esf', classes), vin: null, vmin: 0, vmax: 0, ...extra });
+  const c = (o) => ({ C1: 'o', C2: 'o', C3: 'o', C4: 'o', C5: 'o', C6: 'o', C7: 'o', ...o });
+  const A = r.pontosAtencao([
+    eq('Cima', c({})), // 10: Ótimo, longe do limite
+    eq('Limite', c({ C1: 'b', C2: 'b', C3: 'b', C6: 'b', C7: 'b' })), // 8: Ótimo a 0,25 do limite de 7,75
+    eq('Baixa', c({ C1: 'r', C2: 'r', C3: 's', C4: 'r', C5: 'r', C6: 's', C7: 's' })), // 3,75: Suficiente
+    eq('Sem dado', c({ C3: null }), { vin: { sc: null, k: null }, vmin: 6000, vmax: 14000 }),
+    eq('Vínculo', c({}), { vin: { sc: 5, k: 's' } }),
+  ]);
+  assert.deepEqual(A.dist, { o: 3, b: 0, s: 1, r: 0 });
+  assert.equal(A.comNota, 4);
+  assert.equal(A.indicadores[0].cod, 'C2'); // peso 2: Limite perde 0,5 e Baixa 1,5
+  assert.equal(A.indicadores[0].perdidos, 2);
+  assert.ok(A.indicadores.every((x) => x.perdidos > 0));
+  assert.deepEqual(A.baixas.map((x) => x.nome), ['Baixa']);
+  const baixa = A.subir.find((x) => x.nome === 'Baixa');
+  assert.deepEqual([baixa.para, baixa.falta, baixa.ganho], ['b', 1.25, 2000]);
+  assert.deepEqual(baixa.alavancas.map((x) => x.cod), ['C2', 'C3']); // maior peso e pior conceito primeiro
+  assert.equal(A.subir.some((x) => x.nome === 'Cima'), false, 'Ótimo não tem classe acima');
+  assert.deepEqual(A.risco.map((x) => [x.nome, x.margem, x.perda]), [['Limite', 0.25, 2000]]);
+  assert.deepEqual(A.semDado.map((x) => [x.nome, x.faltam]), [['Sem dado', ['C3', 'CVAT']]]);
+  assert.equal(A.emJogo, 8000);
+  assert.deepEqual(A.vinculo.map((x) => [x.nome, x.ganho]), [['Vínculo', 2000]]);
 });
 
 test('comunicados: administrador publica, usuário vê e marca "Entendi", público respeitado', async () => {

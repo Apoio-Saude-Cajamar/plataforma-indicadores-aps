@@ -76,3 +76,98 @@ function quadrimestreRepasse(comp) {
     pagoAte: c(soma(pg.a, pg.m, 3)),
   };
 }
+// Menor nota (múltipla de 0,25) de cada classe, e a classe vizinha: medem quanto falta para subir e quanto sobra antes de cair.
+const NOTA_MIN_CLASSE = { r: 0, s: 2.75, b: 5, o: 7.75 };
+const CLASSE_ACIMA = { r: 's', s: 'b', b: 'o', o: null };
+const CLASSE_ABAIXO = { o: 'b', b: 's', s: 'r', r: null };
+// Pontos de atenção do recorte. equipes: [{ nome, grupo (pesos), valor (chave de valores), classes, n (notaEquipe), vin: {sc,k}|null, vmin, vmax }].
+// Só usa o que está no recorte; nada aqui é meta oficial. Cada lista vem ordenada do mais para o menos urgente.
+function pontosAtencao(equipes) {
+  const pesosDe = (e) => REPASSE.pesos[e.grupo],
+    ordem = (k) => ORDEM_CLASSE.indexOf(k), // 0 = Ótimo ... 3 = Regular
+    porNome = (a, b) => a.nome.localeCompare(b.nome, 'pt-BR'),
+    completas = equipes.filter((e) => e.n.completa),
+    dist = { o: 0, b: 0, s: 0, r: 0 };
+  completas.forEach((e) => dist[e.n.cmin]++);
+  // Indicadores: quantos pontos da nota (máximo 10 por equipe) cada um tirou, somando as equipes.
+  const ind = new Map();
+  for (const e of equipes)
+    for (const [cod, w] of Object.entries(pesosDe(e))) {
+      const k = e.classes[cod];
+      if (!k) continue;
+      const x = ind.get(cod) || { cod, perdidos: 0, equipes: 0, baixas: 0 };
+      x.perdidos += w * (1 - REPASSE.pontos[k]);
+      x.equipes++;
+      if (k === 'r' || k === 's') x.baixas++;
+      ind.set(cod, x);
+    }
+  const indicadores = [...ind.values()]
+    .filter((x) => x.perdidos > 0)
+    .sort((a, b) => b.perdidos - a.perdidos || b.baixas - a.baixas || a.cod.localeCompare(b.cod));
+  // Equipes com nota completa: as de classe baixa, as mais perto de subir e as que podem cair com um passo em um indicador.
+  const baixas = [],
+    subir = [],
+    risco = [];
+  for (const e of completas) {
+    const k = e.n.cmin,
+      nota = e.n.min,
+      acima = CLASSE_ACIMA[k],
+      abaixo = CLASSE_ABAIXO[k];
+    if (k === 'r' || k === 's') baixas.push({ nome: e.nome, k, nota });
+    if (acima) {
+      const alavancas = Object.entries(pesosDe(e))
+        .filter(([cod]) => e.classes[cod] !== 'o')
+        .map(([cod, peso]) => ({ cod, peso, k: e.classes[cod] }))
+        .sort((a, b) => b.peso - a.peso || ordem(b.k) - ordem(a.k) || a.cod.localeCompare(b.cod));
+      subir.push({
+        nome: e.nome,
+        k,
+        nota,
+        para: acima,
+        falta: NOTA_MIN_CLASSE[acima] - nota,
+        ganho: valorMensal(e.valor, acima) - valorMensal(e.valor, k),
+        alavancas: alavancas.slice(0, 2),
+      });
+    }
+    if (abaixo && nota - NOTA_MIN_CLASSE[k] <= 0.5)
+      risco.push({
+        nome: e.nome,
+        k,
+        nota,
+        para: abaixo,
+        margem: nota - NOTA_MIN_CLASSE[k],
+        perda: valorMensal(e.valor, k) - valorMensal(e.valor, abaixo),
+      });
+  }
+  baixas.sort((a, b) => a.nota - b.nota || porNome(a, b));
+  subir.sort((a, b) => a.falta - b.falta || b.ganho - a.ganho || porNome(a, b));
+  risco.sort((a, b) => a.margem - b.margem || b.perda - a.perda || porNome(a, b));
+  // Dados que faltam: indicadores de qualidade sem conceito ou vínculo sem nota. A estimativa vira uma faixa por causa deles.
+  const porInd = new Map(),
+    semDado = [];
+  for (const e of equipes) {
+    const faltam = [...e.n.faltam, ...(e.vin && e.vin.sc == null ? ['CVAT'] : [])];
+    if (!faltam.length) continue;
+    semDado.push({ nome: e.nome, faltam, variacao: (e.vmax || 0) - (e.vmin || 0) });
+    faltam.forEach((c) => porInd.set(c, (porInd.get(c) || 0) + 1));
+  }
+  semDado.sort((a, b) => b.variacao - a.variacao || b.faltam.length - a.faltam.length || porNome(a, b));
+  const semDadoPorIndicador = [...porInd].map(([cod, n]) => ({ cod, n })).sort((a, b) => b.n - a.n || a.cod.localeCompare(b.cod));
+  // Vínculo (CVAT) abaixo de Bom: o que chegar a Bom vale por mês.
+  const vinculo = equipes
+    .filter((e) => e.vin && e.vin.k && (e.vin.k === 's' || e.vin.k === 'r'))
+    .map((e) => ({ nome: e.nome, sc: e.vin.sc, k: e.vin.k, ganho: valorMensal(e.valor, 'b') - valorMensal(e.valor, e.vin.k) }))
+    .sort((a, b) => a.sc - b.sc || b.ganho - a.ganho || porNome(a, b));
+  return {
+    dist,
+    comNota: completas.length,
+    indicadores,
+    baixas,
+    subir,
+    risco,
+    semDado,
+    semDadoPorIndicador,
+    emJogo: semDado.reduce((a, x) => a + x.variacao, 0),
+    vinculo,
+  };
+}

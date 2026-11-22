@@ -497,6 +497,241 @@
         font-size: 14px;
         line-height: 1.55;
       }
+      .ferr {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 14px;
+        margin: 0 0 14px;
+      }
+      .ferr .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .atencao {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+        gap: 16px 22px;
+        margin-top: 14px;
+      }
+      .at h3 {
+        margin: 0 0 4px;
+        font-size: 14px;
+        color: #1f3c72;
+      }
+      .at p {
+        margin: 0 0 4px;
+        font-size: 12.5px;
+        color: #4a5670;
+        line-height: 1.45;
+      }
+      .at ul {
+        margin: 4px 0 0;
+        padding-left: 18px;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .at li {
+        margin-bottom: 4px;
+      }
+      .at li.mais {
+        list-style: none;
+        margin-left: -18px;
+        color: #4a5670;
+        font-size: 12px;
+      }
+      .so-impressao {
+        display: none;
+      }
+      @media print {
+        @page {
+          margin: 11mm 10mm 14mm;
+          @bottom-left {
+            content: 'Painel APS · Cajamar · prévia com dados do PEC; o resultado oficial é o do Ministério (Siaps)';
+            font-size: 8.5px;
+            color: #4a5670;
+          }
+          @bottom-right {
+            content: 'Página ' counter(page) ' de ' counter(pages);
+            font-size: 8.5px;
+            color: #4a5670;
+          }
+        }
+        * {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        body {
+          background: #fff;
+          font-size: 11px;
+        }
+        header,
+        .voltar,
+        main > h1,
+        .intro,
+        #abas,
+        .barraFiltros,
+        #filtrosPainel,
+        #estado,
+        .nao-imprimir,
+        #rodape-aps,
+        .menu-aps,
+        button.ab,
+        #painelDash .nota {
+          display: none !important;
+        }
+        main {
+          max-width: none;
+          padding: 0;
+        }
+        .so-impressao {
+          display: block;
+        }
+        .ci-topo {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          border-bottom: 3px solid #00a7e7;
+          padding-bottom: 6px;
+        }
+        .ci-topo b {
+          display: block;
+          font-size: 13px;
+          color: #1f3c72;
+        }
+        .ci-topo span {
+          font-size: 10px;
+          color: #4a5670;
+        }
+        #ciTitulo {
+          margin: 8px 0 6px;
+          font-size: 19px;
+        }
+        .ci-meta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 4px 26px;
+          margin: 0 0 10px;
+          padding: 6px 8px;
+          border: 1px solid #b9c4d4;
+          border-radius: 6px;
+          font-size: 10px;
+        }
+        .ci-meta dt {
+          font-weight: 700;
+          color: #4a5670;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          font-size: 8.5px;
+        }
+        .ci-meta dd {
+          margin: 0;
+          font-weight: 600;
+        }
+        .card,
+        .bloco {
+          border: 1px solid #8a94a6;
+          border-radius: 6px;
+          padding: 9px 11px;
+          break-inside: auto;
+        }
+        .cards {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+          margin-bottom: 10px;
+        }
+        .card {
+          break-inside: avoid;
+        }
+        .card small {
+          font-size: 8.5px;
+        }
+        .card .v {
+          font-size: 19px;
+        }
+        .card .s,
+        .bloco p.d,
+        .nota,
+        .at p,
+        .at ul {
+          font-size: 9.5px;
+        }
+        .bloco h2 {
+          font-size: 13px;
+        }
+        .at h3 {
+          font-size: 11px;
+        }
+        .atencao {
+          display: block;
+          column-count: 2;
+          column-gap: 22px;
+        }
+        .at {
+          break-inside: avoid;
+          margin-bottom: 8px;
+        }
+        .at li.mais {
+          font-size: 9px;
+        }
+        .at li {
+          margin-bottom: 2px;
+        }
+        .cg {
+          gap: 8px;
+        }
+        .ct {
+          padding: 6px 8px;
+          break-inside: avoid;
+        }
+        .ct b {
+          font-size: 17px;
+        }
+        .ct span,
+        .ct i {
+          font-size: 9px;
+        }
+        table {
+          font-size: 9.5px;
+        }
+        th,
+        td {
+          padding: 3px 5px;
+        }
+        th {
+          font-size: 8.5px;
+        }
+        .tab {
+          overflow: visible;
+        }
+        thead {
+          display: table-header-group;
+        }
+        tr {
+          break-inside: avoid;
+        }
+        tr.dir {
+          break-after: avoid;
+        }
+        .pill {
+          font-size: 8.5px;
+          padding: 1px 6px;
+          border: 1px solid rgba(20, 33, 43, 0.35);
+        }
+        .pill.pi {
+          padding: 1px 4px;
+        }
+        .pill.pi[data-k]::after {
+          content: ' ' attr(data-k);
+        }
+        details.eqd summary::after {
+          display: none;
+        }
+        a {
+          color: inherit;
+        }
+      }
       button.ab {
         font: inherit;
         font-size: 13px;
@@ -530,7 +765,16 @@
         <div id="barra"></div>
       </div>
     </header>
+    <style id="pagina"></style>
     <main>
+      <div class="so-impressao" id="cabImpressao">
+        <div class="ci-topo">
+          <img src="/img/painelaps.svg" alt="" width="30" height="30" />
+          <div><b>Painel APS · Cajamar</b><span>Cofinanciamento federal</span></div>
+        </div>
+        <h1 id="ciTitulo"></h1>
+        <dl class="ci-meta" id="ciMeta"></dl>
+      </div>
       <a class="voltar" href="/">← Voltar aos acompanhamentos</a>
       <h1>Cofinanciamento federal</h1>
       <p class="intro">
@@ -608,7 +852,16 @@
         </div>
       </div>
       <div data-aba="detalhe" id="grupos" hidden></div>
-      <div data-aba="repasse" id="rep" hidden></div>
+      <div data-aba="repasse" hidden>
+        <div class="ferr nao-imprimir">
+          <button type="button" class="chip" id="imprimirRep">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2M7 14h10v7H7z" /></svg>
+            Imprimir ou salvar em PDF
+          </button>
+          <span class="nota">Sai em A4 paisagem, com os filtros aplicados, os pontos de atenção e as premissas.</span>
+        </div>
+        <div id="rep"></div>
+      </div>
       <div data-aba="dashboard" id="painelDash" hidden>
         <p class="nota">
           O dashboard tem os próprios filtros (período, unidade, equipe e nota), por isso os filtros desta página ficam ocultos nesta aba.
@@ -822,6 +1075,104 @@
       const rs = (n) => 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       const dec = (n) => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       const faixaRs = (a, b) => (a === b ? rs(a) : rs(a) + ' a ' + rs(b));
+      const ABREV = { o: 'Ót', b: 'Bom', s: 'Suf', r: 'Reg' };
+      const nomeIndicador = (cod) => esc(cod) + ' · ' + esc(nomeSem(cod, ((window.CATALOGO || {})[cod] || {}).nome || cod));
+      const pontos = (n) => dec(n) + (n <= 1 + 1e-9 ? ' ponto' : ' pontos');
+      const pl = (n, um, varios) => n + ' ' + (n === 1 ? um : varios);
+      // Onde dar mais atenção: indicadores que mais tiraram nota, equipes de classe baixa, as mais perto de subir, as que podem cair, dados que faltam e vínculo.
+      function atencaoHtml(linhas) {
+        const A = pontosAtencao(
+          linhas.map((l) => ({ nome: l.t.key, grupo: l.tr.pesos, valor: l.tr.valor, classes: l.classes, n: l.n, vin: l.vin, vmin: l.vmin, vmax: l.vmax })),
+        );
+        const pill = (k) => '<span class="pill ' + PILL[k] + '">' + NOMEC[k] + '</span>',
+          bloco = (titulo, dica, itens, max, unidade) => {
+            if (!itens.length) return '';
+            const mostra = itens.slice(0, max),
+              resto = itens.length - mostra.length;
+            return (
+              '<div class="at"><h3>' + titulo + '</h3>' + (dica ? '<p>' + dica + '</p>' : '') + '<ul>' +
+              mostra.map((t) => '<li>' + t + '</li>').join('') +
+              (resto > 0 ? '<li class="mais">e mais ' + pl(resto, unidade[0], unidade[1]) + '</li>' : '') +
+              '</ul></div>'
+            );
+          },
+          eq = ['equipe', 'equipes'],
+          ind = ['indicador', 'indicadores'];
+        const tiles = A.comNota
+          ? '<p class="d" style="margin:0 0 4px">Classe das ' + pl(A.comNota, 'equipe com todos', 'equipes com todos') + ' os indicadores de qualidade:</p><div class="cg">' +
+            ORDEM_CLASSE.map(
+              (k) => '<div class="ct ' + PILL[k] + '"><b>' + A.dist[k] + '</b><span>' + NOMEC[k] + '</span><i>' + Math.round((100 * A.dist[k]) / A.comNota) + '%</i></div>',
+            ).join('') +
+            '</div>'
+          : '<p class="d">Nenhuma equipe tem todos os indicadores de qualidade neste recorte; as classes aparecem como faixa na tabela.</p>';
+        const partes = [
+          bloco(
+            'Indicadores que mais tiraram nota',
+            'Pontos da nota (máximo 10 por equipe) perdidos em cada indicador, somando as equipes. Foque onde o peso e o número de equipes abaixo de Bom são maiores.',
+            A.indicadores.map(
+              (x) => '<b>' + nomeIndicador(x.cod) + '</b>: tirou ' + pontos(x.perdidos) + ' da nota das equipes · ' + x.baixas + ' de ' + x.equipes + ' equipes em Regular ou Suficiente',
+            ),
+            4,
+            ind,
+          ),
+          bloco(
+            'Equipes nas classes mais baixas',
+            'Regular ou Suficiente, da menor nota para a maior.',
+            A.baixas.map((x) => '<b>' + esc(x.nome) + '</b>: nota ' + dec(x.nota) + ' ' + pill(x.k)),
+            5,
+            eq,
+          ),
+          bloco(
+            'Mais perto de subir de classe',
+            'Quanto falta de nota para a classe seguinte e o ganho mensal. "Maior efeito" são os indicadores de maior peso ainda abaixo de Ótimo.',
+            A.subir.map(
+              (x) =>
+                '<b>' + esc(x.nome) + '</b>: nota ' + dec(x.nota) + ' ' + pill(x.k) + ' · faltam ' + pontos(x.falta) + ' para ' + NOMEC[x.para] + ' (+' + rs(x.ganho) + '/mês)' +
+                (x.alavancas.length ? '. Maior efeito: ' + x.alavancas.map((a) => esc(a.cod) + ' (peso ' + a.peso + ', hoje ' + NOMEC[a.k] + ')').join(', ') : ''),
+            ),
+            5,
+            eq,
+          ),
+          bloco(
+            'Em risco de cair de classe',
+            'Equipes a até 0,50 ponto do limite inferior da classe: um conceito a menos em um indicador de peso 2 já as rebaixa.',
+            A.risco.map(
+              (x) =>
+                '<b>' + esc(x.nome) + '</b>: nota ' + dec(x.nota) + ' ' + pill(x.k) + ' · ' +
+                (x.margem === 0 ? 'no limite exato' : 'só ' + pontos(x.margem) + ' acima do limite') +
+                ' · cair para ' + NOMEC[x.para] + ' custa ' + rs(x.perda) + '/mês',
+            ),
+            5,
+            eq,
+          ),
+          bloco(
+            'Dados que faltam',
+            A.semDado.length
+              ? pl(A.semDado.length, 'equipe tem', 'equipes têm') + ' indicador sem conceito ou vínculo sem nota; por isso a estimativa vira faixa, com até ' + rs(A.emJogo) + '/mês de diferença entre pior e melhor caso.'
+              : '',
+            (A.semDadoPorIndicador.length
+              ? ['Mais frequentes: ' + A.semDadoPorIndicador.slice(0, 5).map((x) => '<b>' + esc(x.cod) + '</b> (' + pl(x.n, 'equipe', 'equipes') + ')').join(', ')]
+              : []
+            ).concat(A.semDado.map((x) => '<b>' + esc(x.nome) + '</b>: sem ' + x.faltam.map(esc).join(', '))),
+            5,
+            eq,
+          ),
+          bloco(
+            'Vínculo (CVAT) abaixo de Bom',
+            'eSF e eAP com vínculo em Suficiente ou Regular; subir para Bom acrescenta o valor mensal indicado.',
+            A.vinculo.map((x) => '<b>' + esc(x.nome) + '</b>: nota ' + dec(x.sc) + ' ' + pill(x.k) + ' · chegar a Bom vale +' + rs(x.ganho) + '/mês'),
+            5,
+            eq,
+          ),
+        ].join('');
+        return (
+          '<section class="bloco" id="atencao"><h2>Onde dar mais atenção</h2>' +
+          '<p class="d">Calculado só com as equipes e os meses do recorte escolhido. Valores em reais são por mês; pontos são da nota final.</p>' +
+          tiles +
+          (partes ? '<div class="atencao">' + partes + '</div>' : '') +
+          '</section>'
+        );
+      }
       function repassePainel(comps, un) {
         const ult = comps[comps.length - 1],
           varios = comps.length > 1,
@@ -933,7 +1284,7 @@
             cods
               .map((c) =>
                 l.classes[c]
-                  ? '<span class="pill ' + PILL[l.classes[c]] + '" title="' + esc(c + ' · peso ' + REPASSE.pesos[l.tr.pesos][c]) + '">' + esc(c) + '</span>'
+                  ? '<span class="pill pi ' + PILL[l.classes[c]] + '" data-k="' + ABREV[l.classes[c]] + '" title="' + esc(c + ' · peso ' + REPASSE.pesos[l.tr.pesos][c] + ' · ' + NOMEC[l.classes[c]]) + '">' + esc(c) + '</span>'
                   : '<span class="pill" style="background:#eef1f6;color:#4a5670" title="' + esc(c + ': sem conceito neste recorte') + '">' + esc(c) + ' ?</span>',
               )
               .join(' ') +
@@ -990,11 +1341,18 @@
           '</div><div class="s">' +
           (tOtimo - tMax > 0 ? rs(tOtimo - tMax) + ' por mês acima da estimativa' : 'estimativa já no teto') +
           '</div></div></section>' +
+          atencaoHtml(linhas) +
           '<section class="bloco"><h2>Prévia do repasse federal · qualidade e vínculo</h2>' +
           '<p class="d">Cada equipe recebe a nota final = soma de (pontos do conceito × peso do indicador): Regular 0,25, Suficiente 0,50, Bom 0,75, Ótimo 1,00. ' +
           'A nota (máximo 10) define a classe: Ótimo acima de 7,5; Bom de 5 a 7,5; Suficiente acima de 2,5 e abaixo de 5; Regular até 2,5. ' +
           'Cada classe tem um valor mensal por tipo de equipe, pago por 4 meses depois de cada avaliação quadrimestral (por isso o total do ciclo é 4 vezes o mensal). Com indicador sem conceito (?) a nota fica entre o pior e o melhor caso. ' +
           'Nas eSF e eAP soma-se o componente de vínculo e acompanhamento territorial (CVAT): nota de 0 a 10, Ótimo acima de 8,5, Bom de 7 a 8,5, Suficiente de 5 a 6,9 e Regular abaixo de 5, com os mesmos valores por classe.</p>' +
+          '<p class="d so-impressao">Conceito por indicador: Ót = Ótimo, Bom, Suf = Suficiente, Reg = Regular; "?" = sem conceito neste recorte. Pesos na nota (soma 10): ' +
+          [['esf', 'eSF e eAP'], ['esb', 'eSB'], ['emulti', 'eMulti']]
+            .filter(([g]) => linhas.some((l) => l.tr.pesos === g))
+            .map(([g, n]) => n + ': ' + Object.entries(REPASSE.pesos[g]).map(([c, w]) => c + ' ' + w).join(', '))
+            .join('; ') +
+          '.</p>' +
           '<div class="tab"><table><thead><tr><th>Equipe</th><th>Conceito por indicador</th><th class="n">Nota (0 a 10)</th><th>Classe e valor da qualidade</th><th>Vínculo (CVAT): nota, classe e valor</th><th class="n">Total/mês</th></tr></thead><tbody>' +
           corpo +
           '</tbody></table></div>' +
@@ -1262,6 +1620,58 @@
         r.innerHTML = itens.map(([t, a]) => '<span class="fchip' + (a ? ' ativo' : '') + '">' + esc(t) + '</span>').join('');
         $('limparFiltros').hidden = !itens.some((i) => i[1]);
       }
+      // Impressão: cabeçalho com o que está aplicado nos filtros, quem emitiu e quando. A prévia do repasse e o detalhe saem em paisagem.
+      const TITULOS_ABA = {
+        resumo: 'Resumo dos indicadores',
+        evol: 'Evolução mensal no município',
+        detalhe: 'Detalhe por indicador e equipe',
+        repasse: 'Prévia do repasse federal · qualidade e vínculo',
+        dashboard: 'Dashboard das notas metodológicas',
+        ajuda: 'Como ler',
+      };
+      const periodoTexto = () => {
+        const t = (id) => ($(id).selectedOptions[0] || {}).textContent || '';
+        return $('de').value === $('ate').value ? t('de') : t('de') + ' a ' + t('ate');
+      };
+      function prepararImpressao() {
+        const paisagem = abaAtual === 'repasse' || abaAtual === 'detalhe',
+          t = (id) => ($(id).selectedOptions[0] || {}).textContent || '',
+          agora = new Date(),
+          u = window.PAINELAPS_USUARIO,
+          meta = [
+            ['Período', periodoTexto()],
+            ['Unidade', $('un').value ? t('un') : 'Todas as unidades'],
+            ['Equipe', $('eq').value ? t('eq') : 'Todas as equipes'],
+          ];
+        if ($('gr').value) meta.push(['Grupo', t('gr')]);
+        if ($('co').value) meta.push(['Conceito', t('co')]);
+        meta.push(
+          ['Emitido por', u && u.nome ? u.nome : '—'],
+          ['Emitido em', agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })],
+        );
+        $('pagina').textContent = '@page{size:A4 ' + (paisagem ? 'landscape' : 'portrait') + '}';
+        $('ciTitulo').textContent = TITULOS_ABA[abaAtual] || 'Cofinanciamento federal';
+        $('ciMeta').innerHTML = meta.map(([k, v]) => '<div><dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd></div>').join('');
+      }
+      window.addEventListener('beforeprint', prepararImpressao);
+      // Fica no histórico de quem emitiu, como os demais relatórios (não guarda o conteúdo).
+      $('imprimirRep').addEventListener('click', () => {
+        try {
+          fetch('/api/v1/relatorios/emissao', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              tipo: 'federal',
+              competencia: $('ate').value,
+              formato: 'pdf',
+              unidade: ['Prévia do repasse', periodoTexto(), $('un').value || null].filter(Boolean).join(' · '),
+            }),
+          });
+        } catch (_) {}
+        prepararImpressao();
+        window.print();
+      });
       $('btnFiltros').addEventListener('click', () => {
         filtrosAbertos = !filtrosAbertos;
         try {
