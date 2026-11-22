@@ -87,6 +87,13 @@ test('login, troca obrigatória de senha, painel protegido e saída', async () =
   r = await nav.pedir('GET', '/');
   assert.equal(r.status, 200);
   assert.equal(r.headers.get('x-frame-options'), 'DENY');
+  // só o dashboard pode ser exibido em quadro (aba Dashboard de /indicadores), e apenas pelo próprio Painel
+  r = await nav.pedir('GET', '/notas');
+  assert.equal(r.status, 200);
+  assert.equal(r.headers.get('x-frame-options'), 'SAMEORIGIN');
+  assert.match(r.headers.get('content-security-policy'), /frame-ancestors 'self'/);
+  r = await nav.pedir('GET', '/indicadores');
+  assert.equal(r.headers.get('x-frame-options'), 'DENY');
   assert.equal((await nav.pedir('GET', '/api/v1/auth/eu')).status, 200);
   assert.equal((await nav.pedir('GET', '/api/v1/competencias')).status, 200);
   // leitor não administra usuários nem abre a página de usuários

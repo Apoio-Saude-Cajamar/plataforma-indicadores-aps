@@ -266,7 +266,9 @@ async function paginas(request, env, url) {
     return Response.redirect(new URL('/trocar-senha', url).toString(), 302);
   }
   if (SO_ADMIN.some((r) => r.test(caminho)) && s.usuario.perfil !== 'admin') return Response.redirect(new URL('/', url).toString(), 302);
-  return comCabecalhos(await env.ASSETS.fetch(request), { 'cache-control': 'private, no-store' });
+  // O dashboard (/notas) aparece dentro da aba "Dashboard" de /indicadores: só ele pode ser exibido em quadro, e só pelo próprio Painel.
+  const emQuadro = /^\/notas(\.html)?$/.test(caminho) ? { 'x-frame-options': 'SAMEORIGIN', 'content-security-policy': "frame-ancestors 'self'" } : {};
+  return comCabecalhos(await env.ASSETS.fetch(request), { 'cache-control': 'private, no-store', ...emQuadro });
 }
 
 export default {
