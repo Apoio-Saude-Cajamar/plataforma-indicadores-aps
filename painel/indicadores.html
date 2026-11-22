@@ -961,6 +961,26 @@
           (completas < linhas.length ? ' (nas demais, a faixa vai do pior ao melhor caso)' : '') +
           '<br>Valor <b>por mês</b>; em 4 parcelas (quadrimestre): ' +
           faixaRs(tMin * 4, tMax * 4) +
+          '<br>' +
+          (() => {
+            const q = quadrimestreRepasse(ult),
+              tem = q.meses.filter((m) => comps.includes(m)),
+              fora = comps.filter((m) => !q.meses.includes(m));
+            return (
+              'Referente ao quadrimestre <b>' +
+              mesNome(q.meses[0]) +
+              ' a ' +
+              mesNome(q.meses[3]) +
+              '</b> (' +
+              tem.length +
+              ' de 4 meses com dados); se mantido, <b>pago de ' +
+              mesNome(q.pagoDe) +
+              ' a ' +
+              mesNome(q.pagoAte) +
+              '</b>.' +
+              (fora.length ? ' O período escolhido inclui meses de outro quadrimestre (' + fora.map(mesNome).join(', ') + ').' : '')
+            );
+          })() +
           '</div></div>' +
           '<div class="card"><small>Se todas ficassem em Bom</small><div class="v">' +
           rs(tBom) +

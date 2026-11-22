@@ -59,3 +59,20 @@ function notaEquipe(grupoPesos, classes) {
 function valorMensal(chaveValor, classe) {
   return REPASSE.valores[chaveValor].v[ORDEM_CLASSE.indexOf(classe)];
 }
+// Quadrimestre (jan–abr, mai–ago, set–dez) de uma competência 'AAAA-MM' e os quatro meses em que o incentivo dele é pago (NT 6/2025: "pago nos quatro meses seguintes").
+function quadrimestreRepasse(comp) {
+  const [a, m] = comp.split('-').map(Number),
+    ini = Math.floor((m - 1) / 4) * 4 + 1,
+    fim = ini + 3,
+    soma = (ano, mes, n) => {
+      const t = ano * 12 + (mes - 1) + n;
+      return { a: Math.floor(t / 12), m: (t % 12) + 1 };
+    },
+    c = (x) => x.a + '-' + String(x.m).padStart(2, '0'),
+    pg = soma(a, fim, 1);
+  return {
+    meses: [0, 1, 2, 3].map((i) => c({ a, m: ini + i })),
+    pagoDe: c(pg),
+    pagoAte: c(soma(pg.a, pg.m, 3)),
+  };
+}

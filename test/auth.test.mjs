@@ -360,7 +360,7 @@ test('faixas federais: B4 em percentual e fronteiras como nas notas do MS', asyn
 test('prévia do repasse: nota final, faixas e valores como na NT 6/2025 e na Portaria 3.493', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../painel/js/repasse.js', import.meta.url), 'utf8');
-  const r = new Function(src + ';return { REPASSE, classeDaNota, tipoRepasse, notaEquipe, valorMensal }')();
+  const r = new Function(src + ';return { REPASSE, classeDaNota, tipoRepasse, notaEquipe, valorMensal, quadrimestreRepasse }')();
   for (const [g, p] of Object.entries(r.REPASSE.pesos)) assert.equal(Object.values(p).reduce((a, b) => a + b, 0), 10, 'pesos de ' + g + ' somam 10');
   const casos = [[7.51, 'o'], [7.5, 'b'], [5, 'b'], [4.75, 's'], [2.75, 's'], [2.5, 'r'], [2.5 + 1e-9, 's']];
   for (const [n, k] of casos) assert.equal(r.classeDaNota(n), k, 'nota ' + n);
@@ -376,6 +376,10 @@ test('prévia do repasse: nota final, faixas e valores como na NT 6/2025 e na Po
   assert.equal(r.tipoRepasse('EMULTI', 'eMulti Complementar 2').valor, 'emultiCom');
   assert.equal(r.tipoRepasse('EAP', 'eAP Jordanésia').valor, 'eap20');
   assert.equal(r.tipoRepasse('ECR', 'Consultório na Rua'), null);
+  // quadrimestre e meses de pagamento: jan–abr paga mai–ago; mai–ago paga set–dez; set–dez paga jan–abr do ano seguinte
+  assert.deepEqual(r.quadrimestreRepasse('2026-03'), { meses: ['2026-01', '2026-02', '2026-03', '2026-04'], pagoDe: '2026-05', pagoAte: '2026-08' });
+  assert.deepEqual([r.quadrimestreRepasse('2026-06').pagoDe, r.quadrimestreRepasse('2026-06').pagoAte], ['2026-09', '2026-12']);
+  assert.deepEqual([r.quadrimestreRepasse('2026-10').meses[0], r.quadrimestreRepasse('2026-10').pagoDe, r.quadrimestreRepasse('2026-10').pagoAte], ['2026-09', '2027-01', '2027-04']);
 });
 
 test('comunicados: administrador publica, usuário vê e marca "Entendi", público respeitado', async () => {
