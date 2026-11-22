@@ -7,7 +7,9 @@ const REPASSE = {
   // Pesos por indicador (soma 10 em cada tipo de equipe).
   pesos: {
     esf: { C1: 1, C2: 2, C3: 2, C4: 1, C5: 1, C6: 1, C7: 2 },
-    esb: { B1: 2, B2: 2, B3: 2, B4: 2, B5: 1, B6: 1 },
+    // eSB: a NT 6/2025 numera escovação e preventivos ao contrário das fichas (B4/B5). Aqui vale a numeração das fichas, que o Painel usa:
+    // B4 = escovação supervisionada (peso 1) e B5 = procedimentos preventivos (peso 2).
+    esb: { B1: 2, B2: 2, B3: 2, B4: 1, B5: 2, B6: 1 },
     emulti: { M1: 6, M2: 4 },
   },
   // Valor mensal por equipe, na ordem [Ótimo, Bom, Suficiente, Regular] (R$).

@@ -276,7 +276,7 @@ var DEFINICAO = {
   B2: ['tratamentos odontológicos concluídos', 'primeiras consultas odontológicas programáticas'],
   B3: ['exodontias de dente permanente', 'procedimentos preventivos, curativos e exodontias (códigos da Nota B3)'],
   B4: [
-    'crianças de 6 a 12 anos nas escovações supervisionadas com cirurgião-dentista da APS',
+    'crianças de 6 a 12 anos, com CPF ou CNS válido, nas escovações supervisionadas da eSB (cirurgião-dentista, TSB ou ASB)',
     'crianças de 6 a 12 anos vinculadas à eSF/eAP de referência',
   ],
   B5: ['procedimentos odontológicos preventivos', 'procedimentos individuais (códigos da Nota B5)'],

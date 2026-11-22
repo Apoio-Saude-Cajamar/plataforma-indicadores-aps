@@ -362,6 +362,8 @@ test('prévia do repasse: nota final, faixas e valores como na NT 6/2025 e na Po
   const src = readFileSync(new URL('../painel/js/repasse.js', import.meta.url), 'utf8');
   const r = new Function(src + ';return { REPASSE, classeDaNota, tipoRepasse, notaEquipe, valorMensal, quadrimestreRepasse, pontosAtencao, tipoPorIndicadores, coberturaRepasse }')();
   for (const [g, p] of Object.entries(r.REPASSE.pesos)) assert.equal(Object.values(p).reduce((a, b) => a + b, 0), 10, 'pesos de ' + g + ' somam 10');
+  // eSB: escovação supervisionada (B4) vale 1 e procedimentos preventivos (B5) valem 2 (a NT 6/2025 numera os dois ao contrário das fichas).
+  assert.deepEqual(r.REPASSE.pesos.esb, { B1: 2, B2: 2, B3: 2, B4: 1, B5: 2, B6: 1 });
   const casos = [[7.51, 'o'], [7.5, 'b'], [5, 'b'], [4.75, 's'], [2.75, 's'], [2.5, 'r'], [2.5 + 1e-9, 's']];
   for (const [n, k] of casos) assert.equal(r.classeDaNota(n), k, 'nota ' + n);
   const todos = (k) => Object.fromEntries(Object.keys(r.REPASSE.pesos.esf).map((c) => [c, k]));

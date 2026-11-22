@@ -1371,7 +1371,7 @@
         const ult = comps[comps.length - 1],
           varios = comps.length > 1,
           teams = new Map();
-        // As linhas de odontologia (B) e eMulti (M) chegam sem o tipo da equipe, e a B4 vem com o nome da eSF de referência (mas com o INE da eSB).
+        // As linhas de odontologia (B) e eMulti (M) chegam sem o tipo da equipe e, em alguns casos, sem unidade ou com nome diferente nas linhas da mesma equipe.
         // Por isso a equipe é identificada pelo INE; sem INE, pelo nome, que herda o INE visto em outras linhas da mesma equipe.
         const codsRep = [...new Set([...Object.values(REPASSE.pesos).flatMap((o) => Object.keys(o)), 'CVAT'])],
           todas = codsRep.map((cod) => [cod, linhasDe(cod, varios && NAO_SOMA_MESES.has(cod) ? [ult] : comps, un)]),
