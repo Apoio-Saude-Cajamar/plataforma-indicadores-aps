@@ -110,6 +110,59 @@
         text-transform: uppercase;
         letter-spacing: 0.04em;
       }
+      .barraFiltros {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 12px;
+        margin: -4px 0 14px;
+        min-height: 40px;
+      }
+      #btnFiltros {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      #btnFiltros:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .resumoFiltros {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        font-size: 13px;
+        color: #4a5670;
+      }
+      .fchip {
+        padding: 3px 10px;
+        border-radius: 99px;
+        background: #eef1f6;
+        font-weight: 600;
+      }
+      .fchip.ativo {
+        background: #d9ecf8;
+        color: #0b3f5e;
+        font-weight: 800;
+      }
+      .limpar {
+        font: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        color: #0b3f5e;
+        background: none;
+        border: 0;
+        text-decoration: underline;
+        cursor: pointer;
+        padding: 6px 4px;
+      }
+      #filtrosPainel .sel {
+        padding: 14px 16px 2px;
+        border: 2px solid #d5dce8;
+        border-radius: 14px;
+        background: #fff;
+      }
       .sel[hidden] {
         display: none;
       }
@@ -494,6 +547,15 @@
         <button class="chip" role="tab" data-a="dashboard" aria-pressed="false">Dashboard</button>
         <button class="chip" role="tab" data-a="ajuda" aria-pressed="false">Como ler</button>
       </nav>
+      <div class="barraFiltros">
+        <button type="button" class="chip" id="btnFiltros" aria-expanded="false" aria-controls="filtrosPainel">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4-2v-4Z" /></svg>
+          Filtros <span id="setaFiltros" aria-hidden="true">▾</span>
+        </button>
+        <span id="resumoFiltros" class="resumoFiltros" aria-live="polite"></span>
+        <button type="button" class="limpar" id="limparFiltros" hidden>Limpar filtros</button>
+      </div>
+      <div id="filtrosPainel" hidden>
       <div class="sel">
         <label>De<select id="de"></select></label>
         <label>Até<select id="ate"></select></label>
@@ -522,6 +584,7 @@
             <option value="n">Sem classificação</option>
           </select></label
         >
+      </div>
       </div>
       <p class="nota" id="estado" role="status"></p>
       <div id="dash">
@@ -923,6 +986,7 @@
           '<li>Equipes recém-homologadas recebem o valor de "Bom" até o segundo recálculo, e o Ministério repassa o valor de "Bom" quando não divulga os dados de um indicador.</li></ul></section>';
       }
       function desenhar() {
+        resumoFiltros();
         const comps = Object.keys(dados)
           .sort()
           .filter((c) => c >= $('de').value && c <= $('ate').value);
@@ -1143,9 +1207,59 @@
         if (e.origin !== location.origin || !e.data || e.data.tipo !== 'painelaps:altura') return;
         $('quadroDash').style.height = Math.max(600, Math.ceil(e.data.h)) + 'px';
       });
+      // Filtros recolhidos num botão; o resumo ao lado mostra sempre o que está aplicado.
+      let filtrosAbertos = false,
+        abaAtual = 'resumo';
+      try {
+        filtrosAbertos = sessionStorage.getItem('indFiltros') === '1';
+      } catch (_) {}
+      function mostrarFiltros() {
+        const dash = abaAtual === 'dashboard',
+          aberto = filtrosAbertos && !dash;
+        $('filtrosPainel').hidden = !aberto;
+        $('btnFiltros').disabled = dash;
+        $('btnFiltros').setAttribute('aria-expanded', String(aberto));
+        $('setaFiltros').textContent = aberto ? '▴' : '▾';
+        resumoFiltros();
+      }
+      function resumoFiltros() {
+        const r = $('resumoFiltros');
+        if (abaAtual === 'dashboard') {
+          r.innerHTML = '<span class="fchip">O dashboard tem os próprios filtros</span>';
+          $('limparFiltros').hidden = true;
+          return;
+        }
+        const txt = (id) => ($(id).selectedOptions[0] || {}).textContent || '',
+          ult = $('de').options.length ? $('de').options[$('de').options.length - 1].value : '',
+          periodo = $('de').value === $('ate').value ? txt('de') : txt('de') + ' a ' + txt('ate'),
+          itens = [
+            [periodo, $('de').value !== ult || $('ate').value !== ult],
+            [$('un').value ? txt('un') : 'Todas as unidades', !!$('un').value],
+            [$('eq').value ? txt('eq') : 'Todas as equipes', !!$('eq').value],
+          ];
+        if ($('gr').value) itens.push([txt('gr'), true]);
+        if ($('co').value) itens.push(['Conceito: ' + txt('co'), true]);
+        r.innerHTML = itens.map(([t, a]) => '<span class="fchip' + (a ? ' ativo' : '') + '">' + esc(t) + '</span>').join('');
+        $('limparFiltros').hidden = !itens.some((i) => i[1]);
+      }
+      $('btnFiltros').addEventListener('click', () => {
+        filtrosAbertos = !filtrosAbertos;
+        try {
+          sessionStorage.setItem('indFiltros', filtrosAbertos ? '1' : '0');
+        } catch (_) {}
+        mostrarFiltros();
+      });
+      $('limparFiltros').addEventListener('click', () => {
+        const ult = $('de').options.length ? $('de').options[$('de').options.length - 1].value : '';
+        $('de').value = $('ate').value = ult;
+        ['un', 'eq', 'gr', 'co'].forEach((i) => ($(i).value = ''));
+        opcoesEquipe();
+        desenhar();
+      });
       function aba(a) {
+        abaAtual = a;
         const filtros = a !== 'dashboard';
-        document.querySelector('.sel').hidden = !filtros;
+        mostrarFiltros();
         $('estado').hidden = !filtros;
         if (a === 'dashboard' && !$('quadroDash').getAttribute('src')) $('quadroDash').src = '/notas?incorporado=1';
         document.querySelectorAll('[data-aba]').forEach((e) => (e.hidden = e.dataset.aba !== a));
