@@ -9,10 +9,10 @@
   };
   // escopo: 'municipio' (uma consulta para o município inteiro), 'unidade' (uma passada em cada unidade) ou 'ambos'.
   const ITENS = [
-    { id: 'optMunicipal', finalidade: 'federal', nome: 'Atendimentos e absenteísmo', indicadores: 'C1 e Q14.2.1', escopo: 'municipio',
-      fonte: 'Relatórios gerenciais de atendimentos e de absenteísmo do PEC.',
-      como: 'Uma consulta para o município inteiro, com a competência escolhida; exige acesso com permissão municipal.',
-      sai: 'Totais por unidade, equipe e tipo de atendimento. A C1 é do cofinanciamento federal; o Q14.2.1 (absenteísmo) é acompanhamento municipal.', pessoal: SO_TOTAIS },
+    { id: 'optMunicipal', finalidade: 'federal', nome: 'C1 · Atendimentos (demanda programada)', indicadores: 'C1', escopo: 'municipio',
+      fonte: 'Relatório gerencial de atendimentos do PEC.',
+      como: 'Uma consulta para o município inteiro, com a competência escolhida. A C1 só é calculada junto com a escuta inicial da mesma unidade (demanda espontânea).',
+      sai: 'Totais por unidade, equipe, CBO e tipo de atendimento.', pessoal: SO_TOTAIS },
     { id: 'optEscuta', finalidade: 'federal', nome: 'Escuta inicial na C1', indicadores: 'C1', escopo: 'unidade',
       fonte: 'Relatório de atendimento individual de cada unidade, filtrado pela escuta inicial.',
       como: 'Uma passada por unidade; é a parte mais demorada da C1.', sai: 'Quantidade de atendimentos com escuta por equipe.', pessoal: SO_TOTAIS },
@@ -51,6 +51,10 @@
       fonte: 'Relatório gerencial de vacinação do PEC (imunobiológico, faixa etária e dose).',
       como: 'Uma consulta por mês para o município inteiro (o relatório não tem unidade).',
       sai: 'Doses de pólio, penta, pneumo 10, tríplice viral e HPV por faixa etária e dose. Servem de estimativa ao lado do valor oficial, que é lançado à mão.', pessoal: SO_TOTAIS },
+    { id: 'optAbsenteismo', finalidade: 'municipal', nome: 'Absenteísmo · faltas nas agendas das equipes', indicadores: 'Q14.2.1', escopo: 'municipio',
+      fonte: 'Relatórios gerenciais de absenteísmo e de atendimentos do PEC (os atendimentos entram no denominador).',
+      como: 'Uma consulta para o município inteiro, com a competência escolhida.',
+      sai: 'Faltas e atendimentos por unidade, equipe e CBO. É acompanhamento municipal, fora do cofinanciamento federal.', pessoal: SO_TOTAIS },
     { id: 'optTerritorio', finalidade: 'municipal', nome: 'Território', indicadores: 'TERR-ATU, TERR-COMP, TERR-VIS, TERR-FA', escopo: 'unidade',
       fonte: 'Imóveis, cadastro e visitas por microárea.', como: 'Uma passada por unidade.', sai: 'Imóveis atualizados, cadastro completo e visitas por microárea.', pessoal: SO_TOTAIS },
     { id: 'optFilas', finalidade: 'municipal', nome: 'Filas e faltas · faltas, atendimentos e próxima vaga', indicadores: 'Painel de filas e faltas', escopo: 'ambos',
