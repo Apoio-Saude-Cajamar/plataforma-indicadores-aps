@@ -219,8 +219,7 @@
       (ACOMP.includes(aqui) ? ' aria-current="page"' : '') +
       '>Acompanhamentos ▾</summary><div>' +
       a('/', 'Visão geral') +
-      a('/indicadores', 'Federal · indicadores') +
-      a('/notas', 'Federal · dashboard') +
+      a('/indicadores', 'Federal') +
       a('/estadual', 'Estadual') +
       a('/municipal', 'Municipal') +
       a('/producao', 'Produção e notas') +

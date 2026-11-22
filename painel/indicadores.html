@@ -110,6 +110,9 @@
         text-transform: uppercase;
         letter-spacing: 0.04em;
       }
+      .sel[hidden] {
+        display: none;
+      }
       .sel select {
         font: inherit;
         font-size: 15px;
@@ -518,6 +521,7 @@
         <button class="chip" role="tab" data-a="evol" aria-pressed="false">Evolução mensal</button>
         <button class="chip" role="tab" data-a="detalhe" aria-pressed="false">Detalhe e equipes</button>
         <button class="chip" role="tab" data-a="repasse" aria-pressed="false">Prévia do repasse</button>
+        <button class="chip" role="tab" data-a="dashboard" aria-pressed="false">Dashboard</button>
         <button class="chip" role="tab" data-a="ajuda" aria-pressed="false">Como ler</button>
       </nav>
       <div id="dash">
@@ -542,6 +546,16 @@
       </div>
       <div data-aba="detalhe" id="grupos" hidden></div>
       <div data-aba="repasse" id="rep" hidden></div>
+      <div data-aba="dashboard" id="painelDash" hidden>
+        <p class="nota">
+          O dashboard tem os próprios filtros (período, unidade, equipe e nota), por isso os filtros desta página ficam ocultos nesta aba.
+        </p>
+        <iframe
+          id="quadroDash"
+          title="Dashboard das notas metodológicas"
+          style="width: 100%; min-height: 900px; border: 0; display: block"
+        ></iframe>
+      </div>
       <div data-aba="ajuda" hidden>
         <section class="bloco">
           <h2>Como ler</h2>
@@ -1124,7 +1138,16 @@
           desenhar();
         }),
       );
+      // Dashboard (antes em /notas) dentro desta página: o quadro só é carregado na primeira vez que a aba é aberta.
+      window.addEventListener('message', (e) => {
+        if (e.origin !== location.origin || !e.data || e.data.tipo !== 'painelaps:altura') return;
+        $('quadroDash').style.height = Math.max(600, Math.ceil(e.data.h)) + 'px';
+      });
       function aba(a) {
+        const filtros = a !== 'dashboard';
+        document.querySelector('.sel').hidden = !filtros;
+        $('estado').hidden = !filtros;
+        if (a === 'dashboard' && !$('quadroDash').getAttribute('src')) $('quadroDash').src = '/notas?incorporado=1';
         document.querySelectorAll('[data-aba]').forEach((e) => (e.hidden = e.dataset.aba !== a));
         document.querySelectorAll('#abas .chip').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.a === a)));
         try {
@@ -1139,6 +1162,8 @@
       try {
         a0 = sessionStorage.getItem('indAba') || a0;
       } catch (_) {}
+      const pedida = new URLSearchParams(location.search).get('aba');
+      if (pedida && document.querySelector('#abas [data-a="' + pedida + '"]')) a0 = pedida;
       carregar();
       aba(a0);
     </script>

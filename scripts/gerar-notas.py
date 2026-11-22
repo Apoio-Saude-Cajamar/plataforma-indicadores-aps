@@ -22,15 +22,14 @@ marc = troca(marc, 'Rascunho · valores fictícios', '{{coletaTxt}}')
 marc = troca(marc, '<div style="width: 40px; height: 40px; border-radius: 8px; background: {{tSelo}}; color: {{tSeloTexto}}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; letter-spacing: .04em">APS</div>',
   '<a href="/" aria-label="Voltar ao início do Painel APS" style="width: 40px; height: 40px; border-radius: 8px; background: {{tSelo}}; color: {{tSeloTexto}}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; letter-spacing: .04em; text-decoration: none">APS</a>')
 # Barra do Painel (a mesma das demais páginas) acima do cabeçalho próprio das notas; o selo "APS" sai, pois a barra já traz o logo.
-marc = troca(marc, '  <header style="background: {{tTopoFundo}}', '''  <div style="background: #1F3C72; border-bottom: 4px solid #00A7E7; color: #FFFFFF; font-family: 'Montserrat', system-ui, sans-serif">
+marc = troca(marc, '  <header style="background: {{tTopoFundo}}', '''  <div id="barra-painel" style="background: #1F3C72; border-bottom: 4px solid #00A7E7; color: #FFFFFF; font-family: 'Montserrat', system-ui, sans-serif">
     <div style="max-width: 1360px; margin: 0 auto; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
       <a href="/" style="display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 19px; color: #FFFFFF; text-decoration: none"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
       <nav aria-label="Áreas do Painel" style="display: flex; flex-wrap: nowrap; white-space: nowrap; align-items: center; gap: 2px 2px; font-weight: 600; font-size: 13.5px">
         <details style="position: relative"><summary style="color: #FFFFFF; padding: 8px 8px; min-height: 36px; display: inline-flex; align-items: center; border-radius: 99px; cursor: pointer; list-style: none; background: rgba(255,255,255,.22)">Acompanhamentos ▾</summary>
           <div style="position: absolute; z-index: 20; top: 100%; left: 0; min-width: 230px; margin-top: 6px; background: #FFFFFF; border: 2px solid #D5DCE8; border-radius: 12px; padding: 6px; box-shadow: 0 8px 24px rgba(20,33,43,.18); display: flex; flex-direction: column">
             <a href="/" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Visão geral</a>
-            <a href="/indicadores" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Federal · indicadores</a>
-            <a href="/notas" aria-current="page" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap; background: #D9ECF8">Federal · dashboard</a>
+            <a href="/indicadores?aba=dashboard" aria-current="page" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap; background: #D9ECF8">Federal</a>
             <a href="/estadual" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Estadual</a>
             <a href="/municipal" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Municipal</a></div></details>
         <template data-sc="for" list="{{menuSite}}" as="ms"><a href="{{ms.href}}" style="color: #FFFFFF; text-decoration: none; padding: 8px 8px; min-height: 36px; display: inline-flex; align-items: center; border-radius: 99px; background: {{ms.fundo}}">{{ms.txt}}</a></template>
@@ -109,6 +108,8 @@ pagina = f'''<!doctype html>
 <title>Notas metodológicas · Painel APS</title>
 <link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
 {helm.strip()}
+<script>(function(){{var q=new URLSearchParams(location.search);if(q.get('incorporado')==='1')document.documentElement.setAttribute('data-incorporado','1');else if(window.top===window&&q.get('solo')!=='1')location.replace('/indicadores?aba=dashboard');}})();</script>
+<style>html[data-incorporado] #barra-painel,html[data-incorporado] #rodape-aps{{display:none!important}}html[data-incorporado] body{{background:transparent}}</style>
 <style>#aviso{{font:16px/1.5 'Source Sans 3','Segoe UI',system-ui,sans-serif;max-width:640px;margin:48px auto;padding:0 24px;color:#14212B}}#aviso a{{color:#0E5E8C}}</style>
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#1F3C72" />
@@ -156,6 +157,12 @@ const MENU_SITE = () => [['/composicao', 'Composição de Usuários'], ['/coleta
     REAL = montarREAL(porComp, ult ? new Date(ult).toLocaleString('pt-BR', {{ dateStyle: 'short', timeStyle: 'short' }}) : '');
     let tema = ''; try {{ tema = localStorage.getItem('painelaps.tema') || ''; }} catch (e) {{}}
     montarDC(document.getElementById('modelo'), Component, document.getElementById('tela'), {{ tema: tema || 'personalizado' }});
+    // Dentro da aba "Dashboard" de /indicadores: avisa a página de fora a altura do conteúdo, para o quadro não ter rolagem própria.
+    if (window.parent !== window) {{
+      const enviar = () => parent.postMessage({{ tipo: 'painelaps:altura', h: document.documentElement.scrollHeight }}, location.origin);
+      new ResizeObserver(enviar).observe(document.body);
+      enviar();
+    }}
   }} catch (e) {{ aviso('Não foi possível carregar os indicadores. Recarregue a página.'); }}
 }})();
 </script>
