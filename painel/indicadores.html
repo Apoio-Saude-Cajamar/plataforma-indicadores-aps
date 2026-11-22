@@ -486,6 +486,14 @@
         é o do Ministério (<a class="voltar" href="/federal">ver o último resultado do Siaps</a>). O símbolo
         <span class="info">i</span> marca valores aproximados e explica a margem.
       </p>
+      <nav class="chips" id="abas" role="tablist" aria-label="Seções">
+        <button class="chip" role="tab" data-a="resumo" aria-pressed="true">Resumo</button>
+        <button class="chip" role="tab" data-a="evol" aria-pressed="false">Evolução mensal</button>
+        <button class="chip" role="tab" data-a="detalhe" aria-pressed="false">Detalhe e equipes</button>
+        <button class="chip" role="tab" data-a="repasse" aria-pressed="false">Prévia do repasse</button>
+        <button class="chip" role="tab" data-a="dashboard" aria-pressed="false">Dashboard</button>
+        <button class="chip" role="tab" data-a="ajuda" aria-pressed="false">Como ler</button>
+      </nav>
       <div class="sel">
         <label>De<select id="de"></select></label>
         <label>Até<select id="ate"></select></label>
@@ -516,14 +524,6 @@
         >
       </div>
       <p class="nota" id="estado" role="status"></p>
-      <nav class="chips" id="abas" role="tablist" aria-label="Seções">
-        <button class="chip" role="tab" data-a="resumo" aria-pressed="true">Resumo</button>
-        <button class="chip" role="tab" data-a="evol" aria-pressed="false">Evolução mensal</button>
-        <button class="chip" role="tab" data-a="detalhe" aria-pressed="false">Detalhe e equipes</button>
-        <button class="chip" role="tab" data-a="repasse" aria-pressed="false">Prévia do repasse</button>
-        <button class="chip" role="tab" data-a="dashboard" aria-pressed="false">Dashboard</button>
-        <button class="chip" role="tab" data-a="ajuda" aria-pressed="false">Como ler</button>
-      </nav>
       <div id="dash">
         <div data-aba="resumo">
           <section class="cards" id="cards" aria-live="polite"></section>
