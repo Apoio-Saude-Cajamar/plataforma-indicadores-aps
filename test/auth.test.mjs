@@ -360,7 +360,7 @@ test('faixas federais: B4 em percentual e fronteiras como nas notas do MS', asyn
 test('prévia do repasse: nota final, faixas e valores como na NT 6/2025 e na Portaria 3.493', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../painel/js/repasse.js', import.meta.url), 'utf8');
-  const r = new Function(src + ';return { REPASSE, classeDaNota, tipoRepasse, notaEquipe, valorMensal, quadrimestreRepasse, pontosAtencao }')();
+  const r = new Function(src + ';return { REPASSE, classeDaNota, tipoRepasse, notaEquipe, valorMensal, quadrimestreRepasse, pontosAtencao, tipoPorIndicadores, coberturaRepasse }')();
   for (const [g, p] of Object.entries(r.REPASSE.pesos)) assert.equal(Object.values(p).reduce((a, b) => a + b, 0), 10, 'pesos de ' + g + ' somam 10');
   const casos = [[7.51, 'o'], [7.5, 'b'], [5, 'b'], [4.75, 's'], [2.75, 's'], [2.5, 'r'], [2.5 + 1e-9, 's']];
   for (const [n, k] of casos) assert.equal(r.classeDaNota(n), k, 'nota ' + n);
@@ -404,6 +404,35 @@ test('prévia do repasse: nota final, faixas e valores como na NT 6/2025 e na Po
   assert.deepEqual(A.semDado.map((x) => [x.nome, x.faltam]), [['Sem dado', ['C3', 'CVAT']]]);
   assert.equal(A.emJogo, 8000);
   assert.deepEqual(A.vinculo.map((x) => [x.nome, x.ganho]), [['Vínculo', 2000]]);
+  // linhas B e M chegam sem tipo de equipe: o tipo vem dos indicadores; a cobertura diz o que ficou fora
+  assert.equal(r.tipoPorIndicadores(['B1', 'B4']), 'ESB');
+  assert.equal(r.tipoPorIndicadores(['M2']), 'EMULTI');
+  assert.equal(r.tipoPorIndicadores(['C1', 'CVAT']), '');
+  const cob = r.coberturaRepasse([{ tipo: 'ESF', incluida: true }, { tipo: '', incluida: false }, { tipo: 'ECR', incluida: false }, { tipo: '', incluida: false }]);
+  assert.deepEqual([cob.total, cob.incluidas], [4, 1]);
+  assert.deepEqual(cob.fora, [{ tipo: 'tipo não identificado', n: 2 }, { tipo: 'Consultório na Rua', n: 1 }]);
+  // empates viram um item só, com o total; a lista de subir vai do maior retorno por ponto ao menor
+  const igual = (k) => c(Object.fromEntries(['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7'].map((x) => [x, k])));
+  const lote = [
+    ...[1, 2, 3].map((i) => eq('Perto ' + i, igual('b'), { unidade: 'U1' })), // 7,5: Bom, falta 0,25 para Ótimo
+    eq('Regular 1', igual('r'), { unidade: 'U2' }), // 2,5: Regular, falta 0,25 para Suficiente
+    ...[1, 2].map((i) => eq('Risco ' + i, igual('s'), { unidade: 'U1' })), // 5,0: Bom sem folga
+  ];
+  const B = r.pontosAtencao(lote);
+  assert.equal(B.subir.length, 6);
+  assert.equal(B.subirGrupos.length, 3, 'as três equipes iguais viram um grupo');
+  const g = B.subirGrupos[0];
+  assert.deepEqual([g.n, g.nomes.length, g.falta, g.ganho, g.total, g.retorno], [3, 3, 0.25, 2000, 6000, 8000]);
+  assert.equal(B.subirGrupos[1].nomes[0], 'Regular 1'); // mesmo retorno por equipe, total menor
+  assert.equal(B.subirGrupos[2].nomes.length, 2); // Bom sem folga: falta 2,75 para Ótimo, o menor retorno
+  assert.equal(B.riscoGrupos.length, 1);
+  assert.deepEqual([B.riscoGrupos[0].n, B.riscoGrupos[0].margem, B.riscoGrupos[0].perda, B.riscoGrupos[0].para], [2, 0, 2000, 's']);
+  assert.deepEqual([B.jogo.abaixoBomN, B.jogo.abaixoBomGanho, B.jogo.pertoN, B.jogo.riscoN, B.jogo.riscoPerda], [1, 4000, 0, 2, 4000]);
+  assert.equal(B.sensiveis, 6);
+  const c2 = B.indicadores.find((x) => x.cod === 'C2');
+  assert.deepEqual([c2.peso, c2.todas], [2, false]);
+  assert.ok(Math.abs(c2.media - 5 / 6) < 1e-9, 'média de pontos perdidos por equipe');
+  assert.deepEqual(B.porUnidade.map((u) => [u.unidade, u.equipes]), [['U1', 5], ['U2', 1]]);
 });
 
 test('comunicados: administrador publica, usuário vê e marca "Entendi", público respeitado', async () => {

@@ -574,6 +574,47 @@
         font-size: 12px;
         color: #6b7690;
       }
+      .at li span.nm {
+        color: #6b7690;
+        font-size: 11.5px;
+      }
+      h3.sub {
+        margin: 14px 0 6px;
+        font-size: 14px;
+        color: #1f3c72;
+      }
+      .jogo {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 10px 18px;
+      }
+      .jg b {
+        display: block;
+        font-size: 20px;
+        color: #1f3c72;
+        line-height: 1.15;
+      }
+      .jg span {
+        display: block;
+        margin-top: 2px;
+        font-size: 12.5px;
+        color: #4a5670;
+        line-height: 1.35;
+      }
+      .aviso-cob {
+        margin: 0 0 14px;
+        padding: 9px 12px;
+        border-left: 4px solid #d9a400;
+        border-radius: 0 8px 8px 0;
+        background: #fff8e1;
+        color: #3d3000;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+      tr.tot td {
+        border-top: 2px solid #1f3c72;
+        font-weight: 700;
+      }
       .so-impressao {
         display: none;
       }
@@ -705,10 +746,10 @@
         .at h3 {
           font-size: 10.5px;
         }
-        .atencao {
+          .atencao {
           grid-template-columns: repeat(3, 1fr);
           gap: 4px 20px;
-          margin-top: 8px;
+          margin-top: 12px;
         }
         .at {
           break-inside: avoid;
@@ -741,8 +782,31 @@
         .so-tela {
           display: none !important;
         }
-        #atencao + .bloco {
-          break-before: page;
+        #unidades {
+          break-inside: avoid;
+        }
+        h3.sub {
+          margin: 8px 0 4px;
+          font-size: 10.5px;
+        }
+        .jogo {
+          gap: 6px 14px;
+        }
+        .jg b {
+          font-size: 14px;
+        }
+        .jg span {
+          font-size: 9px;
+        }
+        .at li span.nm {
+          font-size: 8.5px;
+        }
+        .aviso-cob {
+          margin-bottom: 8px;
+          padding: 5px 8px;
+          background: #eee;
+          color: #000;
+          font-size: 9.5px;
         }
         .at li {
           margin-bottom: 2px;
@@ -1144,115 +1208,220 @@
       const rs = (n) => 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       const dec = (n) => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       const faixaRs = (a, b) => (a === b ? rs(a) : rs(a) + ' a ' + rs(b));
+      // Nomes do PEC vêm em maiúsculas e com prefixos repetidos: só para exibição, ficam com iniciais maiúsculas e a unidade sem "UBS", "Psf"...
+      const SIGLA_NOME = { esf: 'eSF', eap: 'eAP', esb: 'eSB', emulti: 'eMulti', ubs: 'UBS', ubsf: 'UBSF', usf: 'USF', psf: 'PSF', km: 'km' },
+        MIN_NOME = new Set(['da', 'de', 'do', 'das', 'dos', 'e']);
+      const bonito = (t) => {
+        t = String(t || '').trim();
+        if (!t || t !== t.toUpperCase()) return t;
+        return t
+          .toLowerCase()
+          .split(/\s+/)
+          .map((w, i) => {
+            const b = w.replace(/[.,]/g, '');
+            return SIGLA_NOME[b] ? w.replace(b, SIGLA_NOME[b]) : i && MIN_NOME.has(b) ? w : w.charAt(0).toUpperCase() + w.slice(1);
+          })
+          .join(' ');
+      };
+      const unidadeCurta = (u) => bonito(String(u || '').replace(/^(?:ubsf?|usf|psf|posto de sa[uú]de)\s+/i, '')) || 'Sem unidade';
+      const rotuloEq = (t) => (t.unidade ? unidadeCurta(t.unidade) + ' · ' : '') + bonito(t.equipe);
+      // Quanto o valor do indicador teria de mudar (para mais ou para menos) para subir um conceito, em fração da escala dele.
+      // Serve para apontar a alavanca mais barata de cada equipe.
+      function esforcoConceito(cod, v, k) {
+        const tipo = ((window.CATALOGO || {})[cod] || {}).tipo,
+          escala = tipo === 'razao' ? 4 : tipo === 'escore' ? 10 : 100,
+          passo = escala / 500,
+          atual = ORDEM_CLASSE.indexOf(k);
+        if (v == null || isNaN(v) || atual <= 0) return null;
+        for (let d = passo; d <= escala; d += passo)
+          for (const sinal of [1, -1]) {
+            const k2 = conceito(cod, v + sinal * d);
+            if (k2 && ORDEM_CLASSE.indexOf(k2) < atual) return d / escala;
+          }
+        return null;
+      }
       const ABREV = { o: 'Ót', b: 'Bom', s: 'Suf', r: 'Reg' };
       const nomeIndicador = (cod) => esc(cod) + ' · ' + esc(nomeSem(cod, ((window.CATALOGO || {})[cod] || {}).nome || cod));
       const pontos = (n) => dec(n) + (n <= 1 + 1e-9 ? ' ponto' : ' pontos');
       const pl = (n, um, varios) => n + ' ' + (n === 1 ? um : varios);
-      // Onde dar mais atenção, só o essencial: os indicadores que mais tiraram nota, as equipes mais perto de subir, as em risco de cair
-      // e, em linhas curtas, quem está abaixo de Bom, os dados que faltam e o vínculo abaixo de Bom.
-      function atencaoHtml(linhas) {
-        const A = pontosAtencao(
-          linhas.map((l) => ({ nome: l.t.key, grupo: l.tr.pesos, valor: l.tr.valor, classes: l.classes, n: l.n, vin: l.vin, vmin: l.vmin, vmax: l.vmax })),
-        );
+      // Onde dar mais atenção: o que está em jogo em reais, três listas curtas (indicadores, perto de subir, em risco) e linhas de apoio.
+      // Equipes na mesma situação viram um item só, com o total, para o corte da lista não esconder empatadas.
+      function atencaoHtml(linhas, A) {
+        const dn = new Map(linhas.map((l) => [l.t.key, l.t])),
+          rot = (nome) => (dn.get(nome) ? rotuloEq(dn.get(nome)) : esc(nome)),
+          rotCurto = (nome) => (dn.get(nome) ? bonito(dn.get(nome).equipe) + (dn.get(nome).unidade ? ' (' + unidadeCurta(dn.get(nome).unidade) + ')' : '') : nome),
+          nomesDe = (nomes) => esc(nomes.slice(0, 3).map(rotCurto).join('; ') + (nomes.length > 3 ? '; +' + (nomes.length - 3) : ''));
         const lista = (titulo, itens, max, unidade) => {
             if (!itens.length) return '';
             const mostra = itens.slice(0, max),
               resto = itens.length - mostra.length;
             return (
               '<div class="at"><h3>' + titulo + '</h3><ul>' +
-              mostra.map(([a, b]) => '<li><b>' + a + '</b><span>' + b + '</span></li>').join('') +
+              mostra.map(([a, b, c]) => '<li><b>' + a + '</b><span>' + b + '</span>' + (c ? '<span class="nm">' + c + '</span>' : '') + '</li>').join('') +
               (resto > 0 ? '<li class="mais">e mais ' + pl(resto, unidade[0], unidade[1]) + '</li>' : '') +
               '</ul></div>'
             );
           },
-          resumo = (xs, max, f) => xs.slice(0, max).map(f).join('; ') + (xs.length > max ? '; e mais ' + (xs.length - max) : ''),
-          eqs = ['equipe', 'equipes'],
-          inds = ['indicador', 'indicadores'];
+          eqs = ['situação', 'situações'],
+          inds = ['indicador', 'indicadores'],
+          j = A.jogo;
         const dist = A.comNota
           ? '<div class="dist">Classe das ' + pl(A.comNota, 'equipe com todos', 'equipes com todos') + ' os indicadores: ' +
             ORDEM_CLASSE.map((k) => '<span class="pill ' + PILL[k] + '">' + A.dist[k] + ' ' + NOMEC[k] + '</span>').join('') +
             '</div>'
           : '<p class="d">Nenhuma equipe tem todos os indicadores de qualidade neste recorte; as classes aparecem como faixa na tabela.</p>';
+        const jg = [];
+        if (j.abaixoBomN)
+          jg.push([
+            '+' + rs(j.abaixoBomGanho) + '/mês',
+            pl(j.abaixoBomN, 'equipe abaixo de Bom chegando', 'equipes abaixo de Bom chegando') + ' a Bom' + (j.pertoN ? ' (' + j.pertoN + ' a até 0,50 ponto: ' + rs(j.pertoGanho) + ')' : ''),
+          ]);
+        if (j.riscoN) jg.push([rs(j.riscoPerda) + '/mês', pl(j.riscoN, 'equipe a até 0,50 ponto', 'equipes a até 0,50 ponto') + ' de cair de classe']);
+        if (j.vinculoN) jg.push(['+' + rs(j.vinculoGanho) + '/mês', 'vínculo (CVAT): ' + pl(j.vinculoN, 'equipe abaixo de Bom chegando', 'equipes abaixo de Bom chegando') + ' a Bom']);
+        if (j.semDadoN) jg.push(['até ' + rs(A.emJogo) + '/mês', 'de diferença pelo dado que falta em ' + pl(j.semDadoN, 'equipe', 'equipes')]);
+        const jogo = jg.length
+          ? '<h3 class="sub">O que está em jogo</h3><div class="jogo">' + jg.map(([v, t]) => '<div class="jg"><b>' + v + '</b><span>' + t + '</span></div>').join('') + '</div>'
+          : '';
         const listas =
           lista(
             'Indicadores que mais tiraram nota',
-            A.indicadores.map((x) => [nomeIndicador(x.cod), 'tirou ' + pontos(x.perdidos) + ' da nota · ' + x.baixas + ' de ' + x.equipes + ' equipes abaixo de Bom']),
+            A.indicadores.map((x) => [
+              nomeIndicador(x.cod),
+              'perde em média ' + dec(x.media) + ' de ' + x.peso + ' pontos por equipe · ' + x.baixas + ' de ' + x.equipes + ' equipes abaixo de Bom',
+            ]),
             3,
             inds,
           ) +
           lista(
-            'Mais perto de subir de classe',
-            A.subir.map((x) => [
-              esc(x.nome),
-              NOMEC[x.k] + ' → ' + NOMEC[x.para] + ' · faltam ' + pontos(x.falta) + ' · +' + rs(x.ganho) + '/mês' +
-                (x.alavancas.length ? ' · foco: ' + x.alavancas.map((a) => esc(a.cod)).join(', ') : ''),
+            'Melhor retorno para subir de classe',
+            A.subirGrupos.map((g) => [
+              g.n === 1 ? rot(g.nomes[0]) : g.n + ' equipes a ' + pontos(g.falta) + ' de ' + NOMEC[g.para],
+              NOMEC[g.k] + ' → ' + NOMEC[g.para] + (g.n === 1 ? ' · faltam ' + pontos(g.falta) : '') + ' · +' + rs(g.ganho) + '/mês' +
+                (g.n > 1 ? ' cada (' + rs(g.total) + ' no total)' : '') + (g.foco ? ' · foco: ' + esc(g.foco) : ''),
+              g.n > 1 ? nomesDe(g.nomes) : '',
             ]),
-            4,
+            3,
             eqs,
           ) +
           lista(
             'Em risco de cair de classe',
-            A.risco.map((x) => [
-              esc(x.nome),
-              NOMEC[x.k] + ' · ' + (x.margem === 0 ? 'sem folga' : 'folga de ' + pontos(x.margem)) + ' · cair custa ' + rs(x.perda) + '/mês',
+            A.riscoGrupos.map((g) => [
+              g.n === 1 ? rot(g.nomes[0]) : g.n + ' equipes ' + (g.margem === 0 ? 'sem folga' : 'com folga de ' + pontos(g.margem)),
+              NOMEC[g.k] + ' → ' + NOMEC[g.para] + ' se cair · ' + rs(g.perda) + '/mês' + (g.n > 1 ? ' cada (' + rs(g.total) + ' no total)' : '') +
+                (g.n === 1 ? ' · ' + (g.margem === 0 ? 'sem folga' : 'folga de ' + pontos(g.margem)) : ''),
+              g.n > 1 ? nomesDe(g.nomes) : '',
             ]),
-            4,
+            3,
             eqs,
           );
         const tambem = [
-          A.baixas.length &&
-            '<p><b>Abaixo de Bom:</b> ' + resumo(A.baixas, 5, (x) => esc(x.nome) + ' (nota ' + dec(x.nota) + ')') + '.</p>',
           A.semDado.length &&
-            '<p><b>Dados que faltam:</b> ' + pl(A.semDado.length, 'equipe', 'equipes') + ' sem ' +
-            A.semDadoPorIndicador.slice(0, 5).map((x) => esc(x.cod)).join(', ') +
-            '; a estimativa varia até ' + rs(A.emJogo) + '/mês. ' +
-            resumo(A.semDado, 4, (x) => esc(x.nome)) + '.</p>',
-          A.vinculo.length &&
-            '<p><b>Vínculo (CVAT) abaixo de Bom:</b> ' + resumo(A.vinculo, 4, (x) => esc(x.nome) + ' (' + NOMEC[x.k] + ')') +
-            '; chegar a Bom vale +' + rs(A.vinculo.reduce((a, x) => a + x.ganho, 0)) + '/mês.</p>',
+            '<p><b>Dados que faltam:</b> ' + A.semDadoPorIndicador.slice(0, 5).map((x) => esc(x.cod) + ' (' + pl(x.n, 'equipe', 'equipes') + ')').join(', ') +
+            ' · ' + esc(A.semDado.slice(0, 3).map((x) => rotCurto(x.nome)).join('; ') + (A.semDado.length > 3 ? '; +' + (A.semDado.length - 3) : '')) + '.</p>',
+          A.sensiveis &&
+            '<p><b>Classe sensível à coleta:</b> ' + pl(A.sensiveis, 'equipe está', 'equipes estão') +
+            ' a até 0,25 ponto de um limite de classe; pequenas diferenças entre a coleta e o Siaps mudam a classe e o valor.</p>',
         ]
           .filter(Boolean)
           .join('');
+        const todas = A.indicadores.some((x) => x.todas);
         return (
           '<section class="bloco" id="atencao"><h2>Onde dar mais atenção</h2>' +
           dist +
+          jogo +
           (listas ? '<div class="atencao">' + listas + '</div>' : '') +
           (tambem ? '<div class="tambem">' + tambem + '</div>' : '') +
-          '<p class="rodape-at">Calculado com as equipes e os meses do recorte. Pontos são da nota final (máximo 10). Foco: indicadores de maior peso ainda abaixo de Ótimo. Risco: até 0,50 ponto acima do limite da classe.</p>' +
-          '</section>'
+          '<p class="rodape-at">Calculado com as equipes e os meses do recorte. Pontos são da nota final (máximo 10). Retorno: ganho mensal por ponto de nota que falta. Foco: indicador mais perto de subir de conceito. Risco: até 0,50 ponto acima do limite da classe.' +
+          (todas ? ' Quando todas as equipes ficam abaixo de Bom no mesmo indicador, vale conferir a coleta e o processo do município antes de cobrar cada equipe.' : '') +
+          '</p></section>'
+        );
+      }
+      // Por unidade: onde falta mais para o potencial e onde há mais equipes em risco.
+      function unidadesHtml(A) {
+        if (A.porUnidade.length < 2) return '';
+        const tot = A.porUnidade.reduce(
+            (a, u) => {
+              ORDEM_CLASSE.forEach((k) => (a.dist[k] += u.dist[k]));
+              a.equipes += u.equipes;
+              a.vmin += u.vmin;
+              a.vmax += u.vmax;
+              a.falta += u.falta;
+              a.risco += u.risco;
+              return a;
+            },
+            { dist: { o: 0, b: 0, s: 0, r: 0 }, equipes: 0, vmin: 0, vmax: 0, falta: 0, risco: 0 },
+          ),
+          n0 = (n) => (n ? n : '<span style="color:#8a94a6">–</span>'),
+          linha = (nome, u, forte) =>
+            '<tr' + (forte ? ' class="tot"' : '') + '><td>' + nome + '</td><td class="n">' + u.equipes + '</td>' +
+            ORDEM_CLASSE.map((k) => '<td class="n">' + n0(u.dist[k]) + '</td>').join('') +
+            '<td class="n">' + faixaRs(u.vmin, u.vmax) + '</td><td class="n">' + rs(u.falta) + '</td><td class="n">' + n0(u.risco) + '</td></tr>';
+        return (
+          '<section class="bloco" id="unidades"><h2>Por unidade</h2>' +
+          '<p class="d">Ordenadas pelo que falta para o potencial (todas as equipes em Ótimo, qualidade e vínculo). Classes das equipes com todos os indicadores.</p>' +
+          '<div class="tab"><table><thead><tr><th>Unidade</th><th class="n">Equipes</th>' +
+          ORDEM_CLASSE.map((k) => '<th class="n">' + NOMEC[k] + '</th>').join('') +
+          '<th class="n">Estimativa/mês</th><th class="n">Falta p/ potencial</th><th class="n">Em risco</th></tr></thead><tbody>' +
+          A.porUnidade.map((u) => linha(esc(unidadeCurta(u.unidade)), u, false)).join('') +
+          linha('Município', tot, true) +
+          '</tbody></table></div></section>'
         );
       }
       function repassePainel(comps, un) {
         const ult = comps[comps.length - 1],
           varios = comps.length > 1,
           teams = new Map();
-        for (const cod of new Set([...Object.values(REPASSE.pesos).flatMap((o) => Object.keys(o)), 'CVAT'])) {
-          const usar = varios && NAO_SOMA_MESES.has(cod) ? [ult] : comps;
-          for (const l of linhasDe(cod, usar, un)) {
+        // As linhas de odontologia (B) e eMulti (M) chegam sem o tipo da equipe, e a B4 vem com o nome da eSF de referência (mas com o INE da eSB).
+        // Por isso a equipe é identificada pelo INE; sem INE, pelo nome, que herda o INE visto em outras linhas da mesma equipe.
+        const codsRep = [...new Set([...Object.values(REPASSE.pesos).flatMap((o) => Object.keys(o)), 'CVAT'])],
+          todas = codsRep.map((cod) => [cod, linhasDe(cod, varios && NAO_SOMA_MESES.has(cod) ? [ult] : comps, un)]),
+          ineDoNome = new Map();
+        for (const [cod, ls] of todas) if (cod !== 'B4') for (const l of ls) if (l.ine && l.equipe) ineDoNome.set(l.unidade + ' · ' + l.equipe, l.ine);
+        for (const [cod, ls] of todas)
+          for (const l of ls) {
             if (!l.equipe || l.equipe === 'Município') continue;
-            const key = l.unidade + ' · ' + l.equipe;
-            let t = teams.get(key);
-            if (!t) teams.set(key, (t = { key, equipe: l.equipe, tipo: l.tipoEquipe, por: new Map() }));
+            const nome = l.unidade + ' · ' + l.equipe,
+              id = l.ine || (cod !== 'B4' && ineDoNome.get(nome)) || nome;
+            let t = teams.get(id);
+            if (!t) teams.set(id, (t = { id, unidade: '', equipe: '', tipo: '', por: new Map() }));
+            if (cod !== 'B4') {
+              if (!t.equipe) t.equipe = l.equipe;
+              if (!t.unidade && l.unidade) t.unidade = l.unidade;
+            } else if (!t.equipeB4) {
+              t.equipeB4 = l.equipe;
+              t.unidadeB4 = l.unidade;
+            }
             if (!t.tipo && l.tipoEquipe) t.tipo = l.tipoEquipe;
             if (!t.por.has(cod)) t.por.set(cod, []);
             t.por.get(cod).push(l);
           }
-        }
-        const linhas = [];
-        let fora = 0;
+        const linhas = [],
+          cobertura = [];
         for (const t of teams.values()) {
-          const tr = tipoRepasse(t.tipo, t.equipe);
-          if (!tr) {
-            fora++;
-            continue;
+          if (!t.equipe) {
+            t.equipe = t.equipeB4 || '';
+            t.unidade = t.unidadeB4 || '';
           }
-          const classes = {};
+          t.key = t.unidade ? t.unidade + ' · ' + t.equipe : t.equipe;
+          const tipoEf = t.tipo || tipoPorIndicadores(t.por.keys()),
+            tr = tipoRepasse(tipoEf, t.equipe);
+          cobertura.push({ tipo: tipoEf, incluida: !!tr });
+          if (!tr) continue;
+          const classes = {},
+            vals = {};
           for (const cod of Object.keys(REPASSE.pesos[tr.pesos])) {
             const ls = t.por.get(cod);
             if (!ls) continue;
-            const g = agregar(ls, () => 'x').get(cod + '|x');
-            classes[cod] = g ? conceito(cod, resultado(g, ((window.CATALOGO || {})[cod] || {}).tipo)) : null;
+            const g = agregar(ls, () => 'x').get(cod + '|x'),
+              v = g ? resultado(g, ((window.CATALOGO || {})[cod] || {}).tipo) : null;
+            vals[cod] = v;
+            classes[cod] = g ? conceito(cod, v) : null;
           }
+          // Alavancas da equipe: indicadores abaixo de Ótimo, do mais perto de subir de conceito para o mais longe (empate: maior peso).
+          const alavancas = Object.entries(REPASSE.pesos[tr.pesos])
+            .filter(([cod]) => classes[cod] && classes[cod] !== 'o')
+            .map(([cod, peso]) => ({ cod, peso, k: classes[cod], esforco: esforcoConceito(cod, vals[cod], classes[cod]) }))
+            .sort((a, b) => (a.esforco ?? 9) - (b.esforco ?? 9) || b.peso - a.peso || a.cod.localeCompare(b.cod));
           const n = notaEquipe(tr.pesos, classes);
           // Vínculo e acompanhamento territorial (CVAT): só eSF e eAP; mesma tabela de valores da qualidade. Sem o bônus de satisfação.
           let vin = null;
@@ -1272,6 +1441,7 @@
             n,
             vin,
             classes,
+            alavancas,
             vmin,
             vmax,
             qmin: valorMensal(tr.valor, n.cmin),
@@ -1281,11 +1451,31 @@
             total: Object.keys(REPASSE.pesos[tr.pesos]).length,
           });
         }
-        const el = $('rep');
+        const el = $('rep'),
+          cob = coberturaRepasse(cobertura),
+          foraTexto = cob.fora.map((x) => x.n + ' ' + x.tipo).join(', '),
+          aviso = cob.fora.length
+            ? '<p class="aviso-cob"><b>A prévia cobre ' + cob.incluidas + ' de ' + cob.total + ' equipes.</b> Ficaram fora: ' + esc(foraTexto) + '. O total estimado não inclui essas equipes.</p>'
+            : '';
         if (!linhas.length) {
-          el.innerHTML = '<section class="bloco"><h2>Prévia do repasse</h2><p class="d">Sem equipes com indicadores de qualidade neste recorte.</p></section>';
+          el.innerHTML = aviso + '<section class="bloco"><h2>Prévia do repasse</h2><p class="d">Sem equipes com indicadores de qualidade neste recorte.</p></section>';
           return;
         }
+        const A = pontosAtencao(
+          linhas.map((l) => ({
+            nome: l.t.key,
+            unidade: l.t.unidade,
+            grupo: l.tr.pesos,
+            valor: l.tr.valor,
+            classes: l.classes,
+            n: l.n,
+            vin: l.vin,
+            vmin: l.vmin,
+            vmax: l.vmax,
+            otimo: l.otimo,
+            alavancas: l.alavancas,
+          })),
+        );
         const soma = (f) => linhas.reduce((a, l) => a + f(l), 0),
           tMin = soma((l) => l.vmin),
           tMax = soma((l) => l.vmax),
@@ -1327,8 +1517,10 @@
                 ? '<span class="pill ' + PILL[l.n.cmin] + '">' + NOMEC[l.n.cmin] + '</span>'
                 : '<span class="pill ' + PILL[l.n.cmin] + '">' + NOMEC[l.n.cmin] + '</span> a <span class="pill ' + PILL[l.n.cmax] + '">' + NOMEC[l.n.cmax] + '</span>';
           corpo +=
-            '<tr><td>' +
+            '<tr><td title="' +
             esc(l.t.key) +
+            '">' +
+            esc(rotuloEq(l.t)) +
             '</td><td>' +
             cods
               .map((c) =>
@@ -1350,6 +1542,7 @@
             '</b></td></tr>';
         }
         el.innerHTML =
+          aviso +
           '<section class="cards">' +
           '<div class="card"><small>Repasse mensal estimado · qualidade + vínculo</small><div class="v">' +
           faixaRs(tMin, tMax) +
@@ -1380,7 +1573,8 @@
           '</div><div class="s">' +
           (tOtimo - tMax > 0 ? rs(tOtimo - tMax) + ' por mês acima da estimativa' : 'estimativa já no teto') +
           '</div></div></section>' +
-          atencaoHtml(linhas) +
+          atencaoHtml(linhas, A) +
+          unidadesHtml(A) +
           '<section class="bloco"><h2>Prévia do repasse federal · qualidade e vínculo</h2>' +
           '<p class="d">Nota final = soma de (pontos do conceito × peso do indicador), máximo 10; Regular vale 0,25, Suficiente 0,50, Bom 0,75 e Ótimo 1,00. ' +
           'Classe: Ótimo acima de 7,5 · Bom de 5 a 7,5 · Suficiente acima de 2,5 e abaixo de 5 · Regular até 2,5. Indicador sem conceito (?) deixa a nota entre o pior e o melhor caso. ' +
@@ -1398,7 +1592,7 @@
           '<ul class="nota"><li>Fontes: Nota Técnica nº 6/2025-DEAPS/SAPS/MS (pesos, pontos e faixas da nota) e Portaria GM/MS nº 3.493/2024, Anexo III (valores por classe). O resultado e o valor oficiais são os do Ministério (Siaps).</li>' +
           '<li class="so-tela">O desempenho é do quadrimestre (média dos meses) e o incentivo é pago nos quatro meses seguintes. Aqui vale o período escolhido no filtro; para uma prévia fiel, escolha os meses do quadrimestre.</li>' +
           '<li>Premissas a confirmar: eSB tratada como "eSB I comum", sem ajuste de carga horária; eAP como 20 h (30 h só se o nome indicar); eMulti como complementar, salvo "estratégica" ou "ampliada" no nome da equipe. ' +
-          (fora ? fora + ' equipe(s) de outro tipo (ex.: Consultório na Rua) ficaram fora, por não terem valores e pesos nesta prévia. ' : '') +
+          (cob.fora.length ? 'Ficaram fora ' + esc(foraTexto) + ', por não terem valores e pesos nesta prévia. ' : '') +
           'O vínculo (CVAT) vem sem o bônus de satisfação do usuário (até 0,30 ponto), que este Painel não considera, e sem o limite por população vinculada acima do parâmetro (a classe não passa de "Bom"). Não inclui o componente fixo (depende do estrato IED), o incentivo anual adicional nem suspensões por ausência de profissionais ou falta de envio ao Sisab.</li>' +
           '<li class="so-tela">Equipes recém-homologadas recebem o valor de "Bom" até o segundo recálculo, e o Ministério repassa o valor de "Bom" quando não divulga os dados de um indicador.</li></ul></section>';
       }

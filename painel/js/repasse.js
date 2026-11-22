@@ -76,26 +76,55 @@ function quadrimestreRepasse(comp) {
     pagoAte: c(soma(pg.a, pg.m, 3)),
   };
 }
+// As linhas de odontologia (B) e de eMulti (M) chegam do coletor sem o tipo da equipe: reconhece pelos indicadores que a equipe tem.
+function tipoPorIndicadores(codigos) {
+  const cs = [...codigos];
+  if (cs.some((c) => /^B[1-6]$/.test(c))) return 'ESB';
+  if (cs.some((c) => /^M[12]$/.test(c))) return 'EMULTI';
+  return '';
+}
+const NOME_TIPO = { ESF: 'eSF', EAP: 'eAP', ESB: 'eSB', EMULTI: 'eMulti', ECR: 'Consultório na Rua' };
+// Quantas equipes a prévia cobre e de que tipos são as que ficaram fora. equipes: [{ tipo, incluida }].
+function coberturaRepasse(equipes) {
+  const fora = new Map();
+  let incluidas = 0;
+  for (const e of equipes) {
+    if (e.incluida) {
+      incluidas++;
+      continue;
+    }
+    const t = String(e.tipo || '').toUpperCase(),
+      nome = t ? NOME_TIPO[t] || t : 'tipo não identificado';
+    fora.set(nome, (fora.get(nome) || 0) + 1);
+  }
+  return {
+    total: equipes.length,
+    incluidas,
+    fora: [...fora].map(([tipo, n]) => ({ tipo, n })).sort((a, b) => b.n - a.n || a.tipo.localeCompare(b.tipo, 'pt-BR')),
+  };
+}
 // Menor nota (múltipla de 0,25) de cada classe, e a classe vizinha: medem quanto falta para subir e quanto sobra antes de cair.
 const NOTA_MIN_CLASSE = { r: 0, s: 2.75, b: 5, o: 7.75 };
 const CLASSE_ACIMA = { r: 's', s: 'b', b: 'o', o: null };
 const CLASSE_ABAIXO = { o: 'b', b: 's', s: 'r', r: null };
-// Pontos de atenção do recorte. equipes: [{ nome, grupo (pesos), valor (chave de valores), classes, n (notaEquipe), vin: {sc,k}|null, vmin, vmax }].
+// Pontos de atenção do recorte. equipes: [{ nome, unidade, grupo (pesos), valor (chave de valores), classes, n (notaEquipe),
+// vin: {sc,k}|null, vmin, vmax, otimo (valor mensal se tudo fosse Ótimo), alavancas (opcional, da mais barata para a mais cara) }].
 // Só usa o que está no recorte; nada aqui é meta oficial. Cada lista vem ordenada do mais para o menos urgente.
 function pontosAtencao(equipes) {
   const pesosDe = (e) => REPASSE.pesos[e.grupo],
     ordem = (k) => ORDEM_CLASSE.indexOf(k), // 0 = Ótimo ... 3 = Regular
     porNome = (a, b) => a.nome.localeCompare(b.nome, 'pt-BR'),
+    soma = (xs, f) => xs.reduce((a, x) => a + f(x), 0),
     completas = equipes.filter((e) => e.n.completa),
     dist = { o: 0, b: 0, s: 0, r: 0 };
   completas.forEach((e) => dist[e.n.cmin]++);
-  // Indicadores: quantos pontos da nota (máximo 10 por equipe) cada um tirou, somando as equipes.
+  // Indicadores: quantos pontos da nota cada um tirou, somando as equipes, e a média por equipe (o peso é o máximo possível).
   const ind = new Map();
   for (const e of equipes)
     for (const [cod, w] of Object.entries(pesosDe(e))) {
       const k = e.classes[cod];
       if (!k) continue;
-      const x = ind.get(cod) || { cod, perdidos: 0, equipes: 0, baixas: 0 };
+      const x = ind.get(cod) || { cod, peso: w, perdidos: 0, equipes: 0, baixas: 0 };
       x.perdidos += w * (1 - REPASSE.pontos[k]);
       x.equipes++;
       if (k === 'r' || k === 's') x.baixas++;
@@ -103,22 +132,29 @@ function pontosAtencao(equipes) {
     }
   const indicadores = [...ind.values()]
     .filter((x) => x.perdidos > 0)
+    .map((x) => ({ ...x, media: x.perdidos / x.equipes, todas: x.equipes > 1 && x.baixas === x.equipes }))
     .sort((a, b) => b.perdidos - a.perdidos || b.baixas - a.baixas || a.cod.localeCompare(b.cod));
+  // Alavancas de uma equipe: as mais baratas primeiro (vindas da tela); sem isso, as de maior peso e pior conceito.
+  const alavancasDe = (e) =>
+    (e.alavancas && e.alavancas.length
+      ? e.alavancas
+      : Object.entries(pesosDe(e))
+          .filter(([cod]) => e.classes[cod] && e.classes[cod] !== 'o')
+          .map(([cod, peso]) => ({ cod, peso, k: e.classes[cod] }))
+          .sort((a, b) => b.peso - a.peso || ordem(b.k) - ordem(a.k) || a.cod.localeCompare(b.cod))
+    ).slice(0, 2);
   // Equipes com nota completa: as de classe baixa, as mais perto de subir e as que podem cair com um passo em um indicador.
   const baixas = [],
     subir = [],
     risco = [];
+  let sensiveis = 0;
   for (const e of completas) {
     const k = e.n.cmin,
       nota = e.n.min,
       acima = CLASSE_ACIMA[k],
       abaixo = CLASSE_ABAIXO[k];
     if (k === 'r' || k === 's') baixas.push({ nome: e.nome, k, nota });
-    if (acima) {
-      const alavancas = Object.entries(pesosDe(e))
-        .filter(([cod]) => e.classes[cod] !== 'o')
-        .map(([cod, peso]) => ({ cod, peso, k: e.classes[cod] }))
-        .sort((a, b) => b.peso - a.peso || ordem(b.k) - ordem(a.k) || a.cod.localeCompare(b.cod));
+    if (acima)
       subir.push({
         nome: e.nome,
         k,
@@ -126,9 +162,8 @@ function pontosAtencao(equipes) {
         para: acima,
         falta: NOTA_MIN_CLASSE[acima] - nota,
         ganho: valorMensal(e.valor, acima) - valorMensal(e.valor, k),
-        alavancas: alavancas.slice(0, 2),
+        alavancas: alavancasDe(e),
       });
-    }
     if (abaixo && nota - NOTA_MIN_CLASSE[k] <= 0.5)
       risco.push({
         nome: e.nome,
@@ -138,10 +173,37 @@ function pontosAtencao(equipes) {
         margem: nota - NOTA_MIN_CLASSE[k],
         perda: valorMensal(e.valor, k) - valorMensal(e.valor, abaixo),
       });
+    if ((acima && NOTA_MIN_CLASSE[acima] - nota <= 0.25) || (abaixo && nota - NOTA_MIN_CLASSE[k] <= 0.25)) sensiveis++;
   }
   baixas.sort((a, b) => a.nota - b.nota || porNome(a, b));
   subir.sort((a, b) => a.falta - b.falta || b.ganho - a.ganho || porNome(a, b));
   risco.sort((a, b) => a.margem - b.margem || b.perda - a.perda || porNome(a, b));
+  // Empates viram um item só (mesma situação, mesmo valor), com as equipes e o total. Ordem: mais perto primeiro.
+  const agrupa = (itens, chave, extra) => {
+    const m = new Map();
+    for (const x of itens) {
+      const c = chave(x),
+        g = m.get(c) || { ...x, n: 0, total: 0, nomes: [], focos: new Map() };
+      g.n++;
+      g.total += extra(x);
+      g.nomes.push(x.nome);
+      const f = x.alavancas && x.alavancas[0] && x.alavancas[0].cod;
+      if (f) g.focos.set(f, (g.focos.get(f) || 0) + 1);
+      m.set(c, g);
+    }
+    return [...m.values()].map((g) => ({
+      ...g,
+      nomes: g.nomes.sort((a, b) => a.localeCompare(b, 'pt-BR')),
+      foco: [...g.focos].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || null,
+    }));
+  };
+  // Subir de classe: ordem pelo retorno por equipe (ganho mensal por ponto de nota que falta), para equipes de valor baixo não passarem à frente das de valor alto.
+  const subirGrupos = agrupa(subir, (x) => [x.k, x.para, x.falta, x.ganho].join('|'), (x) => x.ganho)
+    .map((g) => ({ ...g, retorno: g.ganho / g.falta }))
+    .sort((a, b) => b.retorno - a.retorno || b.total - a.total || a.falta - b.falta);
+  const riscoGrupos = agrupa(risco, (x) => [x.k, x.para, x.margem, x.perda].join('|'), (x) => x.perda).sort(
+    (a, b) => a.margem - b.margem || b.total - a.total,
+  );
   // Dados que faltam: indicadores de qualidade sem conceito ou vínculo sem nota. A estimativa vira uma faixa por causa deles.
   const porInd = new Map(),
     semDado = [];
@@ -158,16 +220,53 @@ function pontosAtencao(equipes) {
     .filter((e) => e.vin && e.vin.k && (e.vin.k === 's' || e.vin.k === 'r'))
     .map((e) => ({ nome: e.nome, sc: e.vin.sc, k: e.vin.k, ganho: valorMensal(e.valor, 'b') - valorMensal(e.valor, e.vin.k) }))
     .sort((a, b) => a.sc - b.sc || b.ganho - a.ganho || porNome(a, b));
+  // O que está em jogo, em reais por mês.
+  const aBom = completas
+    .filter((e) => e.n.cmin === 'r' || e.n.cmin === 's')
+    .map((e) => ({ falta: NOTA_MIN_CLASSE.b - e.n.min, ganho: valorMensal(e.valor, 'b') - valorMensal(e.valor, e.n.cmin) })),
+    perto = aBom.filter((x) => x.falta <= 0.5);
+  const jogo = {
+    abaixoBomN: aBom.length,
+    abaixoBomGanho: soma(aBom, (x) => x.ganho),
+    pertoN: perto.length,
+    pertoGanho: soma(perto, (x) => x.ganho),
+    riscoN: risco.length,
+    riscoPerda: soma(risco, (x) => x.perda),
+    vinculoN: vinculo.length,
+    vinculoGanho: soma(vinculo, (x) => x.ganho),
+    semDadoN: semDado.length,
+  };
+  // Por unidade: onde está o dinheiro que falta para o potencial e onde há mais equipes em risco.
+  const riscoNomes = new Set(risco.map((x) => x.nome)),
+    un = new Map();
+  for (const e of equipes) {
+    const u = un.get(e.unidade || '') || { unidade: e.unidade || '', equipes: 0, dist: { o: 0, b: 0, s: 0, r: 0 }, incompletas: 0, vmin: 0, vmax: 0, otimo: 0, risco: 0 };
+    u.equipes++;
+    e.n.completa ? u.dist[e.n.cmin]++ : u.incompletas++;
+    u.vmin += e.vmin || 0;
+    u.vmax += e.vmax || 0;
+    u.otimo += e.otimo || 0;
+    if (riscoNomes.has(e.nome)) u.risco++;
+    un.set(u.unidade, u);
+  }
+  const porUnidade = [...un.values()]
+    .map((u) => ({ ...u, falta: Math.max(0, u.otimo - u.vmax) }))
+    .sort((a, b) => b.falta - a.falta || a.unidade.localeCompare(b.unidade, 'pt-BR'));
   return {
     dist,
     comNota: completas.length,
     indicadores,
     baixas,
     subir,
+    subirGrupos,
     risco,
+    riscoGrupos,
+    sensiveis,
     semDado,
     semDadoPorIndicador,
     emJogo: semDado.reduce((a, x) => a + x.variacao, 0),
     vinculo,
+    jogo,
+    porUnidade,
   };
 }
