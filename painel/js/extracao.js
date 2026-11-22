@@ -11,7 +11,7 @@
   const ITENS = [
     { id: 'optMunicipal', finalidade: 'federal', nome: 'C1 · Atendimentos (demanda programada)', indicadores: 'C1', escopo: 'municipio',
       fonte: 'Relatório gerencial de atendimentos do PEC.',
-      como: 'Uma consulta para o município inteiro, com a competência escolhida. A C1 só é calculada junto com a escuta inicial da mesma unidade (demanda espontânea).',
+      como: 'Uma consulta para o município inteiro, com a competência escolhida. Anda junto com a escuta inicial (marcar um marca o outro): a C1 de cada equipe só é calculada com a escuta inicial de médicos e enfermeiros da equipe lida no período certo.',
       sai: 'Totais por unidade, equipe, CBO e tipo de atendimento.', pessoal: SO_TOTAIS },
     { id: 'optEscuta', finalidade: 'federal', nome: 'Escuta inicial na C1', indicadores: 'C1', escopo: 'unidade',
       fonte: 'Relatório de atendimento individual de cada unidade, filtrado pela escuta inicial.',
