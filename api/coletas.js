@@ -225,6 +225,22 @@ export async function listarColetas(env, comp) {
   return { coletas: results };
 }
 
+// Registro de uma coleta (o passo a passo que a extensão mostra no painel: horários, tempo de cada parte, falhas)
+// e os avisos dela. Só texto operacional; a extensão não põe dado de paciente no registro.
+export async function registroDaColeta(env, coletaId) {
+  const c = await buscarColeta(env, coletaId);
+  const { results } = await env.DB.prepare(
+    `SELECT etapa_chave AS etapa, mensagem FROM aviso WHERE coleta_id = ? AND etapa_chave IN ('registro', 'avisos') ORDER BY rowid`,
+  )
+    .bind(coletaId)
+    .all();
+  return {
+    id: coletaId, competencia: c.competencia, status: c.status,
+    registro: results.filter((r) => r.etapa === 'registro').map((r) => r.mensagem),
+    avisos: results.filter((r) => r.etapa === 'avisos').map((r) => r.mensagem),
+  };
+}
+
 export async function etapasDaColeta(env, coletaId) {
   await buscarColeta(env, coletaId);
   const { results } = await env.DB.prepare(

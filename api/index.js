@@ -7,6 +7,7 @@
 //   POST /coletas/:id/concluir                   coleta    – encerra a coleta
 //   GET  /coletas?competencia=AAAA-MM            leitura   – lista coletas
 //   GET  /coletas/:id/etapas                     leitura   – etapas de uma coleta
+//   GET  /coletas/:id/registro                   leitura   – registro (passo a passo) e avisos de uma coleta
 //   GET  /situacao?competencia=AAAA-MM           leitura   – etapas vigentes e pendentes da competência
 //   GET  /dados?competencia=AAAA-MM              leitura   – indicadores e totais vigentes
 //   GET  /competencias                           leitura   – competências com coleta
@@ -36,7 +37,7 @@ import {
   configApoio,
   retornoApoio,
 } from './auth.js';
-import { criarColeta, gravarEtapa, concluirColeta, listarColetas, etapasDaColeta } from './coletas.js';
+import { criarColeta, gravarEtapa, concluirColeta, listarColetas, etapasDaColeta, registroDaColeta } from './coletas.js';
 import { situacao, dadosVigentes, competencias } from './consultas.js';
 import { gravarComposicao, lerComposicao } from './composicao.js';
 import { populacaoMunicipio } from './populacao.js';
@@ -69,6 +70,7 @@ const ROTAS = [
   ['POST', /^\/coletas\/([\w.:-]+)\/concluir$/, 'coleta', async (req, env, m) => json(await concluirColeta(env, m[1], await lerJson(req)))],
   ['GET', /^\/coletas$/, 'leitura', async (req, env, m, url) => json(await listarColetas(env, url.searchParams.get('competencia')))],
   ['GET', /^\/coletas\/([\w.:-]+)\/etapas$/, 'leitura', async (req, env, m) => json(await etapasDaColeta(env, m[1]))],
+  ['GET', /^\/coletas\/([\w.:-]+)\/registro$/, 'leitura', async (req, env, m) => json(await registroDaColeta(env, m[1]))],
 
   ['GET', /^\/situacao$/, 'leitura', async (req, env, m, url) => json(await situacao(env, url.searchParams.get('competencia')))],
   ['GET', /^\/dados$/, 'leitura', async (req, env, m, url) => jsonTexto(await dadosVigentes(env, url.searchParams.get('competencia')))],

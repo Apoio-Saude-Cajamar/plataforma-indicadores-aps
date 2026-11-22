@@ -1,7 +1,7 @@
 // Consultas de leitura: situação das etapas de uma competência e dados vigentes.
 // Os resultados são montados como JSON pelo próprio banco, para poupar CPU do Worker.
 import { competencia } from './util.js';
-import { CHAVE_EQUIPE, UNIDADE_EXIBIDA } from './vigente.js';
+import { CHAVE_EQUIPE, UNIDADE_EXIBIDA, LINHA_CONTA, EQUIPE_FORA } from './vigente.js';
 
 // Para cada etapa da competência: a versão vigente (última bem-sucedida) ou,
 // se nunca deu certo, a última falha. É o que a extensão usa para "tentar de novo as falhas".
@@ -42,26 +42,26 @@ const CONSULTAS_VIGENTES = {
         ORDER BY e.coletado_em DESC, i.coleta_id DESC) AS ordem
       FROM indicador_equipe i
       JOIN etapa e ON e.coleta_id = i.coleta_id AND e.chave = i.etapa_chave
-      WHERE i.competencia = ? AND e.status = 'ok')
+      WHERE i.competencia = ? AND e.status = 'ok' AND ${LINHA_CONTA()})
     WHERE ordem = 1`,
   atendimentos: `
     SELECT json_group_array(json_object('unidade', c.unidade, 'equipe', c.equipe, 'cbo', c.cbo, 'cboCodigo', c.cbo_codigo,
       'grupoCBO', c.grupo_cbo, 'tipoAtendimento', c.tipo_atendimento, 'n', c.n)) AS dados
     FROM cubo_atendimento c
     JOIN etapa_vigente v ON v.coleta_id = c.coleta_id AND v.chave = c.etapa_chave
-    WHERE c.competencia = ?`,
+    WHERE c.competencia = ? AND NOT ${EQUIPE_FORA('c')}`,
   absenteismo: `
     SELECT json_group_array(json_object('unidade', c.unidade, 'equipe', c.equipe, 'cbo', c.cbo, 'cboCodigo', c.cbo_codigo,
       'grupoCBO', c.grupo_cbo, 'tipoFalta', c.tipo_falta, 'n', c.n)) AS dados
     FROM cubo_falta c
     JOIN etapa_vigente v ON v.coleta_id = c.coleta_id AND v.chave = c.etapa_chave
-    WHERE c.competencia = ?`,
+    WHERE c.competencia = ? AND NOT ${EQUIPE_FORA('c')}`,
   escuta: `
     SELECT json_group_array(json_object('unidade', c.unidade, 'ine', c.ine, 'equipe', c.equipe, 'categoria', c.categoria,
       'escuta', c.escuta, 'periodoOk', json(CASE c.periodo_ok WHEN 1 THEN 'true' WHEN 0 THEN 'false' ELSE 'null' END))) AS dados
     FROM cubo_escuta c
     JOIN etapa_vigente v ON v.coleta_id = c.coleta_id AND v.chave = c.etapa_chave
-    WHERE c.competencia = ?`,
+    WHERE c.competencia = ? AND NOT ${EQUIPE_FORA('c')}`,
 };
 
 // Dados vigentes de uma competência, num único JSON: { competencia, indicadores, atendimentos, absenteismo, escuta }.

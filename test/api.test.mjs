@@ -212,3 +212,33 @@ test('mesma equipe (INE) em unidades diferentes entre coletas vale uma vez; eMul
   assert.deepEqual(d.indicadores.filter(l => l.codigo === 'C6').map(l => l.unidade).sort(), ['UBS A', 'UBS B']);
   assert.equal(d.indicadores.filter(l => l.codigo === 'Q14.2.1').length, 1);
 });
+
+test('C1 só de eSF e eAP; Saúde em Casa (EMAD/EMAP) fora de tudo', async () => {
+  const env = ambiente();
+  const chamar = cliente(env);
+  await chamar('POST', '/coletas', { id: 'x', competencia: '2026-01', iniciadoEm: '2026-11-22T05:00:00Z' });
+  const c1 = (equipe, n, d) => ({ codigo: 'C1', unidade: 'UBS A', equipe, numerador: n, denominador: d });
+  await chamar('PUT', '/coletas/x/etapa', { chave: 'unidade:UBS A', bloco: 'unidade', unidade: 'UBS A', status: 'ok', coletadoEm: '2026-11-22T05:00:00Z',
+    linhas: [c1('ESF 1', 30, 50), c1('INE NÃO ENCONTRADO', 538, 657), c1('SEM EQUIPE', 1, 2), c1('CONSULTORIO RUA CAJAMAR', 0, 31),
+      c1('EMAD CAJAMAR', 5, 9), { codigo: 'Q14.2.1', unidade: 'UBS A', equipe: 'Sem Equipe', numerador: 97, denominador: 342 },
+      { codigo: 'Q14.2.1', unidade: 'UBS A', equipe: 'Saúde em Casa', numerador: 3, denominador: 30 }],
+    cubos: { atendimentos: [{ unidade: 'UBS A', equipe: 'EMAD CAJAMAR', cbo: 'x', cboCodigo: '225142', grupoCBO: 'medicos', tipoAtendimento: 'Consulta no dia', n: 7 },
+      { unidade: 'UBS A', equipe: 'ESF 1', cbo: 'x', cboCodigo: '225142', grupoCBO: 'medicos', tipoAtendimento: 'Consulta no dia', n: 4 }] } });
+  const d = await chamar('GET', '/dados?competencia=2026-01');
+  assert.deepEqual(d.indicadores.filter(l => l.codigo === 'C1').map(l => l.equipe), ['ESF 1']);
+  assert.deepEqual(d.indicadores.filter(l => l.codigo === 'Q14.2.1').map(l => l.equipe), ['Sem Equipe'], '"Sem equipe" continua no absenteísmo');
+  assert.deepEqual(d.atendimentos.map(a => a.equipe), ['ESF 1']);
+});
+
+test('registro da coleta: guardado por etapa, lido em ordem e fora dos avisos do monitoramento', async () => {
+  const env = ambiente();
+  const chamar = cliente(env);
+  await chamar('POST', '/coletas', { id: 'r1', competencia: '2026-10' });
+  const reg = l => chamar('PUT', '/coletas/r1/etapa', { chave: 'registro', bloco: 'registro', status: 'ok', coletadoEm: '2026-11-22T10:00:00Z', avisos: l });
+  await reg(['10:00 · Coleta iniciada.', '10:05 · UBS A: concluída em 5 min.']);
+  await reg(['10:00 · Coleta iniciada.', '10:05 · UBS A: concluída em 5 min.', '10:11 · UBS B: concluída em 6 min.']);
+  await chamar('PUT', '/coletas/r1/etapa', { chave: 'avisos', bloco: 'avisos', status: 'ok', coletadoEm: '2026-11-22T10:00:00Z', avisos: ['UBS B: escuta não lida.'] });
+  const r = await chamar('GET', '/coletas/r1/registro');
+  assert.deepEqual(r.registro, ['10:00 · Coleta iniciada.', '10:05 · UBS A: concluída em 5 min.', '10:11 · UBS B: concluída em 6 min.']);
+  assert.deepEqual(r.avisos, ['UBS B: escuta não lida.']);
+});

@@ -1,6 +1,6 @@
 // Pendências de uma competência: o que ficou faltando ou parece inconsistente nos dados já gravados.
 // Só lê (nada é alterado) e só devolve contagens e nomes de unidade; nenhum nome de profissional ou de paciente.
-import { CHAVE_EQUIPE, UNIDADE_EXIBIDA } from './vigente.js';
+import { CHAVE_EQUIPE, UNIDADE_EXIBIDA, LINHA_CONTA } from './vigente.js';
 import { competencia } from './util.js';
 
 // Indicadores que dependem do tipo de equipe da unidade: a ausência pode ser normal.
@@ -18,7 +18,7 @@ const vigentes = `
   SELECT ${UNIDADE_EXIBIDA()} AS unidade, i.codigo, i.numerador, i.denominador, i.soma_pontos, ROW_NUMBER() OVER (
     PARTITION BY i.codigo, i.recorte, ${CHAVE_EQUIPE()} ORDER BY e.coletado_em DESC, i.coleta_id DESC) AS ordem
   FROM indicador_equipe i JOIN etapa e ON e.coleta_id = i.coleta_id AND e.chave = i.etapa_chave
-  WHERE i.competencia = ? AND e.status = 'ok' AND i.recorte = 'situacao' AND i.unidade IS NOT NULL AND i.unidade <> ''`;
+  WHERE i.competencia = ? AND e.status = 'ok' AND i.recorte = 'situacao' AND i.unidade IS NOT NULL AND i.unidade <> '' AND ${LINHA_CONTA()}`;
 
 const mesAnterior = (d) => {
   const a = d.getUTCFullYear(),
@@ -226,7 +226,7 @@ async function lerB4(ler, comp) {
          SELECT i.unidade, i.equipe, i.ine, i.numerador, i.denominador, i.extras, ROW_NUMBER() OVER (
            PARTITION BY i.recorte, ${CHAVE_EQUIPE()} ORDER BY e.coletado_em DESC, i.coleta_id DESC) AS ordem
          FROM indicador_equipe i JOIN etapa e ON e.coleta_id = i.coleta_id AND e.chave = i.etapa_chave
-         WHERE i.competencia = ? AND e.status = 'ok' AND i.recorte = 'situacao' AND i.codigo = 'B4') WHERE ordem = 1`,
+         WHERE i.competencia = ? AND e.status = 'ok' AND i.recorte = 'situacao' AND i.codigo = 'B4' AND ${LINHA_CONTA()}) WHERE ordem = 1`,
       comp,
     );
     return rs.map((r) => {
