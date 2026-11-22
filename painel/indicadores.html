@@ -1343,27 +1343,30 @@
             (a, u) => {
               ORDEM_CLASSE.forEach((k) => (a.dist[k] += u.dist[k]));
               a.equipes += u.equipes;
+              a.incompletas += u.incompletas;
               a.vmin += u.vmin;
               a.vmax += u.vmax;
               a.falta += u.falta;
               a.risco += u.risco;
               return a;
             },
-            { dist: { o: 0, b: 0, s: 0, r: 0 }, equipes: 0, vmin: 0, vmax: 0, falta: 0, risco: 0 },
+            { dist: { o: 0, b: 0, s: 0, r: 0 }, equipes: 0, incompletas: 0, vmin: 0, vmax: 0, falta: 0, risco: 0 },
           ),
           n0 = (n) => (n ? n : '<span style="color:#8a94a6">–</span>'),
           linha = (nome, u, forte) =>
             '<tr' + (forte ? ' class="tot"' : '') + '><td>' + nome + '</td><td class="n">' + u.equipes + '</td>' +
             ORDEM_CLASSE.map((k) => '<td class="n">' + n0(u.dist[k]) + '</td>').join('') +
+            '<td class="n">' + n0(u.incompletas) + '</td>' +
             '<td class="n">' + faixaRs(u.vmin, u.vmax) + '</td><td class="n">' + rs(u.falta) + '</td><td class="n">' + n0(u.risco) + '</td></tr>';
         return (
           '<section class="bloco" id="unidades"><h2>Por unidade</h2>' +
-          '<p class="d">Ordenadas pelo que falta para o potencial (todas as equipes em Ótimo, qualidade e vínculo). Classes das equipes com todos os indicadores.</p>' +
+          '<p class="d">Ordenadas pelo que falta para o potencial (todas as equipes em Ótimo, qualidade e vínculo). As colunas de classe contam só as equipes com todos os indicadores; as demais ficam em "Sem classe" (a estimativa delas vira uma faixa).</p>' +
           '<div class="tab"><table><thead><tr><th>Unidade</th><th class="n">Equipes</th>' +
           ORDEM_CLASSE.map((k) => '<th class="n">' + NOMEC[k] + '</th>').join('') +
+          '<th class="n" title="Equipes com algum indicador de qualidade sem conceito neste recorte">Sem classe</th>' +
           '<th class="n">Estimativa/mês</th><th class="n">Falta p/ potencial</th><th class="n">Em risco</th></tr></thead><tbody>' +
           A.porUnidade.map((u) => linha(esc(unidadeCurta(u.unidade)), u, false)).join('') +
-          linha('Município', tot, true) +
+          linha('Total', tot, true) +
           '</tbody></table></div></section>'
         );
       }

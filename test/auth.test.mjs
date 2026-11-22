@@ -394,6 +394,9 @@ test('prévia do repasse: nota final, faixas e valores como na NT 6/2025 e na Po
   ]);
   assert.deepEqual(A.dist, { o: 3, b: 0, s: 1, r: 0 });
   assert.equal(A.comNota, 4);
+  // Por unidade, as classes mais as equipes sem classe (indicador sem conceito) fecham com o total de equipes.
+  assert.equal(A.porUnidade.length, 1);
+  assert.deepEqual([A.porUnidade[0].equipes, A.porUnidade[0].incompletas, Object.values(A.porUnidade[0].dist).reduce((x, y) => x + y, 0)], [5, 1, 4]);
   assert.equal(A.indicadores[0].cod, 'C2'); // peso 2: Limite perde 0,5 e Baixa 1,5
   assert.equal(A.indicadores[0].perdidos, 2);
   assert.ok(A.indicadores.every((x) => x.perdidos > 0));
