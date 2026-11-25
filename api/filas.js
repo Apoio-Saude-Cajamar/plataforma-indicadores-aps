@@ -1,8 +1,8 @@
-// Filas e faltas: absenteísmo e dias até a próxima vaga, por profissional (médicos e enfermeiros da APS).
+// Filas e faltas: absenteísmo e dias até a próxima vaga, por profissional (médicos, enfermeiros e cirurgiões-dentistas da APS).
 // A extensão envia totais por profissional; o painel junta com o que já havia do mês (recoleta parcial não apaga).
 import { ErroHttp, agora, lerJson, texto, competencia } from './util.js';
 
-const CATEGORIAS = ['Médico', 'Enfermeiro'];
+const CATEGORIAS = ['Médico', 'Enfermeiro', 'Cirurgião-dentista'];
 const inteiro = (v) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.round(v) : null);
 
 export async function gravarFilas(env, corpo) {

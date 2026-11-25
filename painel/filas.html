@@ -303,7 +303,7 @@
               <div style="display: flex; align-items: center; gap: 12px">
                 <div style="display: flex; flex-direction: column; line-height: 1.2">
                   <span style="font-weight: 700; font-size: 17px">Filas e faltas</span>
-                  <span style="font-size: 13px; color: rgba(255, 255, 255, 0.85)">Médicos e enfermeiros da Atenção Primária · Cajamar</span>
+                  <span style="font-size: 13px; color: rgba(255, 255, 255, 0.85)">Médicos, enfermeiros e cirurgiões-dentistas da Atenção Primária · Cajamar</span>
                 </div>
               </div>
               <span style="font-size: 13px; color: rgba(255, 255, 255, 0.85)">{{periodoTxt}}</span>
@@ -722,6 +722,10 @@
                       <span style="display: flex; align-items: center; gap: 6px"
                         ><span style="display: inline-block; width: 14px; height: 14px; border-radius: 3px; background: #b8641b"></span
                         >Enfermeiro (quadrado)</span
+                      >
+                      <span style="display: flex; align-items: center; gap: 6px"
+                        ><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50% 0; background: #0f9a9a"></span
+                        >Cirurgião-dentista (folha)</span
                       >
                       <span>{{semAgendaTxt}}</span>
                     </div>
@@ -1292,8 +1296,8 @@
           >
             <b>Fontes.</b> Absenteísmo: relatórios de atendimentos e de absenteísmo do PEC e-SUS APS, coletados pela extensão. Próxima vaga:
             agenda de cada profissional com agenda ativa no PEC, na data da coleta. Faltas por horário: agendamentos do mês de cada
-            profissional (reservas de horário ficam de fora), somados por dia da semana e hora. Entram só médicos e enfermeiros das unidades
-            de Atenção Primária. O Painel guarda totais por profissional; nada de paciente. Esta tela é restrita a administradores e
+            profissional (reservas de horário ficam de fora), somados por dia da semana e hora. Entram só médicos, enfermeiros e cirurgiões-dentistas
+            (da Estratégia de Saúde da Família e clínico geral) das unidades de Atenção Primária. O Painel guarda totais por profissional; nada de paciente. Esta tela é restrita a administradores e
             gestores.
           </section>
         </main>
@@ -1343,6 +1347,13 @@
             fundo: location.pathname.replace(/\.html$/, '') === href ? 'rgba(255,255,255,.22)' : 'transparent',
           }));
       const META = 19.59;
+      // Cor e forma de cada categoria (a forma garante a leitura sem depender da cor).
+      const MARCA = {
+        Médico: { cor: '#0E5E8C', raio: '50%' },
+        Enfermeiro: { cor: '#B8641B', raio: '4px' },
+        'Cirurgião-dentista': { cor: '#0F9A9A', raio: '50% 0' },
+      };
+      const marca = (cat) => MARCA[cat] || { cor: '#566370', raio: '0' };
       // Evolução e trajetória: usam todas as competências guardadas (carregadas só quando uma dessas abas é aberta).
       let EVOL = null,
         EVOL_STATUS = 'nao';
@@ -1993,7 +2004,7 @@
                 ordena(e.ps).forEach((p) =>
                   linhas.push(
                     linhaDe({ ...p, sub: p.cbo }, 2, {
-                      esperaRaio: p.cat === 'Médico' ? '50%' : '4px',
+                      esperaRaio: marca(p.cat).raio,
                       fundo: p.pct !== null && p.pct > META && p.dias !== null && p.dias > 30 ? '#FBF1EF' : 'transparent',
                     }),
                   ),
@@ -2038,7 +2049,7 @@
             .filter((p) => p.pct !== null && p.dias !== null)
             .sort((a, b) => b.dias / MAXD + b.pct / MAXF - (a.dias / MAXD + a.pct / MAXF));
           const destaqueId = noMapa.some((p) => p.id === st.destaque) ? st.destaque : '';
-          const corCat = (p) => (p.cat === 'Médico' ? '#0E5E8C' : '#B8641B');
+          const corCat = (p) => marca(p.cat).cor;
           const valores = (p) => num(p.pct, 1) + '% · ' + diasTxt(p.dias);
           const destacar = (id) => () => this.setState({ destaque: this.state.destaque === id ? '' : id });
           const pontos = noMapa.map((p, i) => {
@@ -2048,7 +2059,7 @@
               x: posF(p.pct),
               y: ((1 - Math.min(1, p.dias / MAXD)) * 100).toFixed(2) + '%',
               cor: corCat(p),
-              raio: p.cat === 'Médico' ? '50%' : '4px',
+              raio: marca(p.cat).raio,
               tam: at ? '30px' : '24px',
               margem: at ? '-15px 0 0 -15px' : '-12px 0 0 -12px',
               sombra: at ? '0 0 0 3px #14212B' : 'none',
@@ -2066,7 +2077,7 @@
             sub: p.eq + ' · ' + p.un,
             valores: valores(p),
             cor: corCat(p),
-            raio: p.cat === 'Médico' ? '50%' : '4px',
+            raio: marca(p.cat).raio,
             fundo: p.id === destaqueId ? '#E7EEF3' : '#FFFFFF',
             ativo: p.id === destaqueId ? 'true' : 'false',
             destacar: destacar(p.id),
@@ -2370,6 +2381,7 @@
               ['', 'Todos'],
               ['Médico', 'Médicos'],
               ['Enfermeiro', 'Enfermeiros'],
+              ['Cirurgião-dentista', 'Dentistas'],
             ].map(([id, rotulo]) => ({ rotulo, ...botao((st.cat || '') === id), escolher: () => this.setState({ cat: id, prof: '' }) })),
             botoesOrdem: [
               ['faltas', 'Mais faltas'],

@@ -187,7 +187,7 @@ function secAbsenteismo(comp, un) {
     }
     const c1 = agregar(linhasDe('C1', [comp], un), (l) => l.unidade + '|' + (l.equipe || 'Sem equipe'));
     h +=
-      '<h3>Filas e faltas por equipe (médicos e enfermeiros)</h3><p>Faltas e espera por equipe, ao lado da C1 (parcela de consultas de demanda programada). Espera = mediana de dias até a próxima vaga dos profissionais com agenda lida. Não há nomes de profissionais neste documento.</p>' +
+      '<h3>Filas e faltas por equipe (médicos, enfermeiros e cirurgiões-dentistas)</h3><p>Faltas e espera por equipe, ao lado da C1 (parcela de consultas de demanda programada). Espera = mediana de dias até a próxima vaga dos profissionais com agenda lida. Não há nomes de profissionais neste documento.</p>' +
       '<table class="csv"><thead><tr><th>Equipe</th><th class="n">Prof.</th><th class="n">Faltas</th><th class="n">Absenteísmo</th><th>Faltas (risco: meta)</th><th class="n">Espera (mediana)</th><th>Espera (dias)</th><th class="n">C1 programada</th></tr></thead><tbody>' +
       Object.values(gq)
         .sort((a, b) => (a.un + a.eq).localeCompare(b.un + b.eq, 'pt'))

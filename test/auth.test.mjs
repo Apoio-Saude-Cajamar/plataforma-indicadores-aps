@@ -621,14 +621,17 @@ test('filas e faltas: a extensão envia por profissional, a recoleta parcial nã
   const H = { headers: { authorization: 'Bearer ' + CHAVES.TOKEN_COLETA } };
   const n = navegador(env);
   const P = (x) => Object.assign({ unidade: 'UBS A', equipe: 'EQ 1', cbo: 'MÉDICO DA ESTRATÉGIA DE SAÚDE DA FAMÍLIA - 225142', categoria: 'Médico', nome: 'Profissional Um' }, x);
-  assert.equal((await n.pedir('PUT', '/api/v1/filas', { competencia: '2026-10', profissionais: [P({ faltas: 10, atendimentos: 90 }), P({ nome: 'Fora', categoria: 'Dentista', faltas: 1 })] }, H)).status, 200);
+  assert.equal((await n.pedir('PUT', '/api/v1/filas', { competencia: '2026-10', profissionais: [P({ faltas: 10, atendimentos: 90 }), P({ nome: 'Fora', categoria: 'Dentista', faltas: 1 }),
+    P({ nome: 'Dentista Um', equipe: 'ESB 1', cbo: 'CIRURGIÃO-DENTISTA DA ESTRATÉGIA DE SAÚDE DA FAMÍLIA - 223293', categoria: 'Cirurgião-dentista', faltas: 3, atendimentos: 30 })] }, H)).status, 200);
   assert.equal((await n.pedir('PUT', '/api/v1/filas', { competencia: '2026-10', profissionais: [P({ diasVaga: 12, proximaVaga: '2026-11-28', semVaga: false, agendaLidaEm: '2026-11-16T12:00:00.000Z' })] }, H)).status, 200);
   const criar = async (login, perfil) => { const r = await admin(env, { login, nome: login, perfil }); env.DB.prepare('UPDATE usuario SET trocar_senha = 0').run(); const v = navegador(env); assert.equal((await v.pedir('POST', '/api/v1/auth/entrar', { login, senha: r.senhaProvisoria })).status, 200); return v; };
   const gestor = await criar('gestor.fila', 'gestor'), leitor = await criar('leitor.fila', 'leitor');
   assert.equal((await leitor.pedir('GET', '/api/v1/filas')).status, 403);
   const d = await (await gestor.pedir('GET', '/api/v1/filas')).json();
-  assert.equal(d.profissionais.length, 1);
-  assert.deepEqual([d.profissionais[0].faltas, d.profissionais[0].atendimentos, d.profissionais[0].diasVaga], [10, 90, 12]);
+  assert.equal(d.profissionais.length, 2, 'categoria desconhecida fica fora; cirurgião-dentista entra');
+  const med = d.profissionais.find((p) => p.categoria === 'Médico'), den = d.profissionais.find((p) => p.categoria === 'Cirurgião-dentista');
+  assert.deepEqual([med.faltas, med.atendimentos, med.diasVaga], [10, 90, 12]);
+  assert.deepEqual([den.nome, den.faltas, den.atendimentos], ['Dentista Um', 3, 30]);
 });
 
 test('filas: evolução devolve os meses guardados em ordem, com limite e corte por competência; só admin e gestor leem', async () => {

@@ -703,12 +703,13 @@
             .join('') +
           '</tbody></table></div>';
       }
+      const PLURAL = { Médico: 'Médicos', Enfermeiro: 'Enfermeiros', 'Cirurgião-dentista': 'Cirurgiões-dentistas' };
       function filas(Q) {
         const uns = [...new Set(Q.linhas.map((l) => l.u))].sort(),
           cats = [...new Set(Q.linhas.map((l) => l.cat))];
         $('#q-sel').innerHTML =
           sel('q-un', 'Unidade', [['', 'Todas']].concat(uns.map((u) => [u, u]))) +
-          (cats.length > 1 ? sel('q-ct', 'Categoria', [['', 'Médicos e enfermeiros']].concat(cats.map((c) => [c, c + 's']))) : '');
+          (cats.length > 1 ? sel('q-ct', 'Categoria', [['', 'Todas as categorias']].concat(cats.map((c) => [c, PLURAL[c] || c + 's']))) : '');
         const des = () => {
           const un = $('#q-un').value,
             ct = $('#q-ct') ? $('#q-ct').value : '';

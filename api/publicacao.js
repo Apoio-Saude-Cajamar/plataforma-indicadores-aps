@@ -114,6 +114,7 @@ export function montarCatalogo(d) {
     itens: [
       { id: 'vivo:filas:Médico', rotulo: 'Médicos (sem nomes; só totais por equipe e especialidade)', linhas: [] },
       { id: 'vivo:filas:Enfermeiro', rotulo: 'Enfermeiros (sem nomes; só totais por equipe e especialidade)', linhas: [] },
+      { id: 'vivo:filas:Cirurgião-dentista', rotulo: 'Cirurgiões-dentistas (sem nomes; só totais por equipe e especialidade)', linhas: [] },
       {
         id: 'vivo:filas:min3',
         rotulo: 'Proteção: ocultar linhas com menos de 3 profissionais (evita identificar uma pessoa pelo total)',
@@ -235,7 +236,7 @@ export async function dadosPublicos(env, url) {
   const vivos = {};
   if (m.has('vivo:federal')) vivos.federal = await vivoFederal(env);
   if (m.has('vivo:estadual')) vivos.estadual = await vivoEstadual(env);
-  const catsFilas = ['Médico', 'Enfermeiro'].filter((c) => m.has('vivo:filas:' + c));
+  const catsFilas = ['Médico', 'Enfermeiro', 'Cirurgião-dentista'].filter((c) => m.has('vivo:filas:' + c));
   if (catsFilas.length) vivos.filas = await vivoFilas(env, catsFilas, m.has('vivo:filas:min3') ? 3 : 1);
   const saida = cats
     .filter((c) => c.tipo !== 'vivo')
