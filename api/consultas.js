@@ -13,7 +13,7 @@ export async function situacao(env, comp) {
       SELECT e.*, ROW_NUMBER() OVER (
         PARTITION BY e.chave
         ORDER BY (e.status = 'ok') DESC, e.coletado_em DESC, e.coleta_id DESC) AS ordem
-      FROM etapa e WHERE e.competencia = ?)
+      FROM etapa e WHERE e.competencia = ? AND e.bloco <> 'registro')
     SELECT chave, bloco, unidade, equipe, ine, status, tentativas, erro,
            coletado_em AS coletadoEm, coleta_id AS coletaId
     FROM ordenadas WHERE ordem = 1

@@ -58,7 +58,7 @@ export async function monitoramento(env, agora = Date.now()) {
         ),
       });
     const avisos = (
-      await env.DB.prepare("SELECT mensagem, etapa_chave FROM aviso WHERE coleta_id = ? AND etapa_chave <> 'registro' ORDER BY criado_em DESC LIMIT 20")
+      await env.DB.prepare("SELECT mensagem, etapa_chave FROM aviso WHERE coleta_id = ? AND etapa_chave NOT LIKE 'registro%' ORDER BY criado_em DESC LIMIT 20")
         .bind(col.id)
         .all()
     ).results;

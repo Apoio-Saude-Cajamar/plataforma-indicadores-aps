@@ -230,13 +230,16 @@ export async function listarColetas(env, comp) {
 export async function registroDaColeta(env, coletaId) {
   const c = await buscarColeta(env, coletaId);
   const { results } = await env.DB.prepare(
-    `SELECT etapa_chave AS etapa, mensagem FROM aviso WHERE coleta_id = ? AND etapa_chave IN ('registro', 'avisos') ORDER BY rowid`,
+    `SELECT etapa_chave AS etapa, mensagem FROM aviso
+     WHERE coleta_id = ? AND (etapa_chave IN ('registro', 'avisos') OR etapa_chave LIKE 'registro:%')
+     ORDER BY etapa_chave, rowid`,
   )
     .bind(coletaId)
     .all();
+  // O registro vem em partes ("registro:0001", "registro:0002"…, só com as linhas novas) ou, nas versões 0.11.0 a 0.11.2, numa etapa só.
   return {
     id: coletaId, competencia: c.competencia, status: c.status,
-    registro: results.filter((r) => r.etapa === 'registro').map((r) => r.mensagem),
+    registro: results.filter((r) => r.etapa === 'registro' || r.etapa.startsWith('registro:')).map((r) => r.mensagem),
     avisos: results.filter((r) => r.etapa === 'avisos').map((r) => r.mensagem),
   };
 }

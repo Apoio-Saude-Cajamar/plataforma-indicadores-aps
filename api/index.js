@@ -282,6 +282,12 @@ export default {
         return await tratarApi(request, env, url);
       } catch (e) {
         if (e instanceof ErroHttp) return json({ erro: e.message }, e.status);
+        // Plano gratuito do D1: passou do limite diário de linhas gravadas (ou lidas), as consultas falham até 00:00 UTC.
+        const limite = /exceeded D1'?s? free tier daily row (write|read) limit/i.exec(String((e && e.message) || ''));
+        if (limite) {
+          console.error('Limite diário do D1', limite[1], request.method, url.pathname);
+          return json({ erro: `Limite diário de ${limite[1].toLowerCase() === 'write' ? 'gravação' : 'leitura'} do banco do Painel atingido (plano gratuito da Cloudflare). Volta às 00:00 UTC (21:00 em Brasília).`, limite: limite[1].toLowerCase() }, 503);
+        }
         console.error('Erro inesperado', request.method, url.pathname, (e && e.stack) || e);
         return json({ erro: 'Erro interno. Tente novamente; se persistir, veja os registros do Worker.' }, 500);
       }

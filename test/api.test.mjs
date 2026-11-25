@@ -242,3 +242,30 @@ test('registro da coleta: guardado por etapa, lido em ordem e fora dos avisos do
   assert.deepEqual(r.registro, ['10:00 · Coleta iniciada.', '10:05 · UBS A: concluída em 5 min.', '10:11 · UBS B: concluída em 6 min.']);
   assert.deepEqual(r.avisos, ['UBS B: escuta não lida.']);
 });
+
+test('registro em partes (0.11.3): lido em ordem, junto com o formato antigo, e fora da situação', async () => {
+  const env = ambiente();
+  const chamar = cliente(env);
+  await chamar('POST', '/coletas', { id: 'r2', competencia: '2026-10' });
+  const parte = (n, l) => chamar('PUT', '/coletas/r2/etapa', { chave: 'registro:' + String(n).padStart(4, '0'), bloco: 'registro', status: 'ok', coletadoEm: '2026-11-22T10:00:00Z', avisos: l });
+  await parte(2, ['10:11 · UBS B: concluída em 6 min.']);
+  await parte(1, ['10:00 · Coleta iniciada.', '10:05 · UBS A: concluída em 5 min.']);
+  await parte(2, ['10:11 · UBS B: concluída em 6 min.', '10:12 · Coleta enviada.']); // reenvio da mesma parte: substitui, sem duplicar
+  const r = await chamar('GET', '/coletas/r2/registro');
+  assert.deepEqual(r.registro, ['10:00 · Coleta iniciada.', '10:05 · UBS A: concluída em 5 min.', '10:11 · UBS B: concluída em 6 min.', '10:12 · Coleta enviada.']);
+  const s = await chamar('GET', '/situacao?competencia=2026-10');
+  assert.equal(s.etapas.filter(e => e.bloco === 'registro').length, 0, 'as partes do registro não aparecem como etapas pendentes');
+});
+
+test('limite diário do D1: resposta 503 com mensagem clara, não "Erro interno"', async () => {
+  const env = ambiente();
+  const chamar = cliente(env);
+  await chamar('POST', '/coletas', { id: 'l1', competencia: '2026-10' });
+  const original = env.DB.batch.bind(env.DB);
+  env.DB.batch = async () => { throw new Error("D1_ERROR: Your account has exceeded D1's free tier daily row write limit. Please upgrade to a paid plan or wait until the next day."); };
+  const r = await chamar('PUT', '/coletas/l1/etapa', { chave: 'unidade:UBS A', bloco: 'unidade', status: 'ok', coletadoEm: '2026-11-22T10:00:00Z', linhas: [] }, { permitirErro: true });
+  env.DB.batch = original;
+  assert.equal(r.status, 503);
+  assert.equal(r.limite, 'write');
+  assert.match(r.erro, /Limite diário de gravação do banco do Painel atingido/);
+});
