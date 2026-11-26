@@ -204,7 +204,14 @@
         '.menu-aps a[aria-current=page],.menu-aps summary[aria-current=page],.menu-aps details[open]>summary{background:rgba(255,255,255,.22)}' +
         '.menu-aps a:focus-visible,.menu-aps summary:focus-visible{outline:3px solid #00A7E7;outline-offset:2px}' +
         '.menu-aps details{position:relative}.menu-aps details>div{position:absolute;z-index:20;top:100%;left:0;min-width:230px;margin-top:6px;background:#fff;border:2px solid #D5DCE8;border-radius:12px;padding:6px;box-shadow:0 8px 24px rgba(20,33,43,.18);display:flex;flex-direction:column}' +
-        '.menu-aps details>div a{color:#1B2340;border-radius:8px;white-space:nowrap}.menu-aps details>div a:hover{background:#E7EEF3}.menu-aps details>div a[aria-current=page]{background:#D9ECF8}';
+        '.menu-aps details>div a{color:#1B2340;border-radius:8px;white-space:nowrap}.menu-aps details>div a:hover{background:#E7EEF3}.menu-aps details>div a[aria-current=page]{background:#D9ECF8}' +
+        // Barra de segundo nível (seções com mais de uma tela, como o Federal: Dashboard e Dados). Cores dos temas em tema.css.
+        'header.com-sub{border-bottom:0!important}' +
+        '.sub-aps{background:#163059;border-bottom:4px solid #00A7E7;font:600 14px Montserrat,system-ui,sans-serif}' +
+        '.sub-aps>div{max-width:1560px;margin:0 auto;padding:0 28px;display:flex;gap:28px;box-sizing:border-box}' +
+        '.sub-aps a{color:rgba(255,255,255,.82);text-decoration:none;padding:10px 0 9px;border-bottom:3px solid transparent;margin-bottom:-4px}' +
+        '.sub-aps a:hover{color:#fff}.sub-aps a[aria-current=page]{color:#fff;border-bottom-color:#fff}' +
+        '.sub-aps a:focus-visible{outline:3px solid #00A7E7;outline-offset:-3px}';
       document.head.appendChild(st);
     }
     const lanc = gestor
@@ -219,7 +226,8 @@
       (ACOMP.includes(aqui) ? ' aria-current="page"' : '') +
       '>Acompanhamentos ▾</summary><div>' +
       a('/', 'Visão geral') +
-      a('/indicadores', 'Federal') +
+      // Federal abre no Dashboard; a barra de segundo nível leva aos Dados (/indicadores).
+      '<a href="/notas"' + (aqui === '/notas' || aqui === '/indicadores' ? ' aria-current="page"' : '') + '>Federal</a>' +
       a('/estadual', 'Estadual') +
       a('/municipal', 'Municipal') +
       a('/producao', 'Produção e notas') +
@@ -237,6 +245,20 @@
     topo.insertBefore(nav, alvo || null);
     const tm = topo.querySelector('.tema-aps');
     if (tm) topo.insertBefore(tm, alvo || null);
+    // Barra de segundo nível logo abaixo do cabeçalho. O Dashboard (/notas) tem a mesma barra no próprio cabeçalho.
+    const SUB = { '/indicadores': ['Cofinanciamento federal', [['/notas', 'Dashboard', 'sub-dashboard'], ['/indicadores', 'Dados', 'sub-dados']]] };
+    const sub = SUB[aqui],
+      cab = topo.closest('header');
+    if (sub && cab && !document.querySelector('.sub-aps')) {
+      const n = document.createElement('nav');
+      n.className = 'sub-aps';
+      n.setAttribute('aria-label', sub[0]);
+      n.innerHTML = '<div>' + sub[1].map(([h, t, id]) => '<a href="' + h + '" id="' + id + '"' + (aqui === h ? ' aria-current="page"' : '') + '>' + t + '</a>').join('') + '</div>';
+      cab.classList.add('com-sub');
+      cab.after(n);
+      // A página atualiza os links com o período e o recorte escolhidos (evento ouvido por /indicadores).
+      document.dispatchEvent(new Event('painelaps:submenu'));
+    }
     document.addEventListener('click', (e) => {
       nav.querySelectorAll('details[open]').forEach((d) => {
         if (!d.contains(e.target)) d.removeAttribute('open');

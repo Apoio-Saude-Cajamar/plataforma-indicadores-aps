@@ -79,6 +79,22 @@ html[data-tema='claro'] .ferr a {
   color: #0b3f5e;
 }
 
+html[data-tema='claro'] .sub-aps {
+  background: #ffffff;
+  border-bottom: 1px solid #dce2e0;
+}
+html[data-tema='claro'] .sub-aps a {
+  color: #4a5670;
+  margin-bottom: -1px;
+}
+html[data-tema='claro'] .sub-aps a:hover {
+  color: #14212b;
+}
+html[data-tema='claro'] .sub-aps a[aria-current='page'] {
+  color: #0b3f5e;
+  border-bottom-color: #0e5e8c;
+}
+
 /* ---------- Escuro ---------- */
 html[data-tema='escuro'] {
   color-scheme: dark;
@@ -275,4 +291,15 @@ html[data-tema='escuro'] {
   --danger-bg: #3a1f1e;
   --ok-bg: #173329;
   --ok: #7ce1c2;
+}
+html[data-tema='escuro'] .sub-aps {
+  background: #111a22;
+  border-bottom-color: #5aa9e0;
+}
+html[data-tema='escuro'] .sub-aps a {
+  color: #a7b4c0;
+}
+html[data-tema='escuro'] .sub-aps a:hover,
+html[data-tema='escuro'] .sub-aps a[aria-current='page'] {
+  color: #e6edf3;
 }

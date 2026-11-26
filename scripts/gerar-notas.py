@@ -22,14 +22,14 @@ marc = troca(marc, 'Rascunho · valores fictícios', '{{coletaTxt}}')
 marc = troca(marc, '<div style="width: 40px; height: 40px; border-radius: 8px; background: {{tSelo}}; color: {{tSeloTexto}}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; letter-spacing: .04em">APS</div>',
   '<a href="/" aria-label="Voltar ao início do Painel APS" style="width: 40px; height: 40px; border-radius: 8px; background: {{tSelo}}; color: {{tSeloTexto}}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; letter-spacing: .04em; text-decoration: none">APS</a>')
 # Barra do Painel (a mesma das demais páginas) acima do cabeçalho próprio das notas; o selo "APS" sai, pois a barra já traz o logo.
-marc = troca(marc, '  <header style="background: {{tTopoFundo}}', '''  <div id="barra-painel" style="background: #1F3C72; border-bottom: 4px solid #00A7E7; color: #FFFFFF; font-family: 'Montserrat', system-ui, sans-serif">
+marc = troca(marc, '  <header style="background: {{tTopoFundo}}', '''  <div id="barra-painel" style="background: #1F3C72; color: #FFFFFF; font-family: 'Montserrat', system-ui, sans-serif">
     <div style="max-width: 1360px; margin: 0 auto; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
       <a href="/" style="display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 19px; color: #FFFFFF; text-decoration: none"><img src="/img/painelaps.svg" alt="" width="34" height="34"><span>Painel APS</span></a>
       <nav aria-label="Áreas do Painel" style="display: flex; flex-wrap: nowrap; white-space: nowrap; align-items: center; gap: 2px 2px; font-weight: 600; font-size: 13.5px">
         <details style="position: relative"><summary style="color: #FFFFFF; padding: 8px 8px; min-height: 36px; display: inline-flex; align-items: center; border-radius: 99px; cursor: pointer; list-style: none; background: rgba(255,255,255,.22)">Acompanhamentos ▾</summary>
           <div style="position: absolute; z-index: 20; top: 100%; left: 0; min-width: 230px; margin-top: 6px; background: #FFFFFF; border: 2px solid #D5DCE8; border-radius: 12px; padding: 6px; box-shadow: 0 8px 24px rgba(20,33,43,.18); display: flex; flex-direction: column">
             <a href="/" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Visão geral</a>
-            <a href="/indicadores?aba=dashboard" aria-current="page" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap; background: #D9ECF8">Federal</a>
+            <a href="/notas" aria-current="page" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap; background: #D9ECF8">Federal</a>
             <a href="/estadual" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Estadual</a>
             <a href="/municipal" style="color: #1B2340; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap">Municipal</a></div></details>
         <template data-sc="for" list="{{menuSite}}" as="ms"><a href="{{ms.href}}" style="color: #FFFFFF; text-decoration: none; padding: 8px 8px; min-height: 36px; display: inline-flex; align-items: center; border-radius: 99px; background: {{ms.fundo}}">{{ms.txt}}</a></template>
@@ -46,12 +46,19 @@ marc = troca(marc, '  <header style="background: {{tTopoFundo}}', '''  <div id="
           <button type="button" onClick="{{sair}}" style="font: inherit; color: #1B2340; background: none; border: 0; border-top: 1px solid #E3E8F0; margin-top: 6px; text-align: left; padding: 10px 12px 8px; cursor: pointer">Sair</button></div></details></template>
     </div>
   </div>
+  <nav id="sub-painel" aria-label="Cofinanciamento federal" style="background: #163059; border-bottom: 4px solid #00A7E7; font-family: 'Montserrat', system-ui, sans-serif">
+    <div style="max-width: 1280px; margin: 0 auto; padding: 0 24px; display: flex; gap: 28px; font-weight: 600; font-size: 14px">
+      <a href="/notas" aria-current="page" style="color: #FFFFFF; text-decoration: none; padding: 10px 0 9px; border-bottom: 3px solid #FFFFFF; margin-bottom: -4px">Dashboard</a>
+      <a href="{{linkDados}}" title="Tabelas para conferir os números, no mesmo período e recorte" style="color: rgba(255,255,255,.82); text-decoration: none; padding: 10px 0 9px; border-bottom: 3px solid transparent; margin-bottom: -4px">Dados</a>
+    </div>
+  </nav>
   <header style="background: {{tTopoFundo}}''')
 marc = re.sub(r'<div role="group" aria-label="Tema" style="display: flex; border.*?</template>\s*</div>', '', marc, count=1, flags=re.S)
 marc = re.sub(r'<template data-sc="if" value="\{\{temSelo\}\}".*?</template>\s*', '', marc, count=1, flags=re.S)
 marc = re.sub(r'<template data-sc="if" value="\{\{temAssinatura\}\}".*?</template>\s*', '', marc, count=1, flags=re.S)
 
 js = troca(js, "intervalo: 'quad', meses: [24321], quads: ['2026-3']", "intervalo: 'mensal', meses: [REAL.atual], quads: [REAL.quadAtual]")
+js = troca(js, "    this.state.aplicado = Component.pega(this.state);", "    Object.assign(this.state, CTX_INICIAL());\n    this.state.aplicado = Component.pega(this.state);")
 js = troca(js, 'const ATUAL = 2026 * 12 + 9, INICIO = 2025 * 12;', 'const ATUAL = REAL.atual, INICIO = REAL.inicio;')
 js = troca(js, 'const lista = [', 'let lista = [')
 js = troca(js, '    const N = {};', '    lista = REAL.ajustar(lista);\n    const N = {};')
@@ -94,6 +101,7 @@ js = troca(js, "subtitulo: 'Prefeitura de Cajamar', selo: false", "subtitulo: 'C
 js = troca(js, "temSelo: selo, temAssinatura: !selo,", """temSelo: selo, temAssinatura: !selo,
       ...(() => { const ch = (id) => () => { try { localStorage.setItem('painelaps.tema', id); } catch (_) {} this.setState({ tema: id }); }; const ps = (id) => tema === id; return { tClaro: ch('claro'), tPers: ch('personalizado'), tEsc: ch('escuro'), pClaro: ps('claro') ? 'true' : 'false', pPers: ps('personalizado') ? 'true' : 'false', pEsc: ps('escuro') ? 'true' : 'false', pClaroOp: ps('claro') ? 1 : .75, pPersOp: ps('personalizado') ? 1 : .75, pEscOp: ps('escuro') ? 1 : .75, pClaroBg: ps('claro') ? 'rgba(255,255,255,.26)' : 'transparent', pPersBg: ps('personalizado') ? 'rgba(255,255,255,.26)' : 'transparent', pEscBg: ps('escuro') ? 'rgba(255,255,255,.26)' : 'transparent' }; })(),
       coletaTxt: REAL.ultima ? 'Dados do PEC e-SUS · coleta de ' + REAL.ultima : 'Dados do PEC e-SUS',
+      linkDados: LINK_DADOS(st),
       menuSite: MENU_SITE(), temLanc: !!USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor'), itensUsuario: ITENS_USUARIO(), usuarioInicial: USUARIO ? USUARIO.nome.trim().charAt(0).toUpperCase() : '', temUsuario: !!USUARIO, usuarioNome: USUARIO ? USUARIO.nome.split(' ')[0] : '',
       sair: async () => { try { await fetch('/api/v1/auth/sair', { method: 'POST', credentials: 'same-origin' }); } finally { location.replace('/entrar'); } },""")
 helm = helm.replace('family=Montserrat:wght@400;500;600;700;800&amp;', '')
@@ -108,8 +116,8 @@ pagina = f'''<!doctype html>
 <title>Notas metodológicas · Painel APS</title>
 <link rel="icon" href="/img/painelaps.svg" type="image/svg+xml">
 {helm.strip()}
-<script>(function(){{var q=new URLSearchParams(location.search);if(q.get('incorporado')==='1')document.documentElement.setAttribute('data-incorporado','1');else if(window.top===window&&q.get('solo')!=='1')location.replace('/indicadores?aba=dashboard');}})();</script>
-<style>html[data-incorporado] #barra-painel,html[data-incorporado] #rodape-aps{{display:none!important}}html[data-incorporado] body{{background:transparent}}</style>
+<script>(function(){{if(new URLSearchParams(location.search).get('incorporado')==='1')document.documentElement.setAttribute('data-incorporado','1');}})();</script>
+<style>html[data-incorporado] #barra-painel,html[data-incorporado] #sub-painel,html[data-incorporado] #rodape-aps{{display:none!important}}html[data-incorporado] body{{background:transparent}}</style>
 <style>#aviso{{font:16px/1.5 'Source Sans 3','Segoe UI',system-ui,sans-serif;max-width:640px;margin:48px auto;padding:0 24px;color:#14212B}}#aviso a{{color:#0E5E8C}}</style>
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#1F3C72" />
@@ -140,6 +148,34 @@ const ITENS_USUARIO = () => {{
   if (USUARIO.perfil === 'admin') ls.push(['', 'Configurações'], ['/usuarios', 'Usuários'], ['/monitoramento', 'Monitoramento das coletas'], ['/comunicados', 'Comunicados'], ['/publicacao', 'Página pública'], ['/chaves', 'Chaves da extensão'], ['/extensao', 'Extensões do Chrome'], ['/historico', 'Histórico de acessos'], ['/backups', 'Backups']);
   return ls.map(([href, txt]) => ({{ href: href || '#', txt, peso: href ? 600 : 800 }}));
 }};
+// Mês e recorte entre o Dashboard e os Dados: ?de=AAAA-MM&ate=AAAA-MM&un=unidade&eq=unidade|equipe (o mesmo formato nas duas páginas).
+const CTX_INICIAL = () => {{
+  const q = new URLSearchParams(location.search), o = {{}};
+  const num = (c) => (/^\\d{{4}}-\\d{{2}}$/.test(c || '') ? +c.slice(0, 4) * 12 + +c.slice(5, 7) - 1 : null);
+  const de = num(q.get('de')), ate = num(q.get('ate')) ?? de;
+  if (de !== null && ate !== null) {{
+    const ms = [];
+    for (let a = Math.min(de, ate); a <= Math.max(de, ate); a++) if (REAL.temMes(a)) ms.push(a);
+    if (ms.length) Object.assign(o, {{ intervalo: 'mensal', meses: ms }});
+  }}
+  const un = q.get('un'), eq = q.get('eq');
+  if (eq && eq.indexOf('|') > 0 && REAL.unidades.indexOf(eq.split('|')[0]) >= 0) Object.assign(o, {{ visao: 'equipes', equipes: [eq] }});
+  else if (un && REAL.unidades.indexOf(un) >= 0) Object.assign(o, {{ visao: 'unidades', unidades: [un] }});
+  return o;
+}};
+const LINK_DADOS = (st) => {{
+  const mes = (a) => Math.floor(a / 12) + '-' + String((a % 12) + 1).padStart(2, '0');
+  let ms = st.intervalo === 'quad'
+    ? (st.quads || []).flatMap((qd) => {{ const [y, k] = String(qd).split('-').map(Number); return [0, 1, 2, 3].map((i) => y * 12 + (k - 1) * 4 + i); }})
+    : (st.meses || []);
+  ms = ms.filter((a) => REAL.temMes(a));
+  const p = new URLSearchParams();
+  if (ms.length) {{ p.set('de', mes(Math.min(...ms))); p.set('ate', mes(Math.max(...ms))); }}
+  if (st.visao === 'unidades' && (st.unidades || []).length === 1) p.set('un', st.unidades[0]);
+  if (st.visao === 'equipes' && (st.equipes || []).length === 1) {{ p.set('un', st.equipes[0].split('|')[0]); p.set('eq', st.equipes[0]); }}
+  const s = p.toString();
+  return '/indicadores' + (s ? '?' + s : '');
+}};
 const MENU_SITE = () => [['/composicao', 'Composição de Usuários'], ['/coleta', 'Como coletamos']].concat(USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor') ? [['/filas', 'Filas e faltas'], ['/pendencias', 'Pendências']] : []).map(([href, txt]) => ({{ href, txt, fundo: location.pathname.replace(/\\.html$/, '') === href ? 'rgba(255,255,255,.22)' : 'transparent' }}));
 {js}
 (async () => {{
@@ -157,7 +193,7 @@ const MENU_SITE = () => [['/composicao', 'Composição de Usuários'], ['/coleta
     REAL = montarREAL(porComp, ult ? new Date(ult).toLocaleString('pt-BR', {{ dateStyle: 'short', timeStyle: 'short' }}) : '');
     let tema = ''; try {{ tema = localStorage.getItem('painelaps.tema') || ''; }} catch (e) {{}}
     montarDC(document.getElementById('modelo'), Component, document.getElementById('tela'), {{ tema: tema || 'personalizado' }});
-    // Dentro da aba "Dashboard" de /indicadores: avisa a página de fora a altura do conteúdo, para o quadro não ter rolagem própria.
+    // Se for aberto dentro de um quadro (?incorporado=1), avisa a página de fora a altura do conteúdo, para o quadro não ter rolagem própria.
     if (window.parent !== window) {{
       const enviar = () => parent.postMessage({{ tipo: 'painelaps:altura', h: document.documentElement.scrollHeight }}, location.origin);
       new ResizeObserver(enviar).observe(document.body);

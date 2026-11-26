@@ -672,7 +672,7 @@
         #rodape-aps,
         .menu-aps,
         button.ab,
-        #painelDash .nota {
+        .sub-aps {
           display: none !important;
         }
         main {
@@ -939,9 +939,8 @@
       <nav class="chips" id="abas" role="tablist" aria-label="Seções">
         <button class="chip" role="tab" data-a="resumo" aria-pressed="true">Resumo</button>
         <button class="chip" role="tab" data-a="evol" aria-pressed="false">Evolução mensal</button>
-        <button class="chip" role="tab" data-a="detalhe" aria-pressed="false">Detalhe e equipes</button>
+        <button class="chip" role="tab" data-a="detalhe" aria-pressed="false">Por equipe</button>
         <button class="chip" role="tab" data-a="repasse" aria-pressed="false">Prévia do repasse</button>
-        <button class="chip" role="tab" data-a="dashboard" aria-pressed="false">Dashboard</button>
         <button class="chip" role="tab" data-a="ajuda" aria-pressed="false">Como ler</button>
       </nav>
       <div class="barraFiltros">
@@ -1014,16 +1013,6 @@
           <span class="nota">Sai em A4 paisagem, com os filtros aplicados, os pontos de atenção e as premissas.</span>
         </div>
         <div id="rep"></div>
-      </div>
-      <div data-aba="dashboard" id="painelDash" hidden>
-        <p class="nota">
-          O dashboard tem os próprios filtros (período, unidade, equipe e nota), por isso os filtros desta página ficam ocultos nesta aba.
-        </p>
-        <iframe
-          id="quadroDash"
-          title="Dashboard das notas metodológicas"
-          style="width: 100%; min-height: 900px; border: 0; display: block"
-        ></iframe>
       </div>
       <div data-aba="ajuda" hidden>
         <section class="bloco">
@@ -1775,7 +1764,17 @@
             ),
           ].sort();
           $('un').innerHTML = '<option value="">Todas</option>' + uns.map((u) => '<option>' + esc(u) + '</option>').join('');
+          // Vindo do Dashboard (barra "Dashboard | Dados"): mesmo período, unidade e equipe, quando existirem aqui.
+          const q = new URLSearchParams(location.search),
+            tem = (id, v) => v && [...$(id).options].some((o) => o.value === v);
+          if (tem('de', q.get('de'))) $('de').value = q.get('de');
+          if (tem('ate', q.get('ate'))) $('ate').value = q.get('ate');
+          if ($('de').value > $('ate').value) $('ate').value = $('de').value;
+          const qeq = q.get('eq'),
+            qun = q.get('un') || (qeq ? qeq.split('|')[0] : '');
+          if (tem('un', qun)) $('un').value = qun;
           opcoesEquipe();
+          if (tem('eq', qeq)) $('eq').value = qeq;
           desenhar();
         } catch (e) {
           $('grupos').innerHTML =
@@ -1837,11 +1836,21 @@
           desenhar();
         }),
       );
-      // Dashboard (antes em /notas) dentro desta página: o quadro só é carregado na primeira vez que a aba é aberta.
-      window.addEventListener('message', (e) => {
-        if (e.origin !== location.origin || !e.data || e.data.tipo !== 'painelaps:altura') return;
-        $('quadroDash').style.height = Math.max(600, Math.ceil(e.data.h)) + 'px';
-      });
+      // Barra "Dashboard | Dados": o link do Dashboard leva o período e o recorte escolhidos aqui (?de, ?ate, ?un, ?eq).
+      function linkDashboard() {
+        const p = new URLSearchParams();
+        if ($('de').value) p.set('de', $('de').value);
+        if ($('ate').value) p.set('ate', $('ate').value);
+        if ($('eq').value) p.set('eq', $('eq').value);
+        else if ($('un').value) p.set('un', $('un').value);
+        const q = p.toString();
+        return '/notas' + (q ? '?' + q : '');
+      }
+      function atualizarLinkDash() {
+        const l = document.getElementById('sub-dashboard');
+        if (l) l.href = linkDashboard();
+      }
+      document.addEventListener('painelaps:submenu', atualizarLinkDash);
       // Filtros recolhidos num botão; o resumo ao lado mostra sempre o que está aplicado.
       let filtrosAbertos = false,
         abaAtual = 'resumo';
@@ -1849,21 +1858,15 @@
         filtrosAbertos = sessionStorage.getItem('indFiltros') === '1';
       } catch (_) {}
       function mostrarFiltros() {
-        const dash = abaAtual === 'dashboard',
-          aberto = filtrosAbertos && !dash;
+        const aberto = filtrosAbertos;
         $('filtrosPainel').hidden = !aberto;
-        $('btnFiltros').disabled = dash;
         $('btnFiltros').setAttribute('aria-expanded', String(aberto));
         $('setaFiltros').textContent = aberto ? '▴' : '▾';
         resumoFiltros();
       }
       function resumoFiltros() {
         const r = $('resumoFiltros');
-        if (abaAtual === 'dashboard') {
-          r.innerHTML = '<span class="fchip">O dashboard tem os próprios filtros</span>';
-          $('limparFiltros').hidden = true;
-          return;
-        }
+        atualizarLinkDash();
         const txt = (id) => ($(id).selectedOptions[0] || {}).textContent || '',
           ult = $('de').options.length ? $('de').options[$('de').options.length - 1].value : '',
           periodo = $('de').value === $('ate').value ? txt('de') : txt('de') + ' a ' + txt('ate'),
@@ -1883,7 +1886,6 @@
         evol: 'Evolução mensal no município',
         detalhe: 'Detalhe por indicador e equipe',
         repasse: 'Prévia do repasse federal · qualidade e vínculo',
-        dashboard: 'Dashboard das notas metodológicas',
         ajuda: 'Como ler',
       };
       const periodoTexto = () => {
@@ -1945,10 +1947,7 @@
       });
       function aba(a) {
         abaAtual = a;
-        const filtros = a !== 'dashboard';
         mostrarFiltros();
-        $('estado').hidden = !filtros;
-        if (a === 'dashboard' && !$('quadroDash').getAttribute('src')) $('quadroDash').src = '/notas?incorporado=1';
         document.querySelectorAll('[data-aba]').forEach((e) => (e.hidden = e.dataset.aba !== a));
         document.querySelectorAll('#abas .chip').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.a === a)));
         try {
@@ -1965,8 +1964,13 @@
       } catch (_) {}
       const pedida = new URLSearchParams(location.search).get('aba');
       if (pedida && document.querySelector('#abas [data-a="' + pedida + '"]')) a0 = pedida;
-      carregar();
-      aba(a0);
+      if (!document.querySelector('#abas [data-a="' + a0 + '"]')) a0 = 'resumo';
+      // Links antigos para a aba "Dashboard" (que virou página própria) vão para o dashboard.
+      if (pedida === 'dashboard') location.replace('/notas');
+      else {
+        carregar();
+        aba(a0);
+      }
     </script>
   </body>
 </html>
