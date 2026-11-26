@@ -3,6 +3,7 @@
 // dentro dos limites do plano gratuito do Cloudflare.
 import { TABELAS, VERSAO_ESQUEMA } from './esquema.js';
 import { ErroHttp, agora } from './util.js';
+import { garantirCache } from './consultas.js';
 import { garantir as garantirEstadual, garantirVac } from './estadual.js';
 import { garantirHorario } from './filas.js';
 import { garantirProducao } from './producao.js';
@@ -93,7 +94,9 @@ export async function concluirRestauracao(env, corpo) {
     .filter((n) => esperado[n] !== undefined && Number(esperado[n]) !== atual[n])
     .map((n) => ({ tabela: n, esperado: Number(esperado[n]), encontrado: atual[n] }));
   const quando = agora();
+  await garantirCache(env);
   await env.DB.batch([
+    env.DB.prepare('DELETE FROM dados_cache'), // respostas prontas eram dos dados de antes da restauração
     env.DB.prepare(
       "INSERT INTO meta (chave, valor) VALUES ('restaurado_em', ?) ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor",
     ).bind(quando),

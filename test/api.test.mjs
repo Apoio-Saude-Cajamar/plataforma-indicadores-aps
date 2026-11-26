@@ -297,15 +297,25 @@ test('dados da competência ficam prontos no banco e se refazem quando os dados 
   const chamar = cliente(env);
   await semear(chamar);
   const comp = (await chamar('GET', '/competencias')).competencias[0].competencia;
+  // A conclusão da coleta (no semear) já deixou o mês calculado nas três combinações que as telas pedem.
+  assert.equal(await contar(env, 'dados_cache', 'competencia = ?', comp), 3);
   const a = await chamar('GET', '/dados?partes=indicadores&competencia=' + comp);
-  assert.equal(await contar(env, 'dados_cache', 'competencia = ?', comp), 1);
   // Mexer na resposta guardada mostra que a segunda leitura vem dela.
   await env.DB.prepare("UPDATE dados_cache SET json = '{\"competencia\":\"x\",\"indicadores\":[]}'").run();
   const b = await chamar('GET', '/dados?partes=indicadores&competencia=' + comp);
   assert.equal(b.competencia, 'x');
-  // Uma etapa nova muda a marca de alteração: a resposta é refeita com os dados atuais.
+  // Mudança em outro mês não mexe nesta resposta pronta.
+  await chamar('POST', '/coletas', { id: 'outro', competencia: '2026-09', tipo: 'avulsa', iniciadoEm: '2026-12-01T09:00:00Z' });
+  await chamar('PUT', '/coletas/outro/etapa', { chave: 'lista:idosos:x', bloco: 'idosos', status: 'ok', coletadoEm: '2026-12-01T09:01:00Z', linhas: linhasIdosos(10) });
+  assert.equal((await chamar('GET', '/dados?partes=indicadores&competencia=' + comp)).competencia, 'x');
+  // Uma etapa nova do mês muda a marca dele: a resposta é refeita com os dados atuais.
   await chamar('POST', '/coletas', { id: 'nova', competencia: comp, tipo: 'avulsa', iniciadoEm: '2026-12-01T10:00:00Z' });
+  await chamar('PUT', '/coletas/nova/etapa', { chave: 'lista:idosos:y', bloco: 'idosos', status: 'falhou', erro: 'tempo esgotado', coletadoEm: '2026-12-01T10:01:00Z' });
   const c = await chamar('GET', '/dados?partes=indicadores&competencia=' + comp);
   assert.equal(c.competencia, comp);
   assert.equal(c.indicadores.length, a.indicadores.length);
+  // No fim da coleta o mês já fica calculado.
+  await env.DB.prepare('DELETE FROM dados_cache').run();
+  await chamar('POST', '/coletas/nova/concluir', {});
+  assert.equal(await contar(env, 'dados_cache', 'competencia = ?', comp), 3);
 });

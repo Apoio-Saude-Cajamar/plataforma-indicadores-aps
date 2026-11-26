@@ -68,14 +68,15 @@ const CONSULTAS_VIGENTES = {
     WHERE v.competencia = ? AND NOT ${EQUIPE_FORA('c')}`,
 };
 
-// Resposta pronta guardada no próprio banco, por competência e partes pedidas. Vale enquanto nada mudou nos dados
-// (a marca "ultima_alteracao" muda a cada etapa gravada, coleta concluída ou restauração). Assim, abrir o dashboard de
-// novo lê 2 linhas por mês, em vez de refazer a seleção das linhas vigentes (milhares de linhas lidas por mês).
+// Resposta pronta guardada no próprio banco, por competência e partes pedidas: os valores do mês ficam calculados de uma
+// vez (no fim de cada coleta, ou na primeira leitura depois de uma mudança) e valem enquanto nada mudou naquele mês (a
+// marca "alteracao:AAAA-MM" muda a cada etapa gravada ou coleta concluída do mês; a restauração de backup apaga tudo).
+// Abrir o dashboard de novo lê 2 linhas por mês, em vez de refazer a seleção das linhas vigentes (milhares por mês).
 const SQL_CACHE = `CREATE TABLE IF NOT EXISTS dados_cache (
   competencia TEXT NOT NULL, partes TEXT NOT NULL, versao TEXT NOT NULL, json TEXT NOT NULL, gerado_em TEXT NOT NULL,
   PRIMARY KEY (competencia, partes))`;
 const cacheProntos = new WeakSet();
-async function garantirCache(env) {
+export async function garantirCache(env) {
   if (cacheProntos.has(env.DB)) return;
   await env.DB.prepare(SQL_CACHE).run();
   cacheProntos.add(env.DB);
@@ -96,10 +97,10 @@ export async function dadosVigentes(env, comp, pedido) {
   try {
     await garantirCache(env);
     const [m, c] = await env.DB.batch([
-      env.DB.prepare("SELECT valor FROM meta WHERE chave = 'ultima_alteracao'"),
+      env.DB.prepare("SELECT valor FROM meta WHERE chave = 'alteracao:' || ?").bind(comp),
       env.DB.prepare('SELECT versao, json FROM dados_cache WHERE competencia = ? AND partes = ?').bind(comp, chave),
     ]);
-    versao = String(m.results[0]?.valor ?? '');
+    versao = String(m.results[0]?.valor ?? 'inicial');
     const guardado = c.results[0];
     if (guardado && guardado.versao === versao) return guardado.json;
   } catch (_) {

@@ -3,6 +3,7 @@
 // substitui os dados anteriores dela, sem duplicar.
 import { MAPA_ENVIO, TABELAS_DA_ETAPA, CAMPOS_LINHA } from './esquema.js';
 import { ErroHttp, agora, competencia, dataIso, texto, inteiro } from './util.js';
+import { dadosVigentes } from './consultas.js';
 
 const TIPOS_COLETA = new Set(['completa', 'avulsa', 'final_gerenciais', 'importada']);
 const STATUS_FINAIS = new Set(['concluida', 'parcial', 'cancelada']);
@@ -10,6 +11,12 @@ const MAX_ITENS = 20000;
 
 function marcarAlteracao(env, quando) {
   return env.DB.prepare("UPDATE meta SET valor = ? WHERE chave = 'ultima_alteracao'").bind(quando);
+}
+// Marca da competência: as respostas prontas daquele mês (dados_cache) deixam de valer; as dos outros meses continuam.
+function marcarCompetencia(env, comp, quando) {
+  return env.DB.prepare(
+    "INSERT INTO meta (chave, valor) VALUES ('alteracao:' || ?, ?) ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor",
+  ).bind(comp, quando);
 }
 
 export async function criarColeta(env, corpo) {
@@ -132,6 +139,7 @@ export async function gravarEtapa(env, coletaId, corpo) {
     const r = await env.DB.batch([
       env.DB.prepare(sqlEtapa + " WHERE etapa.status <> 'ok'").bind(...valoresEtapa),
       marcarAlteracao(env, quando),
+      marcarCompetencia(env, comp, quando),
     ]);
     return { chave, status, gravada: (r[0].meta?.changes ?? 1) > 0 };
   }
@@ -161,7 +169,7 @@ export async function gravarEtapa(env, coletaId, corpo) {
       ).bind(coletaId, chave, comp, quando, JSON.stringify(avisos)),
     );
   }
-  comandos.push(marcarAlteracao(env, quando));
+  comandos.push(marcarAlteracao(env, quando), marcarCompetencia(env, comp, quando));
   await env.DB.batch(comandos); // tudo ou nada
 
   return {
@@ -181,7 +189,7 @@ export async function gravarEtapa(env, coletaId, corpo) {
 export const MARCA_SUBSTITUIDA = 'Substituída pela coleta ';
 
 export async function concluirColeta(env, coletaId, corpo) {
-  await buscarColeta(env, coletaId);
+  const coleta = await buscarColeta(env, coletaId);
   const status = corpo.status || 'concluida';
   if (!STATUS_FINAIS.has(status)) throw new ErroHttp(400, 'Status final deve ser concluida, parcial ou cancelada.');
   const quando = agora();
@@ -200,8 +208,15 @@ export async function concluirColeta(env, coletaId, corpo) {
                              WHERE a.competencia = n.competencia AND a.id <> n.id AND a.iniciado_em <= n.iniciado_em)`,
       ).bind(MARCA_SUBSTITUIDA + coletaId + '.', coletaId, coletaId, coletaId),
     );
-  ops.push(marcarAlteracao(env, quando));
+  ops.push(marcarAlteracao(env, quando), marcarCompetencia(env, coleta.competencia, quando));
   const feitos = await env.DB.batch(ops);
+  // Os números do mês já ficam calculados e guardados no fim da coleta, nas combinações que as telas pedem (Dashboard,
+  // Dados, Filas, Municipal e página pública: indicadores; Produção: + atendimentos; Relatório: + faltas).
+  if (status !== 'cancelada')
+    for (const partes of ['indicadores', 'indicadores,atendimentos', 'indicadores,absenteismo'])
+      try {
+        await dadosVigentes(env, coleta.competencia, partes);
+      } catch (_) {}
   const substituidas = substituir ? feitos[1].meta?.changes || 0 : 0;
   const resumo = await env.DB.prepare(
     `SELECT
