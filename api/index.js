@@ -223,6 +223,9 @@ const PUBLICAS = [
   /^\/manifest\.webmanifest$/,
   /^\/sw\.js$/,
   /^\/offline(\.html)?$/,
+  // Emissor de relatórios fora do Painel: só o código; os dados são os arquivos que a pessoa escolhe no próprio computador.
+  // Abre mesmo quando o banco está fora do ar.
+  /^\/relatorio-local(\.html)?$/,
 ];
 const SO_ADMIN = [
   /^\/usuarios(\.html)?$/,

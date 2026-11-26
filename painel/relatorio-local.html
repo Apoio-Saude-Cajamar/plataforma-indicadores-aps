@@ -1,0 +1,3683 @@
+<!-- Gerado por scripts/gerar-relatorio-local.py a partir de painel/relatorio.html. Não edite à mão. -->
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Relatório (fora do Painel) · Painel APS</title>
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJQYWluZWwgQVBTIj4KICA8cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iNTgiIGhlaWdodD0iNTgiIHJ4PSIxNCIgZmlsbD0iIzFGM0M3MiIvPgogIDxyZWN0IHg9IjE0IiB5PSIzNCIgd2lkdGg9IjgiIGhlaWdodD0iMTYiIHJ4PSIyIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9Ii41NSIvPgogIDxyZWN0IHg9IjI4IiB5PSIyNCIgd2lkdGg9IjgiIGhlaWdodD0iMjYiIHJ4PSIyIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9Ii44Ii8+CiAgPHJlY3QgeD0iNDIiIHk9IjE2IiB3aWR0aD0iOCIgaGVpZ2h0PSIzNCIgcng9IjIiIGZpbGw9IiMwMEE3RTciLz4KICA8cGF0aCBkPSJNMTMgMjcgTDI1IDE5IEwzNCAyMyBMNDkgMTEiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFDOUM3NiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTEiIHI9IjMuMiIgZmlsbD0iIzFDOUM3NiIvPgo8L3N2Zz4K" type="image/svg+xml" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap" />
+    <script>
+// Fonte local: responde às chamadas da API do relatório com os arquivos exportados pela extensão. Os arquivos são lidos
+// só neste navegador; nada sai do computador.
+(function () {
+  const ARQ = { porComp: {}, composicao: null };
+  let liberar;
+  const prontos = new Promise((r) => (liberar = r));
+  window.FONTE_LOCAL = { ARQ, liberar: () => liberar() };
+  const orig = window.fetch ? window.fetch.bind(window) : null;
+  const resp = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json' } });
+  // Mesmas regras do Painel (api/vigente.js): atenção domiciliar não conta; a C1 é só de equipe de verdade (fora "Sem
+  // equipe", "INE não encontrado" e Consultório na Rua).
+  const fora = (e) => / EMAD | EMAP | SA.*DE EM CASA | MELHOR EM CASA /.test(' ' + String(e || '').toUpperCase() + ' ');
+  const contaC1 = (e) => !/SEM EQUIPE|^INE N.*ENCONTRADO|CONSULT.*RIO.*RUA/.test(String(e || '').toUpperCase());
+  window.fetch = async (url, opcoes) => {
+    const u = new URL(String(url), 'http://local/');
+    if (!u.pathname.startsWith('/api/v1/')) return orig ? orig(url, opcoes) : resp({}, 404);
+    const p = u.pathname.slice(7);
+    await prontos;
+    // "Emitido por": o nome digitado na carga (o perfil aparece como "emissão fora do Painel").
+    if (p === '/auth/eu') return resp({ usuario: { nome: window.FONTE_LOCAL.nome || 'Não identificado', perfil: 'gestor', origem: 'local' } });
+    const comps = Object.keys(ARQ.porComp).sort().reverse();
+    if (p === '/competencias') return resp({ competencias: comps.map((c) => ({ competencia: c, coletas: 1, ultimaColetaEm: ARQ.porComp[c].quando })) });
+    if (p === '/dados') {
+      const c = ARQ.porComp[u.searchParams.get('competencia')];
+      return resp({ competencia: u.searchParams.get('competencia'), indicadores: c ? c.indicadores : [], atendimentos: c ? c.atendimentos : [], absenteismo: c ? c.absenteismo : [], escuta: [] });
+    }
+    if (p === '/composicao') return resp({ composicao: ARQ.composicao });
+    if (p === '/estadual/lancamentos') return resp({ vigentes: [] });
+    if (p === '/vacinas-pec') return resp({ doses: [] });
+    if (p === '/filas') return resp({ competencias: [], profissionais: [], horarios: [] });
+    if (p === '/relatorios/emissao') return resp({ ok: true, local: true });
+    return resp({ erro: 'Não disponível fora do Painel.' }, 404);
+  };
+  // Arquivo exportado pela extensão → o que ela manda ao Painel (as linhas de cada equipe, como no envio da coleta).
+  // As linhas lidas do PEC vêm inteiras do arquivo ("linhas"); as calculadas na extensão (C1, Q14.2.1, B1 a B6, M2 e
+  // atividades coletivas) vêm do resumo por equipe ("indicadores"). C7 e CVAT o Painel calcula pelos itens, como lá.
+  const CAMPOS = ['codigo', 'recorte', 'unidade', 'unidadeCnes', 'equipe', 'ine', 'tipoEquipe', 'numerador', 'denominador', 'somaPontos', 'valor', 'excluidos', 'itens'];
+  const DE_HOJE = ['Q12.2', 'VINC6A12']; // coleta retroativa: o que só vale para o dia de hoje não vai ao Painel
+  window.FONTE_LOCAL.converter = function (j) {
+    const tipos = new Map();
+    for (const l of j.linhas || []) {
+      const k = l.unidade + '|' + l.equipe;
+      if (!tipos.has(k) && (l.ine || l.tipoEquipe)) tipos.set(k, { ine: l.ine || null, tipo: l.tipoEquipe || null, cnes: l.unidadeCnes || null });
+    }
+    for (const e of (j.cubos && j.cubos.equipes) || []) {
+      const k = e.unidade + '|' + e.nome;
+      if (!tipos.has(k)) tipos.set(k, { ine: e.ine || null, tipo: e.tipo || null, cnes: null });
+    }
+    const quando = j.iniciadoEm || j.concluidoEm || '';
+    const lidos = new Set((j.linhas || []).map((l) => l.codigo));
+    const calculadas = (j.indicadores || [])
+      .filter((x) => x.nivel === 'equipe' && !lidos.has(x.codigo) && x.codigo !== 'C7' && x.codigo !== 'CVAT')
+      .map((x) => {
+        const t = tipos.get(x.unidade + '|' + x.equipe) || {};
+        return Object.assign({}, x, { ine: t.ine || null, tipoEquipe: t.tipo || null, unidadeCnes: t.cnes || null });
+      });
+    const linhas = [...(j.linhas || []), ...calculadas]
+      .filter((l) => !(j.retroComData && DE_HOJE.includes(l.codigo)))
+      .map((l) => {
+        const o = { coletadoEm: quando, coletaId: j.id || null };
+        for (const c of CAMPOS) o[c] = l[c] ?? null;
+        o.recorte = l.recorte || 'situacao';
+        o.unidade = l.unidade || 'Município';
+        o.equipe = l.equipe || 'Município';
+        return o;
+      })
+      .filter((l) => !fora(l.equipe) && (l.codigo !== 'C1' || contaC1(l.equipe)));
+    const cubo = (n) => (j.cubos && Array.isArray(j.cubos[n]) && j.cubos[n].length ? j.cubos[n] : null);
+    return { competencia: j.competencia, quando, linhas, atendimentos: cubo('atendimentos'), absenteismo: cubo('absenteismo'), composicao: j.composicao || null };
+  };
+  // Vários arquivos do mesmo mês: vale, por indicador e equipe (pelo INE ou unidade e nome), a linha da coleta mais
+  // recente, como no Painel; faltas e atendimentos vêm da coleta mais recente que os leu.
+  window.FONTE_LOCAL.juntar = function (coletas) {
+    const cs = [...coletas].sort((a, b) => String(b.quando).localeCompare(String(a.quando)));
+    const vistos = new Set();
+    const indicadores = [];
+    for (const c of cs)
+      for (const l of c.linhas) {
+        const k = l.codigo + '|' + l.recorte + '|' + (l.ine ? 'ine:' + l.ine : l.unidade + '|' + l.equipe);
+        if (vistos.has(k)) continue;
+        vistos.add(k);
+        indicadores.push(Object.assign({}, l, { unidade: /^M[12]$/.test(l.codigo) ? 'Município' : l.unidade }));
+      }
+    const cubo = (n) => ((cs.find((c) => c[n]) || {})[n] || []).filter((x) => !fora(x.equipe));
+    return { quando: cs[0].quando, indicadores, atendimentos: cubo('atendimentos'), absenteismo: cubo('absenteismo') };
+  };
+})();
+</script>
+    <style>
+.fonte-local{max-width:1100px;margin:16px auto 20px;padding:18px 20px;border:2px solid #d5dce8;border-radius:14px;background:#fff;font-family:Montserrat,system-ui,sans-serif}
+.fonte-local h2{margin:0 0 6px;font-size:18px;color:#1f3c72}.fonte-local p{margin:0 0 12px;font-size:14px;line-height:1.5;color:#33414c}
+.fl-zona{display:flex;align-items:center;justify-content:center;min-height:88px;padding:12px;border:2px dashed #9fb3c8;border-radius:12px;cursor:pointer;text-align:center;font-weight:600;color:#1f3c72}
+.fl-zona.sobre{background:#e3f0f9}.fl-zona input{position:absolute;width:1px;height:1px;opacity:0}
+#flLista{margin:12px 0;padding-left:18px;font-size:14px}#flErro{color:#8a1b2a;font-weight:700}
+.fl-nome{display:flex;flex-direction:column;gap:4px;max-width:420px;margin:0 0 14px;font-size:12px;font-weight:700;color:#4a5670;text-transform:uppercase;letter-spacing:.04em}
+.fl-nome input{font:inherit;font-size:15px;font-weight:600;text-transform:none;letter-spacing:0;min-height:42px;padding:0 12px;border:2px solid #d5dce8;border-radius:10px;background:#fff;color:#1b2340}
+.fonte-local.carregado .fl-zona,.fonte-local.carregado #flMontar,.fonte-local.carregado .fl-nome{display:none}
+html[data-tema='escuro'] .fonte-local{background:#1a2531;border-color:#2c3a48}
+html[data-tema='escuro'] .fonte-local h2,html[data-tema='escuro'] .fl-zona{color:#e6edf3}
+html[data-tema='escuro'] .fonte-local p,html[data-tema='escuro'] #flLista,html[data-tema='escuro'] .fl-nome{color:#a7b4c0}
+html[data-tema='escuro'] .fl-zona{border-color:#4a5d70}html[data-tema='escuro'] .fl-zona.sobre{background:#22344a}
+html[data-tema='escuro'] .fl-nome input{background:#0e151c;border-color:#2c3a48;color:#e6edf3}
+html[data-tema='escuro'] #flErro{color:#ff9aa8}
+body.sem-dados .ferr,body.sem-dados #doc,body.sem-dados .dica{display:none}
+@media (max-width:599px){main{padding:16px}.fonte-local{margin-top:0;padding:16px}.ferr label{flex:1 1 100%}.ferr select{min-width:0;width:100%}.ferr .acoes{margin-left:0}}
+@media print{.fonte-local{display:none}}
+</style>
+    <style id="pagina">
+      @page {
+        size: A4 portrait;
+      }
+    </style>
+    <style>
+* {
+  box-sizing: border-box;
+}
+[hidden] {
+  display: none !important;
+}
+body {
+  margin: 0;
+  font-family: Montserrat, system-ui, sans-serif;
+  color: #1b2340;
+  background: #f4f7fb;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+a:focus-visible,
+button:focus-visible,
+select:focus-visible {
+  outline: 3px solid #00a7e7;
+  outline-offset: 3px;
+}
+header.topo-site {
+  background: #1f3c72;
+  border-bottom: 4px solid #00a7e7;
+  color: #fff;
+}
+.topo {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 800;
+  font-size: 19px;
+}
+.barra-usuario {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+.barra-usuario a,
+.barra-usuario button {
+  color: inherit;
+  font: inherit;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 99px;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 32px 24px;
+}
+.ferr {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  align-items: flex-end;
+  background: #fff;
+  border: 2px solid #d5dce8;
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+}
+.ferr label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #4a5670;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.ferr select {
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 2px solid #d5dce8;
+  border-radius: 10px;
+  background: #fff;
+  color: #1b2340;
+  min-width: 170px;
+}
+.ferr .acoes {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.btn {
+  font: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 99px;
+  border: 2px solid #1f3c72;
+  background: #1f3c72;
+  color: #fff;
+  cursor: pointer;
+}
+.btn.sec {
+  background: #fff;
+  color: #1f3c72;
+}
+.dica {
+  font-size: 13px;
+  color: #4a5670;
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+/* O documento: sempre claro, como uma folha. */
+#doc {
+  background: #fff;
+  color: #1b2340;
+  border: 2px solid #d5dce8;
+  border-radius: 14px;
+  padding: 32px 36px;
+  line-height: 1.5;
+}
+#doc .capa {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  border-bottom: 4px solid #00a7e7;
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+}
+#doc .capa img {
+  width: 48px;
+  height: 48px;
+}
+#doc .capa .org {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #4a5670;
+}
+#doc h1 {
+  margin: 2px 0 0;
+  font-size: 26px;
+  font-weight: 800;
+  color: #1f3c72;
+  line-height: 1.2;
+}
+#doc .meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px 24px;
+  margin: 0 0 20px;
+  font-size: 13px;
+}
+#doc .meta dt {
+  font-weight: 700;
+  color: #4a5670;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+#doc .meta dd {
+  margin: 0;
+  font-weight: 600;
+}
+#doc h2 {
+  margin: 26px 0 6px;
+  font-size: 18px;
+  color: #1f3c72;
+  border-bottom: 2px solid #d5dce8;
+  padding-bottom: 4px;
+  break-after: avoid;
+}
+#doc h3 {
+  margin: 16px 0 6px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #4a5670;
+  break-after: avoid;
+}
+#doc p {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+#doc table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12.5px;
+  margin: 0 0 10px;
+}
+#doc th,
+#doc td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid #e3e8f0;
+  vertical-align: top;
+}
+#doc th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #4a5670;
+  background: #f4f7fb;
+}
+#doc td.n,
+#doc th.n {
+  text-align: right;
+  white-space: nowrap;
+}
+#doc tr {
+  break-inside: avoid;
+}
+#doc tr.filho td {
+  background: #fafbfd;
+  font-size: 0.94em;
+  color: #33405c;
+}
+#doc tr.filho td:first-child {
+  padding-left: 30px;
+  position: relative;
+}
+#doc tr.filho td:first-child::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  top: 0;
+  bottom: 50%;
+  width: 8px;
+  border-left: 2px solid #b8c3d6;
+  border-bottom: 2px solid #b8c3d6;
+  border-radius: 0 0 0 5px;
+}
+#doc tr.filho + tr:not(.filho) td {
+  border-top: 6px solid #fff;
+}
+#doc tr:not(.filho):has(+ tr.filho) td {
+  border-bottom-color: transparent;
+}
+#doc table {
+  table-layout: auto;
+}
+#doc table.un th,
+#doc table.un td {
+  padding: 5px 5px;
+  font-size: 11.5px;
+}
+#doc table.un td:first-child {
+  white-space: normal;
+  min-width: 120px;
+}
+#doc {
+  overflow-x: auto;
+}
+#doc small {
+  display: block;
+  color: #4a5670;
+  font-size: 11px;
+}
+#doc .cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+  margin: 8px 0 6px;
+}
+#doc .card {
+  border: 1px solid #d5dce8;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+#doc .card small {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+#doc .card .v {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1f3c72;
+  line-height: 1.2;
+}
+.cc {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 99px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+.k-o {
+  background: #c7ecd9;
+  color: #0f5a41;
+}
+.k-b {
+  background: #d9ecf8;
+  color: #0b4f73;
+}
+.k-s {
+  background: #fbf0d3;
+  color: #6e4700;
+}
+.k-r {
+  background: #f8d9dc;
+  color: #8a1b2a;
+}
+#doc .vazio {
+  padding: 10px 12px;
+  border: 1px dashed #b9c4c9;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #4a5670;
+}
+#doc .rodadoc {
+  margin-top: 26px;
+  padding-top: 10px;
+  border-top: 1px solid #d5dce8;
+  font-size: 11px;
+  color: #4a5670;
+}
+#doc .reg {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(220px, 1.6fr);
+  gap: 4px 18px;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid #e3e8f0;
+  break-inside: avoid;
+}
+#doc .reg .nm {
+  font-size: 12.5px;
+  line-height: 1.3;
+}
+#doc .reg .nm b {
+  color: #1f3c72;
+}
+#doc .reg .vl {
+  font-size: 12px;
+  margin-top: 2px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.rg {
+  position: relative;
+  margin-right: 14px;
+  height: 16px;
+  box-shadow: 0 0 0 1px rgba(20, 33, 43, 0.45);
+  border-radius: 4px;
+  display: flex;
+  overflow: visible;
+  margin: 6px 0 16px;
+}
+.rg .sg {
+  height: 100%;
+}
+.rg .sg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #14212b;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 1px solid rgba(20, 33, 43, 0.45);
+}
+.sg.k-r,
+.leg i.k-r {
+  background: #f1b3b3;
+}
+.sg.k-s,
+.leg i.k-s {
+  background: #f5dc9b repeating-linear-gradient(45deg, rgba(20, 33, 43, 0.38) 0 1px, transparent 1px 5px);
+}
+.sg.k-b,
+.leg i.k-b {
+  background: #a9d3ee repeating-linear-gradient(90deg, rgba(20, 33, 43, 0.38) 0 1px, transparent 1px 4px);
+}
+.sg.k-o,
+.leg i.k-o {
+  background: #9ed8b8 radial-gradient(rgba(20, 33, 43, 0.55) 1px, transparent 1.3px) 0 0/5px 5px;
+}
+@media print {
+  .sg.k-r,
+  .leg i.k-r {
+    background-color: #fff !important;
+  }
+  .sg.k-s,
+  .leg i.k-s {
+    background-color: #e6e6e6 !important;
+  }
+  .sg.k-b,
+  .leg i.k-b {
+    background-color: #bdbdbd !important;
+  }
+  .sg.k-o,
+  .leg i.k-o {
+    background-color: #8c8c8c !important;
+  }
+  .sg.k-o {
+    color: #fff;
+  }
+  .leg i {
+    border: 1px solid #555;
+  }
+}
+.rg .sg:first-child {
+  border-radius: 4px 0 0 4px;
+}
+.rg .sg:last-child {
+  border-radius: 0 4px 4px 0;
+}
+.rg .tk {
+  position: absolute;
+  top: 18px;
+  transform: translateX(-50%);
+  font-size: 9.5px;
+  color: #4a5670;
+  white-space: nowrap;
+}
+.rg .rng {
+  position: absolute;
+  left: 0;
+  top: 5px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(20, 33, 43, 0.55);
+}
+.rg .rf {
+  position: absolute;
+  top: -3px;
+  width: 10px;
+  height: 22px;
+  margin-left: -5px;
+  background: #fff;
+  border: 3px solid #1f3c72;
+  border-radius: 3px;
+  box-sizing: border-box;
+}
+.pag {
+  margin-top: 6px;
+}
+.pag > h2:first-child {
+  margin-top: 22px;
+}
+.eqcab {
+  border-left: 6px solid #00a7e7;
+  padding: 2px 0 2px 12px;
+  margin: 22px 0 8px;
+}
+.eqcab h2 {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  font-size: 20px;
+}
+.eqcab small {
+  font-size: 12px;
+}
+.rg .mn {
+  position: absolute;
+  top: -3px;
+  width: 14px;
+  height: 22px;
+  margin-left: -7px;
+  background: #1f3c72;
+  border: 2px solid #fff;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px #1f3c72;
+}
+.leg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 11px;
+  color: #4a5670;
+  margin: 4px 0 10px;
+}
+.leg i {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  vertical-align: -2px;
+  margin-right: 4px;
+}
+.bar {
+  position: relative;
+  height: 10px;
+  background: #eef1f5;
+  border-radius: 5px;
+  min-width: 90px;
+}
+.bar > span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 5px;
+}
+.bar > em {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: #14212b;
+}
+.so-csv {
+  display: none;
+}
+#doc table.rep {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+}
+#doc table.rep > thead > tr > th {
+  background: #fff;
+  padding: 0 0 8px;
+  border: 0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: inherit;
+  color: inherit;
+}
+#doc table.rep > tbody > tr > td {
+  padding: 0;
+  border: 0;
+}
+#doc table.rep > tbody > tr,
+#doc table.rep > thead > tr {
+  break-inside: auto;
+}
+.ebn {
+  background: #1f3c72;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+.ebn small,
+#doc .ebn small {
+  color: #fff;
+  opacity: 0.9;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ebn b {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.ebn span {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #e3eef9;
+}
+.ebn.n-m {
+  background: #14212b;
+}
+.ebn.n-e {
+  border-left: 14px solid #00a7e7;
+}
+.sel {
+  background: #fff;
+  border: 2px solid #d5dce8;
+  border-radius: 10px;
+  padding: 8px 12px;
+  max-height: 240px;
+  overflow: auto;
+  font-size: 13px;
+  min-width: 280px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+.sel label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-direction: row;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #1b2340;
+  padding: 2px 0;
+}
+.sel .gr {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4a5670;
+  margin: 8px 0 2px;
+}
+dialog#dlg {
+  border: 0;
+  border-radius: 16px;
+  padding: 0;
+  max-width: 560px;
+  width: calc(100% - 32px);
+  box-shadow: 0 20px 60px rgba(20, 33, 43, 0.35);
+  color: #1b2340;
+}
+dialog#dlg::backdrop {
+  background: rgba(20, 33, 43, 0.5);
+}
+#dlg form {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+#dlg h2 {
+  margin: 0;
+  font-size: 19px;
+  color: #1f3c72;
+}
+#dlg p {
+  margin: 0;
+  font-size: 13px;
+  color: #4a5670;
+  line-height: 1.5;
+}
+#dlg fieldset {
+  border: 2px solid #d5dce8;
+  border-radius: 10px;
+  margin: 0;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+#dlg fieldset legend {
+  font-size: 12px;
+  font-weight: 700;
+  color: #4a5670;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0 6px;
+}
+#dlg fieldset label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+#dlg .rod {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+#dlg .sel {
+  max-height: 220px;
+}
+@media (max-width: 700px) {
+  main {
+    padding: 16px;
+  }
+  #doc {
+    padding: 18px;
+  }
+}
+@media print {
+  .pag + .pag {
+    break-before: page;
+  }
+  .pag > h2:first-child {
+    margin-top: 0;
+  }
+  @page {
+    margin: 14mm 12mm 16mm;
+    @bottom-left {
+      content: 'Painel APS · Cajamar';
+      font-size: 9px;
+      color: #4a5670;
+    }
+    @bottom-right {
+      content: 'Página ' counter(page) ' de ' counter(pages);
+      font-size: 9px;
+      color: #4a5670;
+    }
+  }
+  #doc,
+  #doc * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body {
+    background: #fff;
+  }
+  header.topo-site,
+  .ferr,
+  .dica,
+  #rodape-aps,
+  .menu-aps {
+    display: none !important;
+  }
+  main {
+    max-width: none;
+    padding: 0;
+  }
+  #doc {
+    border: 0;
+    padding: 0;
+    border-radius: 0;
+  }
+  #doc table {
+    font-size: 10.5px;
+  }
+  #doc h2 {
+    font-size: 15px;
+  }
+}
+
+</style>
+    <style>
+/* Temas das páginas padrão do Painel APS. "Personalizado" é o visual original e não precisa de regras;
+   Claro e Escuro só trocam cores, sem mudar fonte, tamanhos nem estrutura. A escolha vale para todas as páginas. */
+.tema-aps {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 99px;
+}
+.tema-aps button {
+  all: unset;
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.75;
+}
+.tema-aps button:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.16);
+}
+.tema-aps button[aria-pressed='true'] {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.26);
+}
+.tema-aps button:focus-visible {
+  outline: 3px solid #00a7e7;
+  outline-offset: 1px;
+}
+.tema-aps svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- Claro ---------- */
+html[data-tema='claro'] body {
+  background: #f4f6f5;
+  color: #14212b;
+}
+html[data-tema='claro'] header {
+  background: #ffffff;
+  color: #14212b;
+  border-bottom: 1px solid #dce2e0;
+}
+html[data-tema='claro'] header .barra-usuario,
+html[data-tema='claro'] header .menu-aps a,
+html[data-tema='claro'] header .menu-aps summary,
+html[data-tema='claro'] header .marca,
+html[data-tema='claro'] header .logo {
+  color: #14212b;
+}
+html[data-tema='claro'] header .barra-usuario a,
+html[data-tema='claro'] header .barra-usuario button,
+html[data-tema='claro'] .tema-aps {
+  border-color: #b9c4c9;
+}
+html[data-tema='claro'] .menu-aps a:hover,
+html[data-tema='claro'] .menu-aps summary:hover,
+html[data-tema='claro'] .tema-aps button:hover {
+  background: #e7eef3;
+}
+html[data-tema='claro'] .menu-aps a[aria-current='page'],
+html[data-tema='claro'] .tema-aps button[aria-pressed='true'] {
+  background: #d9e4ec;
+}
+html[data-tema='claro'] h1,
+html[data-tema='claro'] .voltar,
+html[data-tema='claro'] .ferr a {
+  color: #0b3f5e;
+}
+
+html[data-tema='claro'] .sub-aps {
+  background: #ffffff;
+  border-bottom: 1px solid #dce2e0;
+}
+html[data-tema='claro'] .sub-aps a {
+  color: #4a5670;
+  margin-bottom: -1px;
+}
+html[data-tema='claro'] .sub-aps a:hover {
+  color: #14212b;
+}
+html[data-tema='claro'] .sub-aps a[aria-current='page'] {
+  color: #0b3f5e;
+  border-bottom-color: #0e5e8c;
+}
+
+/* ---------- Escuro ---------- */
+html[data-tema='escuro'] {
+  color-scheme: dark;
+}
+html[data-tema='escuro'] body {
+  background: #0e151c;
+  color: #e6edf3;
+}
+html[data-tema='escuro'] header {
+  background: #16202a;
+  border-bottom: 4px solid #5aa9e0;
+  color: #e6edf3;
+}
+html[data-tema='escuro'] h1,
+html[data-tema='escuro'] .bloco h2,
+html[data-tema='escuro'] .card .v,
+html[data-tema='escuro'] tr.dir td,
+html[data-tema='escuro'] .ferr b {
+  color: #e6edf3;
+}
+html[data-tema='escuro'] .voltar,
+html[data-tema='escuro'] .ferr a,
+html[data-tema='escuro'] main details summary,
+html[data-tema='escuro'] button.ab,
+html[data-tema='escuro'] .intro a,
+html[data-tema='escuro'] .nota a {
+  color: #7cc0ee;
+}
+html[data-tema='escuro'] .intro,
+html[data-tema='escuro'] .nota,
+html[data-tema='escuro'] .ferr,
+html[data-tema='escuro'] .txt span.d,
+html[data-tema='escuro'] .card small,
+html[data-tema='escuro'] .card .s,
+html[data-tema='escuro'] .bloco p.d,
+html[data-tema='escuro'] th,
+html[data-tema='escuro'] .vazio,
+html[data-tema='escuro'] tr.eq td,
+html[data-tema='escuro'] details p,
+html[data-tema='escuro'] .sel label,
+html[data-tema='escuro'] .form label {
+  color: #a7b4c0;
+}
+html[data-tema='escuro'] .card,
+html[data-tema='escuro'] .bloco,
+html[data-tema='escuro'] .linha {
+  background: #16202a;
+  border-color: #2a3743;
+}
+html[data-tema='escuro'] .card {
+  background: #1a2531;
+}
+html[data-tema='escuro'] .linha:hover {
+  border-color: #5aa9e0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+html[data-tema='escuro'] th,
+html[data-tema='escuro'] td {
+  border-bottom-color: #22303c;
+}
+html[data-tema='escuro'] tr.dir td {
+  background: #1c2b38;
+}
+html[data-tema='escuro'] select,
+html[data-tema='escuro'] input,
+html[data-tema='escuro'] textarea {
+  background: #0e151c;
+  color: #e6edf3;
+  border-color: #4b5d6e;
+}
+html[data-tema='escuro'] .chip {
+  background: #16202a;
+  color: #e6edf3;
+  border-color: #4b5d6e;
+}
+html[data-tema='escuro'] .chip[aria-pressed='true'] {
+  background: #e6edf3;
+  color: #0e151c;
+  border-color: #e6edf3;
+}
+html[data-tema='escuro'] .btn.p,
+html[data-tema='escuro'] .btn:not(.s):not(.p) {
+  background: #5aa9e0;
+  color: #0e151c;
+}
+html[data-tema='escuro'] .btn.p svg {
+  stroke: #0e151c;
+}
+html[data-tema='escuro'] .btn.s {
+  color: #7cc0ee;
+  border-color: #7cc0ee;
+}
+html[data-tema='escuro'] .info {
+  background: #1c2b38;
+  color: #7cc0ee;
+}
+html[data-tema='escuro'] .pill.c-o,
+html[data-tema='escuro'] .ok {
+  background: #1f4d3c;
+  color: #9be3c0;
+}
+html[data-tema='escuro'] .pill.c-b {
+  background: #1c3a52;
+  color: #9ccdf2;
+}
+html[data-tema='escuro'] .pill.c-s,
+html[data-tema='escuro'] .dev,
+html[data-tema='escuro'] .pill.p75,
+html[data-tema='escuro'] .pill.p50 {
+  background: #4a3c14;
+  color: #f3d27a;
+}
+html[data-tema='escuro'] .pill.c-r,
+html[data-tema='escuro'] .pill.p25,
+html[data-tema='escuro'] .pill.p0 {
+  background: #5e2f35;
+  color: #f5b5bc;
+}
+html[data-tema='escuro'] .pill.p100 {
+  background: #1f4d3c;
+  color: #9be3c0;
+}
+html[data-tema='escuro'] .pill.pn,
+html[data-tema='escuro'] .cfg {
+  background: #2e3b48;
+  color: #c5d0da;
+}
+html[data-tema='escuro'] .menu-aps details > div {
+  background: #16202a;
+  border-color: #2a3743;
+}
+html[data-tema='escuro'] .menu-aps details > div a {
+  color: #e6edf3;
+}
+html[data-tema='escuro'] .menu-aps details > div a:hover {
+  background: #22303c;
+}
+html[data-tema='escuro'] .menu-aps details > div a[aria-current='page'] {
+  background: #1c2b38;
+}
+html[data-tema='escuro'] .msg.ok {
+  color: #7ad39e;
+}
+html[data-tema='escuro'] .msg.er {
+  color: #f29a72;
+}
+html[data-tema='escuro'] .up {
+  color: #7ad39e;
+}
+html[data-tema='escuro'] .dn {
+  color: #f29a72;
+}
+html[data-tema='escuro'] #aviso-adm {
+  background: #3a2f12 !important;
+  border-color: #8a6a1f !important;
+  color: #f3d27a !important;
+}
+html[data-tema='escuro'] .card .v {
+  color: #e6edf3;
+}
+
+/* Páginas que usam as variáveis do painelaps.css (Composição, Usuários): o tema escolhido vale sobre o modo do sistema. */
+html[data-tema='claro'],
+html[data-tema='personalizado'] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --ink: #1b2340;
+  --muted: #5a6478;
+  --line: #d9e1ea;
+  --field: #ffffff;
+  --primary: #1f3c72;
+  --primary-ink: #fff;
+  --link: #1f3c72;
+  --danger: #b3261e;
+  --danger-bg: #fdecea;
+  --ok-bg: #e7f6ef;
+  --ok: #14684f;
+}
+html[data-tema='claro'] {
+  --bg: #f4f6f5;
+}
+html[data-tema='escuro'] {
+  --bg: #0e151c;
+  --surface: #16202a;
+  --ink: #e6edf3;
+  --muted: #a7b4c0;
+  --line: #2a3743;
+  --field: #0e151c;
+  --primary: #7cc0ee;
+  --primary-ink: #0e151c;
+  --link: #7cc0ee;
+  --danger: #ff8c82;
+  --danger-bg: #3a1f1e;
+  --ok-bg: #173329;
+  --ok: #7ce1c2;
+}
+html[data-tema='escuro'] .sub-aps {
+  background: #111a22;
+  border-bottom-color: #5aa9e0;
+}
+html[data-tema='escuro'] .sub-aps a {
+  color: #a7b4c0;
+}
+html[data-tema='escuro'] .sub-aps a:hover,
+html[data-tema='escuro'] .sub-aps a[aria-current='page'] {
+  color: #e6edf3;
+}
+
+</style>
+    <style>
+/* Painel APS · tela de carregamento e transição entre páginas (mesma identidade em todas as telas). */
+@media (prefers-reduced-motion: no-preference) {
+  /* Navegação entre páginas do Painel com troca suave (o cabeçalho fica no lugar) em navegadores que suportam. */
+  @view-transition {
+    navigation: auto;
+  }
+  header {
+    view-transition-name: cabecalho;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.18s;
+  }
+}
+/* Tela inteira: marca, três barras no ritmo do logo e o texto do que está sendo carregado. */
+.carr-tela {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 48px 24px;
+  text-align: center;
+  font: 600 16px/1.5 Montserrat, 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+  color: var(--ink, #1b2340);
+}
+.carr-tela .carr-marca {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font: 800 22px Montserrat, system-ui, sans-serif;
+  color: var(--primary, #1f3c72);
+}
+.carr-tela .carr-marca img {
+  width: 40px;
+  height: 40px;
+}
+.carr-tela p {
+  margin: 0;
+  max-width: 460px;
+  color: var(--muted, #5a6478);
+  font-weight: 500;
+}
+.carr-tela a {
+  color: var(--link, #1f3c72);
+}
+.carr-barras,
+.carr::before {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 28px;
+}
+.carr-barras i {
+  width: 8px;
+  height: 100%;
+  border-radius: 3px 3px 0 0;
+  background: #00a7e7;
+  transform-origin: bottom;
+  animation: carr-sobe 1s ease-in-out infinite;
+}
+.carr-barras i:nth-child(2) {
+  background: #1c9c76;
+  animation-delay: 0.15s;
+}
+.carr-barras i:nth-child(3) {
+  background: #1f3c72;
+  animation-delay: 0.3s;
+}
+html[data-tema='escuro'] .carr-barras i:nth-child(3) {
+  background: #86a7ff;
+}
+/* Em linha (listas e tabelas): três barrinhas antes do texto. */
+.carr {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted, #5a6478);
+  font-weight: 600;
+}
+.carr::before {
+  content: '';
+  width: 22px;
+  height: 18px;
+  background:
+    linear-gradient(#00a7e7, #00a7e7) 0 100% / 5px 100% no-repeat,
+    linear-gradient(#1c9c76, #1c9c76) 8px 100% / 5px 100% no-repeat,
+    linear-gradient(#1f3c72, #1f3c72) 16px 100% / 5px 100% no-repeat;
+  animation: carr-pulsa 1s ease-in-out infinite;
+}
+@keyframes carr-sobe {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+@keyframes carr-pulsa {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .carr-barras i,
+  .carr::before {
+    animation: none;
+  }
+}
+
+</style>
+    <script>
+// Tema das páginas padrão (claro, personalizado, escuro): aplica a escolha guardada e põe o seletor de ícones no cabeçalho.
+// A mesma escolha vale para a tela de notas (chave "painelaps.tema").
+(function () {
+  const CH = 'painelaps.tema',
+    TEMAS = ['claro', 'personalizado', 'escuro'];
+  const ler = () => {
+    try {
+      const t = localStorage.getItem(CH);
+      return TEMAS.includes(t) ? t : 'personalizado';
+    } catch (e) {
+      return 'personalizado';
+    }
+  };
+  const aplicar = (t) => {
+    document.documentElement.setAttribute('data-tema', t);
+  };
+  aplicar(ler());
+  const ICONES = {
+    claro:
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+    personalizado:
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.8-.5-1.2-.3-.4-.5-.7-.5-1.2 0-.9.8-1.7 1.8-1.7H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3Z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7.5" r="1"/><circle cx="14.5" cy="7.5" r="1"/></svg>',
+    escuro: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z"/></svg>',
+  };
+  const ROTULO = { claro: 'Tema claro', personalizado: 'Tema personalizado (cores de Cajamar)', escuro: 'Tema escuro' };
+  function montar() {
+    const topo = document.querySelector('header .topo, header .w');
+    if (!topo || topo.querySelector('.tema-aps')) return;
+    const g = document.createElement('div');
+    g.className = 'tema-aps';
+    g.setAttribute('role', 'group');
+    g.setAttribute('aria-label', 'Tema');
+    g.innerHTML = TEMAS.map(
+      (t) =>
+        '<button type="button" data-t="' +
+        t +
+        '" title="' +
+        ROTULO[t] +
+        '" aria-label="' +
+        ROTULO[t] +
+        '" aria-pressed="false">' +
+        ICONES[t] +
+        '</button>',
+    ).join('');
+    const marcar = () => g.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.t === ler())));
+    g.addEventListener('click', (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      try {
+        localStorage.setItem(CH, b.dataset.t);
+      } catch (_) {}
+      aplicar(b.dataset.t);
+      marcar();
+    });
+    marcar();
+    const alvo = topo.querySelector('#barra');
+    topo.insertBefore(g, alvo || null);
+  }
+  window.TEMA_APS = { montar };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', montar);
+  else montar();
+})();
+
+</script>
+    <script>
+// Utilidades compartilhadas pelas páginas do Painel APS (script comum, carregado no <head>).
+// esc: escapa texto para entrar em HTML, inclusive dentro de atributos com aspas simples ou duplas.
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+</script>
+</head>
+  <body>
+    <header class="topo-site">
+      <div class="topo">
+        <a class="marca" href="https://painelaps.pages.dev/"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJQYWluZWwgQVBTIj4KICA8cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iNTgiIGhlaWdodD0iNTgiIHJ4PSIxNCIgZmlsbD0iIzFGM0M3MiIvPgogIDxyZWN0IHg9IjE0IiB5PSIzNCIgd2lkdGg9IjgiIGhlaWdodD0iMTYiIHJ4PSIyIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9Ii41NSIvPgogIDxyZWN0IHg9IjI4IiB5PSIyNCIgd2lkdGg9IjgiIGhlaWdodD0iMjYiIHJ4PSIyIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9Ii44Ii8+CiAgPHJlY3QgeD0iNDIiIHk9IjE2IiB3aWR0aD0iOCIgaGVpZ2h0PSIzNCIgcng9IjIiIGZpbGw9IiMwMEE3RTciLz4KICA8cGF0aCBkPSJNMTMgMjcgTDI1IDE5IEwzNCAyMyBMNDkgMTEiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFDOUM3NiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTEiIHI9IjMuMiIgZmlsbD0iIzFDOUM3NiIvPgo8L3N2Zz4K" alt="" width="34" height="34" /><span>Painel APS</span></a>
+        <div id="barra"></div>
+      </div>
+    </header>
+    <main>
+
+      <section class="fonte-local" id="fonteLocal" aria-labelledby="flTit">
+        <h2 id="flTit">Emissão fora do Painel</h2>
+        <p>Escolha os arquivos <b>JSON</b> exportados pela extensão (Histórico da coleta → <b>Exportar JSON</b>), um por mês. Eles são lidos só neste navegador: nada é enviado.
+          Lançamentos estaduais, vacinas e filas não vêm nesses arquivos; essas partes saem sem dados.</p>
+        <label class="fl-zona" id="flZona">
+          <input type="file" id="flArquivos" accept=".json,application/json" multiple />
+          <span>Arraste os arquivos para cá ou <u>toque para escolher</u></span>
+        </label>
+        <ul id="flLista"></ul>
+        <label class="fl-nome">Seu nome (sai em “Emitido por”)<input id="flNome" type="text" autocomplete="name" maxlength="80" /></label>
+        <p id="flErro" role="alert"></p>
+        <button class="btn" id="flMontar" type="button" disabled>Montar o relatório</button>
+        <button class="btn sec" id="flTrocar" type="button" hidden>Trocar os arquivos</button>
+      </section>
+      <div class="ferr" role="group" aria-label="Opções do relatório">
+        <label
+          >Relatório<select id="tipo">
+            <option value="geral">Visão geral</option>
+            <option value="federal">Federal (indicadores)</option>
+            <option value="regua">Federal · réguas (uma página por grupo)</option>
+            <option value="unidades">Por unidade (páginas de cada unidade em sequência)</option>
+            <option value="equipes">Por equipe (páginas de cada equipe em sequência)</option>
+            <option value="agrupado">Agrupado (município, unidades ou equipes consolidadas)</option>
+            <option value="estadual">Estadual (IGM SUS Paulista)</option>
+            <option value="municipal">Acompanhamento municipal</option>
+            <option value="absenteismo">Absenteísmo e filas</option>
+            <option value="completo">Completo (todos)</option>
+          </select></label
+        >
+        <label>Competência<select id="comp"></select></label>
+        <label id="lbUn"
+          >Unidade<select id="un">
+            <option value="">Todas</option>
+          </select></label
+        >
+        <label
+          >Folha<select id="orient">
+            <option value="retrato">Retrato</option>
+            <option value="paisagem">Paisagem (horizontal)</option>
+          </select></label
+        >
+        <label id="lbAb"
+          >Abrangência<select id="ab">
+            <option value="municipio">Município</option>
+            <option value="unidades">Unidades selecionadas</option>
+            <option value="equipes">Equipes selecionadas</option>
+          </select></label
+        >
+        <div id="selAg" class="sel" hidden aria-label="Escolha as unidades ou equipes"></div>
+        <label id="lbEq"
+          >Equipe<select id="eq">
+            <option value="">Todas</option>
+          </select></label
+        >
+        <label id="lbParcela">Parcela estadual<select id="parcela"></select></label>
+        <div class="acoes">
+          <button class="btn" id="imprimir" type="button">Imprimir / salvar em PDF</button
+          ><button class="btn sec" id="lote" type="button">Emitir em lote (PDF)…</button
+          ><button class="btn sec" id="csv" type="button">Baixar CSV</button>
+        </div>
+      </div>
+      <dialog id="dlg" aria-labelledby="dlgt">
+        <form method="dialog" id="fdlg">
+          <h2 id="dlgt">Emitir em lote (PDF)</h2>
+          <p>
+            Gera um único PDF com um dossiê para cada item, sem mostrar na tela. Cada unidade ou equipe começa em página nova, com o nome em
+            destaque no topo de todas as suas páginas.
+          </p>
+          <fieldset>
+            <legend>Modelo</legend>
+            <label
+              ><input type="radio" name="modo" value="todos" checked /> Todos (individuais): município, cada unidade e as equipes
+              dela</label
+            >
+            <label><input type="radio" name="modo" value="unidades" /> Unidades (individuais): só as que eu escolher</label>
+            <label><input type="radio" name="modo" value="equipes" /> Equipes (individuais): só as que eu escolher</label>
+          </fieldset>
+          <div id="selLote" class="sel" hidden></div>
+          <fieldset>
+            <legend>Incluir</legend>
+            <label><input type="checkbox" id="comMun" checked /> Página do município no início</label>
+          </fieldset>
+          <p id="erroLote" role="alert" style="color: #8a1b2a; font-weight: 700"></p>
+          <div class="rod">
+            <button class="btn sec" type="button" id="cancLote">Cancelar</button
+            ><button class="btn" type="button" id="geraLote">Gerar PDF</button>
+          </div>
+        </form>
+      </dialog>
+      <p class="dica">
+        O documento abaixo é o que será impresso ou salvo em PDF (no navegador, escolha “Salvar como PDF”). Só entram totais por município,
+        unidade e equipe; nunca nomes de pacientes nem de profissionais. Emissão fora do Painel: não fica registrada no histórico do Painel.
+      </p>
+      <article id="doc" aria-live="polite"><p class="vazio"><span class="carr">Carregando…</span></p></article>
+    </main>
+    <script>
+// Catálogo dos indicadores coletados nesta versão.
+// tipo: 'pontos' (média de pontuação 0-100), 'percentual' (numerador/denominador), 'razao' (numerador ÷ denominador),
+//       'nota' (nota composta) ou 'contagem'.
+// precisao: 'exato' | 'aproximado' | 'piso' (o valor real é igual ou maior). margem: texto do balão (i) com a justificativa.
+var CATALOGO = {
+  'Q12.2': { nome: 'Pessoas vinculadas por equipe', tipo: 'contagem', meta: '≤ 4.000 por equipe', fonte: 'Cidadãos vinculados' },
+  'Q14.2.1': {
+    nome: 'Absenteísmo de consultas',
+    tipo: 'percentual',
+    meta: '≤ 19,59%',
+    fonte: 'Gerencial de absenteísmo + gerencial de atendimentos',
+    formula: 'faltas ÷ (atendimentos + faltas)',
+  },
+  C1: {
+    nome: 'Mais acesso (demanda programada)',
+    tipo: 'percentual',
+    fonte: 'Gerencial de atendimentos',
+    formula: '(consulta agendada + programada/cuidado continuado) ÷ todos os tipos; CBOs e equipes eSF/eAP da Nota C1',
+    nota: 'escuta inicial lida do relatório de atendimento individual',
+  },
+  C2: { nome: 'Cuidado no desenvolvimento infantil', tipo: 'pontos', fonte: 'Condições de saúde · Desenvolvimento infantil' },
+  C3: { nome: 'Cuidado na gestação e puerpério', tipo: 'pontos', fonte: 'Condições de saúde · Gestação e puerpério' },
+  S20: { nome: 'Cuidado na gestação e puerpério (macro)', tipo: 'pontos', fonte: 'Igual à C3' },
+  S3: {
+    nome: 'Pré-natal com 7 ou mais consultas',
+    tipo: 'percentual',
+    meta: '100% das gestantes',
+    fonte: 'Condições de saúde · Gestação e puerpério',
+  },
+  S4: { nome: 'Exame de sífilis no 1º e no 3º trimestres', tipo: 'percentual', fonte: 'Condições de saúde · Gestação e puerpério' },
+  C4: { nome: 'Cuidado da pessoa com diabetes', tipo: 'pontos', fonte: 'Condições de saúde · Diabetes' },
+  C5: { nome: 'Cuidado da pessoa com hipertensão', tipo: 'pontos', fonte: 'Condições de saúde · Hipertensão' },
+  C6: { nome: 'Cuidado da pessoa idosa', tipo: 'pontos', fonte: 'Condições de saúde · Pessoa idosa' },
+  CVAT: {
+    nome: 'Cadastro e acompanhamento territorial',
+    tipo: 'nota',
+    fonte: 'Vinculados + Condições de saúde · Geral + território',
+    formula: 'escore do cadastro (até 3) + escore do acompanhamento (até 7); sem o bônus de satisfação',
+    nota: 'acima da equipe, o escore usa a soma dos ponderados ÷ soma dos parâmetros',
+    precisao: 'aproximado',
+    margem:
+      'Soma dos escores de cadastro (por pessoa, NT 30/2025) e acompanhamento (piso). O bônus de satisfação (+0,15 ou +0,30) não é considerado, por decisão da gestão. O Bolsa Família (peso 1,3) é lido do marcador do PEC; o BPC não consta no PEC e fica de fora (nota informativa).',
+  },
+  'CVAT-CAD': {
+    nome: 'CVAT · índice de cadastro',
+    tipo: 'percentual',
+    fonte: 'Cidadãos vinculados + imóveis do acompanhamento do território',
+    formula:
+      '(pessoas só com o cadastro individual em 24 meses × 0,75 + pessoas com o cadastro individual e o domicílio em 24 meses × 1,5) ÷ parâmetro da equipe',
+    nota: 'domicílio por pessoa: imóvel atualizado em 24 meses em que a pessoa consta como moradora',
+    precisao: 'aproximado',
+    margem:
+      'Segue a NT 30/2025 pessoa a pessoa: conta 1,5 quem tem a ficha de cadastro individual (CDS) atualizada em 24 meses e consta como morador, em família sem inconsistência, de um imóvel com o cadastro atualizado em 24 meses; conta 0,75 quem só tem a ficha individual em dia. A ligação entre a pessoa e o imóvel vem da lista de imóveis do Acompanhamento do território (uma consulta por rua, sem abrir casa por casa) e fica só na memória. O Siaps aplica a própria validação, que pode diferir em alguns casos. Se a lista de imóveis não puder ser lida, a extensão avisa e volta à estimativa pela fração de imóveis atualizados da microárea.',
+  },
+  'CVAT-ACO': {
+    nome: 'CVAT · índice de acompanhamento',
+    tipo: 'percentual',
+    fonte: 'Condições de saúde · Geral + visitas dos imóveis (acompanhamento do território)',
+    formula:
+      'pessoas com mais de um contato em 12 meses (tipos diferentes de atendimento ou 2 visitas domiciliares realizadas), pesos 1,0 / 1,2 / 1,3 / 2,5 ÷ parâmetro da equipe',
+    nota: 'piso: o PEC dá só a data do último atendimento de cada tipo',
+    precisao: 'piso',
+    margem:
+      'Conta quem teve, em 12 meses, contatos de dois tipos diferentes (médico, enfermagem, odontologia, visita) ou duas ou mais visitas domiciliares realizadas, como a NT 30/2025 aceita (visita com desfecho ausente ou recusada não conta). As visitas vêm do histórico de cada imóvel e são ligadas à pessoa pela casa e pela data de nascimento, só na memória. Ainda fica de fora quem teve só duas consultas do mesmo tipo, atividade coletiva ou vacina: o valor real é igual ou maior. O Bolsa Família (peso 1,3) é lido do marcador do PEC; o BPC não consta no PEC.',
+  },
+  C7: {
+    nome: 'Cuidado da mulher na prevenção do câncer',
+    tipo: 'nota',
+    fonte: 'Condições de saúde · Saúde da mulher',
+    formula: 'A×20 + B×30 + C×30 + D×20, cada item = cumpridas ÷ pessoas da faixa',
+    precisao: 'aproximado',
+    margem:
+      'Itens A, B e D seguem a nota. O item C é aproximado (ver C7 · C) e pesa 30 pontos: um erro de 10 pontos percentuais no item C muda a nota em cerca de 3 pontos.',
+  },
+  'C7-A': {
+    nome: 'C7 · A: rastreamento do colo do útero (25 a 64 anos)',
+    tipo: 'percentual',
+    fonte: 'Saúde da mulher',
+    formula: 'exame de colo solicitado ou avaliado em 36 meses (HPV molecular: 60) ÷ pessoas de 25 a 64 anos',
+  },
+  'C7-B': {
+    nome: 'C7 · B: vacina HPV (9 a 14 anos)',
+    tipo: 'percentual',
+    fonte: 'Saúde da mulher',
+    formula: 'com ao menos uma dose de HPV ÷ meninas de 9 a 14 anos',
+  },
+  'C7-C': {
+    nome: 'C7 · C: consulta de saúde sexual e reprodutiva (14 a 69 anos)',
+    tipo: 'percentual',
+    fonte: 'Condições de saúde · Geral, por código',
+    formula: 'com código CIAP/CID da nota e atendimento médico ou de enfermagem em 12 meses ÷ pessoas de 14 a 69 anos',
+    nota: 'aproximado: o PEC não informa a data do código, só a do último atendimento',
+    precisao: 'aproximado',
+    margem:
+      'Conta quem tem algum código CIAP/CID da nota e atendimento de médico ou enfermeiro em 12 meses. O PEC não informa quando o código foi registrado, então entra quem teve o código em qualquer data: o valor real tende a ser menor (até uns 10 pontos percentuais a menos, conforme a equipe). O PEC também não separa o profissional que registrou o código.',
+  },
+  'C7-D': {
+    nome: 'C7 · D: rastreamento de mama (50 a 69 anos)',
+    tipo: 'percentual',
+    fonte: 'Saúde da mulher',
+    formula: 'mamografia solicitada, realizada ou avaliada em 24 meses ÷ pessoas de 50 a 69 anos',
+  },
+  CR1: { nome: 'Mais acesso à eCR', tipo: 'percentual', fonte: 'Condições de saúde · Geral (equipe eCR)' },
+  CR2: {
+    nome: 'Cuidado na gestação (eCR)',
+    tipo: 'pontos',
+    fonte: 'Condições de saúde · Gestação (equipe eCR)',
+    nota: 'item A aproximado: o PEC não separa as consultas por trimestre',
+    precisao: 'aproximado',
+    margem:
+      'Item A exige 1 consulta por trimestre; o PEC dá o total e as consultas até 12 semanas, então o item conta 3 ou mais consultas com ao menos 1 no 1º trimestre.',
+  },
+  CR3: {
+    nome: 'Rastreio de IST (eCR)',
+    tipo: 'pontos',
+    fonte: 'Condições de saúde (equipe eCR)',
+    formula: '25 pontos por teste de sífilis, HIV, hepatite B e C em 12 meses ÷ pessoas identificadas em 12 meses',
+  },
+  CR4: {
+    nome: 'Cuidado da pessoa com tuberculose (eCR)',
+    tipo: 'pontos',
+    fonte: 'Condições de saúde (CID A15 a A17) + relatório de atendimento individual filtrado por tuberculose',
+    precisao: 'aproximado',
+    margem:
+      'Sem consulta a prontuário: a extensão usa só listas e totais. Pessoas com tuberculose e item D (teste de HIV) são exatos. Itens A, B e C vêm de totais do relatório filtrado por tuberculose, que não diz a quem pertence cada consulta ou exame: o valor mostrado é o teto (cada registro atribuído a uma pessoa diferente) e a faixa mínima a máxima acompanha o resultado. Com poucas pessoas, a diferença pode ser grande (com 2 pessoas, um item vai de 0 a 100%). A leitura pessoa a pessoa só entra se a gestão autorizar.',
+  },
+  VINC6A12: { nome: 'Crianças de 6 a 12 anos vinculadas', tipo: 'contagem', fonte: 'Cidadãos vinculados' },
+  B1: {
+    nome: 'Primeira consulta programada',
+    tipo: 'percentual',
+    fonte: 'Relatório de atendimento odontológico · Tipo de consulta',
+    formula: 'primeiras consultas odontológicas programáticas ÷ pessoas vinculadas à eSF/eAP de referência',
+    nota: 'conta registros; a nota do MS conta cada pessoa uma vez em 12 meses',
+    precisao: 'aproximado',
+    margem:
+      'Conta registros de primeira consulta programática no mês. A nota conta cada pessoa uma vez em 12 meses por dentista; repetições são raras, a diferença tende a ser pequena.',
+  },
+  B2: {
+    nome: 'Tratamento concluído',
+    tipo: 'percentual',
+    fonte: 'Relatório de atendimento odontológico · Conduta / desfecho (só cirurgiões-dentistas da APS: CBO 223293 e 223208)',
+    formula: 'tratamentos concluídos ÷ primeiras consultas programáticas',
+  },
+  B3: {
+    nome: 'Taxa de exodontia',
+    tipo: 'percentual',
+    fonte: 'Relatório de atendimento odontológico · Procedimentos (só cirurgiões-dentistas da APS: CBO 223293 e 223208)',
+    formula: 'exodontias de dente permanente ÷ procedimentos preventivos, curativos e exodontias (códigos da Nota B3)',
+  },
+  B4: {
+    nome: 'Escovação supervisionada (6 a 12 anos)',
+    tipo: 'percentual',
+    fonte: 'Atividades coletivas · Escovação dental supervisionada',
+    formula:
+      'crianças de 6 a 12 anos nas escovações supervisionadas da eSB (dentista, TSB ou ASB, com CPF ou CNS válido) ÷ crianças de 6 a 12 anos vinculadas à eSF/eAP de referência',
+  },
+  B5: {
+    nome: 'Procedimentos odontológicos preventivos',
+    tipo: 'percentual',
+    fonte: 'Relatório de atendimento odontológico · Procedimentos (só cirurgiões-dentistas da APS: CBO 223293 e 223208)',
+    formula: 'procedimentos preventivos ÷ procedimentos individuais (códigos da Nota B5)',
+  },
+  B6: {
+    nome: 'Tratamento restaurador atraumático',
+    tipo: 'percentual',
+    fonte: 'Relatório de atendimento odontológico · Procedimentos (só cirurgiões-dentistas da APS: CBO 223293 e 223208)',
+    formula: 'TRA ÷ procedimentos restauradores, sem amálgama (códigos da Nota B6)',
+  },
+  'TERR-ATU': {
+    nome: 'Imóveis com cadastro atualizado',
+    tipo: 'percentual',
+    fonte: 'Acompanhamento do território',
+    formula: 'imóveis atualizados há menos de 1 ano ÷ imóveis das microáreas da equipe (sem a FA)',
+    nota: 'o PEC conta 1 ano; a CVAT aceita até 24 meses, então este número é um piso',
+    precisao: 'piso',
+  },
+  'TERR-COMP': {
+    nome: 'Imóveis com cadastro completo',
+    tipo: 'percentual',
+    fonte: 'Acompanhamento do território',
+    formula: 'imóveis com cadastro completo ÷ imóveis não recusados (sem a FA)',
+  },
+  'TERR-VIS': {
+    nome: 'Domicílios visitados no mês',
+    tipo: 'percentual',
+    fonte: 'Acompanhamento do território',
+    formula: 'domicílios visitados no mês da coleta ÷ domicílios avaliados (sem a FA)',
+    nota: 'o PEC mostra só o mês corrente: colete no fim do mês',
+  },
+  'TERR-FA': {
+    nome: 'Imóveis fora de área (FA)',
+    tipo: 'contagem',
+    fonte: 'Acompanhamento do território',
+    nota: 'fica fora da CVAT; guardado para planejamento',
+  },
+  M2: {
+    nome: 'Ações interprofissionais da eMulti',
+    tipo: 'percentual',
+    fonte: 'Gerencial de atendimentos (atendimento compartilhado) + atividades coletivas + compartilhamento do cuidado (PEC)',
+    formula:
+      '(atendimentos individuais compartilhados + atividades coletivas compartilhadas + compartilhamentos do cuidado respondidos) ÷ (atendimentos individuais + atividades coletivas + compartilhamentos do cuidado respondidos), por equipe (NT 44/2026)',
+    precisao: 'aproximado',
+    margem:
+      'Atividade coletiva compartilhada: 2 ou mais profissionais de nível superior ou médio, pessoas diferentes (CPF/CNS), pelo menos 1 com CBO de eMulti; reunião só conta com o tema discussão de caso/PTS. O compartilhamento do cuidado é a contagem das solicitações respondidas pela eMulti no mês (a data usada é a do filtro do PEC). O atendimento individual compartilhado usa o campo do relatório do PEC, que pode não coincidir com a regra da nota (2 ou mais profissionais de nível superior com CNS diferentes); quando o profissional da eMulti é o segundo profissional num atendimento registrado por outra equipe, o registro fica com a outra equipe e não entra aqui. Ainda não entram: atendimento odontológico compartilhado e o desconto de registros em duplicata no mesmo dia. O cálculo é mensal, para acompanhamento; a nota oficial usa os últimos 4 meses. Faixas da nota: Ótimo > 5; Bom > 2,5 e ≤ 5; Suficiente > 1 e ≤ 2,5; Regular ≤ 1 (a nota não deixa claro em que unidade; por isso o Painel mostra o percentual sem classificar).',
+  },
+  M1: {
+    nome: 'Média de atendimentos por pessoa (eMulti)',
+    tipo: 'razao',
+    fonte: 'Gerencial de atendimentos + lista de atendimentos + atividades coletivas (últimos 4 meses)',
+    formula:
+      '(atendimentos individuais + participações em atividades coletivas) ÷ pessoas diferentes atendidas, nos últimos 4 meses até o mês da coleta (NT 43/2026)',
+    precisao: 'aproximado',
+    margem:
+      'Pessoas diferentes vêm da lista de atendimentos do PEC e dos participantes das atividades. Atendimentos lançados só em ficha CDS não mostram a pessoa: foram estimados com a mesma proporção de pessoas por atendimento. A faixa vai do caso em que todos são pessoas já contadas (média maior) ao caso em que todos são pessoas novas (média menor). Só entram os CBOs da eMulti listados na NT 43/2026. Cada pessoa conta uma vez por equipe eMulti no denominador, mesmo com vários atendimentos em dias diferentes (o numerador conta todos). Na parte coletiva, só entram participantes com CPF ou CNS válido (como pede a nota). A nota usa só pessoas com CPF ou CNS válido; o numerador do gerencial pode incluir atendimentos sem pessoa identificada, e atendimentos em que o profissional da eMulti é secundário em outra equipe não entram. Faixas: Ótimo > 3; Bom > 2 e ≤ 3; Suficiente > 1 e ≤ 2; Regular ≤ 1.',
+  },
+};
+
+// Numerador e denominador de cada indicador, para o balão (i). Texto fixo; os totais do recorte aparecem na "Conta deste recorte".
+var DEFINICAO = {
+  'Q14.2.1': ['faltas (não compareceu e não aguardou) nas agendas da equipe', 'atendimentos realizados + faltas'],
+  C1: [
+    'atendimentos individuais de consulta agendada e de programada/cuidado continuado (CBOs e equipes eSF/eAP da Nota C1)',
+    'atendimentos individuais dos mesmos CBOs e equipes, de todos os tipos de atendimento',
+  ],
+  C2: [
+    'soma dos pontos das crianças com até 2 anos (20 pontos por item cumprido: A 1ª consulta até 30 dias, B 9 ou mais consultas, C 9 ou mais medições de peso e altura, D duas visitas no prazo, E vacinas do esquema)',
+    'crianças com até 2 anos vinculadas à equipe (nota = soma dos pontos ÷ crianças)',
+  ],
+  C3: [
+    'soma dos pontos das gestantes e puérperas (10 pontos no item A e 9 em cada item de B a K)',
+    'gestantes e puérperas vinculadas à equipe (gestação até 294 dias e puerpério até 42 dias depois)',
+  ],
+  S20: ['soma dos pontos das gestantes e puérperas (igual à C3)', 'gestantes e puérperas vinculadas à equipe'],
+  S3: ['gestantes com 7 ou mais consultas de pré-natal', 'gestantes vinculadas à equipe'],
+  S4: ['gestantes com exame de sífilis no 1º e no 3º trimestres', 'gestantes vinculadas à equipe'],
+  C4: [
+    'soma dos pontos das pessoas com diabetes (20 pontos nos itens A e D; 15 em B, C, E e F)',
+    'pessoas com diabetes vinculadas à equipe (nota = soma dos pontos ÷ pessoas)',
+  ],
+  C5: [
+    'soma dos pontos das pessoas com hipertensão (25 pontos por item cumprido, A a D)',
+    'pessoas com hipertensão vinculadas à equipe (nota = soma dos pontos ÷ pessoas)',
+  ],
+  C6: [
+    'soma dos pontos das pessoas idosas (25 pontos por item: consulta médica ou de enfermagem em 12 meses, peso e altura, duas visitas, vacina de influenza)',
+    'pessoas idosas vinculadas à equipe (nota = soma dos pontos ÷ pessoas)',
+  ],
+  C7: [
+    'cada item da nota: pessoas que cumpriram o item (A colo do útero, B vacina HPV, C saúde sexual e reprodutiva, D mamografia)',
+    'cada item: pessoas da faixa etária do item; nota = A×20 + B×30 + C×30 + D×20',
+  ],
+  'C7-A': ['mulheres de 25 a 64 anos com exame de colo do útero solicitado ou avaliado em 36 meses', 'pessoas de 25 a 64 anos'],
+  'C7-B': ['meninas de 9 a 14 anos com ao menos uma dose de HPV', 'meninas de 9 a 14 anos'],
+  'C7-C': [
+    'pessoas de 14 a 69 anos com código CIAP/CID da nota e atendimento médico ou de enfermagem em 12 meses',
+    'pessoas de 14 a 69 anos',
+  ],
+  'C7-D': ['pessoas de 50 a 69 anos com mamografia solicitada, realizada ou avaliada em 24 meses', 'pessoas de 50 a 69 anos'],
+  CVAT: ['escore do cadastro (até 3) + escore do acompanhamento (até 7)', 'cada escore = soma ponderada ÷ parâmetro da equipe'],
+  'CVAT-CAD': [
+    'pessoas com o cadastro individual atualizado em 24 meses × 0,75, ou × 1,5 quando o imóvel onde moram também foi atualizado em 24 meses',
+    'parâmetro de pessoas da equipe (pelo porte do município)',
+  ],
+  'CVAT-ACO': [
+    'pessoas com mais de um contato em 12 meses (dois tipos de atendimento ou 2 visitas domiciliares realizadas), ponderadas pelo perfil (pesos 1,0; 1,2; 1,3; 2,5)',
+    'parâmetro de pessoas da equipe',
+  ],
+  CR1: [
+    'pessoas identificadas na eCR com atendimento de médico, enfermeiro ou dentista nos últimos 6 meses',
+    'pessoas identificadas na eCR nos últimos 12 meses',
+  ],
+  CR2: ['soma dos pontos das gestantes da eCR (A 30, B 20, C 20, D 20, E 10)', 'gestantes da eCR (nota = soma dos pontos ÷ gestantes)'],
+  CR3: ['soma dos pontos: 25 por teste de sífilis, HIV, hepatite B e hepatite C em 12 meses', 'pessoas identificadas na eCR em 12 meses'],
+  CR4: ['soma dos pontos das pessoas com tuberculose (itens A a D)', 'pessoas com tuberculose (CID A15 a A17) na eCR'],
+  B1: ['primeiras consultas odontológicas programáticas', 'pessoas vinculadas à eSF/eAP de referência da eSB'],
+  B2: ['tratamentos odontológicos concluídos', 'primeiras consultas odontológicas programáticas'],
+  B3: ['exodontias de dente permanente', 'procedimentos preventivos, curativos e exodontias (códigos da Nota B3)'],
+  B4: [
+    'crianças de 6 a 12 anos, com CPF ou CNS válido, nas escovações supervisionadas da eSB (cirurgião-dentista, TSB ou ASB)',
+    'crianças de 6 a 12 anos vinculadas à eSF/eAP de referência',
+  ],
+  B5: ['procedimentos odontológicos preventivos', 'procedimentos individuais (códigos da Nota B5)'],
+  B6: ['tratamentos restauradores atraumáticos (TRA, 0307010074)', 'procedimentos restauradores sem amálgama (códigos da Nota B6)'],
+  M1: [
+    'atendimentos individuais (agenda) + participações em atividades coletivas dos profissionais da eMulti, nos últimos 4 meses',
+    'pessoas diferentes atendidas ou participantes, nos mesmos 4 meses',
+  ],
+  M2: [
+    'atendimentos individuais compartilhados + atividades coletivas compartilhadas + compartilhamentos do cuidado respondidos',
+    'atendimentos individuais + atividades coletivas + compartilhamentos do cuidado respondidos',
+  ],
+};
+Object.keys(DEFINICAO).forEach(function (c) {
+  if (CATALOGO[c]) {
+    CATALOGO[c].numerador = DEFINICAO[c][0];
+    CATALOGO[c].denominador = DEFINICAO[c][1];
+  }
+});
+
+</script>
+    <script>
+// Regras de pontuação da parte variável do IGM SUS Paulista (Deliberação CIB 150/2025, que mantém a lógica da CIB 117/2023).
+// Funções puras: recebem números e devolvem { pct, motivo } (pct de 0 a 1, ou null quando falta dado).
+(function (raiz) {
+  const POP = 100000,
+    TETO_ESF = 3500;
+  // Itens, pesos (somam 10) e o que cada um precisa para ser pontuado.
+  const ITENS = [
+    { id: 'polio', nome: 'Cobertura vacinal: poliomielite (< 1 ano)', peso: 1.3, tipo: 'vacina', meta: 95 },
+    { id: 'penta', nome: 'Cobertura vacinal: penta (< 1 ano)', peso: 1.3, tipo: 'vacina', meta: 95 },
+    { id: 'pneumo', nome: 'Cobertura vacinal: pneumocócica (< 1 ano)', peso: 1.3, tipo: 'vacina', meta: 95 },
+    { id: 'triplice', nome: 'Cobertura vacinal: tríplice viral D1', peso: 1.3, tipo: 'vacina', meta: 95 },
+    { id: 'esf', nome: 'Cobertura da eSF', peso: 0.8, tipo: 'esf' },
+    { id: 'internacoes', nome: 'Internações por causas sensíveis à APS', peso: 0.8, tipo: 'internacoes' },
+    { id: 'sifilis', nome: 'Gestantes com sífilis tratadas adequadamente', peso: 0.8, tipo: 'sifilis' },
+    { id: 'hpv', nome: 'Cobertura de HPV (9 a 14 anos)', peso: 0.8, tipo: 'vacina', meta: 90 },
+    { id: 'liraa', nome: 'LIRAa (Aedes aegypti)', peso: 0.8, tipo: 'liraa' },
+    { id: 'mortalidade', nome: 'Mortalidade infantil (janela de 3 anos)', peso: 0.8, tipo: 'mortalidade' },
+  ];
+  const num = (v) => typeof v === 'number' && Number.isFinite(v);
+
+  // Vacinas e HPV: a regra depende de onde a cobertura estava no período anterior (a) e de onde está agora (v), com a mediana estadual (m).
+  function vacina(v, a, m, meta) {
+    if (!num(v) || !num(a) || !num(m))
+      return { pct: null, motivo: 'Faltam a cobertura do período, a do período anterior ou a mediana estadual.' };
+    if (a >= meta)
+      return v >= meta
+        ? { pct: 1, motivo: 'Seguiu em ' + meta + '% ou mais.' }
+        : v >= m
+          ? { pct: 0.75, motivo: 'Caiu abaixo de ' + meta + '%, mas ficou na mediana ou acima.' }
+          : { pct: 0, motivo: 'Caiu abaixo da mediana estadual.' };
+    if (a >= m)
+      return v > a
+        ? { pct: 1, motivo: 'Subiu em relação ao período anterior.' }
+        : v >= m
+          ? { pct: 0.75, motivo: 'Manteve ou caiu, mas ficou na mediana ou acima.' }
+          : { pct: 0, motivo: 'Caiu abaixo da mediana estadual.' };
+    if (v >= m) return { pct: 1, motivo: 'Subiu e alcançou a mediana estadual.' };
+    return v >= a
+      ? { pct: 0.5, motivo: 'Manteve ou subiu, mas segue abaixo da mediana.' }
+      : { pct: 0, motivo: 'Caiu e segue abaixo da mediana.' };
+  }
+  // Cobertura da eSF: nº de eSF × 3.500 ÷ população, em média no quadrimestre.
+  function cobertura(nEsf, pop) {
+    return num(nEsf) && pop > 0 ? Math.min(100, ((nEsf * TETO_ESF) / pop) * 100) : null;
+  }
+  function esf(nEsf, pop) {
+    const c = cobertura(nEsf, pop);
+    if (c === null) return { pct: null, motivo: 'Falta o número de eSF.' };
+    return c >= 70
+      ? { pct: 1, motivo: '70% ou mais.' }
+      : c >= 50
+        ? { pct: 0.5, motivo: 'De 50% a menos de 70%.' }
+        : c >= 15
+          ? { pct: 0.25, motivo: 'De 15% a menos de 50%.' }
+          : { pct: 0, motivo: 'Abaixo de 15%.' };
+  }
+  function internacoes(v, media) {
+    if (!num(v) || !num(media)) return { pct: null, motivo: 'Faltam o valor do município e a média estadual.' };
+    return v < media ? { pct: 1, motivo: 'Abaixo da média estadual.' } : { pct: 0.5, motivo: 'Igual ou acima da média estadual.' };
+  }
+  function sifilis(v) {
+    if (!num(v)) return { pct: null, motivo: 'Falta o percentual.' };
+    return v >= 90 ? { pct: 1, motivo: '90% ou mais.' } : { pct: 0, motivo: 'Abaixo de 90%.' };
+  }
+  function liraa(feito) {
+    if (!num(feito)) return { pct: null, motivo: 'Informe se o levantamento foi realizado (1 = sim, 0 = não).' };
+    return feito ? { pct: 1, motivo: 'Levantamento realizado.' } : { pct: 0, motivo: 'Levantamento não realizado.' };
+  }
+  // Mortalidade infantil: menor é melhor. q = quartil (1 a 3; o 4 conta como 3), t = taxa; "a" é o período anterior.
+  function mortalidade(q, t, qa, ta) {
+    if (![q, t, qa, ta].every(num)) return { pct: null, motivo: 'Faltam o quartil e a taxa da janela atual e da anterior.' };
+    q = Math.min(3, q);
+    qa = Math.min(3, qa);
+    if (qa === 1)
+      return q === 1
+        ? { pct: 1, motivo: 'Permaneceu no 1º quartil.' }
+        : q === 2
+          ? { pct: 0.5, motivo: 'Subiu para o 2º quartil.' }
+          : { pct: 0, motivo: 'Subiu para o 3º quartil.' };
+    if (qa === 2)
+      return q === 1
+        ? { pct: 1, motivo: 'Desceu para o 1º quartil.' }
+        : q === 3
+          ? { pct: 0, motivo: 'Subiu para o 3º quartil.' }
+          : t < ta
+            ? { pct: 1, motivo: 'Caiu dentro do 2º quartil.' }
+            : { pct: 0.5, motivo: 'Subiu ou ficou igual dentro do 2º quartil.' };
+    return q < 3
+      ? { pct: 1, motivo: 'Desceu de quartil.' }
+      : t < ta
+        ? { pct: 0.5, motivo: 'Caiu, mas permaneceu no 3º quartil.' }
+        : { pct: 0, motivo: 'Subiu no 3º quartil.' };
+  }
+  // d = { valor, anterior, mediana, quartil, quartilAnt, nEsf }; pop = população.
+  function pontuar(item, d, pop) {
+    d = d || {};
+    switch (item.tipo) {
+      case 'vacina':
+        return vacina(d.valor, d.anterior, d.mediana, item.meta);
+      case 'esf':
+        return esf(d.nEsf, pop || POP);
+      case 'internacoes':
+        return internacoes(d.valor, d.mediana);
+      case 'sifilis':
+        return sifilis(d.valor);
+      case 'liraa':
+        return liraa(d.valor);
+      case 'mortalidade':
+        return mortalidade(d.quartil, d.valor, d.quartilAnt, d.anterior);
+    }
+    return { pct: null, motivo: '' };
+  }
+  // Nota da parte variável: Σ(peso × %) ÷ 10. O ponto extra (sem óbito materno) soma 10 pontos percentuais, no máximo até 100%,
+  // e só vale se nem todos os indicadores chegaram a 100%.
+  function nota(resultados, semObitoMaterno) {
+    const ok = resultados.filter((r) => r.pct !== null);
+    const soma = ok.reduce((t, r) => t + r.peso * r.pct, 0);
+    const pesoLancado = ok.reduce((t, r) => t + r.peso, 0);
+    const todos100 = resultados.length > 0 && resultados.every((r) => r.pct === 1);
+    const extra = semObitoMaterno === true && !todos100 ? 0.1 : 0;
+    return { base: soma / 10, extra, final: Math.min(1, soma / 10 + extra), pesoLancado, completo: ok.length === resultados.length };
+  }
+  // Estimativa de cobertura a partir das doses do relatório de vacinação do PEC (só aproximada: a oficial vem do Estado).
+  // Doses acumuladas de janeiro até o fim do quadrimestre ÷ população-alvo lançada para o ano. A faixa etária é a da data da aplicação.
+  const DEF = {
+    polio: { faixas: ['Menos de 01 ano'], dose: /^3ª DOSE$/, alvo: 'alvo_menor1' },
+    penta: { faixas: ['Menos de 01 ano'], dose: /^3ª DOSE$/, alvo: 'alvo_menor1' },
+    pneumo: { faixas: ['Menos de 01 ano'], dose: /^2ª DOSE$/, alvo: 'alvo_menor1' },
+    triplice: { faixas: ['01 ano'], dose: /^1ª DOSE$/, alvo: 'alvo_1ano' },
+    hpv: { faixas: ['05 a 09 anos', '10 a 14 anos'], dose: /^(ÚNICA|2ª DOSE)$/, alvo: 'alvo_hpv' },
+  };
+  const FIM_Q = { 1: 4, 2: 8, 3: 12 };
+  // linhas: [{ competencia 'AAAA-MM', vacina, faixa, dose, n }]; alvo: população-alvo (número) ou null.
+  function estimativa(id, linhas, periodo, alvo) {
+    const d = DEF[id],
+      m = /^(\d{4})-Q([1-3])$/.exec(String(periodo || ''));
+    if (!d || !m) return null;
+    const ano = m[1],
+      fim = FIM_Q[m[2]],
+      esperados = fim;
+    const meses = new Set();
+    let doses = 0;
+    for (const l of linhas || []) {
+      const [a, mm] = String(l.competencia).split('-');
+      if (a !== ano || Number(mm) > fim) continue;
+      meses.add(mm);
+      if (l.vacina === id && d.faixas.includes(l.faixa) && d.dose.test(l.dose)) doses += l.n;
+    }
+    if (!meses.size) return null;
+    return {
+      doses,
+      meses: meses.size,
+      esperados,
+      completo: meses.size >= esperados,
+      cobertura: num(alvo) && alvo > 0 ? (doses / alvo) * 100 : null,
+    };
+  }
+  const API = { estimativa, DEF, POP, TETO_ESF, ITENS, vacina, cobertura, esf, internacoes, sifilis, liraa, mortalidade, pontuar, nota };
+  if (typeof module !== 'undefined' && module.exports) module.exports = API;
+  else raiz.ESTADUAL_REGRAS = API;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+    <script>
+// Cálculo do cofinanciamento federal (agregação, conceitos e faixas). Usado pela tela /indicadores e pelo relatório /relatorio.
+// Usa a variável global `dados` (competência -> linhas) declarada pela página.
+const GRUPOS = [
+  [
+    'eSF e eAP · C1 a C7 (mais acesso e cuidado ao longo da vida)',
+    ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C7-A', 'C7-B', 'C7-C', 'C7-D'],
+  ],
+  ['Vínculo e acompanhamento territorial', ['CVAT', 'CVAT-CAD', 'CVAT-ACO']],
+  ['Odontologia', ['B1', 'B2', 'B3', 'B4', 'B5', 'B6']],
+  ['Equipes multiprofissionais', ['M1', 'M2']],
+  ['Consultório na Rua', ['CR1', 'CR2', 'CR3', 'CR4']],
+  [
+    'Acompanhamento municipal (fora do cofinanciamento federal)',
+    ['Q14.2.1', 'Q12.2', 'S20', 'S3', 'S4', 'VINC6A12', 'TERR-ATU', 'TERR-COMP', 'TERR-VIS', 'TERR-FA'],
+  ],
+];
+const NAO_SOMA_MESES = new Set([
+  'C7',
+  'CVAT',
+  'M1',
+  'Q12.2',
+  'VINC6A12',
+  'TERR-ATU',
+  'TERR-COMP',
+  'TERR-VIS',
+  'TERR-FA',
+  'CVAT-CAD',
+  'CVAT-ACO',
+  'C7-A',
+  'C7-B',
+  'C7-C',
+  'C7-D',
+  'C2',
+  'C3',
+  'C4',
+  'C5',
+  'C6',
+  'S20',
+  'S3',
+  'S4',
+  'CR2',
+  'CR3',
+  'CR4',
+]);
+// Subitens como C7-B têm nomes que já começam por "C7 · B:"; tira o prefixo repetido (o código aparece à esquerda).
+const nomeSem = (cod, n) => {
+  const b = cod.split('-')[0];
+  const m = String(n).match(new RegExp('^' + b + ' · (.*)$'));
+  return m ? (cod === b ? n : m[1]) : n;
+};
+const fmt = (v, tipo) =>
+  v == null || isNaN(v)
+    ? '–'
+    : tipo === 'percentual'
+      ? v.toFixed(1).replace('.', ',') + '%'
+      : tipo === 'contagem'
+        ? Math.round(v).toLocaleString('pt-BR')
+        : v.toFixed(2).replace('.', ',');
+const mesNome = (c) => {
+  const [a, m] = c.split('-');
+  return ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'][m - 1] + '/' + a;
+};
+function resultado(g, tipo) {
+  if (g.direto !== undefined) return g.direto;
+  if (tipo === 'pontos') return g.den ? g.pts / g.den : null;
+  if (tipo === 'percentual') return g.den ? (100 * g.num) / g.den : null;
+  if (tipo === 'razao') return g.den ? g.num / g.den : null;
+  return g.val;
+}
+// Soma as linhas de um conjunto de meses num nível (município, unidade ou equipe).
+function agregar(linhas, chave) {
+  const m = new Map();
+  for (const l of linhas) {
+    const k = l.codigo + '|' + chave(l);
+    const g = m.get(k) || { codigo: l.codigo, rot: chave(l), num: 0, den: 0, pts: 0, val: 0 };
+    g.num += l.numerador || 0;
+    g.den += l.denominador || 0;
+    g.pts += l.somaPontos || 0;
+    g.val += l.valor || 0;
+    m.set(k, g);
+  }
+  // C7: nota a partir dos itens A a D (pesos 20, 30, 30, 20). CVAT: escores do cadastro e do acompanhamento.
+  const rots = new Set([...m.values()].map((g) => g.rot));
+  for (const r of rots) {
+    const it = (x) => m.get('C7-' + x + '|' + r);
+    if (['A', 'B', 'C', 'D'].some(it)) {
+      let n = 0;
+      [
+        ['A', 20],
+        ['B', 30],
+        ['C', 30],
+        ['D', 20],
+      ].forEach(([x, p]) => {
+        const g = it(x);
+        if (g && g.den) n += (g.num / g.den) * p;
+      });
+      m.set('C7|' + r, { codigo: 'C7', rot: r, direto: n });
+    }
+    const cad = m.get('CVAT-CAD|' + r),
+      aco = m.get('CVAT-ACO|' + r);
+    if (cad && aco) {
+      const f = (v, e) => (v > 85 ? e[0] : v >= 65 ? e[1] : v >= 45 ? e[2] : e[3]);
+      const ic = cad.den ? (100 * cad.num) / cad.den : 0,
+        ia = aco.den ? (100 * aco.num) / aco.den : 0;
+      m.set('CVAT|' + r, { codigo: 'CVAT', rot: r, direto: f(ic, [3, 2.25, 1.5, 0.75]) + f(ia, [7, 5.25, 3.5, 1.75]) });
+    }
+  }
+  return m;
+}
+// Faixas confirmadas: boas práticas C2 a C7 e CR1 a CR4 (0 a 100), vínculo CVAT (NT 8/2026) e M1 (NT 43/2026).
+const FAIXA = {
+  C1: 'x',
+  C2: 'bp',
+  C3: 'bp',
+  C4: 'bp',
+  C5: 'bp',
+  C6: 'bp',
+  C7: 'bp',
+  CVAT: 'cvat',
+  B1: 'x',
+  B2: 'bp', // nota B2: Ótimo >75, Bom >50, Suficiente >25, Regular ≤25 (em %)
+  B3: 'x',
+  B4: 'x',
+  B5: 'x',
+  B6: 'x',
+  M1: 'm1',
+  M2: 'x',
+  CR1: 'bp',
+  CR2: 'bp',
+  CR3: 'bp',
+  CR4: 'bp',
+};
+// Faixas lidas do desenho do dashboard, ainda a confirmar com a nota técnica vigente: marcadas com asterisco na tela.
+const FAIXAX = {
+  C1: [
+    [0, 10, 'r'],
+    [10, 30, 's'],
+    [30, 50, 'b'],
+    [50, 70, 'o'],
+    [70, 1e9, 'r'],
+  ],
+  B1: [
+    [0, 0.25, 'r'],
+    [0.25, 0.75, 's'],
+    [0.75, 1.25, 'b'],
+    [1.25, 1e9, 'o'],
+  ],
+  B3: [
+    [0, 3, 'r'],
+    [3, 10, 'o'],
+    [10, 12, 'b'],
+    [12, 14, 's'],
+    [14, 1e9, 'r'],
+  ],
+  // B4: a nota do MS traz os limites como razão (0,25 / 0,5 / 1) e a tela mostra percentual; aqui o valor é percentual, então 25 / 50 / 100.
+  B4: [
+    [0, 25, 'r'],
+    [25, 50, 's'],
+    [50, 100, 'b'],
+    [100, 1e9, 'o'],
+  ],
+  B5: [
+    [0, 40, 'r'],
+    [40, 55, 's'],
+    [55, 65, 'b'],
+    [65, 85, 'o'],
+    [85, 1e9, 'r'],
+  ],
+  B6: [
+    [0, 3, 'r'],
+    [3, 6, 's'],
+    [6, 8, 'b'],
+    [8, 1e9, 'o'],
+  ],
+  M2: [
+    [0, 1, 'r'],
+    [1, 2.5, 's'],
+    [2.5, 5, 'b'],
+    [5, 1e9, 'o'],
+  ],
+};
+const NOTAS = [
+  'C1',
+  'C2',
+  'C3',
+  'C4',
+  'C5',
+  'C6',
+  'C7',
+  'CVAT',
+  'B1',
+  'B2',
+  'B3',
+  'B4',
+  'B5',
+  'B6',
+  'M1',
+  'M2',
+  'CR1',
+  'CR2',
+  'CR3',
+  'CR4',
+];
+const ABERTA_ESQ = new Set(['C1', 'B1', 'B4', 'B6', 'M2']);
+const grupoDe = (cod) => (GRUPOS.find((g) => g[1].includes(cod)) || [''])[0];
+function conceito(cod, v) {
+  if (v == null || isNaN(v)) return null;
+  const f = FAIXA[cod];
+  if (f === 'bp') return v > 75 ? 'o' : v > 50 ? 'b' : v > 25 ? 's' : 'r';
+  if (f === 'cvat') return v > 8.5 ? 'o' : v >= 7 ? 'b' : v >= 5 ? 's' : 'r';
+  if (f === 'm1') return v > 3 ? 'o' : v > 2 ? 'b' : v > 1 ? 's' : 'r';
+  if (f === 'x') {
+    // Fronteiras como nas notas do MS: C1, B1, B4, B6 e M2 usam "> a e ≤ b"; B3 e B5 usam "≥ a e < b" (na B5 o 85 ainda é Ótimo).
+    if (cod === 'B5' && v === 85) return 'o';
+    const abertaEsq = ABERTA_ESQ.has(cod);
+    const t = FAIXAX[cod].find(([a, b]) => (abertaEsq ? (v > a || (a === 0 && v >= 0)) && v <= b : v >= a && v < b));
+    return t ? t[2] : null;
+  }
+  return null;
+}
+// As notas são por equipe. Em mais de uma equipe (município, unidade, seleção) o valor é o agregado e a classe é de cada equipe:
+// devolve quantas equipes caem em cada classe (n = equipes com faixa).
+function distEquipes(cod, ls, tipo) {
+  const c = { o: 0, b: 0, s: 0, r: 0 };
+  let n = 0;
+  [...agregar(ls, (l) => l.unidade + ' · ' + l.equipe).values()]
+    .filter((g) => g.codigo === cod)
+    .forEach((g) => {
+      const k = conceito(cod, resultado(g, tipo));
+      if (k) {
+        c[k]++;
+        n++;
+      }
+    });
+  return { c, n };
+}
+// Quais equipes estão em cada classe, com o valor de cada uma (pior primeiro nas classes ruins fica a cargo do chamador).
+function equipesPorClasse(cod, ls, tipo) {
+  const r = { o: [], b: [], s: [], r: [] };
+  for (const [chave, g] of agregar(ls, (l) => l.unidade + ' · ' + l.equipe)) {
+    if (g.codigo !== cod) continue;
+    const v = resultado(g, tipo),
+      k = conceito(cod, v);
+    if (k) r[k].push({ nome: chave.slice(chave.indexOf('|') + 1), v });
+  }
+  Object.values(r).forEach((a) => a.sort((x, y) => x.nome.localeCompare(y.nome, 'pt-BR')));
+  return r;
+}
+const nomesDe = (cod, ls, tipo, k) =>
+  equipesPorClasse(cod, ls, tipo)[k]
+    .map((e) => e.nome)
+    .join('\n');
+const NOMEC = { o: 'Ótimo', b: 'Bom', s: 'Suficiente', r: 'Regular' },
+  PILL = { o: 'c-o', b: 'c-b', s: 'c-s', r: 'c-r' };
+const aconf = (cod) =>
+  FAIXAX[cod] ? '<abbr title="Faixa a confirmar com a nota técnica vigente" style="text-decoration:none;cursor:help">*</abbr>' : '';
+const pc = (cod, v) => {
+  const k = conceito(cod, v);
+  return k ? ' <span class="pill ' + PILL[k] + '">' + NOMEC[k] + '</span>' + aconf(cod) : '';
+};
+// Valor agregado de mais de uma equipe: em vez de uma classe só, quantas equipes em cada classe (com uma equipe só, a classe dela).
+const pcAgg = (cod, v, ls, tipo) => {
+  const d = distEquipes(cod, ls, tipo);
+  if (d.n < 2) return pc(cod, v);
+  return (
+    '<br><small style="color:#4A5670;font-weight:600">por equipe:</small> ' +
+    ['o', 'b', 's', 'r']
+      .filter((k) => d.c[k])
+      .map(
+        (k) =>
+          '<span class="pill ' + PILL[k] + '" style="margin:2px 4px 0 0" title="' + esc(nomesDe(cod, ls, tipo, k)) + '">' + d.c[k] + ' ' + NOMEC[k] + '</span>',
+      )
+      .join('') +
+    aconf(cod)
+  );
+};
+// Filtro opcional de equipe ("unidade|equipe"), definido pela página de indicadores.
+let FILTRO_EQ = '';
+const doEq = (l) => !FILTRO_EQ || l.unidade + '|' + l.equipe === FILTRO_EQ;
+function linhasDe(cod, comps, un) {
+  let ls = [];
+  comps.forEach((c) =>
+    ls.push(
+      ...(dados[c] || []).filter(
+        (l) => l.codigo === cod || (cod === 'C7' && /^C7-/.test(l.codigo)) || (cod === 'CVAT' && /^CVAT-/.test(l.codigo)),
+      ),
+    ),
+  );
+  ls = ls.filter((l) => l.recorte !== 'desfecho' || cod === 'C2' || cod === 'C3');
+  if (FILTRO_EQ) ls = ls.filter(doEq);
+  return un ? ls.filter((l) => l.unidade === un) : ls;
+}
+
+</script>
+    <script>
+// Cálculo do cofinanciamento estadual (IGM SUS Paulista): parcelas, valor vigente, pontuação e estimativa do PEC.
+// Usa as variáveis globais LANC, VAC, NESF e parcela, declaradas pela página; as regras vêm de estadual-regras.js.
+const R = window.ESTADUAL_REGRAS;
+const PARCELAS = [
+  { n: '1ª · maio', p: '2025-Q3', ant: '2025-Q2' },
+  { n: '2ª · setembro', p: '2026-Q1', ant: '2025-Q3' },
+  { n: '3ª · dezembro', p: '2026-Q2', ant: '2026-Q1' },
+];
+const NOMEQ = (p) => {
+  const [a, q] = p.split('-Q');
+  return q + 'º quadrimestre de ' + a;
+};
+const fmtE = (v, c = 1) => (v == null ? '—' : v.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: c }));
+const vig = (item, per) => LANC.find((l) => l.item === item && l.periodo === per) || null;
+function alvo(id, per) {
+  const ano = per.slice(0, 4);
+  const l = LANC.filter((x) => x.item === id && x.periodo.startsWith(ano)).sort((a, b) => b.periodo.localeCompare(a.periodo))[0];
+  return l ? l.valor : null;
+}
+function dadosItem(it, P) {
+  const l = vig(it.id, P.p),
+    ant = vig(it.id, P.ant);
+  const d = {
+    valor: l ? l.valor : null,
+    anterior: l && l.anterior != null ? l.anterior : ant ? ant.valor : null,
+    mediana: l ? l.mediana : null,
+    quartil: l ? l.quartil : null,
+    quartilAnt: l && l.quartilAnt != null ? l.quartilAnt : ant ? ant.quartil : null,
+    origem: l ? 'lançamento' : null,
+  };
+  if (it.id === 'mortalidade' && l && l.anterior == null && ant) {
+    d.anterior = ant.valor;
+  }
+  if (it.tipo === 'vacina' && R.DEF[it.id]) {
+    const est = R.estimativa(it.id, VAC, P.p, alvo(R.DEF[it.id].alvo, P.p));
+    d.est = est;
+    // Sem valor oficial, a estimativa do PEC entra marcada como "estimada" (mediana: a última lançada para o indicador).
+    if (!l && est && est.completo && est.cobertura != null) {
+      const med = LANC.filter((x) => x.item === it.id && x.mediana != null).sort((a, b) => b.periodo.localeCompare(a.periodo))[0];
+      d.valor = est.cobertura;
+      d.mediana = med ? med.mediana : null;
+      d.origem = 'estimativa do PEC (não oficial)';
+    }
+  }
+  if (it.tipo === 'esf') {
+    d.nEsf = l ? l.valor : NESF;
+    d.origem = l ? 'lançamento' : NESF != null ? 'PEC (composição)' : null;
+    d.valor = d.nEsf;
+  }
+  return d;
+}
+function calcular() {
+  const linhas = R.ITENS.map((it) => {
+    const d = dadosItem(it, parcela),
+      r = R.pontuar(it, d, R.POP);
+    return { it, d, r };
+  });
+  const res = linhas.map((x) => ({ peso: x.it.peso, pct: x.r.pct }));
+  const ob = vig('obito_materno', parcela.p);
+  return { linhas, res, nota: R.nota(res, ob ? ob.valor === 0 : undefined), ob };
+}
+function pill(p) {
+  if (p === null) return '<span class="pill pn">sem dado</span>';
+  const k = Math.round(p * 100);
+  return '<span class="pill p' + k + '">' + k + '%</span>';
+}
+function mostra(it, d) {
+  if (it.tipo === 'esf') return d.nEsf == null ? '—' : fmtE(d.nEsf, 0) + ' eSF · ' + fmtE(R.cobertura(d.nEsf, R.POP), 1) + '%';
+  if (it.tipo === 'liraa') return d.valor == null ? '—' : d.valor ? 'realizado' : 'não realizado';
+  if (it.tipo === 'mortalidade') return d.valor == null ? '—' : fmtE(d.valor, 2) + ' (' + (d.quartil || '?') + 'º quartil)';
+  return (d.valor == null ? '—' : fmtE(d.valor, 2) + '%') + estPec(it, d);
+}
+function estPec(it, d) {
+  const e = d.est;
+  if (!e) return '';
+  const resto =
+    d.origem && d.origem.startsWith('estimativa')
+      ? ''
+      : e.cobertura != null && d.valor != null && e.completo
+        ? ' · diferença de ' + fmtE(Math.abs(e.cobertura - d.valor), 1) + ' p.p.'
+        : '';
+  const cob = e.cobertura == null ? 'informe a população-alvo para calcular' : fmtE(e.cobertura, 1) + '%';
+  return (
+    '<small>PEC (estimativa): ' +
+    cob +
+    ' · ' +
+    fmtE(e.doses, 0) +
+    ' doses' +
+    (e.completo ? '' : ' · só ' + e.meses + ' de ' + e.esperados + ' meses coletados') +
+    resto +
+    '</small>'
+  );
+}
+function ref(it, d) {
+  if (it.tipo === 'esf') return '—';
+  if (it.tipo === 'liraa' || it.tipo === 'sifilis') return '—';
+  if (it.tipo === 'mortalidade') return d.anterior == null ? '—' : fmtE(d.anterior, 2) + ' (' + (d.quartilAnt || '?') + 'º quartil)';
+  const a = d.anterior == null ? '—' : fmtE(d.anterior, 2) + '%';
+  return it.tipo === 'internacoes'
+    ? 'média estadual: ' + (d.mediana == null ? '—' : fmtE(d.mediana, 2))
+    : a + (d.mediana != null ? ' · mediana ' + fmtE(d.mediana, 2) + '%' : '');
+}
+function dica(x) {
+  const { it, d, r } = x;
+  if (it.tipo === 'esf' && d.nEsf != null) {
+    const c = R.cobertura(d.nEsf, R.POP),
+      preciso = Math.ceil((0.7 * R.POP) / R.TETO_ESF);
+    return r.motivo + (c < 70 ? ' Faltam ' + (preciso - d.nEsf) + ' eSF para 70%.' : '');
+  }
+  return r.motivo;
+}
+
+</script>
+    <script>
+// Painel APS · relatório (estado e utilidades do relatório). Script comum: usa as funções e dados declarados nos outros arquivos relatorio-*.js.
+const $ = (id) => document.getElementById(id);
+let dados = {},
+  ABS = {},
+  LANC = [],
+  VAC = [],
+  NESF = null,
+  parcela = PARCELAS[2],
+  ERRO = false,
+  USUARIO = null,
+  FILAS = null,
+  COMPS = [];
+const Q14 = 19.59;
+const TITULOS = {
+  geral: 'Visão geral da Atenção Primária',
+  federal: 'Cofinanciamento federal · indicadores',
+  regua: 'Cofinanciamento federal · gráfico com réguas',
+  equipes: 'Relatório por equipe · cofinanciamento federal',
+  unidades: 'Relatório por unidade · cofinanciamento federal',
+  agrupado: 'Relatório agrupado · cofinanciamento federal',
+  lote: 'Relatório em lote · cofinanciamento federal',
+  estadual: 'Cofinanciamento estadual · IGM SUS Paulista',
+  municipal: 'Acompanhamento municipal',
+  absenteismo: 'Absenteísmo e filas',
+  completo: 'Relatório completo da Atenção Primária',
+};
+const PERFIL = { admin: 'administrador', gestor: 'gestor', leitor: 'leitor' };
+const num = (v, c = 1) => (v == null || isNaN(v) ? '—' : v.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: c }));
+const pct = (v) => (v == null ? '—' : num(v, 1) + '%');
+// Mais de uma equipe: quantas em cada classe (a nota é por equipe; o valor ao lado é o agregado).
+const kpillDist = (d) =>
+  d && d.n > 1
+    ? '<small>por equipe:</small> ' +
+      ['o', 'b', 's', 'r']
+        .filter((k) => d.c[k])
+        .map((k) => '<span class="cc k-' + k + '">' + d.c[k] + ' ' + NOMEC[k] + '</span>')
+        .join(' ')
+    : '';
+const kpill = (k) => (k ? '<span class="cc k-' + k + '">' + NOMEC[k] + '</span>' : '');
+const ehGestor = () => USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor');
+const med = (a) => {
+  if (!a.length) return null;
+  const o = a.slice().sort((x, y) => x - y),
+    m = Math.floor(o.length / 2);
+  return o.length % 2 ? o[m] : Math.round((o[m - 1] + o[m]) / 2);
+};
+
+</script>
+    <script>
+// Painel APS · relatório (indicadores federais e acompanhamento municipal). Script comum: usa as funções e dados declarados nos outros arquivos relatorio-*.js.
+// ---------- federal e municipal ----------
+// Indicador "filho" (C7-A…D, CVAT-CAD/ACO): recuado sob o indicador principal.
+const fil = (cod) => (/^(C7|CVAT)-/.test(cod) ? ' class="filho"' : '');
+function tabelaCods(cods, comp, un, comEquipes) {
+  let corpo = '';
+  for (const cod of cods) {
+    const ls = linhasDe(cod, [comp], un);
+    if (!ls.length) continue;
+    const cat = (window.CATALOGO || {})[cod] || { nome: cod, tipo: '' };
+    const mun = agregar(ls, () => 'M').get(cod + '|M');
+    if (!mun) continue;
+    const vm = resultado(mun, cat.tipo);
+    let km = conceito(cod, vm),
+      porEquipe = false;
+    let eq = '';
+    const dEq = km ? distEquipes(cod, ls, cat.tipo) : { c: {}, n: 0 };
+    if (dEq.n > 1) porEquipe = true;
+    if (comEquipes && FAIXA[cod]) {
+      const c = { o: 0, b: 0, s: 0, r: 0 };
+      let n = 0;
+      [...agregar(ls, (l) => l.unidade + ' · ' + l.equipe).values()]
+        .filter((g) => g.codigo === cod)
+        .forEach((g) => {
+          const k = conceito(cod, resultado(g, cat.tipo));
+          if (k) {
+            c[k]++;
+            n++;
+          }
+        });
+      porEquipe = n > 1;
+      eq = n
+        ? ['o', 'b', 's', 'r']
+            .filter((k) => c[k])
+            .map((k) => c[k] + ' ' + NOMEC[k].toLowerCase())
+            .join(' · ')
+        : '';
+    }
+    const direto = mun.direto !== undefined;
+    const nu = direto ? '—' : cat.tipo === 'pontos' ? num(mun.pts, 0) : num(mun.num, 0),
+      de = direto ? '—' : num(mun.den, 0);
+    const aprox = cat.precisao === 'aproximado' ? ' ≈' : cat.precisao === 'piso' ? ' (piso)' : '';
+    corpo +=
+      '<tr' +
+      fil(cod) +
+      '><td><b>' +
+      esc(cod) +
+      '</b> · ' +
+      esc(nomeSem(cod, cat.nome)) +
+      (cat.meta ? '<small>Meta: ' + esc(cat.meta) + '</small>' : '') +
+      '</td><td class="n">' +
+      nu +
+      '</td><td class="n">' +
+      de +
+      '</td><td class="n"><b>' +
+      fmt(vm, cat.tipo) +
+      '</b>' +
+      aprox +
+      '</td><td>' +
+      (porEquipe ? (comEquipes ? '<small>por equipe →</small>' : kpillDist(dEq)) : kpill(km) + (km && FAIXAX[cod] ? ' *' : '')) +
+      '</td>' +
+      (comEquipes ? '<td>' + esc(eq) + '</td>' : '') +
+      '</tr>';
+  }
+  return corpo
+    ? '<table class="csv"><thead><tr><th>Indicador</th><th class="n">Numerador (ou pontos)</th><th class="n">Denominador</th><th class="n">Resultado</th><th>Conceito</th>' +
+        (comEquipes ? '<th>Equipes por conceito</th>' : '') +
+        '</tr></thead><tbody>' +
+        corpo +
+        '</tbody></table>'
+    : '';
+}
+function secFederal(comp, un) {
+  let h =
+    '<h2>Cofinanciamento federal</h2><p>Indicadores das notas metodológicas do Ministério da Saúde, a partir dos totais coletados do PEC e-SUS no mês. O conceito é uma prévia para acompanhar as equipes; o resultado oficial é o do Ministério.</p>';
+  let algum = false;
+  for (const [gn, gc] of GRUPOS.slice(0, -1)) {
+    const t = tabelaCods(gc, comp, un, true);
+    if (t) {
+      algum = true;
+      h += '<h3>' + esc(gn) + '</h3>' + t;
+    }
+  }
+  if (!algum) h += '<p class="vazio">Sem indicadores coletados nesta competência.</p>';
+  if (Object.keys(FAIXAX).some((c) => (dados[comp] || []).some((l) => l.codigo === c)))
+    h += '<p><small>* Faixa lida do desenho do dashboard, ainda a confirmar com a nota técnica vigente.</small></p>';
+  // por unidade
+  if (!un) {
+    const uns = [...new Set((dados[comp] || []).map((l) => l.unidade).filter((u) => u && u !== 'Município'))].sort();
+    if (uns.length > 1) {
+      const cods = NOTAS.filter((c) => linhasDe(c, [comp], '').length);
+      // Unidades nas linhas e indicadores nas colunas, em blocos de até 10 colunas (todas de uma vez na folha em paisagem).
+      const nomeCurto = (u) => u.replace(/^(UBS|ESF|Psf|Usf|Posto de Saude)\s+(Enf(?:ermeiro)?\.?\s+|Dra?\s+|Vereador\s+)?/i, '');
+      let t = '';
+      const passo = $('orient').value === 'paisagem' ? cods.length : 10;
+      for (let i = 0; i < cods.length; i += passo) {
+        const bloco = cods.slice(i, i + passo);
+        t +=
+          '<table class="csv un"><thead><tr><th>Unidade</th>' +
+          bloco.map((c) => '<th class="n">' + esc(c) + '</th>').join('') +
+          '</tr></thead><tbody>' +
+          uns
+            .map(
+              (u) =>
+                '<tr><td>' +
+                esc(nomeCurto(u)) +
+                '</td>' +
+                bloco
+                  .map((cod) => {
+                    const cat = (window.CATALOGO || {})[cod] || { tipo: '' };
+                    const g = agregar(linhasDe(cod, [comp], ''), (l) => l.unidade).get(cod + '|' + u);
+                    const v = g ? resultado(g, cat.tipo) : null;
+                    const dU = distEquipes(cod, linhasDe(cod, [comp], u), cat.tipo),
+                      k = dU.n > 1 ? null : conceito(cod, v);
+                    // Unidade com várias equipes: o valor é o agregado e as letras contam as equipes (ex.: 1B 2R).
+                    const letras = ['o', 'b', 's', 'r']
+                      .filter((x) => dU.c[x])
+                      .map((x) => '<span class="cc k-' + x + '">' + dU.c[x] + NOMEC[x].charAt(0) + '</span>')
+                      .join(' ');
+                    return (
+                      '<td class="n">' +
+                      fmt(v, cat.tipo) +
+                      (dU.n > 1 ? ' ' + letras : k ? ' <span class="cc k-' + k + '">' + NOMEC[k].charAt(0) + '</span>' : '') +
+                      '</td>'
+                    );
+                  })
+                  .join('') +
+                '</tr>',
+            )
+            .join('') +
+          '</tbody></table>';
+      }
+      h +=
+        '<h3>Resultado por unidade</h3>' +
+        t +
+        '<p><small>Conceito: O = ótimo, B = bom, S = suficiente, R = regular. Em unidades com mais de uma equipe, o valor é o agregado e as letras contam as equipes (1B 2R = uma equipe em Bom e duas em Regular). Colunas vazias de conceito: indicador sem faixa definida.</small></p>';
+    }
+  }
+  return h;
+}
+function secMunicipal(comp, un) {
+  const g = GRUPOS[GRUPOS.length - 1];
+  const t = tabelaCods(g[1], comp, un, false);
+  return (
+    '<h2>Acompanhamento municipal</h2><p>Indicadores acompanhados pelo município, fora do cofinanciamento federal.</p>' +
+    (t || '<p class="vazio">Sem dados coletados nesta competência.</p>')
+  );
+}
+
+</script>
+    <script>
+// Painel APS · relatório (réguas de conceito). Script comum: usa as funções e dados declarados nos outros arquivos relatorio-*.js.
+// ---------- réguas ----------
+function faixasDe(cod) {
+  const t = FAIXA[cod];
+  if (t === 'bp')
+    return [
+      [0, 25, 'r'],
+      [25, 50, 's'],
+      [50, 75, 'b'],
+      [75, 100, 'o'],
+    ];
+  if (t === 'cvat')
+    return [
+      [0, 5, 'r'],
+      [5, 7, 's'],
+      [7, 8.5, 'b'],
+      [8.5, 10, 'o'],
+    ];
+  if (t === 'm1')
+    return [
+      [0, 1, 'r'],
+      [1, 2, 's'],
+      [2, 3, 'b'],
+      [3, 5, 'o'],
+    ];
+  if (t === 'x' && FAIXAX[cod]) return FAIXAX[cod].map((x) => x.slice());
+  return null;
+}
+function reguaHtml(cod, vm, o) {
+  o = o || {};
+  const vals = (o.vals || []).filter((v) => v != null),
+    ref = o.ref;
+  const f = faixasDe(cod);
+  if (!f || vm == null) return '';
+  const todos = [vm].concat(vals);
+  const lo = f[0][0];
+  let hi = f[f.length - 1][1];
+  // Faixa aberta (sem teto): a régua acaba em 2,5 vezes o início dela (no máximo 100 nos percentuais); valores maiores ficam no fim da régua.
+  const aberta = hi >= 1e8;
+  if (aberta) {
+    const base = f[f.length - 1][0];
+    hi = base * 2.5;
+    if (FAIXAX[cod] && cod !== 'B1' && cod !== 'B4') hi = Math.min(100, hi);
+  }
+  const pos = (v) => Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100));
+  const seg = f.map((x) => ({ a: Math.max(lo, x[0]), b: Math.min(hi, x[1]), k: x[2] })).filter((x) => x.b > x.a);
+  let h =
+    '<div class="rg" role="img" aria-label="Régua do indicador ' +
+    esc(cod) +
+    '">' +
+    seg
+      .map(
+        (x) =>
+          '<div class="sg k-' +
+          x.k +
+          '" style="width:' +
+          (((x.b - x.a) / (hi - lo)) * 100).toFixed(2) +
+          '%">' +
+          ((x.b - x.a) / (hi - lo) > 0.14 ? NOMEC[x.k] : (x.b - x.a) / (hi - lo) > 0.05 ? NOMEC[x.k][0] : '') +
+          '</div>',
+      )
+      .join('');
+  let marcas = [lo].concat(
+    seg.slice(1).map((x) => x.a),
+    [hi],
+  );
+  marcas = marcas.filter((m, i) => i === 0 || i === marcas.length - 1 || (pos(m) - pos(marcas[i - 1]) >= 7 && pos(hi) - pos(m) >= 7));
+  h += marcas
+    .map(
+      (m, i) =>
+        '<span class="tk" style="left:' +
+        pos(m).toFixed(2) +
+        '%;' +
+        (i === 0 ? 'transform:none' : i === marcas.length - 1 ? 'transform:translateX(-100%)' : '') +
+        '">' +
+        num(m, m % 1 ? 2 : 0) +
+        (aberta && i === marcas.length - 1 ? '+' : '') +
+        '</span>',
+    )
+    .join('');
+  if (vals.length > 1) {
+    const mn = Math.min.apply(null, vals),
+      mx = Math.max.apply(null, vals);
+    h += '<i class="rng" style="left:' + pos(mn).toFixed(2) + '%;width:' + Math.max(0.8, pos(mx) - pos(mn)).toFixed(2) + '%"></i>';
+  }
+  if (ref != null) h += '<i class="rf" style="left:' + pos(ref).toFixed(2) + '%"></i>';
+  h += '<i class="mn" style="left:' + pos(vm).toFixed(2) + '%"></i></div>';
+  return h;
+}
+const legRegua = (eqs) =>
+  '<div class="leg"><span><i class="k-r"></i>Regular</span><span><i class="k-s"></i>Suficiente</span><span><i class="k-b"></i>Bom</span><span><i class="k-o"></i>Ótimo</span>' +
+  (eqs
+    ? '<span><i style="background:#1F3C72"></i>Município</span><span><i style="background:rgba(20,33,43,.55);height:6px;vertical-align:2px"></i>Variação entre as equipes (menor a maior)</span>'
+    : '<span><i style="background:#1F3C72"></i>Esta equipe</span><span><i style="background:#fff;border:3px solid #1F3C72;box-sizing:border-box"></i>Município (referência)</span>') +
+  '</div>';
+// Régua do município, uma página por grupo de indicadores; a faixa escura mostra de onde a onde as equipes variam.
+function secRegua(comp, un) {
+  let out = '',
+    csvl = '',
+    n = 0,
+    primeiro = true;
+  for (const [gn, gc] of GRUPOS.slice(0, -1)) {
+    let sub = '';
+    for (const cod of gc) {
+      if (!faixasDe(cod)) continue;
+      const ls = linhasDe(cod, [comp], un);
+      if (!ls.length) continue;
+      const cat = (window.CATALOGO || {})[cod] || { nome: cod, tipo: '' };
+      const mun = agregar(ls, () => 'M').get(cod + '|M');
+      if (!mun) continue;
+      const vm = resultado(mun, cat.tipo),
+        km = conceito(cod, vm);
+      const eqs = [...agregar(ls, (l) => l.unidade + ' · ' + l.equipe).values()]
+        .filter((g) => g.codigo === cod)
+        .map((g) => resultado(g, cat.tipo))
+        .filter((v) => v != null);
+      const dEq = distEquipes(cod, ls, cat.tipo);
+      const reg = reguaHtml(cod, vm, { vals: eqs });
+      if (!reg) continue;
+      n++;
+      const faixa =
+        eqs.length > 1
+          ? '<span>equipes: de ' +
+            fmt(Math.min.apply(null, eqs), cat.tipo) +
+            ' a ' +
+            fmt(Math.max.apply(null, eqs), cat.tipo) +
+            ' (' +
+            eqs.length +
+            ')</span>'
+          : '<span>' + eqs.length + ' equipe(s)</span>';
+      sub +=
+        '<div class="reg"><div class="nm"><b>' +
+        esc(cod) +
+        '</b> · ' +
+        esc(nomeSem(cod, cat.nome)) +
+        '<div class="vl"><b>' +
+        fmt(vm, cat.tipo) +
+        '</b>' +
+        (eqs.length > 1 && dEq.n > 1 ? kpillDist(dEq) : kpill(km)) +
+        (FAIXAX[cod] ? '*' : '') +
+        faixa +
+        '</div></div><div>' +
+        reg +
+        '</div></div>';
+      csvl +=
+        '<tr><td>' +
+        esc(gn) +
+        '</td><td>' +
+        esc(cod) +
+        '</td><td>' +
+        esc(nomeSem(cod, cat.nome)) +
+        '</td><td>' +
+        fmt(vm, cat.tipo) +
+        '</td><td>' +
+        (km ? NOMEC[km] : '') +
+        '</td><td>' +
+        eqs.map((v) => fmt(v, cat.tipo)).join(' | ') +
+        '</td></tr>';
+    }
+    if (sub) {
+      out +=
+        '<section class="pag"><h2>' +
+        (primeiro ? 'Cofinanciamento federal · réguas · ' : '') +
+        esc(gn) +
+        '</h2>' +
+        (primeiro
+          ? '<p>Cada régua mostra as faixas de conceito do indicador. O marcador azul é o município' +
+            (un ? ' (recorte: ' + esc(un) + ')' : '') +
+            ' e a faixa escura mostra de onde a onde as equipes variam. Só aparecem os indicadores com faixa definida; cada grupo começa numa página.</p>'
+          : '') +
+        legRegua(true) +
+        sub +
+        '</section>';
+      primeiro = false;
+    }
+  }
+  if (!n) return '<h2>Cofinanciamento federal · réguas</h2><p class="vazio">Sem indicadores com faixa definida nesta competência.</p>';
+  out +=
+    '<table class="csv so-csv"><thead><tr><th>Grupo</th><th>Código</th><th>Indicador</th><th>Município</th><th>Conceito</th><th>Equipes</th></tr></thead><tbody>' +
+    csvl +
+    '</tbody></table>';
+  if (Object.keys(FAIXAX).some((c) => faixasDe(c) && (dados[comp] || []).some((l) => l.codigo === c)))
+    out += '<p><small>* Faixa lida do desenho do dashboard, ainda a confirmar com a nota técnica vigente.</small></p>';
+  return out;
+}
+
+</script>
+    <script>
+// Painel APS · relatório (dossiês por município, unidade e equipe). Script comum: usa as funções e dados declarados nos outros arquivos relatorio-*.js.
+// ---------- dossiês: município, unidade e equipe ----------
+// Cada dossiê é uma sequência de páginas; o nome da unidade/equipe se repete no topo de TODAS as páginas dele (cabeçalho de tabela repetido na impressão).
+const soltaEq = (e) => !e || e === 'Município' || /^sem equipe$/i.test(e);
+const ordPt = (a, b) => a.localeCompare(b, 'pt');
+function unidadesDe(comp) {
+  return [...new Set((dados[comp] || []).map((l) => l.unidade).filter((u) => u && u !== 'Município'))].sort(ordPt);
+}
+function equipesDe(comp, un) {
+  const m = new Map();
+  for (const l of dados[comp] || []) {
+    if (!l.unidade || l.unidade === 'Município' || soltaEq(l.equipe)) continue;
+    if (un && l.unidade !== un) continue;
+    const k = l.unidade + '|' + l.equipe;
+    if (!m.has(k)) m.set(k, { u: l.unidade, e: l.equipe, tipo: l.tipoEquipe || '' });
+  }
+  return [...m.values()].sort((a, b) => ordPt(a.u, b.u) || ordPt(a.e, b.e));
+}
+const curto = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
+const escMunicipio = () => ({
+  nivel: 'Município',
+  nome: 'Município de Cajamar',
+  sub: 'Todas as unidades e equipes',
+  uns: null,
+  eqs: null,
+  ref: false,
+});
+const escUnidade = (comp, u) => ({
+  nivel: 'Unidade',
+  nome: u,
+  sub: equipesDe(comp, u).length + ' equipe(s) com dados',
+  uns: new Set([u]),
+  eqs: null,
+  ref: true,
+});
+const escEquipe = (t) => ({
+  nivel: 'Equipe',
+  nome: t.e,
+  sub: t.u + (t.tipo ? ' · ' + t.tipo : ''),
+  uns: new Set([t.u]),
+  eqs: new Set([t.u + '|' + t.e]),
+  ref: true,
+});
+const escUnidades = (us) => ({
+  nivel: 'Unidades · consolidado',
+  nome: us.length + (us.length === 1 ? ' unidade' : ' unidades'),
+  sub: curto(us.join(' · '), 230),
+  uns: new Set(us),
+  eqs: null,
+  ref: true,
+  lista: us.join(' · '),
+});
+const escEquipes = (ts) => ({
+  nivel: 'Equipes · consolidado',
+  nome: ts.length + (ts.length === 1 ? ' equipe' : ' equipes'),
+  sub: curto(ts.map((t) => t.u + ' · ' + t.e).join(' | '), 230),
+  uns: null,
+  eqs: new Set(ts.map((t) => t.u + '|' + t.e)),
+  ref: true,
+  lista: ts.map((t) => t.u + ' · ' + t.e).join(' | '),
+});
+const filtroDe = (E) => (l) => (!E.uns || E.uns.has(l.unidade)) && (!E.eqs || E.eqs.has(l.unidade + '|' + l.equipe));
+const legEnt = (E) =>
+  '<div class="leg"><span><i class="k-r"></i>Regular</span><span><i class="k-s"></i>Suficiente</span><span><i class="k-b"></i>Bom</span><span><i class="k-o"></i>Ótimo</span><span><i style="background:#1F3C72"></i>Resultado</span>' +
+  (E.ref ? '<span><i style="background:#fff;border:3px solid #1F3C72;box-sizing:border-box"></i>Município (referência)</span>' : '') +
+  '</div>';
+// Corpo de um dossiê: réguas por grupo e, para o que não tem faixa, uma tabela. csvl acumula as linhas do CSV.
+function corpoEscopo(comp, E, csvl) {
+  const f = filtroDe(E);
+  let corpo = '';
+  for (const [gn, gc] of GRUPOS) {
+    let reg = '',
+      tab = '';
+    for (const cod of gc) {
+      const todas = linhasDe(cod, [comp], '');
+      const ls = E.uns || E.eqs ? todas.filter(f) : todas;
+      if (!ls.length) continue;
+      const cat = (window.CATALOGO || {})[cod] || { nome: cod, tipo: '' };
+      const g = agregar(ls, () => 'T').get(cod + '|T');
+      if (!g) continue;
+      const v = resultado(g, cat.tipo),
+        dEq = distEquipes(cod, ls, cat.tipo),
+        k = dEq.n > 1 ? null : conceito(cod, v);
+      const gm = E.ref ? agregar(todas, () => 'M').get(cod + '|M') : null,
+        vm = gm ? resultado(gm, cat.tipo) : null;
+      const direto = g.direto !== undefined,
+        nu = direto ? '—' : num(cat.tipo === 'pontos' ? g.pts : g.num, 0),
+        de = direto ? '—' : num(g.den, 0);
+      csvl.push(
+        '<tr><td>' +
+          esc(E.nivel) +
+          '</td><td>' +
+          esc(E.nome) +
+          '</td><td>' +
+          esc(E.sub) +
+          '</td><td>' +
+          esc(cod) +
+          '</td><td>' +
+          esc(nomeSem(cod, cat.nome)) +
+          '</td><td>' +
+          nu +
+          '</td><td>' +
+          de +
+          '</td><td>' +
+          fmt(v, cat.tipo) +
+          '</td><td>' +
+          (k
+            ? NOMEC[k]
+            : dEq.n > 1
+              ? 'por equipe: ' +
+                ['o', 'b', 's', 'r']
+                  .filter((x) => dEq.c[x])
+                  .map((x) => dEq.c[x] + ' ' + NOMEC[x])
+                  .join(', ')
+              : '') +
+          '</td><td>' +
+          (E.ref ? fmt(vm, cat.tipo) : '') +
+          '</td></tr>',
+      );
+      const r = faixasDe(cod) ? reguaHtml(cod, v, E.ref ? { ref: vm } : {}) : '';
+      if (r)
+        reg +=
+          '<div class="reg"><div class="nm"><b>' +
+          esc(cod) +
+          '</b> · ' +
+          esc(nomeSem(cod, cat.nome)) +
+          '<div class="vl"><b>' +
+          fmt(v, cat.tipo) +
+          '</b>' +
+          (dEq.n > 1 ? kpillDist(dEq) : kpill(k)) +
+          (FAIXAX[cod] ? '*' : '') +
+          (E.ref ? '<span>município: ' + fmt(vm, cat.tipo) + '</span>' : '') +
+          '</div></div><div>' +
+          r +
+          '</div></div>';
+      else
+        tab +=
+          '<tr' +
+          fil(cod) +
+          '><td><b>' +
+          esc(cod) +
+          '</b> · ' +
+          esc(nomeSem(cod, cat.nome)) +
+          '</td><td class="n">' +
+          nu +
+          '</td><td class="n">' +
+          de +
+          '</td><td class="n"><b>' +
+          fmt(v, cat.tipo) +
+          '</b></td>' +
+          (E.ref ? '<td class="n">' + fmt(vm, cat.tipo) + '</td>' : '') +
+          '</tr>';
+    }
+    if (reg || tab)
+      corpo +=
+        '<h3>' +
+        esc(gn) +
+        '</h3>' +
+        reg +
+        (tab
+          ? '<table><thead><tr><th>Indicador sem régua</th><th class="n">Numerador (ou pontos)</th><th class="n">Denominador</th><th class="n">Resultado</th>' +
+            (E.ref ? '<th class="n">Município</th>' : '') +
+            '</tr></thead><tbody>' +
+            tab +
+            '</tbody></table>'
+          : '');
+  }
+  return corpo;
+}
+// Uma lista de dossiês, cada um começando em página nova e com o nome no topo de todas as suas páginas.
+function secEscopos(comp, lista, intro) {
+  if (!lista.length) return '<h2>Relatório</h2><p class="vazio">Nada selecionado ou sem dados nesta competência.</p>';
+  const csvl = [];
+  let out = '';
+  lista.forEach((E, i) => {
+    const corpo = corpoEscopo(comp, E, csvl);
+    out +=
+      '<section class="pag"><table class="rep"><thead><tr><th><div class="ebn n-' +
+      ({ Município: 'm', Unidade: 'u', Equipe: 'e' }[E.nivel] || 'g') +
+      '"><small>' +
+      esc(E.nivel) +
+      '</small><b>' +
+      esc(E.nome) +
+      '</b><span>' +
+      esc(E.sub) +
+      '</span></div></th></tr></thead><tbody><tr><td>' +
+      (i === 0 && intro ? '<p>' + intro + '</p>' : '') +
+      legEnt(E) +
+      (corpo || '<p class="vazio">Sem indicadores nesta competência.</p>') +
+      '</td></tr></tbody></table></section>';
+  });
+  out +=
+    '<table class="csv so-csv"><thead><tr><th>Nível</th><th>Abrangência</th><th>Detalhe</th><th>Código</th><th>Indicador</th><th>Numerador (ou pontos)</th><th>Denominador</th><th>Resultado</th><th>Conceito</th><th>Município</th></tr></thead><tbody>' +
+    csvl.join('') +
+    '</tbody></table>';
+  out +=
+    '<p><small>* Faixa lida do desenho do dashboard, ainda a confirmar com a nota técnica vigente. Indicadores sem faixa definida (como a B2) aparecem na tabela, sem régua.</small></p>';
+  return out;
+}
+const INTRO_ESC =
+  'A faixa colorida da régua mostra os conceitos do indicador (regular, suficiente, bom e ótimo; em impressão preto e branco, cada conceito tem textura própria). O marcador escuro é o resultado desta página e o contorno é o município, para comparar.';
+// Lista de dossiês de um lote. modo: todos | unidades | equipes. sel: valores marcados.
+function listaLote(comp, modo, sel, comMun) {
+  const L = [];
+  if (comMun) L.push(escMunicipio());
+  const eqs = equipesDe(comp, '');
+  if (modo === 'todos') {
+    for (const u of unidadesDe(comp)) {
+      L.push(escUnidade(comp, u));
+      for (const t of eqs.filter((x) => x.u === u)) L.push(escEquipe(t));
+    }
+  }
+  if (modo === 'unidades') for (const u of unidadesDe(comp)) if (sel.includes(u)) L.push(escUnidade(comp, u));
+  if (modo === 'equipes') for (const t of eqs) if (sel.includes(t.u + '|' + t.e)) L.push(escEquipe(t));
+  return L;
+}
+// Seletor de caixas de marcar (unidades ou equipes agrupadas por unidade).
+function painelSel(el, itens, marcados, aoMudar) {
+  let h = '<label class="todas"><input type="checkbox" data-todas> <b>Marcar todas</b></label><div class="lista">',
+    ult = null;
+  for (const it of itens) {
+    if (it.g && it.g !== ult) {
+      h += '<div class="gr">' + esc(it.g) + '</div>';
+      ult = it.g;
+    }
+    h += '<label><input type="checkbox" value="' + esc(it.v) + '"' + (marcados.has(it.v) ? ' checked' : '') + '> ' + esc(it.r) + '</label>';
+  }
+  el.innerHTML = h + '</div>';
+  const cx = [...el.querySelectorAll('.lista input')],
+    todas = el.querySelector('[data-todas]');
+  const sinc = () => {
+    todas.checked = cx.length > 0 && cx.every((c) => c.checked);
+  };
+  sinc();
+  todas.onchange = () => {
+    cx.forEach((c) => (c.checked = todas.checked));
+    aoMudar && aoMudar();
+  };
+  cx.forEach(
+    (c) =>
+      (c.onchange = () => {
+        sinc();
+        aoMudar && aoMudar();
+      }),
+  );
+}
+const marcadosDe = (el) => [...el.querySelectorAll('.lista input:checked')].map((c) => c.value);
+const itensSel = (comp, nivel) =>
+  nivel === 'unidades'
+    ? unidadesDe(comp).map((u) => ({ v: u, r: u }))
+    : equipesDe(comp, '').map((t) => ({ v: t.u + '|' + t.e, r: t.e, g: t.u }));
+
+</script>
+    <script>
+// Painel APS · relatório (estadual, absenteísmo e visão geral). Script comum: usa as funções e dados declarados nos outros arquivos relatorio-*.js.
+// ---------- estadual ----------
+function secEstadual() {
+  if (ERRO) return '<h2>Cofinanciamento estadual</h2><p class="vazio">Não foi possível carregar os lançamentos.</p>';
+  const c = calcular(),
+    pontos = c.res.reduce((t, r) => t + (r.pct === null ? 0 : r.peso * r.pct), 0),
+    pend = c.linhas.filter((x) => x.r.pct === null);
+  const n = c.linhas.length - pend.length;
+  let h =
+    '<h2>Cofinanciamento estadual · ' +
+    esc(parcela.n) +
+    '</h2><p>Parte variável do IGM SUS Paulista (CIB 150/2025). Período avaliado: ' +
+    NOMEQ(parcela.p) +
+    ', comparado com o ' +
+    NOMEQ(parcela.ant) +
+    '. Só entram na nota os valores oficiais lançados; a estimativa do PEC aparece ao lado, separada.</p>';
+  h +=
+    '<div class="cards"><div class="card"><small>Nota da parte variável</small><div class="v">' +
+    num(c.nota.final * 100, 1) +
+    '%</div><small>' +
+    num(pontos, 2) +
+    ' de 10 pontos' +
+    (c.nota.extra ? ' + ponto extra' : '') +
+    '</small></div>' +
+    '<div class="card"><small>Indicadores com dado</small><div class="v">' +
+    n +
+    ' de ' +
+    c.linhas.length +
+    '</div><small>' +
+    (pend.length
+      ? 'Faltam lançar: peso ' +
+        num(
+          pend.reduce((t, x) => t + x.it.peso, 0),
+          1,
+        ) +
+        ' de 10'
+      : 'Todos com dado') +
+    '</small></div></div>';
+  h +=
+    '<table class="csv"><thead><tr><th>Indicador</th><th class="n">Peso</th><th>Valor</th><th>Comparação</th><th>Resultado</th><th class="n">Pontos</th></tr></thead><tbody>' +
+    c.linhas
+      .map(
+        (x) =>
+          '<tr><td>' +
+          esc(x.it.nome) +
+          (x.d.origem ? '<small>Origem: ' + esc(x.d.origem) + '</small>' : '') +
+          '</td><td class="n">' +
+          num(x.it.peso, 1) +
+          '</td><td>' +
+          mostra(x.it, x.d) +
+          '</td><td>' +
+          ref(x.it, x.d) +
+          '</td><td>' +
+          (x.r.pct === null ? 'sem dado' : Math.round(x.r.pct * 100) + '%') +
+          '<small>' +
+          esc(dica(x)) +
+          '</small></td><td class="n">' +
+          (x.r.pct === null ? '—' : num(x.it.peso * x.r.pct, 2)) +
+          '</td></tr>',
+      )
+      .join('') +
+    '<tr><td><b>Óbito materno no ano</b></td><td class="n">—</td><td colspan="4">' +
+    (c.ob ? (c.ob.valor === 0 ? 'sem óbito materno informado' : 'com óbito materno informado') : 'não lançado') +
+    '</td></tr></tbody></table>';
+  return h;
+}
+
+// ---------- absenteísmo e filas ----------
+function secAbsenteismo(comp, un) {
+  let h =
+    '<h2>Absenteísmo e filas</h2><p>Absenteísmo = faltas ÷ (atendimentos + faltas). Meta de referência do Q14.2.1: até ' +
+    num(Q14, 2) +
+    '%.</p>';
+  const ls = linhasDe('Q14.2.1', [comp], un);
+  if (ls.length) {
+    const mun = agregar(ls, () => 'M').get('Q14.2.1|M'),
+      v = resultado(mun, 'percentual');
+    h +=
+      '<div class="cards"><div class="card"><small>Absenteísmo de consultas</small><div class="v">' +
+      pct(v) +
+      '</div><small>' +
+      num(mun.num, 0) +
+      ' faltas em ' +
+      num(mun.den, 0) +
+      ' agendamentos decididos</small></div>' +
+      '<div class="card"><small>Referência</small><div class="v">' +
+      num(Q14, 2) +
+      '%</div><small>' +
+      (v == null ? '' : v <= Q14 ? 'dentro da meta' : 'acima da meta') +
+      '</small></div></div>';
+    const por = agregar(ls, (l) => l.unidade),
+      uns = [...new Set(ls.map((l) => l.unidade))].sort();
+    if (!un && uns.length > 1)
+      h +=
+        '<h3>Por unidade</h3><table class="csv"><thead><tr><th>Unidade</th><th class="n">Faltas</th><th class="n">Agendamentos</th><th class="n">Absenteísmo</th><th>Meta</th></tr></thead><tbody>' +
+        uns
+          .map((u) => {
+            const g = por.get('Q14.2.1|' + u),
+              r = g ? resultado(g, 'percentual') : null;
+            return (
+              '<tr><td>' +
+              esc(u) +
+              '</td><td class="n">' +
+              num(g.num, 0) +
+              '</td><td class="n">' +
+              num(g.den, 0) +
+              '</td><td class="n"><b>' +
+              pct(r) +
+              '</b></td><td>' +
+              (r == null ? '—' : r <= Q14 ? 'dentro' : 'acima') +
+              '</td></tr>'
+            );
+          })
+          .join('') +
+        '</tbody></table>';
+    const eqs = agregar(ls, (l) => l.unidade + ' · ' + l.equipe);
+    h +=
+      '<h3>Por equipe</h3><table class="csv"><thead><tr><th>Equipe</th><th class="n">Faltas</th><th class="n">Agendamentos</th><th class="n">Absenteísmo</th></tr></thead><tbody>' +
+      [...eqs.values()]
+        .filter((g) => g.codigo === 'Q14.2.1')
+        .sort((a, b) => a.rot.localeCompare(b.rot))
+        .map((g) => {
+          const r = resultado(g, 'percentual');
+          return (
+            '<tr><td>' +
+            esc(g.rot) +
+            '</td><td class="n">' +
+            num(g.num, 0) +
+            '</td><td class="n">' +
+            num(g.den, 0) +
+            '</td><td class="n"><b>' +
+            pct(r) +
+            '</b></td></tr>'
+          );
+        })
+        .join('') +
+      '</tbody></table>';
+  } else h += '<p class="vazio">Sem o indicador Q14.2.1 nesta competência.</p>';
+  // faltas por categoria profissional e tipo (relatório gerencial de absenteísmo)
+  const ab = (ABS[comp] || []).filter((x) => !un || x.unidade === un);
+  if (ab.length) {
+    const g = {};
+    for (const x of ab) {
+      const k = (x.grupoCBO || x.cbo || 'Outros') + '|' + x.tipoFalta;
+      g[k] = (g[k] || 0) + (x.n || 0);
+    }
+    const grupos = [...new Set(ab.map((x) => x.grupoCBO || x.cbo || 'Outros'))].sort(),
+      tipos = [...new Set(ab.map((x) => x.tipoFalta))].sort();
+    h +=
+      '<h3>Agendamentos por categoria profissional e situação</h3><table class="csv"><thead><tr><th>Categoria</th>' +
+      tipos.map((t) => '<th class="n">' + esc(t) + '</th>').join('') +
+      '<th class="n">Total</th></tr></thead><tbody>' +
+      grupos
+        .map((gr) => {
+          const t = tipos.map((tp) => g[gr + '|' + tp] || 0);
+          return (
+            '<tr><td>' +
+            esc(gr) +
+            '</td>' +
+            t.map((v) => '<td class="n">' + num(v, 0) + '</td>').join('') +
+            '<td class="n"><b>' +
+            num(
+              t.reduce((a, b) => a + b, 0),
+              0,
+            ) +
+            '</b></td></tr>'
+          );
+        })
+        .join('') +
+      '</tbody></table>';
+  }
+  // filas por equipe (sem nomes de profissionais)
+  if (!ehGestor()) h += '<h3>Filas e faltas por equipe</h3><p class="vazio">Esta parte é restrita a administradores e gestores.</p>';
+  else if (!FILAS || !FILAS.profissionais || !FILAS.profissionais.length)
+    h += '<h3>Filas e faltas por equipe</h3><p class="vazio">Sem dados de filas e faltas para esta competência.</p>';
+  else {
+    const gq = {};
+    for (const p of FILAS.profissionais) {
+      if (un && p.unidade !== un) continue;
+      const k = p.unidade + '|' + (p.equipe || 'Sem equipe');
+      (gq[k] = gq[k] || { un: p.unidade, eq: p.equipe || 'Sem equipe', f: 0, a: 0, d: [], prof: 0, semAg: 0 }).prof++;
+      const o = gq[k];
+      o.f += p.faltas || 0;
+      o.a += p.atendimentos || 0;
+      if (p.agendaLidaEm) o.d.push(p.semVaga ? 91 : p.diasVaga);
+      else o.semAg++;
+    }
+    const c1 = agregar(linhasDe('C1', [comp], un), (l) => l.unidade + '|' + (l.equipe || 'Sem equipe'));
+    h +=
+      '<h3>Filas e faltas por equipe (médicos, enfermeiros e cirurgiões-dentistas)</h3><p>Faltas e espera por equipe, ao lado da C1 (parcela de consultas de demanda programada). Espera = mediana de dias até a próxima vaga dos profissionais com agenda lida. Não há nomes de profissionais neste documento.</p>' +
+      '<table class="csv"><thead><tr><th>Equipe</th><th class="n">Prof.</th><th class="n">Faltas</th><th class="n">Absenteísmo</th><th>Faltas (risco: meta)</th><th class="n">Espera (mediana)</th><th>Espera (dias)</th><th class="n">C1 programada</th></tr></thead><tbody>' +
+      Object.values(gq)
+        .sort((a, b) => (a.un + a.eq).localeCompare(b.un + b.eq, 'pt'))
+        .map((o) => {
+          const r = o.f + o.a ? (o.f / (o.f + o.a)) * 100 : null,
+            m = med(o.d),
+            g = c1.get('C1|' + o.un + '|' + o.eq);
+          return (
+            '<tr><td>' +
+            esc(o.eq) +
+            '<small>' +
+            esc(o.un) +
+            '</small></td><td class="n">' +
+            o.prof +
+            '</td><td class="n">' +
+            num(o.f, 0) +
+            ' de ' +
+            num(o.f + o.a, 0) +
+            '</td><td class="n"><b>' +
+            pct(r) +
+            '</b></td><td>' +
+            barra(r, 40, Q14, r == null ? '#8A979F' : r <= Q14 ? '#2F9E6E' : '#D64545') +
+            '</td><td class="n">' +
+            (m == null ? 'agenda não lida' : m > 90 ? '90+ dias' : m + ' d') +
+            '</td><td>' +
+            barra(m, 60, 30, m == null ? '#8A979F' : m <= 15 ? '#2F9E6E' : m <= 30 ? '#E3B341' : '#D64545') +
+            '</td><td class="n">' +
+            (g && g.den ? pct((100 * g.num) / g.den) : '—') +
+            '</td></tr>'
+          );
+        })
+        .join('') +
+      '</tbody></table>';
+  }
+  return h;
+}
+
+// ---------- visão geral ----------
+function secGeral(comp, un) {
+  const todas = (dados[comp] || []).filter((l) => !un || l.unidade === un);
+  const uns = new Set(todas.map((l) => l.unidade).filter((u) => u && u !== 'Município')),
+    eqs = new Set(todas.filter((l) => l.equipe && l.equipe !== 'Município').map((l) => l.unidade + '|' + l.equipe));
+  const tot = { o: 0, b: 0, s: 0, r: 0 };
+  for (const cod of NOTAS) {
+    const ls = linhasDe(cod, [comp], un);
+    if (!ls.length) continue;
+    const cat = (window.CATALOGO || {})[cod] || { tipo: '' };
+    [...agregar(ls, (l) => l.unidade + ' · ' + l.equipe).values()]
+      .filter((g) => g.codigo === cod)
+      .forEach((g) => {
+        const k = conceito(cod, resultado(g, cat.tipo));
+        if (k) tot[k]++;
+      });
+  }
+  const nt = tot.o + tot.b + tot.s + tot.r;
+  let h =
+    '<h2>Resumo</h2><div class="cards">' +
+    '<div class="card"><small>Cobertura da coleta</small><div class="v">' +
+    uns.size +
+    ' unid.</div><small>' +
+    eqs.size +
+    ' equipe(s) com dados</small></div>' +
+    (nt
+      ? '<div class="card"><small>Conceitos federais (prévia)</small><div class="v">' +
+        nt +
+        '</div><small>' +
+        ['o', 'b', 's', 'r'].map((k) => tot[k] + ' ' + NOMEC[k].toLowerCase()).join(' · ') +
+        '</small></div>'
+      : '');
+  const q = linhasDe('Q14.2.1', [comp], un);
+  if (q.length) {
+    const m = agregar(q, () => 'M').get('Q14.2.1|M'),
+      v = resultado(m, 'percentual');
+    h +=
+      '<div class="card"><small>Absenteísmo de consultas</small><div class="v">' +
+      pct(v) +
+      '</div><small>meta: até ' +
+      num(Q14, 2) +
+      '%</small></div>';
+  }
+  if (!ERRO && LANC.length) {
+    const c = calcular();
+    h +=
+      '<div class="card"><small>Nota estadual · ' +
+      esc(parcela.n) +
+      '</small><div class="v">' +
+      num(c.nota.final * 100, 1) +
+      '%</div><small>' +
+      (c.nota.completo ? 'todos os itens com dado' : 'parcial: faltam itens') +
+      '</small></div>';
+  }
+  h += '</div>';
+  const t = tabelaCods(
+    ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'CVAT', 'B1', 'B3', 'B4', 'B5', 'B6', 'M1', 'M2', 'CR1', 'CR2', 'CR3', 'CR4'],
+    comp,
+    un,
+    false,
+  );
+  if (t) h += '<h3>Principais indicadores federais</h3>' + t;
+  return h;
+}
+
+</script>
+    <script>
+// Painel APS · relatório (documento, tela e emissão). Script comum: usa as funções e dados declarados nos outros arquivos relatorio-*.js.
+// ---------- documento ----------
+const mesLong = (c) => {
+  const [a, m] = c.split('-');
+  return (
+    ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'][m - 1] +
+    ' de ' +
+    a
+  );
+};
+// Período de referência da competência: o mês inteiro e o quadrimestre do cofinanciamento federal.
+const MESES_CURTOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+function periodoRef(c) {
+  const [a, m] = c.split('-').map(Number);
+  const ult = new Date(Date.UTC(a, m, 0)).getUTCDate();
+  const q = Math.ceil(m / 4);
+  return {
+    mes: '01/' + String(m).padStart(2, '0') + '/' + a + ' a ' + ult + '/' + String(m).padStart(2, '0') + '/' + a,
+    quadrimestre: q + 'º quadrimestre de ' + a + ' (' + MESES_CURTOS[(q - 1) * 4] + ' a ' + MESES_CURTOS[q * 4 - 1] + ')',
+  };
+}
+// Datas em que os dados desta competência foram coletados do PEC (primeira e última etapa usada).
+function datasColeta(comp) {
+  const ds = [...(dados[comp] || []), ...(ABS[comp] || [])]
+    .map((l) => l.coletadoEm)
+    .filter(Boolean)
+    .map((d) => new Date(d))
+    .filter((d) => !isNaN(d))
+    .sort((x, y) => x - y);
+  if (!ds.length) return '—';
+  const f = (d) => d.toLocaleDateString('pt-BR');
+  return f(ds[0]) === f(ds[ds.length - 1]) ? f(ds[0]) : f(ds[0]) + ' a ' + f(ds[ds.length - 1]);
+}
+const SELAG = { unidades: new Set(), equipes: new Set() };
+function montarSelAg() {
+  const comp = $('comp').value,
+    ab = $('ab').value,
+    el = $('selAg');
+  el.hidden = !($('tipo').value === 'agrupado' && ab !== 'municipio');
+  if (el.hidden) return;
+  painelSel(el, itensSel(comp, ab), SELAG[ab], () => {
+    SELAG[ab] = new Set(marcadosDe(el));
+    desenhar();
+  });
+}
+function escoposDaTela(tipo, comp, un) {
+  if (tipo === 'unidades') {
+    const us = un ? [un] : unidadesDe(comp);
+    return { lista: us.map((u) => escUnidade(comp, u)), abr: un || 'Todas as unidades, uma a uma' };
+  }
+  if (tipo === 'equipes') {
+    let l = equipesDe(comp, un);
+    const eq = $('eq').value;
+    if (eq) l = l.filter((x) => x.u + '|' + x.e === eq);
+    return { lista: l.map(escEquipe), abr: (un || 'Todas as unidades') + (eq ? ' · equipe selecionada' : ' · todas as equipes') };
+  }
+  const ab = $('ab').value;
+  if (ab === 'municipio') return { lista: [escMunicipio()], abr: 'Município (consolidado)' };
+  const sel = [...SELAG[ab]];
+  if (ab === 'unidades') {
+    const us = unidadesDe(comp).filter((u) => sel.includes(u));
+    return { lista: us.length ? [escUnidades(us)] : [], abr: us.length + ' unidade(s), consolidado' };
+  }
+  const ts = equipesDe(comp, '').filter((t) => sel.includes(t.u + '|' + t.e));
+  return { lista: ts.length ? [escEquipes(ts)] : [], abr: ts.length + ' equipe(s), consolidado' };
+}
+function moldura(tipo, comp, abr, corpo) {
+  const quando = new Date();
+  const id =
+    'PAPS-' + comp.replace('-', '') + '-' + tipo.slice(0, 3).toUpperCase() + '-' + quando.toISOString().slice(0, 16).replace(/\D/g, '');
+  $('doc').innerHTML =
+    '<div class="capa"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJQYWluZWwgQVBTIj4KICA8cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iNTgiIGhlaWdodD0iNTgiIHJ4PSIxNCIgZmlsbD0iIzFGM0M3MiIvPgogIDxyZWN0IHg9IjE0IiB5PSIzNCIgd2lkdGg9IjgiIGhlaWdodD0iMTYiIHJ4PSIyIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9Ii41NSIvPgogIDxyZWN0IHg9IjI4IiB5PSIyNCIgd2lkdGg9IjgiIGhlaWdodD0iMjYiIHJ4PSIyIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9Ii44Ii8+CiAgPHJlY3QgeD0iNDIiIHk9IjE2IiB3aWR0aD0iOCIgaGVpZ2h0PSIzNCIgcng9IjIiIGZpbGw9IiMwMEE3RTciLz4KICA8cGF0aCBkPSJNMTMgMjcgTDI1IDE5IEwzNCAyMyBMNDkgMTEiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFDOUM3NiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTEiIHI9IjMuMiIgZmlsbD0iIzFDOUM3NiIvPgo8L3N2Zz4K" alt=""><div><div class="org">Painel APS · Secretaria de Saúde de Cajamar</div><h1>' +
+    esc(TITULOS[tipo]) +
+    '</h1></div></div>' +
+    '<dl class="meta"><div><dt>Competência</dt><dd>' +
+    esc(mesLong(comp)) +
+    '</dd></div><div><dt>Período de referência</dt><dd>' +
+    esc(periodoRef(comp).mes) +
+    '<br>' +
+    esc(periodoRef(comp).quadrimestre) +
+    '</dd></div><div><dt>Dados coletados do PEC em</dt><dd>' +
+    esc(datasColeta(comp)) +
+    '</dd></div><div><dt>Abrangência</dt><dd>' +
+    esc(abr) +
+    '</dd></div>' +
+    '<div><dt>Emitido por</dt><dd>' +
+    esc(USUARIO ? USUARIO.nome : '—') +
+    (USUARIO ? ' (' + (PERFIL[USUARIO.perfil] || USUARIO.perfil) + ')' : '') +
+    '</dd></div>' +
+    '<div><dt>Emitido em</dt><dd>' +
+    quando.toLocaleDateString('pt-BR') +
+    ' às ' +
+    quando.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) +
+    '</dd></div>' +
+    '<div><dt>Código do documento</dt><dd>' +
+    id +
+    '</dd></div><div><dt>Fonte</dt><dd>PEC e-SUS APS (coleta pela extensão) e lançamentos oficiais</dd></div></dl>' +
+    corpo +
+    '<div class="rodadoc"><b>Como ler este documento.</b> Os números são totais coletados do PEC e-SUS e calculados pelo Painel APS conforme as notas técnicas e as deliberações citadas; são uma prévia para acompanhamento, e o resultado oficial é o do Ministério da Saúde e da Secretaria de Estado da Saúde. Os indicadores de produção (atendimentos, procedimentos e atividades) contam o período de referência; os de acompanhamento de pessoas (por exemplo, C2 a C7 e CVAT) contam a janela da nota (em geral 12 meses) terminando no último dia da competência, sobre as pessoas vinculadas no dia da coleta. Valores marcados com ≈ são aproximados e “piso” indica que o valor real é igual ou maior. A explicação de cada coleta e de cada cálculo está em Como coletamos e calculamos (rodapé do Painel). Este documento não contém dados de pacientes.</div>';
+  document.title = 'Relatório · ' + TITULOS[tipo] + ' · ' + comp;
+}
+
+function desenhar() {
+  const tipo = $('tipo').value,
+    comp = $('comp').value,
+    un = $('un').value;
+  $('pagina').textContent = '@page{size:A4 ' + ($('orient').value === 'paisagem' ? 'landscape' : 'portrait') + '}';
+  $('lbParcela').hidden = !(tipo === 'estadual' || tipo === 'completo' || tipo === 'geral');
+  $('lbUn').hidden = tipo === 'estadual' || tipo === 'agrupado';
+  $('lbEq').hidden = tipo !== 'equipes';
+  $('lbAb').hidden = tipo !== 'agrupado';
+  if (tipo === 'equipes') {
+    const atual = $('eq').value;
+    const l = equipesDe(comp, un);
+    $('eq').innerHTML =
+      '<option value="">Todas (' +
+      l.length +
+      ')</option>' +
+      l.map((x) => '<option value="' + esc(x.u + '|' + x.e) + '">' + esc(x.u + ' · ' + x.e) + '</option>').join('');
+    $('eq').value = l.some((x) => x.u + '|' + x.e === atual) ? atual : '';
+  }
+  $('selAg').hidden = !(tipo === 'agrupado' && $('ab').value !== 'municipio');
+  if (!comp) {
+    $('doc').innerHTML = '<p class="vazio">Ainda não há competências coletadas.</p>';
+    return;
+  }
+  let corpo = '',
+    abr = un || 'Município e todas as unidades';
+  if (tipo === 'geral') corpo = secGeral(comp, un);
+  if (tipo === 'federal' || tipo === 'completo') corpo += (tipo === 'completo' ? secGeral(comp, un) : '') + secFederal(comp, un);
+  if (tipo === 'regua' || tipo === 'completo') corpo += secRegua(comp, un);
+  if (tipo === 'unidades' || tipo === 'equipes' || tipo === 'agrupado') {
+    const r = escoposDaTela(tipo, comp, un);
+    abr = r.abr;
+    corpo += r.lista.length
+      ? secEscopos(comp, r.lista, INTRO_ESC + (r.lista[0].lista ? ' <b>Consolidado:</b> ' + esc(r.lista[0].lista) + '.' : ''))
+      : '<h2>Relatório</h2><p class="vazio">' +
+        (tipo === 'agrupado' ? 'Marque ao menos uma unidade ou equipe na lista acima.' : 'Sem dados nesta competência.') +
+        '</p>';
+  }
+  if (tipo === 'estadual' || tipo === 'completo') corpo += secEstadual();
+  if (tipo === 'municipal' || tipo === 'completo') corpo += secMunicipal(comp, un);
+  if (tipo === 'absenteismo' || tipo === 'completo') corpo += secAbsenteismo(comp, un);
+  moldura(tipo, comp, tipo === 'estadual' ? 'Município' : abr, corpo);
+}
+async function carregarComp(comp) {
+  if (!comp) return;
+  if (!dados[comp]) {
+    try {
+      const d = await fetch('/api/v1/dados?partes=indicadores,absenteismo&competencia=' + comp, { credentials: 'same-origin' });
+      if (d.ok) {
+        const j = await d.json();
+        dados[comp] = j.indicadores || [];
+        ABS[comp] = j.absenteismo || [];
+      }
+    } catch (_) {}
+  }
+  const uns = [...new Set((dados[comp] || []).map((l) => l.unidade).filter((u) => u && u !== 'Município'))].sort();
+  const atual = $('un').value;
+  $('un').innerHTML = '<option value="">Todas</option>' + uns.map((u) => '<option>' + esc(u) + '</option>').join('');
+  $('un').value = uns.includes(atual) ? atual : '';
+  FILAS = null;
+  if (ehGestor()) {
+    try {
+      const r = await fetch('/api/v1/filas?competencia=' + comp, { credentials: 'same-origin' });
+      if (r.ok) FILAS = await r.json();
+    } catch (_) {}
+  }
+}
+function csv() {
+  const linhas = [];
+  const lim = (s) => '"' + String(s).replace(/\s+/g, ' ').trim().replace(/"/g, '""') + '"';
+  linhas.push([lim($('doc').querySelector('h1').textContent)].join(';'));
+  linhas.push(['Competência', lim($('comp').value)].join(';'));
+  linhas.push(['Período de referência', lim(periodoRef($('comp').value).mes), lim(periodoRef($('comp').value).quadrimestre)].join(';'));
+  linhas.push(['Dados coletados do PEC em', lim(datasColeta($('comp').value))].join(';'));
+  $('doc')
+    .querySelectorAll('h2,h3,table.csv')
+    .forEach((el) => {
+      if (el.tagName === 'TABLE')
+        el.querySelectorAll('tr').forEach((tr) => linhas.push([...tr.children].map((c) => lim(c.textContent)).join(';')));
+      else {
+        linhas.push('');
+        linhas.push(lim(el.textContent));
+      }
+    });
+  const blob = new Blob(['﻿' + linhas.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'painel-aps-' + $('tipo').value + '-' + $('comp').value + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function registrar(acao, tipo, detalhe) {
+  try {
+    fetch('/api/v1/relatorios/emissao', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        tipo: tipo || $('tipo').value,
+        competencia: $('comp').value,
+        formato: acao,
+        unidade: detalhe !== undefined ? detalhe : $('un').value || null,
+      }),
+    });
+  } catch (_) {}
+}
+async function iniciar() {
+  const q = new URLSearchParams(location.search);
+  try {
+    const e = await fetch('/api/v1/auth/eu', { credentials: 'same-origin' });
+    if (e.ok) USUARIO = (await e.json()).usuario || null;
+  } catch (_) {}
+  if (!ehGestor()) $('tipo').querySelector('option[value=absenteismo]').textContent = 'Absenteísmo (sem filas por equipe)';
+  try {
+    const r = await fetch('/api/v1/competencias', { credentials: 'same-origin' });
+    if (r.status === 401) {
+      location.replace('/entrar');
+      return;
+    }
+    COMPS = ((await r.json()).competencias || [])
+      .map((c) => c.competencia)
+      .sort()
+      .reverse();
+  } catch (_) {}
+  $('comp').innerHTML = COMPS.map((c) => '<option value="' + c + '">' + mesLong(c) + '</option>').join('');
+  const t = q.get('tipo');
+  if (t && [...$('tipo').options].some((o) => o.value === t)) $('tipo').value = t;
+  if (q.get('competencia') && COMPS.includes(q.get('competencia'))) $('comp').value = q.get('competencia');
+  $('parcela').innerHTML = PARCELAS.map((P, i) => '<option value="' + i + '">' + P.n + '</option>').join('');
+  $('parcela').value = '2';
+  try {
+    const [a, b, v] = await Promise.all([
+      fetch('/api/v1/estadual/lancamentos', { credentials: 'same-origin' }),
+      fetch('/api/v1/composicao', { credentials: 'same-origin' }),
+      fetch('/api/v1/vacinas-pec', { credentials: 'same-origin' }),
+    ]);
+    if (v.ok) VAC = (await v.json()).doses || [];
+    if (a.ok) {
+      LANC = (await a.json()).vigentes;
+      ERRO = false;
+    } else ERRO = true;
+    if (b.ok) {
+      const c = (await b.json()).composicao;
+      NESF = c ? (c.unidades || []).reduce((t, u) => t + (u.equipes || []).filter((e) => e.tipo === 'ESF').length, 0) : null;
+    }
+    // parcela padrão: a mais recente com algum lançamento
+    for (let i = PARCELAS.length - 1; i >= 0; i--) {
+      if (LANC.some((l) => l.periodo === PARCELAS[i].p)) {
+        parcela = PARCELAS[i];
+        $('parcela').value = String(i);
+        break;
+      }
+    }
+  } catch (_) {
+    ERRO = true;
+  }
+  await carregarComp($('comp').value);
+  montarSelAg();
+  desenhar();
+  $('tipo').onchange = () => {
+    $('eq').value = '';
+    montarSelAg();
+    desenhar();
+  };
+  $('ab').onchange = () => {
+    montarSelAg();
+    desenhar();
+  };
+  $('eq').onchange = () => desenhar();
+  $('orient').onchange = () => desenhar();
+  $('un').onchange = () => {
+    $('eq').value = '';
+    desenhar();
+  };
+  $('comp').onchange = async () => {
+    await carregarComp($('comp').value);
+    SELAG.unidades.clear();
+    SELAG.equipes.clear();
+    montarSelAg();
+    desenhar();
+  };
+  $('parcela').onchange = () => {
+    parcela = PARCELAS[+$('parcela').value];
+    desenhar();
+  };
+  $('imprimir').onclick = () => {
+    registrar('pdf');
+    window.print();
+  };
+  $('csv').onclick = () => {
+    registrar('csv');
+    csv();
+  };
+  // Lote: gera o PDF sem mostrar o resultado na tela; depois da impressão a tela volta ao que estava.
+  const modo = () => document.querySelector('#fdlg [name=modo]:checked').value;
+  const SELLOTE = { unidades: new Set(), equipes: new Set() };
+  const montarLote = () => {
+    const m = modo(),
+      el = $('selLote');
+    el.hidden = m === 'todos';
+    $('erroLote').textContent = '';
+    if (m === 'todos') return;
+    painelSel(el, itensSel($('comp').value, m), SELLOTE[m], () => {
+      SELLOTE[m] = new Set(marcadosDe(el));
+    });
+  };
+  $('lote').onclick = () => {
+    const c = $('comp').value;
+    SELLOTE.unidades = new Set(unidadesDe(c));
+    SELLOTE.equipes = new Set(equipesDe(c, '').map((t) => t.u + '|' + t.e));
+    montarLote();
+    $('dlg').showModal();
+  };
+  document.querySelectorAll('#fdlg [name=modo]').forEach((r) => (r.onchange = montarLote));
+  $('cancLote').onclick = () => $('dlg').close();
+  $('geraLote').onclick = () => {
+    const comp = $('comp').value,
+      m = modo(),
+      sel = m === 'todos' ? [] : marcadosDe($('selLote'));
+    const lista = listaLote(comp, m, sel, $('comMun').checked);
+    if (!lista.length) {
+      $('erroLote').textContent = 'Marque ao menos um item para gerar o PDF.';
+      return;
+    }
+    $('dlg').close();
+    $('pagina').textContent = '@page{size:A4 ' + ($('orient').value === 'paisagem' ? 'landscape' : 'portrait') + '}';
+    const abr =
+      {
+        todos: 'Município, todas as unidades e equipes (individuais)',
+        unidades: sel.length + ' unidade(s), individuais',
+        equipes: sel.length + ' equipe(s), individuais',
+      }[m] +
+      ' · ' +
+      lista.length +
+      ' dossiê(s)';
+    moldura('lote', comp, abr, secEscopos(comp, lista, INTRO_ESC));
+    registrar('pdf', 'lote', (m + ' · ' + lista.length + ' dossiês').slice(0, 80));
+    window.addEventListener('afterprint', () => desenhar(), { once: true });
+    setTimeout(() => window.print(), 150);
+  };
+}
+iniciar();
+
+</script>
+  <script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  document.body.classList.add('sem-dados');
+  const lidos = {};
+  const mesNome = (c) => { const [a, m] = c.split('-'); return ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'][+m - 1] + ' de ' + a; };
+  function listar() {
+    const cs = Object.keys(lidos).sort();
+    const quando = (q) => (q ? new Date(q).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'data não informada');
+    $('flLista').innerHTML = cs
+      .map((c) => '<li><b>' + mesNome(c) + '</b> — ' + (lidos[c].length > 1 ? lidos[c].length + ' coletas (' + lidos[c].map((x) => quando(x.quando)).join(', ') + ')' : 'coleta de ' + quando(lidos[c][0].quando)) + '</li>')
+      .join('');
+    $('flMontar').disabled = !cs.length;
+  }
+  async function ler(arquivos) {
+    $('flErro').textContent = '';
+    for (const f of arquivos) {
+      try {
+        const j = JSON.parse(await f.text());
+        if (!j || !/^\d{4}-\d{2}$/.test(j.competencia || '') || !Array.isArray(j.indicadores)) throw new Error('não é um arquivo exportado pela extensão');
+        const d = window.FONTE_LOCAL.converter(j);
+        const ja = (lidos[d.competencia] = lidos[d.competencia] || []);
+        // O mesmo arquivo escolhido duas vezes conta uma vez só.
+        if (!ja.some((x) => x.quando === d.quando && x.linhas.length === d.linhas.length)) ja.push(d);
+      } catch (e) {
+        $('flErro').textContent = f.name + ': ' + e.message + '.';
+      }
+    }
+    listar();
+  }
+  // O nome fica lembrado só neste navegador, para a próxima emissão.
+  try { $('flNome').value = localStorage.getItem('painelaps.local.nome') || ''; } catch (_) {}
+  $('flArquivos').addEventListener('change', (e) => ler(e.target.files));
+  $('flTrocar').addEventListener('click', () => location.reload());
+  const z = $('flZona');
+  z.addEventListener('dragover', (e) => { e.preventDefault(); z.classList.add('sobre'); });
+  z.addEventListener('dragleave', () => z.classList.remove('sobre'));
+  z.addEventListener('drop', (e) => { e.preventDefault(); z.classList.remove('sobre'); ler(e.dataTransfer.files); });
+  $('flMontar').addEventListener('click', () => {
+    const A = window.FONTE_LOCAL.ARQ;
+    window.FONTE_LOCAL.nome = $('flNome').value.trim();
+    try { localStorage.setItem('painelaps.local.nome', window.FONTE_LOCAL.nome); } catch (_) {}
+    PERFIL.gestor = 'emissão fora do Painel';
+    for (const c of Object.keys(lidos)) A.porComp[c] = window.FONTE_LOCAL.juntar(lidos[c]);
+    // Composição das equipes: a da coleta mais recente que a trouxe.
+    const todas = Object.values(lidos).flat().filter((x) => x.composicao).sort((a, b) => String(b.quando).localeCompare(String(a.quando)));
+    A.composicao = todas.length ? todas[0].composicao : null;
+    $('fonteLocal').classList.add('carregado');
+    $('flTrocar').hidden = false;
+    document.body.classList.remove('sem-dados');
+    window.FONTE_LOCAL.liberar();
+  });
+})();
+</script>
+  </body>
+</html>
