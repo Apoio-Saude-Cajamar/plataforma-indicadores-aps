@@ -165,6 +165,23 @@ for a_, b_ in [
 # para marcar a divisão da lista; a linha de apoio ao lado continua em letra normal.
 marc = troca(marc, '<span style="font-weight: {{tPesoForte}}; color: {{tTitulo}}">{{l.nome}}</span>',
   '<span class="m-grupo-tit" style="font-size: 16px; font-weight: {{tPesoForte}}; letter-spacing: .04em; text-transform: uppercase; color: {{tTitulo}}">{{l.nome}}</span>')
+# Régua mais fina (5 px) e o resultado marcado por um triângulo que aponta para a régua, acima dela: não cobre a cor da faixa onde
+# a nota caiu. Equipes (linhas abertas) têm o triângulo menor; a previsão de fechamento do quadrimestre é o triângulo vazado e
+# tracejado, embaixo da régua e apontando para cima (não se sobrepõe ao resultado quando os dois estão perto); a referência (ex.: o município em "Quem precisa de apoio") continua como losango, um pouco menor.
+TRI = '<svg viewBox="0 0 12 10" width="100%" height="100%" aria-hidden="true" style="display: block; overflow: visible"><path d="M1 1H11L6 9Z" {a}/></svg>'
+TRI_ACIMA = TRI.replace('M1 1H11L6 9Z', 'M1 9H11L6 1Z')
+marc = troca(marc, '<div style="position: absolute; box-sizing: border-box; top: {{l.mTopo}}; left: {{l.posX}}; width: {{l.mTam}}; height: {{l.mTam}}; margin-left: {{l.mMargem}}; border-radius: {{l.mRaio}}; transform: rotate({{l.mGiro}}); background: {{l.mFundo}}; border: {{l.mBordaLarg}} solid {{l.mBorda}}; box-shadow: 0 0 0 1.5px {{l.mAnel}}"></div>',
+  '<div style="position: absolute; box-sizing: border-box; top: {{l.mTopo}}; left: {{l.posX}}; width: {{l.mTam}}; height: {{l.mTam}}; margin-left: {{l.mMargem}}; border-radius: {{l.mRaio}}; transform: rotate({{l.mGiro}}); background: {{l.mFundo}}; border: {{l.mBordaLarg}} solid {{l.mBorda}}; box-shadow: 0 0 0 1.5px {{l.mAnel}}; display: {{l.mLosango}}"></div>'
+  '\n                  <div class="m-tri" style="position: absolute; top: {{l.tTopo}}; left: {{l.posX}}; width: {{l.tLarg}}; height: {{l.tAlt}}; margin-left: {{l.tMargem}}; display: {{l.mTri}}">' + TRI.format(a='fill="{{l.tCor}}" stroke="{{l.tCor}}" stroke-width="1.2" stroke-linejoin="round"') + '</div>')
+marc = troca(marc, '<div style="position: absolute; box-sizing: border-box; top: 10px; left: {{l.projPos}}; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; border: 2px dashed {{l.projCor}}; opacity: {{l.projOp}}"></div>',
+  '<div style="position: absolute; top: {{l.tTopoProj}}; left: {{l.projPos}}; width: {{l.tLarg}}; height: {{l.tAlt}}; margin-left: {{l.tMargem}}; opacity: {{l.projOp}}">' + TRI_ACIMA.format(a='fill="none" stroke="{{l.projCor}}" stroke-width="1.4" stroke-dasharray="2.2 1.6" stroke-linejoin="round"') + '</div>')
+marc = troca(marc, '<span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: {{mUnFundo}}; box-shadow: 0 0 0 1.5px {{mUnAnel}}"></span>',
+  '<span style="display: inline-block; width: 12px; height: 10px">' + TRI.format(a='fill="{{mUnFundo}}" stroke="{{mUnFundo}}" stroke-width="1.2" stroke-linejoin="round"') + '</span>')
+marc = troca(marc, '<span style="display: inline-block; box-sizing: border-box; width: 12px; height: 12px; border-radius: 50%; border: 2px dashed {{mUnAnel}}"></span>',
+  '<span style="display: inline-block; width: 12px; height: 10px">' + TRI_ACIMA.format(a='fill="none" stroke="{{mUnAnel}}" stroke-width="1.4" stroke-dasharray="2.2 1.6" stroke-linejoin="round"') + '</span>')
+js = troca(js, "trilha: 8", "trilha: 5", 0)
+js = troca(js, "const tam = tipo === 'ref' ? 16 : tipo === 'filho' ? 12 : 18;", "const tam = tipo === 'ref' ? 12 : tipo === 'filho' ? 12 : 18;\n      const tw = tipo === 'filho' ? 11 : 14, th = Math.round(tw * 0.75);")
+js = troca(js, "mTopo: (17 - tam / 2) + 'px',", "mTopo: (17 - tam / 2) + 'px', mLosango: tipo === 'ref' ? 'block' : 'none', mTri: tipo === 'ref' ? 'none' : 'block',\n        tTopo: (17 - T.trilha / 2 - th + 1) + 'px', tTopoProj: (17 + T.trilha / 2 - 1) + 'px', tLarg: tw + 'px', tAlt: th + 'px', tMargem: (-tw / 2) + 'px', tCor: tipo === 'filho' ? mk[1] : mk[0],")
 # Quadradinhos dos meses (e o "caminho" do quadrimestre) num invólucro que não muda nada na tabela (display: contents).
 marc, n_ = re.subn(r'(<template data-sc="if" value="\{\{temMesesCols\}\}" hint-placeholder-val="\{\{false\}\}">)(\s*<template data-sc="for" list="\{\{l\.mesesCel\}\}".*?)(\n\s*</template>\n\s*<template data-sc="if" value="\{\{temDeltaCol\}\}")',
                    r'\1<div class="m-meses" style="display: contents">\2</div>\3', marc, count=1, flags=re.S)

@@ -302,8 +302,9 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
                   </div>
                   <div style="position: absolute; top: 3px; height: 28px; width: 2px; margin-left: -1px; left: {{l.refPos}}; background: {{tRefLinha}}; opacity: {{l.refOp}}"></div>
                   <div style="position: absolute; top: 15px; height: 4px; border-radius: 2px; left: {{l.caudaEsq}}; width: {{l.caudaLarg}}; background: {{l.caudaCor}}"></div>
-                  <div style="position: absolute; box-sizing: border-box; top: 10px; left: {{l.projPos}}; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; border: 2px dashed {{l.projCor}}; opacity: {{l.projOp}}"></div>
-                  <div style="position: absolute; box-sizing: border-box; top: {{l.mTopo}}; left: {{l.posX}}; width: {{l.mTam}}; height: {{l.mTam}}; margin-left: {{l.mMargem}}; border-radius: {{l.mRaio}}; transform: rotate({{l.mGiro}}); background: {{l.mFundo}}; border: {{l.mBordaLarg}} solid {{l.mBorda}}; box-shadow: 0 0 0 1.5px {{l.mAnel}}"></div>
+                  <div style="position: absolute; top: {{l.tTopoProj}}; left: {{l.projPos}}; width: {{l.tLarg}}; height: {{l.tAlt}}; margin-left: {{l.tMargem}}; opacity: {{l.projOp}}"><svg viewBox="0 0 12 10" width="100%" height="100%" aria-hidden="true" style="display: block; overflow: visible"><path d="M1 9H11L6 1Z" fill="none" stroke="{{l.projCor}}" stroke-width="1.4" stroke-dasharray="2.2 1.6" stroke-linejoin="round"/></svg></div>
+                  <div style="position: absolute; box-sizing: border-box; top: {{l.mTopo}}; left: {{l.posX}}; width: {{l.mTam}}; height: {{l.mTam}}; margin-left: {{l.mMargem}}; border-radius: {{l.mRaio}}; transform: rotate({{l.mGiro}}); background: {{l.mFundo}}; border: {{l.mBordaLarg}} solid {{l.mBorda}}; box-shadow: 0 0 0 1.5px {{l.mAnel}}; display: {{l.mLosango}}"></div>
+                  <div class="m-tri" style="position: absolute; top: {{l.tTopo}}; left: {{l.posX}}; width: {{l.tLarg}}; height: {{l.tAlt}}; margin-left: {{l.tMargem}}; display: {{l.mTri}}"><svg viewBox="0 0 12 10" width="100%" height="100%" aria-hidden="true" style="display: block; overflow: visible"><path d="M1 1H11L6 9Z" fill="{{l.tCor}}" stroke="{{l.tCor}}" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
                 </div>
                 <div class="m-valor" style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2">
                   <span style="font-size: {{l.vFonte}}; font-weight: {{tPesoForte}}; font-variant-numeric: tabular-nums">{{l.valor}}</span>
@@ -335,10 +336,10 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
         <p style="margin: 10px 0 2px; font-size: 13px; color: {{tSuave}}">{{foraTxt}}</p>
       </template>
       <div style="display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 12px 0 10px; margin-top: 8px; border-top: 1px solid {{tDivisa}}; font-size: 13px; color: {{tSuave}}; align-items: center">
-        <span style="display: flex; align-items: center; gap: 6px"><span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: {{mUnFundo}}; box-shadow: 0 0 0 1.5px {{mUnAnel}}"></span>{{legendaPonto}}</span>
+        <span style="display: flex; align-items: center; gap: 6px"><span style="display: inline-block; width: 12px; height: 10px"><svg viewBox="0 0 12 10" width="100%" height="100%" aria-hidden="true" style="display: block; overflow: visible"><path d="M1 1H11L6 9Z" fill="{{mUnFundo}}" stroke="{{mUnFundo}}" stroke-width="1.2" stroke-linejoin="round"/></svg></span>{{legendaPonto}}</span>
         <template data-sc="if" value="{{temLegendaRef}}" hint-placeholder-val="{{true}}"><span style="display: flex; align-items: center; gap: 6px"><span style="display: inline-block; width: 9px; height: 9px; background: {{mRefFundo}}; box-shadow: 0 0 0 1.5px {{mRefAnel}}; transform: rotate(45deg)"></span>{{legendaRef}}</span></template>
         <template data-sc="if" value="{{temLegendaTraco}}" hint-placeholder-val="{{true}}"><span style="display: flex; align-items: center; gap: 6px"><span style="display: inline-block; width: 2px; height: 14px; background: {{tRefLinha}}"></span>{{legendaTraco}}</span></template>
-        <template data-sc="if" value="{{temLegendaProj}}" hint-placeholder-val="{{false}}"><span style="display: flex; align-items: center; gap: 6px"><span style="display: inline-block; box-sizing: border-box; width: 12px; height: 12px; border-radius: 50%; border: 2px dashed {{mUnAnel}}"></span>{{legendaProj}}</span></template>
+        <template data-sc="if" value="{{temLegendaProj}}" hint-placeholder-val="{{false}}"><span style="display: flex; align-items: center; gap: 6px"><span style="display: inline-block; width: 12px; height: 10px"><svg viewBox="0 0 12 10" width="100%" height="100%" aria-hidden="true" style="display: block; overflow: visible"><path d="M1 9H11L6 1Z" fill="none" stroke="{{mUnAnel}}" stroke-width="1.4" stroke-dasharray="2.2 1.6" stroke-linejoin="round"/></svg></span>{{legendaProj}}</span></template>
         <template data-sc="if" value="{{temLegendaCauda}}" hint-placeholder-val="{{false}}"><span>Cauda: mudança em relação a {{compTxt}} (<span style="color: {{tMelhorouTexto}}; font-weight: 600">azul melhorou</span>, <span style="color: {{tPiorouTexto}}; font-weight: 600">{{nomePiora}} piorou</span>)</span></template>
         <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px">Fundo:
           <template data-sc="for" list="{{legendaFaixas}}" as="lf" hint-placeholder-count="4"><span style="display: flex; align-items: center; gap: 5px"><span style="display: inline-block; width: 14px; height: 8px; border-radius: 4px; background: {{lf.cor}}"></span>{{lf.rot}}</span></template>
@@ -453,7 +454,7 @@ class Component extends DCLogic {
         tRefFundo: '#E7EEF3', tRealce: '#F6F9FA', tRefLinha: '#33414C',
         tMelhorou: '#1F6FB2', tPiorou: '#D9822B', tMelhorouTexto: '#1F5F99', tPiorouTexto: '#A35A12', nomePiora: 'laranja', tSobe: '#1D6B45', tDesce: '#A8322A', tSemMudanca: '#8A979F',
         marca: { item: ['#0E5E8C', '#FFFFFF', '#0B3F5E'], ref: ['#0B3F5E', '#FFFFFF', '#0B3F5E'], filho: ['#FFFFFF', '#0E5E8C', '#FFFFFF'] },
-        tinta: { regular: '#F6D5D1', suficiente: '#F8EBC6', bom: '#DCEBC8', otimo: '#BFE0CC', neutro: '#E3E8E6' }, trilha: 8,
+        tinta: { regular: '#F6D5D1', suficiente: '#F8EBC6', bom: '#DCEBC8', otimo: '#BFE0CC', neutro: '#E3E8E6' }, trilha: 5,
         subtitulo: 'Cajamar', selo: true
       },
       personalizado: {
@@ -465,7 +466,7 @@ class Component extends DCLogic {
         tRefFundo: '#EAF2F8', tRealce: '#F6F9FC', tRefLinha: '#14213D',
         tMelhorou: '#0A6F9E', tPiorou: '#DA0E2B', tMelhorouTexto: '#0A6F9E', tPiorouTexto: '#B0001E', nomePiora: 'vermelho', tSobe: '#0A6F9E', tDesce: '#B0001E', tSemMudanca: '#7C8896',
         marca: { item: [cj, '#FFFFFF', cj], ref: ['#00A7E7', '#FFFFFF', cj], filho: ['#FFFFFF', cj, '#FFFFFF'] },
-        tinta: { regular: '#F6C9CE', suficiente: '#F7E4B2', bom: '#C9DCE8', otimo: '#94D2F0', neutro: '#DDE3EA' }, trilha: 8,
+        tinta: { regular: '#F6C9CE', suficiente: '#F7E4B2', bom: '#C9DCE8', otimo: '#94D2F0', neutro: '#DDE3EA' }, trilha: 5,
         subtitulo: 'Cajamar', selo: true
       },
       escuro: {
@@ -477,7 +478,7 @@ class Component extends DCLogic {
         tRefFundo: '#1C2B38', tRealce: '#1A2531', tRefLinha: '#C5D0DA',
         tMelhorou: '#5AA9E0', tPiorou: '#F0904F', tMelhorouTexto: '#7CC0EE', tPiorouTexto: '#F2A673', nomePiora: 'laranja', tSobe: '#7AD39E', tDesce: '#F29A72', tSemMudanca: '#6B7A88',
         marca: { item: ['#7CC0EE', '#16202A', '#7CC0EE'], ref: ['#E6EDF3', '#16202A', '#E6EDF3'], filho: ['#16202A', '#7CC0EE', '#16202A'] },
-        tinta: { regular: '#5E2F35', suficiente: '#5C4B22', bom: '#2F4D3B', otimo: '#2B6B50', neutro: '#2E3B48' }, trilha: 8,
+        tinta: { regular: '#5E2F35', suficiente: '#5C4B22', bom: '#2F4D3B', otimo: '#2B6B50', neutro: '#2E3B48' }, trilha: 5,
         subtitulo: 'Cajamar', selo: true
       }
     };
@@ -773,7 +774,8 @@ class Component extends DCLogic {
         else melhora = dif * (o.n ? o.n.d : 1) > 0 ? 1 : -1;
       }
       const tipo = o.tipo || 'item';
-      const tam = tipo === 'ref' ? 16 : tipo === 'filho' ? 12 : 18;
+      const tam = tipo === 'ref' ? 12 : tipo === 'filho' ? 12 : 18;
+      const tw = tipo === 'filho' ? 11 : 14, th = Math.round(tw * 0.75);
       const mk = T.marca[tipo];
       const fmt = o.fmt === undefined ? (o.n ? o.n.fmt : 1) : o.fmt;
       const temRef = o.ref !== null && o.ref !== undefined;
@@ -793,7 +795,8 @@ class Component extends DCLogic {
         refPos: temRef ? pct(o.ref).toFixed(2) + '%' : '0%', refOp: !temRef || tipo === 'ref' ? 0 : 0.85,
         caudaEsq: Math.min(p, pa).toFixed(2) + '%', caudaLarg: Math.abs(p - pa).toFixed(2) + '%',
         caudaCor: melhora > 0 ? T.tMelhorou : melhora < 0 ? T.tPiorou : T.tSemMudanca,
-        posX: p.toFixed(2) + '%', mTam: tam + 'px', mMargem: (-tam / 2) + 'px', mTopo: (17 - tam / 2) + 'px',
+        posX: p.toFixed(2) + '%', mTam: tam + 'px', mMargem: (-tam / 2) + 'px', mTopo: (17 - tam / 2) + 'px', mLosango: tipo === 'ref' ? 'block' : 'none', mTri: tipo === 'ref' ? 'none' : 'block',
+        tTopo: (17 - T.trilha / 2 - th + 1) + 'px', tTopoProj: (17 + T.trilha / 2 - 1) + 'px', tLarg: tw + 'px', tAlt: th + 'px', tMargem: (-tw / 2) + 'px', tCor: tipo === 'filho' ? mk[1] : mk[0],
         mRaio: tipo === 'ref' ? '2px' : '50%', mGiro: tipo === 'ref' ? '45deg' : '0deg',
         mFundo: mk[0], mBorda: mk[1], mAnel: mk[2], mBordaLarg: tipo === 'filho' ? '2.5px' : '3px',
         valor: o.valorTxt || num(o.v, fmt) + (o.un || ''), vFonte: tipo === 'filho' ? '16px' : '18px',
