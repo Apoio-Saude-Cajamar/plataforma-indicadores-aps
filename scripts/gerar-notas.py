@@ -100,10 +100,29 @@ js = troca(js, "tTopoBorda: '4px solid #00A7E7'", "tTopoBorda: '1px solid #00A7E
 js = troca(js, "subtitulo: 'Prefeitura de Cajamar', selo: false", "subtitulo: 'Cajamar', selo: true")
 js = troca(js, "temSelo: selo, temAssinatura: !selo,", """temSelo: selo, temAssinatura: !selo,
       ...(() => { const ch = (id) => () => { try { localStorage.setItem('painelaps.tema', id); } catch (_) {} this.setState({ tema: id }); }; const ps = (id) => tema === id; return { tClaro: ch('claro'), tPers: ch('personalizado'), tEsc: ch('escuro'), pClaro: ps('claro') ? 'true' : 'false', pPers: ps('personalizado') ? 'true' : 'false', pEsc: ps('escuro') ? 'true' : 'false', pClaroOp: ps('claro') ? 1 : .75, pPersOp: ps('personalizado') ? 1 : .75, pEscOp: ps('escuro') ? 1 : .75, pClaroBg: ps('claro') ? 'rgba(255,255,255,.26)' : 'transparent', pPersBg: ps('personalizado') ? 'rgba(255,255,255,.26)' : 'transparent', pEscBg: ps('escuro') ? 'rgba(255,255,255,.26)' : 'transparent' }; })(),
-      coletaTxt: REAL.ultima ? 'Dados do PEC e-SUS · coleta de ' + REAL.ultima : 'Dados do PEC e-SUS',
+      coletaPre: REAL.ultima ? 'Dados do PEC e-SUS · ' : 'Dados do PEC e-SUS', coletaPreCls: REAL.ultima ? 'so-largo' : '', coletaTxt: REAL.ultima ? 'coleta de ' + REAL.ultima : '',
       linkDados: LINK_DADOS(st),
       menuSite: MENU_SITE(), temLanc: !!USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor'), itensUsuario: ITENS_USUARIO(), usuarioInicial: USUARIO ? USUARIO.nome.trim().charAt(0).toUpperCase() : '', temUsuario: !!USUARIO, usuarioNome: USUARIO ? USUARIO.nome.split(' ')[0] : '',
       sair: async () => { try { await fetch('/api/v1/auth/sair', { method: 'POST', credentials: 'same-origin' }); } finally { location.replace('/entrar'); } },""")
+# Celular (/css/mobile.css): classes para enxugar o que ocupa espaço (subtítulo, selo da coleta, textos de apoio, rótulos longos),
+# resumo numa faixa que rola para o lado e filtros recolhidos numa linha (montados por /js/publico/mobile.js). Computador igual.
+marc = troca(marc, '<span style="font-size: 13px; color: {{tTopoSuave}}">Cofinanciamento federal da APS', '<span class="so-largo" style="font-size: 13px; color: {{tTopoSuave}}">Cofinanciamento federal da APS')
+marc = troca(marc, '<div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px 0; display: flex; flex-direction: column; gap: 8px">', '<div class="m-cab" style="max-width: 1280px; margin: 0 auto; padding: 14px 24px 0; display: flex; flex-direction: column; gap: 8px">')
+marc = troca(marc, 'padding: 3px 10px">{{coletaTxt}}</span>', 'padding: 3px 10px" class="m-selo"><span class="{{coletaPreCls}}">{{coletaPre}}</span>{{coletaTxt}}</span>')
+marc = troca(marc, '<div style="position: sticky; top: 0; z-index: 3;', '<div class="m-filtros" style="position: sticky; top: 0; z-index: 3;')
+marc = troca(marc, '<main style="max-width: 1280px; margin: 0 auto; padding: 24px 24px 48px;', '<main class="m-main" style="max-width: 1280px; margin: 0 auto; padding: 24px 24px 48px;')
+marc = troca(marc, '<p style="margin: 0; color: {{tSuave}}">{{descricao}}</p>', '<p class="{{descCls}}" style="margin: 0; color: {{tSuave}}">{{descricao}}</p>')
+marc = troca(marc, '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px">', '<div class="m-faixa" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px">')
+marc = troca(marc, '<span style="font-size: 14px; color: {{tSuave}}">{{comoLer}}</span>', '<span class="m-recolhe" style="font-size: 14px; color: {{tSuave}}">{{comoLer}}</span>')
+marc = troca(marc, '{{rotuloAbrirTodas}}</button>', '<span class="so-largo">{{rotuloAbrirTodas}}</span><span class="so-movel">{{rotuloAbrirTodasCurto}}</span></button>')
+marc = troca(marc, '{{rotuloPainel}}</button>', '<span class="so-largo">{{rotuloPainel}}</span><span class="so-movel">{{rotuloPainelCurto}}</span></button>')
+js = troca(js, "rotuloAbrirTodas = '', alternarTodas = () => {};", "rotuloAbrirTodas = '', rotuloAbrirTodasCurto = '', alternarTodas = () => {};")
+js = troca(js, "rotuloAbrirTodas = todas ? 'Fechar todas as notas' : 'Abrir todas (ver cada ' + (visao === 'unidades' ? 'unidade' : 'equipe') + ')';",
+  "rotuloAbrirTodas = todas ? 'Fechar todas as notas' : 'Abrir todas (ver cada ' + (visao === 'unidades' ? 'unidade' : 'equipe') + ')';\n        rotuloAbrirTodasCurto = todas ? 'Fechar todas' : 'Ver ' + (visao === 'unidades' ? 'unidades' : 'equipes');")
+js = troca(js, "rotuloAbrirTodas, alternarTodas,", "rotuloAbrirTodas, rotuloAbrirTodasCurto, alternarTodas,")
+js = troca(js, "rotuloPainel: 'Escolher notas (' + visiveis.length + ' de ' + lista.length + ')',", "rotuloPainel: 'Escolher notas (' + visiveis.length + ' de ' + lista.length + ')', rotuloPainelCurto: 'Notas ' + visiveis.length + '/' + lista.length,")
+js = troca(js, "comoLer, pergunta, descricao, rotuloNome,", "comoLer, pergunta, descricao, descCls: rel === 'geral' ? 'so-largo' : '', rotuloNome,")
+
 helm = helm.replace('family=Montserrat:wght@400;500;600;700;800&amp;', '')
 helm += '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap">'
 

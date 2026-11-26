@@ -64,16 +64,16 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
     </div>
   </nav>
   <header style="background: {{tTopoFundo}}; color: {{tTopoTexto}}; border-bottom: {{tTopoBorda}}">
-    <div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px 0; display: flex; flex-direction: column; gap: 8px">
+    <div class="m-cab" style="max-width: 1280px; margin: 0 auto; padding: 14px 24px 0; display: flex; flex-direction: column; gap: 8px">
       <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
         <div style="display: flex; align-items: center; gap: 12px">
           <div style="display: flex; flex-direction: column; line-height: 1.25">
             <span style="font-weight: {{tPesoForte}}; font-size: 17px">Notas metodológicas</span>
-            <span style="font-size: 13px; color: {{tTopoSuave}}">Cofinanciamento federal da APS · {{subtituloTopo}}</span>
+            <span class="so-largo" style="font-size: 13px; color: {{tTopoSuave}}">Cofinanciamento federal da APS · {{subtituloTopo}}</span>
           </div>
         </div>
         <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px">
-          <span style="font-size: 12px; font-weight: 600; color: {{tRascunhoTexto}}; background: {{tRascunhoFundo}}; border-radius: 999px; padding: 3px 10px">{{coletaTxt}}</span>
+          <span style="font-size: 12px; font-weight: 600; color: {{tRascunhoTexto}}; background: {{tRascunhoFundo}}; border-radius: 999px; padding: 3px 10px" class="m-selo"><span class="{{coletaPreCls}}">{{coletaPre}}</span>{{coletaTxt}}</span>
           
         </div>
       </div>
@@ -85,7 +85,7 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
     </div>
   </header>
 
-  <div style="position: sticky; top: 0; z-index: 3; background: {{tPagina}}; border-bottom: 1px solid {{tBorda}}">
+  <div class="m-filtros" style="position: sticky; top: 0; z-index: 3; background: {{tPagina}}; border-bottom: 1px solid {{tBorda}}">
     <div role="search" aria-label="Filtros" style="max-width: 1280px; margin: 0 auto; padding: 10px 24px; display: flex; align-items: center; gap: 10px">
 
       <div role="group" aria-label="Tipo de intervalo" style="display: flex; border: 1px solid {{tControle}}; border-radius: 8px; overflow: hidden; background: {{tCartao}}">
@@ -163,14 +163,14 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
     </div>
   </div>
 
-  <main style="max-width: 1280px; margin: 0 auto; padding: 24px 24px 48px; display: flex; flex-direction: column; gap: 20px">
+  <main class="m-main" style="max-width: 1280px; margin: 0 auto; padding: 24px 24px 48px; display: flex; flex-direction: column; gap: 20px">
 
     <div style="display: flex; flex-direction: column; gap: 4px; max-width: 980px">
       <h1 style="margin: 0; font-size: 30px; font-weight: {{tPesoTitulo}}; line-height: 1.2; color: {{tTitulo}}">{{pergunta}}</h1>
-      <p style="margin: 0; color: {{tSuave}}">{{descricao}}</p>
+      <p class="{{descCls}}" style="margin: 0; color: {{tSuave}}">{{descricao}}</p>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px">
+    <div class="m-faixa" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px">
       <template data-sc="for" list="{{resumo}}" as="r" hint-placeholder-count="3">
         <div style="background: {{tCartao}}; border: 1px solid {{tBorda}}; border-radius: 12px; padding: 16px 20px; display: flex; flex-direction: column; gap: 2px">
           <span style="font-size: 28px; font-weight: {{tPesoForte}}; line-height: 1.15; color: {{tTitulo}}; font-variant-numeric: tabular-nums">{{r.grande}}</span>
@@ -188,7 +188,7 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
               <button type="button" onClick="{{abrirInfoLista}}" aria-expanded="{{infoListaExp}}" aria-label="De onde vem este número" title="Clique para ver a origem e a regra de contagem." style="font: italic 700 13px Georgia, serif; width: 22px; height: 22px; flex: none; border-radius: 50%; border: 1.5px solid {{tLink}}; color: {{tLink}}; background: transparent; padding: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center">i</button>
             </template>
           </div>
-          <span style="font-size: 14px; color: {{tSuave}}">{{comoLer}}</span>
+          <span class="m-recolhe" style="font-size: 14px; color: {{tSuave}}">{{comoLer}}</span>
         </div>
         <template data-sc="if" value="{{temEscolhaNota}}" hint-placeholder-val="{{false}}">
           <div style="display: flex; flex-direction: column; gap: 4px">
@@ -204,10 +204,10 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
         </template>
         <div style="display: flex; flex-wrap: wrap; gap: 8px">
           <template data-sc="if" value="{{temAbrirTodas}}" hint-placeholder-val="{{false}}">
-            <button type="button" onClick="{{alternarTodas}}" style="font: inherit; min-height: 40px; padding: 0 14px; border: 1px solid {{tControle}}; border-radius: 8px; background: transparent; color: {{tTexto}}; cursor: pointer">{{rotuloAbrirTodas}}</button>
+            <button type="button" onClick="{{alternarTodas}}" style="font: inherit; min-height: 40px; padding: 0 14px; border: 1px solid {{tControle}}; border-radius: 8px; background: transparent; color: {{tTexto}}; cursor: pointer"><span class="so-largo">{{rotuloAbrirTodas}}</span><span class="so-movel">{{rotuloAbrirTodasCurto}}</span></button>
           </template>
           <template data-sc="if" value="{{temEscolhaNotas}}" hint-placeholder-val="{{true}}">
-            <button type="button" onClick="{{alternarPainel}}" aria-expanded="{{painelExp}}" style="font: inherit; min-height: 40px; padding: 0 14px; border: 1px solid {{tControle}}; border-radius: 8px; background: transparent; color: {{tTexto}}; cursor: pointer">{{rotuloPainel}}</button>
+            <button type="button" onClick="{{alternarPainel}}" aria-expanded="{{painelExp}}" style="font: inherit; min-height: 40px; padding: 0 14px; border: 1px solid {{tControle}}; border-radius: 8px; background: transparent; color: {{tTexto}}; cursor: pointer"><span class="so-largo">{{rotuloPainel}}</span><span class="so-movel">{{rotuloPainelCurto}}</span></button>
           </template>
         </div>
       </div>
@@ -784,7 +784,7 @@ class Component extends DCLogic {
     let linhas = [], resumo = [], eixo = [], tituloLista = '', comoLer = '', pergunta = '', descricao = '', foraTxt = '', infoListaTxt = '';
     let rotuloNome = 'Nota', rotuloValor = 'Resultado', rotuloDelta = temComp ? 'vs ' + compTxt : '';
     let legendaPonto = 'resultado do período', legendaRef = '', legendaTraco = '', gruposNota = [], cod = '';
-    let temAbrirTodas = false, rotuloAbrirTodas = '', alternarTodas = () => {};
+    let temAbrirTodas = false, rotuloAbrirTodas = '', rotuloAbrirTodasCurto = '', alternarTodas = () => {};
 
     if (rel === 'geral') {
       const porMotivo = {};
@@ -836,6 +836,7 @@ class Component extends DCLogic {
         const todas = multis.every((c) => abertas[c]);
         temAbrirTodas = true;
         rotuloAbrirTodas = todas ? 'Fechar todas as notas' : 'Abrir todas (ver cada ' + (visao === 'unidades' ? 'unidade' : 'equipe') + ')';
+        rotuloAbrirTodasCurto = todas ? 'Fechar todas' : 'Ver ' + (visao === 'unidades' ? 'unidades' : 'equipes');
         alternarTodas = () => { const o = {}; if (!todas) multis.forEach((c) => { o[c] = true; }); this.setState({ abertas: o }); };
       }
       const comF = itens.filter((x) => x.nn.f);
@@ -1076,11 +1077,11 @@ class Component extends DCLogic {
     const K = colunas.length, cw = K > 6 ? 54 : 60, gap = temMesesCols && K > 6 ? 10 : 16;
 
     return {
-      ...tokens, linhas, resumo, eixo, tituloLista, comoLer, pergunta, descricao, rotuloNome, rotuloValor, rotuloDelta, temDelta,
+      ...tokens, linhas, resumo, eixo, tituloLista, comoLer, pergunta, descricao, descCls: rel === 'geral' ? 'so-largo' : '', rotuloNome, rotuloValor, rotuloDelta, temDelta,
       compTxt: rel === 'meses' ? 'o mês anterior' : compTxt,
       trilha: trilha + 'px', trilhaTopo: (17 - trilha / 2) + 'px', subtituloTopo: subtitulo, temSelo: selo, temAssinatura: !selo,
       ...(() => { const ch = (id) => () => { try { localStorage.setItem('painelaps.tema', id); } catch (_) {} this.setState({ tema: id }); }; const ps = (id) => tema === id; return { tClaro: ch('claro'), tPers: ch('personalizado'), tEsc: ch('escuro'), pClaro: ps('claro') ? 'true' : 'false', pPers: ps('personalizado') ? 'true' : 'false', pEsc: ps('escuro') ? 'true' : 'false', pClaroOp: ps('claro') ? 1 : .75, pPersOp: ps('personalizado') ? 1 : .75, pEscOp: ps('escuro') ? 1 : .75, pClaroBg: ps('claro') ? 'rgba(255,255,255,.26)' : 'transparent', pPersBg: ps('personalizado') ? 'rgba(255,255,255,.26)' : 'transparent', pEscBg: ps('escuro') ? 'rgba(255,255,255,.26)' : 'transparent' }; })(),
-      coletaTxt: REAL.ultima ? 'Dados do PEC e-SUS · coleta de ' + REAL.ultima : 'Dados do PEC e-SUS',
+      coletaPre: REAL.ultima ? 'Dados do PEC e-SUS · ' : 'Dados do PEC e-SUS', coletaPreCls: REAL.ultima ? 'so-largo' : '', coletaTxt: REAL.ultima ? 'coleta de ' + REAL.ultima : '',
       linkDados: LINK_DADOS(st),
       menuSite: MENU_SITE(), temLanc: !!USUARIO && (USUARIO.perfil === 'admin' || USUARIO.perfil === 'gestor'), itensUsuario: ITENS_USUARIO(), usuarioInicial: USUARIO ? USUARIO.nome.trim().charAt(0).toUpperCase() : '', temUsuario: !!USUARIO, usuarioNome: USUARIO ? USUARIO.nome.split(' ')[0] : '',
       sair: async () => { try { await fetch('/api/v1/auth/sair', { method: 'POST', credentials: 'same-origin' }); } finally { location.replace('/entrar'); } },
@@ -1125,9 +1126,9 @@ class Component extends DCLogic {
 
       // Relatório
       temEscolhaNota: rel !== 'geral' && gruposNota.length > 0, gruposNota, notaSel: cod, escolherNota: (ev) => this.setState({ nota: ev.target.value, info: '', aberta: '' }),
-      temAbrirTodas, rotuloAbrirTodas, alternarTodas,
+      temAbrirTodas, rotuloAbrirTodas, rotuloAbrirTodasCurto, alternarTodas,
       temEscolhaNotas: rel === 'geral', painelAberto: rel === 'geral' && !!st.painel, painelExp: st.painel ? 'true' : 'false',
-      rotuloPainel: 'Escolher notas (' + visiveis.length + ' de ' + lista.length + ')', alternarPainel: () => this.setState({ painel: !this.state.painel }),
+      rotuloPainel: 'Escolher notas (' + visiveis.length + ' de ' + lista.length + ')', rotuloPainelCurto: 'Notas ' + visiveis.length + '/' + lista.length, alternarPainel: () => this.setState({ painel: !this.state.painel }),
       painelGrupos: GRUPOS.map((g) => {
         const doGrupo = lista.filter((x) => x.g === g.id).map((x) => x.cod), vis = doGrupo.filter((c) => !st.ocultas[c]).length;
         return { titulo: g.titulo, contagem: vis + ' de ' + doGrupo.length, marcado: vis === doGrupo.length, alternar: () => ocultarVarios(doGrupo, vis === doGrupo.length),

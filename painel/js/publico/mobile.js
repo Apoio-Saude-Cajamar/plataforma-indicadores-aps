@@ -333,10 +333,133 @@
       window.__segFeito = true;
     });
   }
+
+  // ---------- Celular: filtros do dashboard recolhidos numa linha (resumo + "Filtros"), abertos numa folha que sobe de baixo ----------
+  // Os filtros do dashboard são um rascunho até tocar em "Atualizar": o resumo avisa quando há mudança não aplicada.
+  var movel = function () {
+    return !!(window.matchMedia && window.matchMedia('(max-width: 899px)').matches);
+  };
+  var FUNIL = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4-2v-4Z"/></svg>';
+  function textoFiltros(f) {
+    var partes = [];
+    for (var c = f.firstElementChild; c; c = c.nextElementSibling) {
+      if (c.classList.contains('filtros-cab')) continue;
+      if (c.getAttribute('role') === 'group') {
+        if (c.getAttribute('aria-label') === 'Tipo de intervalo') continue;
+        var p = c.querySelector('[aria-pressed="true"]');
+        if (p) partes.push(p.textContent.trim());
+      } else if (c.tagName === 'DIV') {
+        var b = c.querySelector(':scope > button[aria-expanded] > span');
+        if (b) partes.push(b.textContent.trim());
+      } else if (c.tagName === 'LABEL') {
+        var x = c.querySelector('input[type=checkbox]');
+        if (x && x.checked) partes.push(c.textContent.trim().toLowerCase() === 'comparar' ? 'comparando' : c.textContent.trim());
+      }
+    }
+    return partes.filter(Boolean).join(' · ');
+  }
+  var botaoAtualizar = function (f) {
+    var bs = f.querySelectorAll(':scope > button');
+    for (var i = 0; i < bs.length; i++) if (/atualizar/i.test(bs[i].textContent)) return bs[i];
+    return null;
+  };
+  function abrirFiltros(sim) {
+    raiz.classList.toggle('filtros-abertos', sim);
+    var fundo = document.querySelector('.filtros-fundo');
+    if (sim && !fundo) {
+      fundo = document.createElement('div');
+      fundo.className = 'filtros-fundo';
+      fundo.addEventListener('click', function () {
+        abrirFiltros(false);
+      });
+      document.body.appendChild(fundo);
+    } else if (!sim && fundo) fundo.remove();
+    var alvo = document.querySelector(sim ? '.m-filtros .filtros-fechar' : '.m-filtros .filtros-linha');
+    if (alvo) alvo.focus();
+  }
+  function prepararFiltros() {
+    document.querySelectorAll('.m-filtros > [role="search"]').forEach(function (f) {
+      var caixa = f.parentElement;
+      if (!f.querySelector(':scope > .filtros-cab')) {
+        var cab = document.createElement('div');
+        cab.className = 'filtros-cab';
+        cab.innerHTML = '<b>Filtros</b><button type="button" class="filtros-fechar" aria-label="Fechar filtros">✕</button>';
+        f.insertBefore(cab, f.firstChild);
+      }
+      var linha = caixa.querySelector(':scope > .filtros-linha');
+      if (!linha) {
+        linha = document.createElement('button');
+        linha.type = 'button';
+        linha.className = 'filtros-linha';
+        linha.setAttribute('aria-haspopup', 'dialog');
+        linha.innerHTML = '<span class="fl-rot">' + FUNIL + 'Filtros</span><span class="fl-resumo"></span>';
+        caixa.insertBefore(linha, f);
+      }
+      var at = botaoAtualizar(f),
+        pend = !!at && at.getAttribute('aria-disabled') === 'false',
+        txt = textoFiltros(f) + (pend ? ' · não aplicado' : ''),
+        r = linha.querySelector('.fl-resumo');
+      if (r.textContent !== txt) r.textContent = txt;
+      if (linha.classList.contains('pendente') !== pend) linha.classList.toggle('pendente', pend);
+      var ab = raiz.classList.contains('filtros-abertos') ? 'true' : 'false';
+      if (linha.getAttribute('aria-expanded') !== ab) linha.setAttribute('aria-expanded', ab);
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest && e.target.closest('.filtros-linha, .filtros-fechar, .m-filtros [role="search"] > button');
+    if (!t) return;
+    if (t.classList.contains('filtros-linha')) return abrirFiltros(true);
+    if (t.classList.contains('filtros-fechar')) return abrirFiltros(false);
+    // "Atualizar" aplica e fecha a folha.
+    if (raiz.classList.contains('filtros-abertos') && /atualizar/i.test(t.textContent) && t.getAttribute('aria-disabled') !== 'true')
+      setTimeout(function () {
+        abrirFiltros(false);
+      }, 0);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && raiz.classList.contains('filtros-abertos')) abrirFiltros(false);
+  });
+  window.addEventListener('resize', function () {
+    if (!movel() && raiz.classList.contains('filtros-abertos')) abrirFiltros(false);
+  });
+
+  // ---------- Celular: textos de apoio longos ficam em poucas linhas, com "Ler mais" ----------
+  var abertosTxt = {};
+  function prepararRecolhe() {
+    if (!movel()) return;
+    document.querySelectorAll('.m-recolhe, p.intro').forEach(function (el) {
+      if (el.dataset.recolhe) return;
+      el.dataset.recolhe = '1';
+      var chave = el.textContent.trim().slice(0, 80);
+      el.classList.add('recolhe');
+      if (el.scrollHeight <= el.clientHeight + 2) return el.classList.remove('recolhe');
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ler-mais';
+      var pintar = function () {
+        var aberto = !!abertosTxt[chave];
+        el.classList.toggle('recolhe', !aberto);
+        b.textContent = aberto ? 'Ler menos' : 'Ler mais';
+        b.setAttribute('aria-expanded', String(aberto));
+      };
+      b.addEventListener('click', function () {
+        abertosTxt[chave] = !abertosTxt[chave];
+        pintar();
+      });
+      pintar();
+      el.insertAdjacentElement('afterend', b);
+    });
+  }
+
+  function prepararTudo() {
+    prepararSeg();
+    prepararFiltros();
+    prepararRecolhe();
+  }
   // Na hora (antes de pintar): o dashboard refaz a tela inteira a cada mudança.
-  new MutationObserver(prepararSeg).observe(document.documentElement, { childList: true, subtree: true });
-  if (document.readyState !== 'loading') prepararSeg();
-  else document.addEventListener('DOMContentLoaded', prepararSeg);
+  new MutationObserver(prepararTudo).observe(document.documentElement, { childList: true, subtree: true });
+  if (document.readyState !== 'loading') prepararTudo();
+  else document.addEventListener('DOMContentLoaded', prepararTudo);
 
   // ---------- Entrada: na primeira montagem da tela, os blocos sobem e aparecem em cascata e as barras crescem do zero ----------
   // Só no que chega depois de a página abrir (dados carregados), só na primeira vez (filtros e abas não repetem a cascata)
