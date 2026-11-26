@@ -142,6 +142,31 @@ marc = troca(marc, '<div role="group" aria-label="Visualização" style="display
 marc = re.sub(r'<div style="position: relative">(\s*<button type="button" onClick="\{\{abrirTempo\}\}")', r'<div class="fx-tempo" style="position: relative">\1', marc, count=1)
 marc = re.sub(r'<div style="position: relative">(\s*<button type="button" onClick="\{\{abrirLocais\}\}")', r'<div class="fx-locais" style="position: relative">\1', marc, count=1)
 marc = troca(marc, '<label title="{{tituloComparar}}" style="', TIT.format(c='fx-tit-comp', t='Comparação') + '<label class="fx-comparar" title="{{tituloComparar}}" style="')
+# Celular (até 599 px): a tabela das notas vira uma lista de cartões, sem rolar para o lado (classes m-*, regras em /css/mobile.css).
+# Nome e resultado na mesma linha, a régua embaixo na largura toda e, quando há colunas de meses, os quadradinhos numa faixa
+# com o mês escrito em cada um. Tablet e computador continuam com a tabela.
+for a_, b_ in [
+    ('<div style="overflow-x: auto; margin: 0 -20px">', '<div class="m-tabela" style="overflow-x: auto; margin: 0 -20px">'),
+    ('<div style="min-width: {{larguraMin}}; display: flex;', '<div class="m-tabela-in" style="min-width: {{larguraMin}}; display: flex;'),
+    ('<div style="display: grid; grid-template-columns: {{grade}}; align-items: end;', '<div class="m-tab-cab" style="display: grid; grid-template-columns: {{grade}}; align-items: end;'),
+    ('<div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; padding: 18px 20px 6px 76px;', '<div class="m-grupo" style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; padding: 18px 20px 6px 76px;'),
+    ('<div style="display: grid; grid-template-columns: {{grade}}; align-items: center;', '<div class="m-linha" style="display: grid; grid-template-columns: {{grade}}; align-items: center;'),
+    ('<span style="font-size: 14px; color: {{tSuave}}; text-align: right; font-variant-numeric: tabular-nums">{{l.posicao}}</span>', '<span class="m-pos" style="font-size: 14px; color: {{tSuave}}; text-align: right; font-variant-numeric: tabular-nums">{{l.posicao}}</span>'),
+    ('<div style="display: flex; flex-direction: column; min-width: 0; padding-left: {{l.recuo}}">', '<div class="m-nome" style="display: flex; flex-direction: column; min-width: 0; padding-left: {{l.recuo}}">'),
+    ('<div style="position: relative; height: 34px" role="img"', '<div class="m-regua" style="position: relative; height: 34px" role="img"'),
+    ('<div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2">', '<div class="m-valor" style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2">'),
+    ('<span role="img" title="{{mc.rotulo}}"', '<span class="m-mes" data-mes="{{mc.mes}}" role="img" title="{{mc.rotulo}}"'),
+    ('<template data-sc="if" value="{{temDeltaCol}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; font-weight: 600; color: {{l.deltaCor}};', '<template data-sc="if" value="{{temDeltaCol}}" hint-placeholder-val="{{false}}"><span class="m-delta" style="font-size: 14px; font-weight: 600; color: {{l.deltaCor}};'),
+    ('<p style="margin: 0; padding: 10px 20px 12px 76px;', '<p class="m-info" style="margin: 0; padding: 10px 20px 12px 76px;'),
+]:
+    assert marc.count(a_) == 1, 'trecho não único: ' + a_[:70]
+    marc = marc.replace(a_, b_)
+# Quadradinhos dos meses (e o "caminho" do quadrimestre) num invólucro que não muda nada na tabela (display: contents).
+marc, n_ = re.subn(r'(<template data-sc="if" value="\{\{temMesesCols\}\}" hint-placeholder-val="\{\{false\}\}">)(\s*<template data-sc="for" list="\{\{l\.mesesCel\}\}".*?)(\n\s*</template>\n\s*<template data-sc="if" value="\{\{temDeltaCol\}\}")',
+                   r'\1<div class="m-meses" style="display: contents">\2</div>\3', marc, count=1, flags=re.S)
+assert n_ == 1, 'quadradinhos dos meses não encontrados'
+js = troca(js, "? { txt: '—', fundo: 'transparent',", "? { mes: colunas[i].txt, txt: '—', fundo: 'transparent',")
+js = troca(js, ": { txt: num(v, nn.fmt), fundo: tinta", ": { mes: colunas[i].txt, txt: num(v, nn.fmt), fundo: tinta")
 js = troca(js, "painelTempo: painelF === 'tempo',", "painelTempo: painelF === 'tempo' || !!dr.filtrosAbertos,")
 js = troca(js, "painelLocais: painelF === 'locais',", "painelLocais: painelF === 'locais' || !!dr.filtrosAbertos,")
 js = troca(js, "    Object.assign(this.state, CTX_INICIAL());\n", "    Object.assign(this.state, CTX_INICIAL());\n    this.state.filtrosAbertos = !Object.keys(CTX_INICIAL()).length && !FILTROS_JA();\n    this.state.jaRecolheu = !this.state.filtrosAbertos;\n")
