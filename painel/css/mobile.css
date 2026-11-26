@@ -190,3 +190,425 @@
     flex-shrink: 0;
   }
 }
+
+/* ---------- Celular: barra de navegação embaixo (criada por /js/publico/mobile.js para quem está logado) ---------- */
+.barra-inferior,
+.seg-ind {
+  display: none;
+}
+@media screen and (max-width: 899px) {
+  html.com-barra-inferior body {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom)) !important;
+  }
+  /* A barra de baixo já leva a todas as áreas e ao tema: o botão "☰ Menu" do topo sai. */
+  html.com-barra-inferior .menu-movel-botao {
+    display: none !important;
+  }
+  .barra-inferior {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    z-index: 900;
+    display: grid;
+    grid-template-columns: repeat(var(--n, 5), minmax(0, 1fr));
+    height: 64px;
+    padding: 6px;
+    box-sizing: border-box;
+    border-radius: 22px;
+    background: #163059;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow:
+      0 12px 32px rgba(8, 20, 40, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    font-family: Montserrat, system-ui, sans-serif;
+  }
+  /* Vidro só aqui: o conteúdo passa por trás, desfocado. Sem suporte, fica a cor sólida acima. */
+  @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    .barra-inferior {
+      background: rgba(22, 48, 89, 0.86);
+      -webkit-backdrop-filter: blur(16px) saturate(1.5);
+      backdrop-filter: blur(16px) saturate(1.5);
+    }
+  }
+  .bi-ind {
+    display: block;
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 6px;
+    width: calc((100% - 12px) / var(--n, 5));
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(calc(var(--pos, 0) * 100%));
+    transition: transform 0.42s cubic-bezier(0.34, 1.36, 0.64, 1);
+    pointer-events: none;
+  }
+  .bi-ind::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 30%;
+    right: 30%;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: #00a7e7;
+    box-shadow: 0 0 12px rgba(0, 167, 231, 0.85);
+  }
+  .bi-item {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: none;
+    color: rgba(255, 255, 255, 0.8);
+    font: 600 11px/1.1 Montserrat, system-ui, sans-serif;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.25s;
+  }
+  .bi-item svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.25s;
+  }
+  .bi-item > span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .bi-item[aria-current='page'],
+  .bi-item[aria-expanded='true'] {
+    color: #ffffff;
+  }
+  .bi-item:active svg {
+    transform: scale(0.88);
+  }
+  .bi-item:focus-visible {
+    outline: 2px solid #00a7e7;
+    outline-offset: -2px;
+    border-radius: 14px;
+  }
+  html[data-tema='claro'] .barra-inferior {
+    background: rgba(255, 255, 255, 0.88);
+    border-color: rgba(20, 33, 43, 0.12);
+    box-shadow:
+      0 12px 32px rgba(20, 33, 43, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+  html[data-tema='claro'] .bi-ind {
+    background: rgba(14, 94, 140, 0.11);
+  }
+  html[data-tema='claro'] .bi-ind::before {
+    background: #0e5e8c;
+    box-shadow: none;
+  }
+  html[data-tema='claro'] .bi-item {
+    color: #4a5670;
+  }
+  html[data-tema='claro'] .bi-item[aria-current='page'],
+  html[data-tema='claro'] .bi-item[aria-expanded='true'] {
+    color: #0b3f5e;
+  }
+  html[data-tema='escuro'] .barra-inferior {
+    background: rgba(17, 26, 34, 0.88);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  html[data-tema='escuro'] .bi-ind {
+    background: rgba(90, 169, 224, 0.16);
+  }
+  html[data-tema='escuro'] .bi-ind::before {
+    background: #5aa9e0;
+    box-shadow: 0 0 10px rgba(90, 169, 224, 0.7);
+  }
+  html[data-tema='escuro'] .bi-item {
+    color: #a7b4c0;
+  }
+  html[data-tema='escuro'] .bi-item[aria-current='page'],
+  html[data-tema='escuro'] .bi-item[aria-expanded='true'] {
+    color: #e6edf3;
+  }
+
+  /* "Mais": folha que sobe de baixo com as demais áreas e o tema. */
+  .mais-fundo {
+    position: fixed;
+    inset: 0;
+    z-index: 950;
+    display: flex;
+    align-items: flex-end;
+    background: rgba(6, 14, 26, 0);
+    transition: background 0.22s;
+  }
+  .mais-fundo.aberto {
+    background: rgba(6, 14, 26, 0.45);
+  }
+  .mais-painel {
+    position: relative;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 22px 16px calc(22px + env(safe-area-inset-bottom));
+    border-radius: 22px 22px 0 0;
+    background: #ffffff;
+    color: #1b2340;
+    font-family: Montserrat, system-ui, sans-serif;
+    box-shadow: 0 -8px 30px rgba(8, 20, 40, 0.25);
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .mais-fundo.aberto .mais-painel {
+    transform: none;
+  }
+  .mais-painel::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    width: 40px;
+    height: 4px;
+    margin-left: -20px;
+    border-radius: 4px;
+    background: #d5dce8;
+  }
+  .mais-fechar {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: #eef2f6;
+    color: inherit;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .mais-grupo {
+    margin: 14px 8px 4px;
+    font: 700 11px Montserrat, system-ui, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #5b6b7a;
+  }
+  .mais-grupo:first-of-type {
+    margin-top: 2px;
+  }
+  .mais-painel a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 12px;
+    color: inherit;
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+  }
+  .mais-painel a[aria-current='page'] {
+    background: #e3f0f9;
+    color: #0b3f5e;
+  }
+  .mais-painel a:focus-visible,
+  .mais-painel button:focus-visible {
+    outline: 3px solid #00a7e7;
+    outline-offset: -1px;
+  }
+  .mais-tema {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    margin: 4px 4px 0;
+    padding: 4px;
+    border-radius: 14px;
+    background: #eef2f6;
+  }
+  .mais-tema button {
+    min-height: 40px;
+    border: 0;
+    border-radius: 10px;
+    background: none;
+    color: inherit;
+    font: 600 14px Montserrat, system-ui, sans-serif;
+    cursor: pointer;
+  }
+  .mais-tema button[aria-pressed='true'] {
+    background: #ffffff;
+    color: #0b3f5e;
+    box-shadow: 0 1px 4px rgba(20, 33, 43, 0.18);
+  }
+  html[data-tema='escuro'] .mais-painel {
+    background: #16202a;
+    color: #e6edf3;
+  }
+  html[data-tema='escuro'] .mais-painel::before {
+    background: #3a4856;
+  }
+  html[data-tema='escuro'] .mais-fechar,
+  html[data-tema='escuro'] .mais-tema {
+    background: #22303d;
+  }
+  html[data-tema='escuro'] .mais-grupo {
+    color: #a7b4c0;
+  }
+  html[data-tema='escuro'] .mais-painel a[aria-current='page'] {
+    background: #1f3a52;
+    color: #e6edf3;
+  }
+  html[data-tema='escuro'] .mais-tema button[aria-pressed='true'] {
+    background: #344555;
+    color: #e6edf3;
+  }
+
+  /* ---------- "Dashboard | Dados": seletor de dois botões com a pílula que desliza ---------- */
+  nav.seg {
+    padding: 8px 16px 10px !important;
+  }
+  nav.seg > div {
+    position: relative;
+    display: grid !important;
+    grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr));
+    gap: 0 !important;
+    max-width: 420px !important;
+    margin: 0 auto !important;
+    padding: 4px !important;
+    box-sizing: border-box;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.12);
+  }
+  nav.seg > div > a {
+    position: relative;
+    z-index: 1;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 99px;
+    color: rgba(255, 255, 255, 0.82) !important;
+    transition: color 0.3s;
+  }
+  nav.seg > div > a[aria-current='page'] {
+    color: #163059 !important;
+  }
+  .seg-ind {
+    display: block;
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc((100% - 8px) / var(--n, 2));
+    border-radius: 99px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(8, 20, 40, 0.22);
+    transform: translateX(calc(var(--pos, 0) * 100%));
+    transition: transform 0.38s cubic-bezier(0.34, 1.3, 0.64, 1);
+    pointer-events: none;
+  }
+  html[data-tema='claro'] nav.sub-aps.seg > div {
+    background: #eef2f4;
+  }
+  html[data-tema='claro'] nav.sub-aps.seg > div > a {
+    color: #4a5670 !important;
+  }
+  html[data-tema='claro'] nav.sub-aps.seg > div > a[aria-current='page'] {
+    color: #0b3f5e !important;
+  }
+  html[data-tema='claro'] nav.sub-aps.seg .seg-ind {
+    box-shadow: 0 1px 4px rgba(20, 33, 43, 0.2);
+  }
+  html[data-tema='escuro'] nav.sub-aps.seg > div {
+    background: rgba(255, 255, 255, 0.06);
+  }
+  html[data-tema='escuro'] nav.sub-aps.seg > div > a {
+    color: #a7b4c0 !important;
+  }
+  html[data-tema='escuro'] nav.sub-aps.seg > div > a[aria-current='page'] {
+    color: #e6edf3 !important;
+  }
+  html[data-tema='escuro'] nav.sub-aps.seg .seg-ind {
+    background: #2c4256;
+  }
+}
+
+/* Na troca de página (transição suave de carregando.css), a barra de baixo e o seletor ficam parados no lugar, sem
+   esmaecer: só o marcador corre da posição anterior até a nova. */
+@media screen and (max-width: 899px) and (prefers-reduced-motion: no-preference) {
+  .barra-inferior {
+    view-transition-name: barra-inferior;
+  }
+  nav.seg {
+    view-transition-name: seletor-sub;
+  }
+  ::view-transition-old(barra-inferior),
+  ::view-transition-old(seletor-sub) {
+    animation: none;
+    opacity: 0;
+  }
+  ::view-transition-new(barra-inferior),
+  ::view-transition-new(seletor-sub) {
+    animation: none;
+  }
+  ::view-transition-group(barra-inferior),
+  ::view-transition-group(seletor-sub) {
+    animation-duration: 0s;
+  }
+}
+
+/* ---------- Entrada (todas as larguras): blocos sobem e aparecem em cascata; barras crescem do zero ----------
+   As classes são postas por /js/publico/mobile.js só na primeira montagem da tela e saem quando a animação termina. */
+@media (prefers-reduced-motion: no-preference) {
+  .entra {
+    animation: aps-entra 0.42s cubic-bezier(0.2, 0.7, 0.2, 1) var(--atraso, 0ms) both;
+  }
+  .cresce {
+    transform-origin: left center;
+    animation: aps-cresce 0.62s cubic-bezier(0.2, 0.7, 0.2, 1) var(--atraso, 0ms) both;
+  }
+  .corre {
+    animation: aps-corre 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) var(--atraso, 0ms) both;
+  }
+}
+@keyframes aps-entra {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@keyframes aps-cresce {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes aps-corre {
+  from {
+    left: 0;
+  }
+}
+@media print {
+  .entra,
+  .cresce,
+  .corre {
+    animation: none !important;
+  }
+  .barra-inferior,
+  .mais-fundo {
+    display: none !important;
+  }
+}
