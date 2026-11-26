@@ -334,7 +334,7 @@
   var abertosTxt = {};
   function prepararRecolhe() {
     if (!movel()) return;
-    document.querySelectorAll('.m-recolhe, p.intro').forEach(function (el) {
+    document.querySelectorAll('.m-recolhe, p.intro, .bloco > p.d').forEach(function (el) {
       if (el.dataset.recolhe) return;
       el.dataset.recolhe = '1';
       var chave = el.textContent.trim().slice(0, 80);

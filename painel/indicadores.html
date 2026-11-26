@@ -129,6 +129,7 @@
         cursor: not-allowed;
       }
       .resumoFiltros {
+        cursor: pointer;
         display: inline-flex;
         flex-wrap: wrap;
         gap: 6px;
@@ -158,11 +159,52 @@
         cursor: pointer;
         padding: 6px 4px;
       }
-      #filtrosPainel .sel {
-        padding: 14px 16px 2px;
+      /* Filtros abertos para escolher; "Buscar" aplica e recolhe na linha com o resumo (mesmo padrão do Dashboard). */
+      #filtrosPainel {
+        margin: -4px 0 16px;
+        padding: 14px 16px;
         border: 2px solid #d5dce8;
         border-radius: 14px;
         background: #fff;
+        max-width: 960px;
+        box-sizing: border-box;
+      }
+      #filtrosPainel .sel {
+        margin-bottom: 12px;
+      }
+      .barraFiltros[hidden],
+      #filtrosPainel[hidden] {
+        display: none !important;
+      }
+      @media (max-width: 599px) {
+        #filtrosPainel .sel {
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+        #filtrosPainel .acoesFiltros button#buscarFiltros {
+          flex: 1;
+        }
+      }
+      .acoesFiltros {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 8px;
+      }
+      #buscarFiltros {
+        font: inherit;
+        font-weight: 700;
+        min-height: 44px;
+        padding: 0 22px;
+        border: 0;
+        border-radius: 10px;
+        background: #1f3c72;
+        color: #fff;
+        cursor: pointer;
+      }
+      #buscarFiltros:focus-visible {
+        outline: 3px solid #00a7e7;
+        outline-offset: 2px;
       }
       .sel[hidden] {
         display: none;
@@ -980,6 +1022,10 @@
             <option value="n">Sem classificação</option>
           </select></label
         >
+      </div>
+      <div class="acoesFiltros">
+        <button type="button" class="limpar" id="cancelarFiltros" hidden>Cancelar</button>
+        <button type="button" id="buscarFiltros">Buscar</button>
       </div>
       </div>
       <p class="nota" id="estado" role="status"></p>
@@ -1830,12 +1876,28 @@
         $('eq').value = eqs.has(antes) ? antes : '';
       }
       $('un').addEventListener('change', opcoesEquipe);
+      // Com os filtros abertos, a escolha só vale ao tocar em "Buscar".
       ['de', 'ate', 'un', 'eq', 'gr', 'co'].forEach((i) =>
         $(i).addEventListener('change', () => {
           if ($('de').value > $('ate').value) $('ate').value = $('de').value;
-          desenhar();
+          if (!filtrosAbertos) desenhar();
         }),
       );
+      $('buscarFiltros').addEventListener('click', () => {
+        aplicado = valoresFiltro();
+        try {
+          sessionStorage.setItem('indFiltrosOk', '1');
+        } catch (_) {}
+        trocarFiltros(false, desenhar);
+      });
+      $('cancelarFiltros').addEventListener('click', () => {
+        if (aplicado) {
+          ['de', 'ate', 'un'].forEach((i) => ($(i).value = aplicado[i]));
+          opcoesEquipe();
+          ['eq', 'gr', 'co'].forEach((i) => ($(i).value = aplicado[i]));
+        }
+        trocarFiltros(false);
+      });
       // Barra "Dashboard | Dados": o link do Dashboard leva o período e o recorte escolhidos aqui (?de, ?ate, ?un, ?eq).
       function linkDashboard() {
         const p = new URLSearchParams();
@@ -1851,18 +1913,45 @@
         if (l) l.href = linkDashboard();
       }
       document.addEventListener('painelaps:submenu', atualizarLinkDash);
-      // Filtros recolhidos num botão; o resumo ao lado mostra sempre o que está aplicado.
+      // Filtros: abertos enquanto nada foi escolhido nesta aba do navegador (e sem período/recorte vindo do link); "Buscar"
+      // aplica e recolhe na linha com o resumo do que está valendo; tocar em "Filtros" reabre, com "Cancelar" para voltar
+      // sem mudar. Mesmo padrão do Dashboard, com a mesma troca animada.
+      const CAMPOS_FILTRO = ['de', 'ate', 'un', 'eq', 'gr', 'co'];
       let filtrosAbertos = false,
-        abaAtual = 'resumo';
+        abaAtual = 'resumo',
+        aplicado = null;
       try {
-        filtrosAbertos = sessionStorage.getItem('indFiltros') === '1';
+        const q = new URLSearchParams(location.search);
+        filtrosAbertos = sessionStorage.getItem('indFiltrosOk') !== '1' && !['de', 'ate', 'un', 'eq'].some((k) => q.get(k));
       } catch (_) {}
+      const valoresFiltro = () => Object.fromEntries(CAMPOS_FILTRO.map((i) => [i, $(i).value]));
       function mostrarFiltros() {
         const aberto = filtrosAbertos;
         $('filtrosPainel').hidden = !aberto;
+        document.querySelector('.barraFiltros').hidden = aberto;
         $('btnFiltros').setAttribute('aria-expanded', String(aberto));
         $('setaFiltros').textContent = aberto ? '▴' : '▾';
+        $('cancelarFiltros').hidden = !aplicado;
         resumoFiltros();
+      }
+      function trocarFiltros(abrir, depois) {
+        const fazer = () => {
+          if (depois) depois();
+          filtrosAbertos = abrir;
+          mostrarFiltros();
+        };
+        const r = document.documentElement,
+          menos = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!document.startViewTransition || menos || (abrir && window.scrollY > 120)) {
+          fazer();
+          if (abrir && window.scrollY > 120) document.querySelector('.barraFiltros, #filtrosPainel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return;
+        }
+        r.classList.add('vt-filtros');
+        const t = document.startViewTransition(fazer);
+        const fim = () => r.classList.remove('vt-filtros');
+        t.ready.catch(() => {});
+        t.finished.then(fim, fim);
       }
       function resumoFiltros() {
         const r = $('resumoFiltros');
@@ -1932,17 +2021,16 @@
         window.print();
       });
       $('btnFiltros').addEventListener('click', () => {
-        filtrosAbertos = !filtrosAbertos;
-        try {
-          sessionStorage.setItem('indFiltros', filtrosAbertos ? '1' : '0');
-        } catch (_) {}
-        mostrarFiltros();
+        aplicado = valoresFiltro();
+        trocarFiltros(true);
       });
+      $('resumoFiltros').addEventListener('click', () => $('btnFiltros').click());
       $('limparFiltros').addEventListener('click', () => {
         const ult = $('de').options.length ? $('de').options[$('de').options.length - 1].value : '';
         $('de').value = $('ate').value = ult;
         ['un', 'eq', 'gr', 'co'].forEach((i) => ($(i).value = ''));
         opcoesEquipe();
+        aplicado = valoresFiltro();
         desenhar();
       });
       function aba(a) {

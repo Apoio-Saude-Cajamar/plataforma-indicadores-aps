@@ -651,7 +651,8 @@
     line-clamp: 2;
     overflow: hidden;
   }
-  p.intro.recolhe {
+  p.intro.recolhe,
+  .bloco > p.d.recolhe {
     -webkit-line-clamp: 3;
     line-clamp: 3;
   }
