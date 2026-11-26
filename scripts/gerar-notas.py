@@ -161,6 +161,10 @@ for a_, b_ in [
 ]:
     assert marc.count(a_) == 1, 'trecho não único: ' + a_[:70]
     marc = marc.replace(a_, b_)
+# Tema de cada grupo de notas (ex.: "eSF e eAP · qualidade do cuidado") em caixa alta e um pouco maior que o nome das notas,
+# para marcar a divisão da lista; a linha de apoio ao lado continua em letra normal.
+marc = troca(marc, '<span style="font-weight: {{tPesoForte}}; color: {{tTitulo}}">{{l.nome}}</span>',
+  '<span class="m-grupo-tit" style="font-size: 16px; font-weight: {{tPesoForte}}; letter-spacing: .04em; text-transform: uppercase; color: {{tTitulo}}">{{l.nome}}</span>')
 # Quadradinhos dos meses (e o "caminho" do quadrimestre) num invólucro que não muda nada na tabela (display: contents).
 marc, n_ = re.subn(r'(<template data-sc="if" value="\{\{temMesesCols\}\}" hint-placeholder-val="\{\{false\}\}">)(\s*<template data-sc="for" list="\{\{l\.mesesCel\}\}".*?)(\n\s*</template>\n\s*<template data-sc="if" value="\{\{temDeltaCol\}\}")',
                    r'\1<div class="m-meses" style="display: contents">\2</div>\3', marc, count=1, flags=re.S)

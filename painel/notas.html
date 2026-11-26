@@ -275,7 +275,7 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
           <template data-sc="for" list="{{linhas}}" as="l" hint-placeholder-count="12">
             <template data-sc="if" value="{{l.cab}}" hint-placeholder-val="{{false}}">
               <div class="m-grupo" style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; padding: 18px 20px 6px 76px; border-top: 1px solid {{tBorda}}; font-size: 14px">
-                <span style="font-weight: {{tPesoForte}}; color: {{tTitulo}}">{{l.nome}}</span>
+                <span class="m-grupo-tit" style="font-size: 16px; font-weight: {{tPesoForte}}; letter-spacing: .04em; text-transform: uppercase; color: {{tTitulo}}">{{l.nome}}</span>
                 <span style="color: {{tSuave}}">{{l.sub}}</span>
               </div>
             </template>
