@@ -1,6 +1,6 @@
 // Consultas de leitura: situação das etapas de uma competência e dados vigentes.
 // Os resultados são montados como JSON pelo próprio banco, para poupar CPU do Worker.
-import { competencia } from './util.js';
+import { competencia, agora } from './util.js';
 import { CHAVE_EQUIPE, UNIDADE_EXIBIDA, LINHA_CONTA, EQUIPE_FORA } from './vigente.js';
 
 // Para cada etapa da competência: a versão vigente (última bem-sucedida) ou,
@@ -25,6 +25,10 @@ export async function situacao(env, comp) {
   return { competencia: comp, total: results.length, ok, pendentes: results.length - ok, etapas: results };
 }
 
+// Os cubos (atendimentos, faltas, escuta) partem das etapas vigentes da competência (índice de etapa por competência) e
+// chegam às linhas pelo índice (coleta, etapa). O CROSS JOIN fixa essa ordem: sem ela o banco varria o cubo inteiro, de
+// todos os meses e de todas as coletas, a cada pedido — e o dashboard pede todos os meses, o que estourava o limite diário
+// de leituras do D1.
 const CONSULTAS_VIGENTES = {
   // Por indicador, recorte e equipe (pelo INE, ou unidade e nome sem INE) vale a linha da coleta bem-sucedida mais recente.
   // Assim uma recoleta do mesmo mês atualiza o que trouxe e não apaga o que só a coleta anterior tinha (unidade que falhou,
@@ -47,30 +51,74 @@ const CONSULTAS_VIGENTES = {
   atendimentos: `
     SELECT json_group_array(json_object('unidade', c.unidade, 'equipe', c.equipe, 'cbo', c.cbo, 'cboCodigo', c.cbo_codigo,
       'grupoCBO', c.grupo_cbo, 'tipoAtendimento', c.tipo_atendimento, 'n', c.n)) AS dados
-    FROM cubo_atendimento c
-    JOIN etapa_vigente v ON v.coleta_id = c.coleta_id AND v.chave = c.etapa_chave
-    WHERE c.competencia = ? AND NOT ${EQUIPE_FORA('c')}`,
+    FROM etapa_vigente v
+    CROSS JOIN cubo_atendimento c ON c.coleta_id = v.coleta_id AND c.etapa_chave = v.chave
+    WHERE v.competencia = ? AND NOT ${EQUIPE_FORA('c')}`,
   absenteismo: `
     SELECT json_group_array(json_object('unidade', c.unidade, 'equipe', c.equipe, 'cbo', c.cbo, 'cboCodigo', c.cbo_codigo,
       'grupoCBO', c.grupo_cbo, 'tipoFalta', c.tipo_falta, 'n', c.n)) AS dados
-    FROM cubo_falta c
-    JOIN etapa_vigente v ON v.coleta_id = c.coleta_id AND v.chave = c.etapa_chave
-    WHERE c.competencia = ? AND NOT ${EQUIPE_FORA('c')}`,
+    FROM etapa_vigente v
+    CROSS JOIN cubo_falta c ON c.coleta_id = v.coleta_id AND c.etapa_chave = v.chave
+    WHERE v.competencia = ? AND NOT ${EQUIPE_FORA('c')}`,
   escuta: `
     SELECT json_group_array(json_object('unidade', c.unidade, 'ine', c.ine, 'equipe', c.equipe, 'categoria', c.categoria,
       'escuta', c.escuta, 'periodoOk', json(CASE c.periodo_ok WHEN 1 THEN 'true' WHEN 0 THEN 'false' ELSE 'null' END))) AS dados
-    FROM cubo_escuta c
-    JOIN etapa_vigente v ON v.coleta_id = c.coleta_id AND v.chave = c.etapa_chave
-    WHERE c.competencia = ? AND NOT ${EQUIPE_FORA('c')}`,
+    FROM etapa_vigente v
+    CROSS JOIN cubo_escuta c ON c.coleta_id = v.coleta_id AND c.etapa_chave = v.chave
+    WHERE v.competencia = ? AND NOT ${EQUIPE_FORA('c')}`,
 };
 
+// Resposta pronta guardada no próprio banco, por competência e partes pedidas. Vale enquanto nada mudou nos dados
+// (a marca "ultima_alteracao" muda a cada etapa gravada, coleta concluída ou restauração). Assim, abrir o dashboard de
+// novo lê 2 linhas por mês, em vez de refazer a seleção das linhas vigentes (milhares de linhas lidas por mês).
+const SQL_CACHE = `CREATE TABLE IF NOT EXISTS dados_cache (
+  competencia TEXT NOT NULL, partes TEXT NOT NULL, versao TEXT NOT NULL, json TEXT NOT NULL, gerado_em TEXT NOT NULL,
+  PRIMARY KEY (competencia, partes))`;
+const cacheProntos = new WeakSet();
+async function garantirCache(env) {
+  if (cacheProntos.has(env.DB)) return;
+  await env.DB.prepare(SQL_CACHE).run();
+  cacheProntos.add(env.DB);
+}
+const TAMANHO_MAXIMO_CACHE = 1800000; // o D1 aceita até 2 MB por linha
+
 // Dados vigentes de uma competência, num único JSON: { competencia, indicadores, atendimentos, absenteismo, escuta }.
-export async function dadosVigentes(env, comp) {
+// "partes" (ex.: "indicadores") limita ao que a tela usa: o dashboard e a tela Dados só precisam dos indicadores.
+export async function dadosVigentes(env, comp, pedido) {
   comp = competencia(comp);
-  const nomes = Object.keys(CONSULTAS_VIGENTES);
+  const pedidas = String(pedido || '')
+    .split(',')
+    .map((p) => p.trim());
+  const todas = Object.keys(CONSULTAS_VIGENTES);
+  const nomes = pedidas.some((p) => todas.includes(p)) ? todas.filter((n) => pedidas.includes(n)) : todas;
+  const chave = nomes.join(',');
+  let versao = null;
+  try {
+    await garantirCache(env);
+    const [m, c] = await env.DB.batch([
+      env.DB.prepare("SELECT valor FROM meta WHERE chave = 'ultima_alteracao'"),
+      env.DB.prepare('SELECT versao, json FROM dados_cache WHERE competencia = ? AND partes = ?').bind(comp, chave),
+    ]);
+    versao = String(m.results[0]?.valor ?? '');
+    const guardado = c.results[0];
+    if (guardado && guardado.versao === versao) return guardado.json;
+  } catch (_) {
+    versao = null; // sem a tabela de respostas prontas, responde direto do banco
+  }
   const resultados = await env.DB.batch(nomes.map((n) => env.DB.prepare(CONSULTAS_VIGENTES[n]).bind(comp)));
   const partes = nomes.map((n, i) => `"${n}":${resultados[i].results[0]?.dados || '[]'}`);
-  return `{"competencia":"${comp}",${partes.join(',')}}`;
+  const texto = `{"competencia":"${comp}",${partes.join(',')}}`;
+  if (versao !== null && texto.length < TAMANHO_MAXIMO_CACHE) {
+    try {
+      await env.DB.prepare(
+        `INSERT INTO dados_cache (competencia, partes, versao, json, gerado_em) VALUES (?, ?, ?, ?, ?)
+         ON CONFLICT (competencia, partes) DO UPDATE SET versao = excluded.versao, json = excluded.json, gerado_em = excluded.gerado_em`,
+      )
+        .bind(comp, chave, versao, texto, agora())
+        .run();
+    } catch (_) {}
+  }
+  return texto;
 }
 
 export async function competencias(env) {

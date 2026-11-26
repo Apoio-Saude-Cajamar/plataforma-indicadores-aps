@@ -147,7 +147,7 @@ async function carregarComp(comp) {
   if (!comp) return;
   if (!dados[comp]) {
     try {
-      const d = await fetch('/api/v1/dados?competencia=' + comp, { credentials: 'same-origin' });
+      const d = await fetch('/api/v1/dados?partes=indicadores,absenteismo&competencia=' + comp, { credentials: 'same-origin' });
       if (d.ok) {
         const j = await d.json();
         dados[comp] = j.indicadores || [];

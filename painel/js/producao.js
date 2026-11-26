@@ -97,7 +97,7 @@ async function carregar(ms) {
       .filter((c) => !dados[c])
       .map(async (c) => {
         try {
-          const r = await fetch('/api/v1/dados?competencia=' + c, { credentials: 'same-origin' });
+          const r = await fetch('/api/v1/dados?partes=indicadores,atendimentos&competencia=' + c, { credentials: 'same-origin' });
           if (!r.ok) throw 0;
           const j = await r.json();
           dados[c] = j.indicadores || [];

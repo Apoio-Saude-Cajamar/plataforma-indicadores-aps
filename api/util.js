@@ -75,6 +75,17 @@ export function inteiro(v, padrao = null) {
   return Number.isFinite(n) ? Math.trunc(n) : padrao;
 }
 
+// Competências que existem numa tabela cujo índice começa por "competencia", da mais recente para a mais antiga. Salta de
+// um mês para o outro pelo índice (algumas linhas lidas por mês) em vez de ler a tabela inteira, como faria um DISTINCT:
+// no D1 cada linha lida conta para o limite diário.
+export function sqlCompetencias(tabela, { ate = false, limite = false } = {}) {
+  return `WITH RECURSIVE c(x, n) AS (
+    SELECT MAX(competencia), 1 FROM ${tabela}${ate ? ' WHERE competencia <= ?' : ''}
+    UNION ALL SELECT (SELECT MAX(competencia) FROM ${tabela} WHERE competencia < c.x), c.n + 1 FROM c
+    WHERE c.x IS NOT NULL${limite ? ' AND c.n < ?' : ''})
+  SELECT x AS competencia FROM c WHERE x IS NOT NULL ORDER BY x DESC`;
+}
+
 export const RE_COMPETENCIA = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 export function competencia(v) {

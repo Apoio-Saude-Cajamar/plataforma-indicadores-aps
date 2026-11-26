@@ -1,6 +1,6 @@
 // Filas e faltas: absenteísmo e dias até a próxima vaga, por profissional (médicos, enfermeiros e cirurgiões-dentistas da APS).
 // A extensão envia totais por profissional; o painel junta com o que já havia do mês (recoleta parcial não apaga).
-import { ErroHttp, agora, lerJson, texto, competencia } from './util.js';
+import { ErroHttp, agora, lerJson, texto, competencia, sqlCompetencias } from './util.js';
 
 const CATEGORIAS = ['Médico', 'Enfermeiro', 'Cirurgião-dentista'];
 const inteiro = (v) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.round(v) : null);
@@ -106,10 +106,12 @@ export async function lerFilas(env, url) {
   const pedido = url.searchParams.get('competencia');
   await garantirHorario(env);
   const lista = (
-    await env.DB.prepare(
-      'SELECT competencia FROM fila_profissional UNION SELECT competencia FROM fila_horario ORDER BY competencia DESC',
-    ).all()
-  ).results.map((x) => x.competencia);
+    await env.DB.batch([env.DB.prepare(sqlCompetencias('fila_profissional')), env.DB.prepare(sqlCompetencias('fila_horario'))])
+  )
+    .flatMap((r) => r.results.map((x) => x.competencia))
+    .filter((c, i, a) => a.indexOf(c) === i)
+    .sort()
+    .reverse();
   const comp = pedido ? competencia(pedido) : lista[0];
   if (!comp) return { competencias: [], competencia: null, profissionais: [], horarios: [] };
   const { results } = await env.DB.prepare(
@@ -145,7 +147,7 @@ export async function lerFilasEvolucao(env, url) {
   const fim = ate ? competencia(ate) : null;
   const lista = (
     await env.DB.prepare(
-      `SELECT DISTINCT competencia FROM fila_profissional ${fim ? 'WHERE competencia <= ?' : ''} ORDER BY competencia DESC LIMIT ?`,
+      sqlCompetencias('fila_profissional', { ate: !!fim, limite: true }),
     )
       .bind(...(fim ? [fim, meses] : [meses]))
       .all()

@@ -1201,7 +1201,7 @@ class Component extends DCLogic {
     if (!r.ok) throw 0;
     const cs = ((await r.json()).competencias || []);
     const porComp = {};
-    await Promise.all(cs.map(async (c) => { const d = await fetch('/api/v1/dados?competencia=' + c.competencia, { credentials: 'same-origin' }); if (d.ok) { const ls = (await d.json()).indicadores || []; if (ls.length) porComp[c.competencia] = ls; } }));
+    await Promise.all(cs.map(async (c) => { const d = await fetch('/api/v1/dados?partes=indicadores&competencia=' + c.competencia, { credentials: 'same-origin' }); if (d.ok) { const ls = (await d.json()).indicadores || []; if (ls.length) porComp[c.competencia] = ls; } }));
     if (!Object.keys(porComp).length) { aviso('Ainda não há indicadores coletados. Rode a coleta pela extensão no computador que acessa o PEC.'); return; }
     try { const e = await fetch('/api/v1/auth/eu', { credentials: 'same-origin' }); if (e.ok) USUARIO = (await e.json()).usuario || null; } catch (_) {}
     const ult = cs.map((c) => c.ultimaColetaEm).filter(Boolean).sort().pop();

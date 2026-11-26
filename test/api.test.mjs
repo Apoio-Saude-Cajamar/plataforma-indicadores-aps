@@ -124,6 +124,13 @@ test('situação mostra pendências; nova tentativa em outra coleta vira a vers�
   // o histórico continua guardado
   assert.equal(await contar(env, 'cubo_atendimento'), 12);
 
+  // Só as partes pedidas (o dashboard e a tela Dados pedem só os indicadores).
+  const so = await chamar('GET', '/dados?partes=indicadores&competencia=2026-10');
+  assert.deepEqual(Object.keys(so).filter((k) => k !== 'status').sort(), ['competencia', 'indicadores']);
+  assert.equal(so.indicadores.length, dados.indicadores.length);
+  const duas = await chamar('GET', '/dados?partes=indicadores,absenteismo&competencia=2026-10');
+  assert.ok('absenteismo' in duas && !('atendimentos' in duas));
+
   const lista = await chamar('GET', '/coletas?competencia=2026-10');
   assert.equal(lista.coletas.length, 2);
   const comps = await chamar('GET', '/competencias');
@@ -268,4 +275,37 @@ test('limite diário do D1: resposta 503 com mensagem clara, não "Erro interno"
   assert.equal(r.status, 503);
   assert.equal(r.limite, 'write');
   assert.match(r.erro, /Limite diário de gravação do banco do Painel atingido/);
+});
+
+test('dados da competência não varrem os cubos inteiros (limite de leituras do D1)', async () => {
+  const env = ambiente();
+  const { readFileSync } = await import('node:fs');
+  const fonte = readFileSync(new URL('../api/consultas.js', import.meta.url), 'utf8');
+  const { EQUIPE_FORA } = await import('../api/vigente.js');
+  for (const cubo of ['cubo_atendimento', 'cubo_falta', 'cubo_escuta']) {
+    assert.match(fonte, new RegExp('FROM etapa_vigente v\\s+CROSS JOIN ' + cubo + ' c'), cubo + ' parte das etapas vigentes');
+    const plano = env.DB.db
+      .prepare(`EXPLAIN QUERY PLAN SELECT c.* FROM etapa_vigente v CROSS JOIN ${cubo} c ON c.coleta_id = v.coleta_id AND c.etapa_chave = v.chave WHERE v.competencia = ? AND NOT ${EQUIPE_FORA('c')}`)
+      .all()
+      .map((r) => r.detail);
+    assert.ok(!plano.some((d) => /^SCAN c\b/.test(d)), cubo + ': ' + plano.join(' | '));
+  }
+});
+
+test('dados da competência ficam prontos no banco e se refazem quando os dados mudam', async () => {
+  const env = ambiente();
+  const chamar = cliente(env);
+  await semear(chamar);
+  const comp = (await chamar('GET', '/competencias')).competencias[0].competencia;
+  const a = await chamar('GET', '/dados?partes=indicadores&competencia=' + comp);
+  assert.equal(await contar(env, 'dados_cache', 'competencia = ?', comp), 1);
+  // Mexer na resposta guardada mostra que a segunda leitura vem dela.
+  await env.DB.prepare("UPDATE dados_cache SET json = '{\"competencia\":\"x\",\"indicadores\":[]}'").run();
+  const b = await chamar('GET', '/dados?partes=indicadores&competencia=' + comp);
+  assert.equal(b.competencia, 'x');
+  // Uma etapa nova muda a marca de alteração: a resposta é refeita com os dados atuais.
+  await chamar('POST', '/coletas', { id: 'nova', competencia: comp, tipo: 'avulsa', iniciadoEm: '2026-12-01T10:00:00Z' });
+  const c = await chamar('GET', '/dados?partes=indicadores&competencia=' + comp);
+  assert.equal(c.competencia, comp);
+  assert.equal(c.indicadores.length, a.indicadores.length);
 });

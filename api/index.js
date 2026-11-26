@@ -9,7 +9,7 @@
 //   GET  /coletas/:id/etapas                     leitura   – etapas de uma coleta
 //   GET  /coletas/:id/registro                   leitura   – registro (passo a passo) e avisos de uma coleta
 //   GET  /situacao?competencia=AAAA-MM           leitura   – etapas vigentes e pendentes da competência
-//   GET  /dados?competencia=AAAA-MM              leitura   – indicadores e totais vigentes
+//   GET  /dados?competencia=AAAA-MM[&partes=…]   leitura   – indicadores e totais vigentes (partes: indicadores, atendimentos…)
 //   GET  /competencias                           leitura   – competências com coleta
 //   GET  /backup/manifesto                       backup    – contagens e versão
 //   GET  /backup/tabela/:nome?depois=&limite=    backup    – uma página de uma tabela
@@ -73,7 +73,7 @@ const ROTAS = [
   ['GET', /^\/coletas\/([\w.:-]+)\/registro$/, 'leitura', async (req, env, m) => json(await registroDaColeta(env, m[1]))],
 
   ['GET', /^\/situacao$/, 'leitura', async (req, env, m, url) => json(await situacao(env, url.searchParams.get('competencia')))],
-  ['GET', /^\/dados$/, 'leitura', async (req, env, m, url) => jsonTexto(await dadosVigentes(env, url.searchParams.get('competencia')))],
+  ['GET', /^\/dados$/, 'leitura', async (req, env, m, url) => jsonTexto(await dadosVigentes(env, url.searchParams.get('competencia'), url.searchParams.get('partes')))],
   ['GET', /^\/competencias$/, 'leitura', async (req, env) => json(await competencias(env))],
 
   ['PUT', /^\/composicao$/, 'coleta', async (req, env) => json(await gravarComposicao(env, await lerJson(req)))],

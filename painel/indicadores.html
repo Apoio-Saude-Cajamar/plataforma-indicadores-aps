@@ -1751,7 +1751,7 @@
           $('de').value = $('ate').value = cs[cs.length - 1];
           await Promise.all(
             cs.map(async (c) => {
-              const d = await fetch('/api/v1/dados?competencia=' + c, { credentials: 'same-origin' });
+              const d = await fetch('/api/v1/dados?partes=indicadores&competencia=' + c, { credentials: 'same-origin' });
               if (d.ok) dados[c] = (await d.json()).indicadores || [];
             }),
           );

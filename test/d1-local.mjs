@@ -13,8 +13,28 @@ function converter(v) {
   return v;
 }
 
+// Com D1_PLANOS=arquivo, anota as consultas que varrem uma tabela inteira (SCAN sem índice): é o que mais gasta
+// "linhas lidas" no D1. O arquivo é gravado ao sair.
+const PLANOS = process.env.D1_PLANOS ? new Map() : null;
+
+function anotarPlano(db, sql) {
+  if (!PLANOS || PLANOS.has(sql) || !/^\s*(WITH|SELECT)/i.test(sql)) return;
+  try {
+    const plano = db.prepare('EXPLAIN QUERY PLAN ' + sql).all().map((r) => r.detail);
+    const grande = /\b(indicador_equipe|etapa|cubo_\w+|aviso|registro_acesso|producao_profissional|fila_\w+)\b/;
+    const varre = plano.filter((d) => (/^SCAN (?!\(|CONSTANT|.*USING (COVERING )?INDEX)/.test(d) && !/^SCAN (ordenadas|v|i|x|t|subquery)/.test(d)) || (/^SCAN .*USING (COVERING )?INDEX/.test(d) && grande.test(d + sql)));
+    PLANOS.set(sql, { varre, plano });
+  } catch (_) {}
+}
+if (PLANOS) for (const sinal of ['SIGINT', 'SIGTERM']) process.on(sinal, () => process.exit(0));
+if (PLANOS) process.on('exit', () => {
+  const fs = process.getBuiltinModule('node:fs');
+  fs.writeFileSync(process.env.D1_PLANOS, JSON.stringify([...PLANOS.entries()].filter(([, v]) => v.varre.length).map(([sql, v]) => ({ sql: sql.replace(/\s+/g, ' ').slice(0, 400), varre: v.varre })), null, 1));
+});
+export function planosAnotados() { return PLANOS ? [...PLANOS.entries()].filter(([, v]) => v.varre.length) : []; }
+
 class Instrucao {
-  constructor(db, sql, params = []) { this.db = db; this.sql = sql; this.params = params; }
+  constructor(db, sql, params = []) { this.db = db; this.sql = sql; this.params = params; anotarPlano(db, sql); }
   bind(...params) { return new Instrucao(this.db, this.sql, params.map(converter)); }
   _executar() {
     const linhas = this.db.prepare(this.sql).all(...this.params).map(r => ({ ...r }));

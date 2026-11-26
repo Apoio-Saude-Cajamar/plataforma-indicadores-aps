@@ -191,7 +191,7 @@ export async function historico(env) {
 async function vivoFederal(env) {
   const comp = (await competencias(env)).competencias[0]?.competencia;
   if (!comp) return null;
-  const ind = JSON.parse(await dadosVigentes(env, comp)).indicadores || [];
+  const ind = JSON.parse(await dadosVigentes(env, comp, 'indicadores')).indicadores || [];
   const agg = new Map();
   for (const l of ind) {
     if (!l.codigo || (l.recorte === 'desfecho' && l.codigo !== 'C2' && l.codigo !== 'C3')) continue;

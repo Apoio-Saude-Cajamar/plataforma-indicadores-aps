@@ -1,7 +1,7 @@
 // Produção por profissional (relatório "Produção e notas"): atendimentos individuais e atividades coletivas
 // de cada profissional das unidades de APS, por mês. Só totais; nenhum dado de paciente.
 // A extensão envia o município inteiro de uma vez, então o envio troca a produção do mês.
-import { ErroHttp, agora, texto, competencia } from './util.js';
+import { ErroHttp, agora, texto, competencia, sqlCompetencias } from './util.js';
 
 const SQL_TABELA = `CREATE TABLE IF NOT EXISTS producao_profissional (
   competencia TEXT NOT NULL, unidade TEXT NOT NULL, equipe TEXT NOT NULL DEFAULT '', ine TEXT NOT NULL DEFAULT '',
@@ -67,7 +67,7 @@ export async function gravarProducao(env, corpo) {
 // Leitura de um intervalo de competências (até 24 meses).
 export async function lerProducao(env, url) {
   await garantirProducao(env);
-  const lista = (await env.DB.prepare('SELECT DISTINCT competencia FROM producao_profissional ORDER BY competencia DESC').all()).results.map(
+  const lista = (await env.DB.prepare(sqlCompetencias('producao_profissional')).all()).results.map(
     (x) => x.competencia,
   );
   const de = url.searchParams.get('de') ? competencia(url.searchParams.get('de')) : lista[0];

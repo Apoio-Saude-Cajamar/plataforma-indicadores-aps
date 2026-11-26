@@ -621,7 +621,7 @@
           const cs = ((d && d.competencias) || []).map((c) => c.competencia).sort();
           if (!cs.length) return;
           PECMES = cs[cs.length - 1];
-          const r = await fetch('/api/v1/dados?competencia=' + PECMES, { credentials: 'same-origin' });
+          const r = await fetch('/api/v1/dados?partes=indicadores&competencia=' + PECMES, { credentials: 'same-origin' });
           if (!r.ok) return;
           const ls = (await r.json()).indicadores || [];
           for (const [id, cod] of Object.entries(DO_PEC)) {

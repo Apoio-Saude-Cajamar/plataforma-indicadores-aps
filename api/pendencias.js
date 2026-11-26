@@ -1,7 +1,7 @@
 // Pendências de uma competência: o que ficou faltando ou parece inconsistente nos dados já gravados.
 // Só lê (nada é alterado) e só devolve contagens e nomes de unidade; nenhum nome de profissional ou de paciente.
 import { CHAVE_EQUIPE, UNIDADE_EXIBIDA, LINHA_CONTA } from './vigente.js';
-import { competencia } from './util.js';
+import { competencia, sqlCompetencias } from './util.js';
 
 // Indicadores que dependem do tipo de equipe da unidade: a ausência pode ser normal.
 const OPCIONAIS = /^(CR\d|M1$|M2$|B[1-6]$)/;
@@ -246,7 +246,7 @@ async function lerB4(ler, comp) {
 export async function pendencias(env, pedido, agora = Date.now()) {
   let comps = [];
   try {
-    comps = (await env.DB.prepare('SELECT DISTINCT competencia FROM indicador_equipe ORDER BY competencia DESC').all()).results.map(
+    comps = (await env.DB.prepare(sqlCompetencias('indicador_equipe')).all()).results.map(
       (r) => r.competencia,
     );
   } catch (_) {

@@ -2427,7 +2427,7 @@
           FILAS = d;
           ACESSO = {};
           try {
-            const a = await fetch('/api/v1/dados?competencia=' + encodeURIComponent(d.competencia), { credentials: 'same-origin' });
+            const a = await fetch('/api/v1/dados?partes=indicadores&competencia=' + encodeURIComponent(d.competencia), { credentials: 'same-origin' });
             if (a.ok)
               for (const x of (await a.json()).indicadores || [])
                 if (x.codigo === 'C1' && x.denominador)
