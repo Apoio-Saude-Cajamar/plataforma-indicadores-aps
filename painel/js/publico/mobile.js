@@ -117,8 +117,6 @@
   var ICO = {
     inicio: SVG('<path d="M5 12H3l9-9 9 9h-2"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M10 21v-6h4v6"/>'),
     federal: SVG('<path d="M3 3v18h18"/><path d="M7 16v-5M11 16V7M15 16v-3M19 16V9"/>'),
-    filas: SVG('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>'),
-    pendencias: SVG('<path d="m9 11 3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/>'),
     estadual: SVG('<path d="m3 7 6-3 6 3 6-3v13l-6 3-6-3-6 3z"/><path d="M9 4v13M15 7v13"/>'),
     municipal: SVG('<path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/>'),
     mais: SVG('<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>'),
@@ -145,21 +143,13 @@
   }
   function montarBarra(u) {
     if (!u || document.querySelector('.barra-inferior')) return;
-    var gestor = u.perfil === 'admin' || u.perfil === 'gestor';
+    // Os três acompanhamentos são os destinos principais para todos; o resto fica em "Mais".
     var itens = [
       ['/', 'Início', 'inicio', ['/']],
       ['/notas', 'Federal', 'federal', ['/notas', '/indicadores', '/federal', '/federal-notas']],
-    ].concat(
-      gestor
-        ? [
-            ['/filas', 'Filas', 'filas', ['/filas']],
-            ['/pendencias', 'Pendências', 'pendencias', ['/pendencias']],
-          ]
-        : [
-            ['/estadual', 'Estadual', 'estadual', ['/estadual']],
-            ['/municipal', 'Municipal', 'municipal', ['/municipal']],
-          ],
-    );
+      ['/estadual', 'Estadual', 'estadual', ['/estadual']],
+      ['/municipal', 'Municipal', 'municipal', ['/municipal']],
+    ];
     var atual = -1;
     itens.forEach(function (it, i) {
       if (it[3].indexOf(aqui) >= 0) atual = i;
@@ -185,6 +175,7 @@
     raiz.classList.add('com-barra-inferior');
     var ind = nav.querySelector('.bi-ind');
     deslizar(ind, 'painelaps.barraPos', atual);
+    if (u.perfil === 'admin') pontoInicio(nav.querySelector('.bi-item[data-i="0"]'));
     nav.addEventListener('click', function (e) {
       var b = e.target.closest('.bi-item');
       if (!b) return;
@@ -196,6 +187,35 @@
         });
       } else tocar(ind, 'painelaps.barraPos', atual, i);
     });
+  }
+  // Início ganha um ponto quando há algo a ver lá (administrador: pontos de atenção nas coletas). Consulta guardada por 10 min.
+  function pontoInicio(item) {
+    if (!item || !(window.matchMedia && window.matchMedia('(max-width: 899px)').matches)) return;
+    var marcar = function (n) {
+      if (!n) return;
+      var p = document.createElement('span');
+      p.className = 'bi-ponto';
+      p.setAttribute('aria-hidden', 'true');
+      var t = document.createElement('span');
+      t.className = 'bi-oculto';
+      t.textContent = ' (' + n + (n > 1 ? ' pontos precisam' : ' ponto precisa') + ' de atenção)';
+      item.append(p, t);
+      item.title = n + (n > 1 ? ' pontos nas coletas precisam' : ' ponto nas coletas precisa') + ' de atenção';
+    };
+    try {
+      var c = JSON.parse(sessionStorage.getItem('painelaps.problemas') || 'null');
+      if (c && Date.now() - c.t < 600000) return marcar(c.n);
+    } catch (_) {}
+    fetch('/api/v1/monitoramento', { credentials: 'same-origin' })
+      .then(function (r) {
+        return r.ok ? r.json() : null;
+      })
+      .then(function (d) {
+        if (!d) return;
+        guardar('painelaps.problemas', JSON.stringify({ n: d.problemas || 0, t: Date.now() }));
+        marcar(d.problemas || 0);
+      })
+      .catch(function () {});
   }
   // "Mais": as demais áreas, os lançamentos e o tema, numa folha que sobe de baixo.
   function abrirMais(u, aoFechar) {
@@ -217,15 +237,14 @@
     fundo.innerHTML =
       '<div class="mais-painel" id="mais-painel" role="dialog" aria-modal="true" aria-label="Mais áreas do Painel">' +
       '<button type="button" class="mais-fechar" aria-label="Fechar">✕</button>' +
-      grupo('Acompanhamentos', [
-        ['/', 'Visão geral'],
-        ['/notas', 'Federal · Dashboard'],
-        ['/indicadores', 'Federal · Dados'],
-        ['/estadual', 'Estadual'],
-        ['/municipal', 'Municipal'],
-        ['/producao', 'Produção e notas'],
-      ]) +
-      grupo('Painel', [['/composicao', 'Composição de Usuários'], ['/coleta', 'Como coletamos']].concat(gestor ? [['/filas', 'Filas e faltas'], ['/pendencias', 'Pendências']] : [])) +
+      grupo(
+        'Outras áreas',
+        (gestor ? [['/filas', 'Filas e faltas'], ['/pendencias', 'Pendências']] : []).concat([
+          ['/producao', 'Produção e notas'],
+          ['/composicao', 'Composição de Usuários'],
+          ['/coleta', 'Como coletamos'],
+        ]),
+      ) +
       (gestor ? grupo('Lançamentos', [['/lancamentos', 'Metas do PAS'], ['/lancamentos-vacinas', 'Coberturas vacinais'], ['/estadual#t-form', 'Cofinanciamento estadual']]) : '') +
       '<p class="mais-grupo">Tema</p><div class="mais-tema">' +
       [['Tema claro', 'Claro'], ['Tema personalizado (cores de Cajamar)', 'Cajamar'], ['Tema escuro', 'Escuro']]

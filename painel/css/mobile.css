@@ -295,6 +295,32 @@
   .bi-item[aria-expanded='true'] {
     color: #ffffff;
   }
+  /* Ponto no Início: há algo a ver lá (ex.: pontos de atenção nas coletas). */
+  .bi-ponto {
+    position: absolute;
+    top: 7px;
+    left: calc(50% + 7px);
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #f2b33d;
+    box-shadow: 0 0 0 2px #163059;
+  }
+  html[data-tema='claro'] .bi-ponto {
+    background: #c27a00;
+    box-shadow: 0 0 0 2px #ffffff;
+  }
+  html[data-tema='escuro'] .bi-ponto {
+    box-shadow: 0 0 0 2px #111a22;
+  }
+  .bi-oculto {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
   .bi-item:active svg {
     transform: scale(0.88);
   }
