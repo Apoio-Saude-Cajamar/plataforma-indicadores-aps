@@ -32,4 +32,17 @@
     '<a href="/coleta#privacidade">Privacidade dos dados</a>' +
     '<span class="fim">Só totais; sem dados de pacientes.</span>';
   document.body.appendChild(f);
+  // Enquanto a tela inteira de carregamento está aberta (Dashboard, Filas e faltas), o rodapé fica escondido:
+  // senão ele aparece no meio da tela e desce quando o conteúdo chega.
+  if (document.querySelector('.carr-tela')) {
+    f.style.display = 'none';
+    var mostrar = function () {
+      if (document.querySelector('.carr-tela')) return;
+      f.style.display = '';
+      obs.disconnect();
+    };
+    var obs = new MutationObserver(mostrar);
+    obs.observe(document.body, { childList: true, subtree: true });
+    setTimeout(function () { f.style.display = ''; obs.disconnect(); }, 30000);
+  }
 })();
