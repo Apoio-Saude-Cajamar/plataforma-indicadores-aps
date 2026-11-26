@@ -109,7 +109,59 @@ js = troca(js, "temSelo: selo, temAssinatura: !selo,", """temSelo: selo, temAssi
 marc = troca(marc, '<span style="font-size: 13px; color: {{tTopoSuave}}">Cofinanciamento federal da APS', '<span class="so-largo" style="font-size: 13px; color: {{tTopoSuave}}">Cofinanciamento federal da APS')
 marc = troca(marc, '<div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px 0; display: flex; flex-direction: column; gap: 8px">', '<div class="m-cab" style="max-width: 1280px; margin: 0 auto; padding: 14px 24px 0; display: flex; flex-direction: column; gap: 8px">')
 marc = troca(marc, 'padding: 3px 10px">{{coletaTxt}}</span>', 'padding: 3px 10px" class="m-selo"><span class="{{coletaPreCls}}">{{coletaPre}}</span>{{coletaTxt}}</span>')
-marc = troca(marc, '<div style="position: sticky; top: 0; z-index: 3;', '<div class="m-filtros" style="position: sticky; top: 0; z-index: 3;')
+# Filtros que se recolhem (computador e celular): abertos enquanto nada foi escolhido; "Buscar" aplica e recolhe numa linha com o
+# resumo do que está valendo (presa no topo); tocar na linha reabre. A troca entre os dois estados é animada (TRANSICAO).
+marc = troca(marc, '''  <div style="position: sticky; top: 0; z-index: 3; background: {{tPagina}}; border-bottom: 1px solid {{tBorda}}">
+    <div role="search"''', '''  <div class="m-filtros" style="position: {{posFiltros}}; top: 0; z-index: 3; background: {{tPagina}}; border-bottom: 1px solid {{tBorda}}">
+    <template data-sc="if" value="{{filtrosAbertos}}">
+    <div role="search"''')
+marc = troca(marc, '''">Atualizar</button>
+    </div>
+  </div>
+
+  <main''', '''">Buscar</button></div>
+    </div>
+    </template>
+    <template data-sc="if" value="{{filtrosFechados}}">
+    <div class="filtros-resumo" onClick="{{abrirFiltros}}" style="max-width: 1280px; margin: 0 auto; padding: 8px 24px; min-height: 44px; display: flex; align-items: center; gap: 8px 12px; cursor: pointer">
+      <button type="button" class="fr-botao" aria-expanded="false" aria-label="Alterar filtros: {{resumoFiltrosTxt}}" style="font: inherit; flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 14px; border: 1px solid {{tControle}}; border-radius: 8px; background: {{tCartao}}; color: {{tTexto}}; font-weight: 600; cursor: pointer"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4-2v-4Z"/></svg>Filtros<span aria-hidden="true" style="font-size: 11px; color: {{tSuave}}">▾</span></button>
+      <div class="fr-chips" aria-hidden="true" style="display: flex; flex-wrap: wrap; gap: 6px; min-width: 0">
+        <template data-sc="for" list="{{chipsFiltros}}" as="cf"><span style="font-size: 14px; padding: 5px 12px; border-radius: 999px; background: {{tRealce}}; border: 1px solid {{tDivisa}}; color: {{tTexto}}; white-space: nowrap">{{cf}}</span></template>
+      </div>
+    </div>
+    </template>
+  </div>
+
+  <main''')
+marc = troca(marc, '<button type="button" onClick="{{atualizar}}" aria-disabled', '<div class="fx-acoes" style="display: flex; align-items: center; gap: 8px; margin-left: auto"><template data-sc="if" value="{{temCancelar}}"><button type="button" onClick="{{cancelarFiltros}}" style="font: inherit; min-height: 44px; padding: 0 14px; border: 0; border-radius: 8px; background: transparent; color: {{tTexto}}; text-decoration: underline; text-underline-offset: 3px; cursor: pointer">Cancelar</button></template>\n      <button type="button" onClick="{{atualizar}}" aria-disabled')
+# Seleção aberta: período e recorte à mostra (a grade de meses e a lista de unidades/equipes ficam na tela, sem abrir menus),
+# com um título em cada parte; no computador em colunas, no celular uma embaixo da outra (/css/mobile.css).
+TIT = '<span class="fx-tit {c}" style="font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: {{{{tSuave}}}}">{t}</span>\n      '
+marc = troca(marc, '<div role="group" aria-label="Tipo de intervalo" style="', TIT.format(c='fx-tit-per', t='Período') + '<div role="group" aria-label="Tipo de intervalo" class="fx-intervalo" style="')
+marc = troca(marc, '<div role="group" aria-label="Visualização" style="display: flex; margin-left: 14px;', TIT.format(c='fx-tit-rec', t='Recorte') + '<div role="group" aria-label="Visualização" class="fx-visao" style="display: flex; margin-left: 14px;')
+marc = re.sub(r'<div style="position: relative">(\s*<button type="button" onClick="\{\{abrirTempo\}\}")', r'<div class="fx-tempo" style="position: relative">\1', marc, count=1)
+marc = re.sub(r'<div style="position: relative">(\s*<button type="button" onClick="\{\{abrirLocais\}\}")', r'<div class="fx-locais" style="position: relative">\1', marc, count=1)
+marc = troca(marc, '<label title="{{tituloComparar}}" style="', TIT.format(c='fx-tit-comp', t='Comparação') + '<label class="fx-comparar" title="{{tituloComparar}}" style="')
+js = troca(js, "painelTempo: painelF === 'tempo',", "painelTempo: painelF === 'tempo' || !!dr.filtrosAbertos,")
+js = troca(js, "painelLocais: painelF === 'locais',", "painelLocais: painelF === 'locais' || !!dr.filtrosAbertos,")
+js = troca(js, "    Object.assign(this.state, CTX_INICIAL());\n", "    Object.assign(this.state, CTX_INICIAL());\n    this.state.filtrosAbertos = !Object.keys(CTX_INICIAL()).length && !FILTROS_JA();\n    this.state.jaRecolheu = !this.state.filtrosAbertos;\n")
+js = troca(js, "podeAtualizar = valido && sujo;", "podeAtualizar = valido && (sujo || !!dr.filtrosAbertos);")
+js = troca(js, """      if (!podeAtualizar) return;
+      const h = new Date();
+      set({ aplicado: Component.pega(this.state), painelF: '', aberta: '', abertas: {}, info: '',
+        atualizadoEm: String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0') });""", """      if (!podeAtualizar) return;
+      const h = new Date();
+      FILTROS_JA(true);
+      TRANSICAO(() => set({ aplicado: Component.pega(this.state), painelF: '', aberta: '', abertas: {}, info: '', filtrosAbertos: false, jaRecolheu: true,
+        atualizadoEm: String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0') }));""")
+js = troca(js, "      atualizar, atualizarInativo:", """      atualizar,
+      filtrosAbertos: !!dr.filtrosAbertos, filtrosFechados: !dr.filtrosAbertos, posFiltros: dr.filtrosAbertos ? 'relative' : 'sticky',
+      chipsFiltros: [tp.perTxt, localNome, temComp ? 'comparando com ' + tp.compTxt : ''].filter(Boolean),
+      resumoFiltrosTxt: [tp.perTxt, localNome, temComp ? 'comparando com ' + tp.compTxt : ''].filter(Boolean).join(', '),
+      temCancelar: !!dr.filtrosAbertos && !!dr.jaRecolheu,
+      abrirFiltros: () => { if (window.scrollY > 120) { window.scrollTo({ top: 0, behavior: 'smooth' }); set({ filtrosAbertos: true }); } else TRANSICAO(() => set({ filtrosAbertos: true })); },
+      cancelarFiltros: () => TRANSICAO(() => set({ ...Component.pega(aplicado), painelF: '', filtrosAbertos: false })),
+      atualizarInativo:""")
 marc = troca(marc, '<main style="max-width: 1280px; margin: 0 auto; padding: 24px 24px 48px;', '<main class="m-main" style="max-width: 1280px; margin: 0 auto; padding: 24px 24px 48px;')
 marc = troca(marc, '<p style="margin: 0; color: {{tSuave}}">{{descricao}}</p>', '<p class="{{descCls}}" style="margin: 0; color: {{tSuave}}">{{descricao}}</p>')
 marc = troca(marc, '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px">', '<div class="m-faixa" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px">')
@@ -168,6 +220,26 @@ const ITENS_USUARIO = () => {{
   return ls.map(([href, txt]) => ({{ href: href || '#', txt, peso: href ? 600 : 800 }}));
 }};
 // Mês e recorte entre o Dashboard e os Dados: ?de=AAAA-MM&ate=AAAA-MM&un=unidade&eq=unidade|equipe (o mesmo formato nas duas páginas).
+// Troca animada entre filtros abertos e recolhidos (View Transitions do navegador; sem suporte ou com "menos movimento", troca direto).
+const TRANSICAO = (fn) => {{
+  const menos = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!document.startViewTransition || menos) return fn();
+  const r = document.documentElement;
+  r.classList.add('vt-filtros');
+  const t = document.startViewTransition(fn);
+  const fim = () => r.classList.remove('vt-filtros');
+  t.ready.catch(() => {{}});
+  t.finished.then(fim, fim);
+}};
+// Filtros já escolhidos nesta aba: ao voltar ao dashboard, eles abrem recolhidos.
+const FILTROS_JA = (marcar) => {{
+  try {{
+    if (marcar) sessionStorage.setItem('painelaps.notasFiltros', '1');
+    return sessionStorage.getItem('painelaps.notasFiltros') === '1';
+  }} catch (_) {{
+    return !!marcar;
+  }}
+}};
 const CTX_INICIAL = () => {{
   const q = new URLSearchParams(location.search), o = {{}};
   const num = (c) => (/^\\d{{4}}-\\d{{2}}$/.test(c || '') ? +c.slice(0, 4) * 12 + +c.slice(5, 7) - 1 : null);

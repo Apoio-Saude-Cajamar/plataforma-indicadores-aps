@@ -85,15 +85,17 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
     </div>
   </header>
 
-  <div class="m-filtros" style="position: sticky; top: 0; z-index: 3; background: {{tPagina}}; border-bottom: 1px solid {{tBorda}}">
+  <div class="m-filtros" style="position: {{posFiltros}}; top: 0; z-index: 3; background: {{tPagina}}; border-bottom: 1px solid {{tBorda}}">
+    <template data-sc="if" value="{{filtrosAbertos}}">
     <div role="search" aria-label="Filtros" style="max-width: 1280px; margin: 0 auto; padding: 10px 24px; display: flex; align-items: center; gap: 10px">
 
-      <div role="group" aria-label="Tipo de intervalo" style="display: flex; border: 1px solid {{tControle}}; border-radius: 8px; overflow: hidden; background: {{tCartao}}">
+      <span class="fx-tit fx-tit-per" style="font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: {{tSuave}}">Período</span>
+      <div role="group" aria-label="Tipo de intervalo" class="fx-intervalo" style="display: flex; border: 1px solid {{tControle}}; border-radius: 8px; overflow: hidden; background: {{tCartao}}">
         <template data-sc="for" list="{{opcoesIntervalo}}" as="oi" hint-placeholder-count="2">
           <button type="button" aria-pressed="{{oi.pressionado}}" onClick="{{oi.escolher}}" style="font: inherit; min-height: 42px; padding: 0 14px; border: 0; cursor: pointer; background: {{oi.fundo}}; color: {{oi.cor}}; font-weight: {{oi.peso}}">{{oi.rotulo}}</button>
         </template>
       </div>
-      <div style="position: relative">
+      <div class="fx-tempo" style="position: relative">
         <button type="button" onClick="{{abrirTempo}}" aria-expanded="{{tempoExp}}" aria-label="{{rotuloSelTempo}}: {{tituloTempo}}" title="{{tituloTempo}}" style="font: inherit; min-height: 44px; width: 220px; padding: 0 12px; border: 1px solid {{tempoBorda}}; border-radius: 8px; background: {{tCartao}}; color: {{tTexto}}; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left">
           <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{resumoTempo}}</span>
           <span aria-hidden="true" style="font-size: 11px; color: {{tSuave}}">▾</span>
@@ -119,13 +121,14 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
         </template>
       </div>
 
-      <div role="group" aria-label="Visualização" style="display: flex; margin-left: 14px; border: 1px solid {{tControle}}; border-radius: 8px; overflow: hidden; background: {{tCartao}}">
+      <span class="fx-tit fx-tit-rec" style="font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: {{tSuave}}">Recorte</span>
+      <div role="group" aria-label="Visualização" class="fx-visao" style="display: flex; margin-left: 14px; border: 1px solid {{tControle}}; border-radius: 8px; overflow: hidden; background: {{tCartao}}">
         <template data-sc="for" list="{{opcoesVisao}}" as="ov" hint-placeholder-count="3">
           <button type="button" aria-pressed="{{ov.pressionado}}" onClick="{{ov.escolher}}" style="font: inherit; min-height: 42px; padding: 0 14px; border: 0; cursor: pointer; background: {{ov.fundo}}; color: {{ov.cor}}; font-weight: {{ov.peso}}">{{ov.rotulo}}</button>
         </template>
       </div>
       <template data-sc="if" value="{{temLocais}}" hint-placeholder-val="{{false}}">
-        <div style="position: relative">
+        <div class="fx-locais" style="position: relative">
           <button type="button" onClick="{{abrirLocais}}" aria-expanded="{{locaisExp}}" aria-label="{{rotuloSelLocais}}: {{tituloLocais}}" title="{{tituloLocais}}" style="font: inherit; min-height: 44px; width: 190px; padding: 0 12px; border: 1px solid {{locaisBorda}}; border-radius: 8px; background: {{tCartao}}; color: {{tTexto}}; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left">
             <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{resumoLocais}}</span>
             <span aria-hidden="true" style="font-size: 11px; color: {{tSuave}}">▾</span>
@@ -154,13 +157,24 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
         </div>
       </template>
 
-      <label title="{{tituloComparar}}" style="display: flex; align-items: center; gap: 8px; min-height: 44px; margin-left: 14px; cursor: pointer">
+      <span class="fx-tit fx-tit-comp" style="font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: {{tSuave}}">Comparação</span>
+      <label class="fx-comparar" title="{{tituloComparar}}" style="display: flex; align-items: center; gap: 8px; min-height: 44px; margin-left: 14px; cursor: pointer">
         <input type="checkbox" checked="{{rascComparar}}" onChange="{{alternarComparar}}" aria-label="{{tituloComparar}}" style="width: 18px; height: 18px; margin: 0; accent-color: {{tAtivoFundo}}">
         <span>Comparar</span>
       </label>
 
-      <button type="button" onClick="{{atualizar}}" aria-disabled="{{atualizarInativo}}" title="{{tituloAtualizar}}" style="font: inherit; margin-left: auto; min-height: 44px; padding: 0 18px; border-radius: 8px; border: 1px solid {{btnBorda}}; background: {{btnFundo}}; color: {{btnCor}}; font-weight: 600; cursor: {{btnCursor}}">Atualizar</button>
+      <div class="fx-acoes" style="display: flex; align-items: center; gap: 8px; margin-left: auto"><template data-sc="if" value="{{temCancelar}}"><button type="button" onClick="{{cancelarFiltros}}" style="font: inherit; min-height: 44px; padding: 0 14px; border: 0; border-radius: 8px; background: transparent; color: {{tTexto}}; text-decoration: underline; text-underline-offset: 3px; cursor: pointer">Cancelar</button></template>
+      <button type="button" onClick="{{atualizar}}" aria-disabled="{{atualizarInativo}}" title="{{tituloAtualizar}}" style="font: inherit; margin-left: auto; min-height: 44px; padding: 0 18px; border-radius: 8px; border: 1px solid {{btnBorda}}; background: {{btnFundo}}; color: {{btnCor}}; font-weight: 600; cursor: {{btnCursor}}">Buscar</button></div>
     </div>
+    </template>
+    <template data-sc="if" value="{{filtrosFechados}}">
+    <div class="filtros-resumo" onClick="{{abrirFiltros}}" style="max-width: 1280px; margin: 0 auto; padding: 8px 24px; min-height: 44px; display: flex; align-items: center; gap: 8px 12px; cursor: pointer">
+      <button type="button" class="fr-botao" aria-expanded="false" aria-label="Alterar filtros: {{resumoFiltrosTxt}}" style="font: inherit; flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 14px; border: 1px solid {{tControle}}; border-radius: 8px; background: {{tCartao}}; color: {{tTexto}}; font-weight: 600; cursor: pointer"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4-2v-4Z"/></svg>Filtros<span aria-hidden="true" style="font-size: 11px; color: {{tSuave}}">▾</span></button>
+      <div class="fr-chips" aria-hidden="true" style="display: flex; flex-wrap: wrap; gap: 6px; min-width: 0">
+        <template data-sc="for" list="{{chipsFiltros}}" as="cf"><span style="font-size: 14px; padding: 5px 12px; border-radius: 999px; background: {{tRealce}}; border: 1px solid {{tDivisa}}; color: {{tTexto}}; white-space: nowrap">{{cf}}</span></template>
+      </div>
+    </div>
+    </template>
   </div>
 
   <main class="m-main" style="max-width: 1280px; margin: 0 auto; padding: 24px 24px 48px; display: flex; flex-direction: column; gap: 20px">
@@ -350,6 +364,26 @@ const ITENS_USUARIO = () => {
   return ls.map(([href, txt]) => ({ href: href || '#', txt, peso: href ? 600 : 800 }));
 };
 // Mês e recorte entre o Dashboard e os Dados: ?de=AAAA-MM&ate=AAAA-MM&un=unidade&eq=unidade|equipe (o mesmo formato nas duas páginas).
+// Troca animada entre filtros abertos e recolhidos (View Transitions do navegador; sem suporte ou com "menos movimento", troca direto).
+const TRANSICAO = (fn) => {
+  const menos = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!document.startViewTransition || menos) return fn();
+  const r = document.documentElement;
+  r.classList.add('vt-filtros');
+  const t = document.startViewTransition(fn);
+  const fim = () => r.classList.remove('vt-filtros');
+  t.ready.catch(() => {});
+  t.finished.then(fim, fim);
+};
+// Filtros já escolhidos nesta aba: ao voltar ao dashboard, eles abrem recolhidos.
+const FILTROS_JA = (marcar) => {
+  try {
+    if (marcar) sessionStorage.setItem('painelaps.notasFiltros', '1');
+    return sessionStorage.getItem('painelaps.notasFiltros') === '1';
+  } catch (_) {
+    return !!marcar;
+  }
+};
 const CTX_INICIAL = () => {
   const q = new URLSearchParams(location.search), o = {};
   const num = (c) => (/^\d{4}-\d{2}$/.test(c || '') ? +c.slice(0, 4) * 12 + +c.slice(5, 7) - 1 : null);
@@ -385,6 +419,8 @@ class Component extends DCLogic {
     this.state = { tema: '', rel: 'geral', intervalo: 'mensal', meses: [REAL.atual], quads: [REAL.quadAtual], visao: 'municipio', unidades: [], equipes: [], comparar: false,
       aplicado: null, painelF: '', atualizadoEm: '', nota: 'C4', aberta: '', abertas: {}, ocultas: {}, painel: false, info: '' };
     Object.assign(this.state, CTX_INICIAL());
+    this.state.filtrosAbertos = !Object.keys(CTX_INICIAL()).length && !FILTROS_JA();
+    this.state.jaRecolheu = !this.state.filtrosAbertos;
     this.state.aplicado = Component.pega(this.state);
   }
 
@@ -1024,7 +1060,7 @@ class Component extends DCLogic {
     const dLocais = locaisDe(dVisao, dr.unidades, dr.equipes);
     const dTp = tempoDe(dEhQuad, dMeses, dQuads);
     const tempoVazio = !dTp.periodo.length, locaisVazio = dVisao !== 'municipio' && !dLocais.length;
-    const valido = !tempoVazio && !locaisVazio, podeAtualizar = valido && sujo;
+    const valido = !tempoVazio && !locaisVazio, podeAtualizar = valido && (sujo || !!dr.filtrosAbertos);
     const painelF = ['tempo', 'locais'].indexOf(dr.painelF) >= 0 && !(dr.painelF === 'locais' && dVisao === 'municipio') ? dr.painelF : '';
     const set = (o) => this.setState(o);
     const ordenar = (k, arr) => {
@@ -1037,8 +1073,9 @@ class Component extends DCLogic {
     const atualizar = () => {
       if (!podeAtualizar) return;
       const h = new Date();
-      set({ aplicado: Component.pega(this.state), painelF: '', aberta: '', abertas: {}, info: '',
-        atualizadoEm: String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0') });
+      FILTROS_JA(true);
+      TRANSICAO(() => set({ aplicado: Component.pega(this.state), painelF: '', aberta: '', abertas: {}, info: '', filtrosAbertos: false, jaRecolheu: true,
+        atualizadoEm: String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0') }));
     };
     const seg = (ativo) => ({ pressionado: ativo ? 'true' : 'false', fundo: ativo ? T.tAtivoFundo : 'transparent', cor: ativo ? T.tAtivoTexto : T.tTexto, peso: ativo ? 600 : 400 });
     const chip = (ativo, inativo) => ({
@@ -1106,7 +1143,7 @@ class Component extends DCLogic {
       rotuloSelTempo: dEhQuad ? 'Quadrimestres' : 'Meses', resumoTempo, tituloTempo: tempoVazio ? resumoTempo : dEhQuad ? rotQuads(dQuads) : rotMeses(dMeses),
       tempoBorda: tempoVazio ? T.tPiorou : T.tControle, tempoExp: painelF === 'tempo' ? 'true' : 'false',
       abrirTempo: () => set({ painelF: this.state.painelF === 'tempo' ? '' : 'tempo' }),
-      painelTempo: painelF === 'tempo', itensTempo, larguraPainelTempo: dEhQuad ? '340px' : '280px', gradePainelTempo: dEhQuad ? '1fr' : 'repeat(4, 1fr)',
+      painelTempo: painelF === 'tempo' || !!dr.filtrosAbertos, itensTempo, larguraPainelTempo: dEhQuad ? '340px' : '280px', gradePainelTempo: dEhQuad ? '1fr' : 'repeat(4, 1fr)',
       temNavAno: !dEhQuad, anoPainel, opAntes: anoPainel === 2025 ? 0.3 : 1, opDepois: anoPainel === 2026 ? 0.3 : 1,
       anoAntes: () => set({ anoPainel: 2025 }), anoDepois: () => set({ anoPainel: 2026 }),
       opcoesVisao: [['municipio', 'Município'], ['unidades', 'Unidades'], ['equipes', 'Equipes']].map(([id, rotulo]) => ({ ...seg(dVisao === id), rotulo,
@@ -1115,10 +1152,17 @@ class Component extends DCLogic {
       tituloLocais: dLocais.length ? dLocais.map((l) => l.nome).join(', ') : resumoLocais,
       locaisBorda: locaisVazio ? T.tPiorou : T.tControle, locaisExp: painelF === 'locais' ? 'true' : 'false',
       abrirLocais: () => set({ painelF: this.state.painelF === 'locais' ? '' : 'locais' }),
-      painelLocais: painelF === 'locais', itensLocais, contagemLocais: dLocais.length ? dLocais.length + (dLocais.length === 1 ? ' marcada' : ' marcadas') : 'Nenhuma marcada',
+      painelLocais: painelF === 'locais' || !!dr.filtrosAbertos, itensLocais, contagemLocais: dLocais.length ? dLocais.length + (dLocais.length === 1 ? ' marcada' : ' marcadas') : 'Nenhuma marcada',
       rascComparar: !!dr.comparar, alternarComparar: () => set({ comparar: !this.state.comparar }),
       tituloComparar: 'Comparar com o período anterior' + (tempoVazio ? '' : dTp.compOk ? ' (' + dTp.compTxt + ')' : ' (sem dados antes de jan/25)'),
-      atualizar, atualizarInativo: podeAtualizar ? 'false' : 'true',
+      atualizar,
+      filtrosAbertos: !!dr.filtrosAbertos, filtrosFechados: !dr.filtrosAbertos, posFiltros: dr.filtrosAbertos ? 'relative' : 'sticky',
+      chipsFiltros: [tp.perTxt, localNome, temComp ? 'comparando com ' + tp.compTxt : ''].filter(Boolean),
+      resumoFiltrosTxt: [tp.perTxt, localNome, temComp ? 'comparando com ' + tp.compTxt : ''].filter(Boolean).join(', '),
+      temCancelar: !!dr.filtrosAbertos && !!dr.jaRecolheu,
+      abrirFiltros: () => { if (window.scrollY > 120) { window.scrollTo({ top: 0, behavior: 'smooth' }); set({ filtrosAbertos: true }); } else TRANSICAO(() => set({ filtrosAbertos: true })); },
+      cancelarFiltros: () => TRANSICAO(() => set({ ...Component.pega(aplicado), painelF: '', filtrosAbertos: false })),
+      atualizarInativo: podeAtualizar ? 'false' : 'true',
       tituloAtualizar: !valido ? 'Escolha pelo menos ' + (tempoVazio ? (dEhQuad ? 'um quadrimestre' : 'um mês') : (dVisao === 'unidades' ? 'uma unidade' : 'uma equipe'))
         : sujo ? 'Levar os filtros para o relatório' : 'O relatório já está com estes filtros',
       btnFundo: podeAtualizar ? T.tAtivoFundo : 'transparent', btnCor: podeAtualizar ? T.tAtivoTexto : T.tSuave, btnBorda: podeAtualizar ? T.tAtivoFundo : T.tControle, btnCursor: podeAtualizar ? 'pointer' : 'default',
