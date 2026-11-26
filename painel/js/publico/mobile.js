@@ -358,9 +358,60 @@
     });
   }
 
+  // ---------- Celular (até 599 px): tabela larga que rolaria para o lado vira cartões ----------
+  // Cada linha vira um cartão: a primeira coluna como título e as demais como "rótulo: valor" (o rótulo vem do cabeçalho).
+  // Linhas de grupo (uma célula só) viram títulos. Grade de meses (cabeçalhos de mês/ano) não vira cartão: a primeira
+  // coluna fica fixa e só os meses rolam. Vale para todas as páginas; o dashboard tem os próprios cartões.
+  var MES_CAB = /^(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)|\d{4}|^\d[ºo]\/|quadri/i;
+  function cabecalho(t) {
+    return [].slice.call(t.tHead.rows[t.tHead.rows.length - 1].cells).map(function (c) {
+      return c.textContent.replace(/\s+/g, ' ').trim();
+    });
+  }
+  function prepararTabelas() {
+    if (!(window.matchMedia && window.matchMedia('(max-width: 599px)').matches)) return;
+    document.querySelectorAll('body table').forEach(function (t) {
+      if (t.closest('header, footer, .m-tabela, [role=dialog], .mais-fundo') || !t.tHead || !t.tHead.rows.length || !t.tBodies.length) return;
+      if (!t.getClientRects().length) return; // em aba escondida: confere quando aparecer
+      var cab = cabecalho(t);
+      if (!t.classList.contains('tc') && !t.classList.contains('tm')) {
+        if (cab.length < 3 || t.scrollWidth <= (t.parentElement || t).clientWidth + 4) return;
+        t.classList.add(
+          cab.slice(1).filter(function (c) {
+            return MES_CAB.test(c);
+          }).length >= 2
+            ? 'tm'
+            : 'tc',
+        );
+      }
+      if (!t.classList.contains('tc')) return;
+      // Linhas novas (a página pode refazer o conteúdo da mesma tabela) ganham os rótulos.
+      [].forEach.call(t.tBodies, function (tb) {
+        [].forEach.call(tb.rows, function (tr) {
+          if (tr.hasAttribute('data-tc')) return;
+          tr.setAttribute('data-tc', '');
+          if (tr.cells.length === 1) return tr.classList.add('tc-grupo');
+          var col = 0;
+          [].forEach.call(tr.cells, function (td) {
+            if (col > 0 && cab[col] && !td.hasAttribute('data-rotulo')) td.setAttribute('data-rotulo', cab[col]);
+            col += td.colSpan || 1;
+          });
+        });
+      });
+    });
+  }
+  // Abas que só mudam a visibilidade (sem refazer a página) e mudança de tamanho também conferem as tabelas.
+  document.addEventListener('click', function () {
+    setTimeout(prepararTabelas, 60);
+  });
+  window.addEventListener('resize', function () {
+    setTimeout(prepararTabelas, 120);
+  });
+
   function prepararTudo() {
     prepararSeg();
     prepararRecolhe();
+    prepararTabelas();
   }
   // Na hora (antes de pintar): o dashboard refaz a tela inteira a cada mudança.
   new MutationObserver(prepararTudo).observe(document.documentElement, { childList: true, subtree: true });
