@@ -473,23 +473,109 @@
     if (n) n.focus();
   });
   window.addEventListener('resize', fiosSvg);
+  // v: 'arv' | 'vinc' | 'hom'
   function visao(v) {
-    $('v-arv').hidden = v;
-    $('v-vinc').hidden = !v;
-    $('ver-arv').setAttribute('aria-pressed', !v);
-    $('ver-vinc').setAttribute('aria-pressed', v);
+    $('v-arv').hidden = v !== 'arv';
+    $('v-vinc').hidden = v !== 'vinc';
+    $('v-hom').hidden = v !== 'hom';
+    $('ver-arv').setAttribute('aria-pressed', v === 'arv');
+    $('ver-vinc').setAttribute('aria-pressed', v === 'vinc');
+    $('ver-hom').setAttribute('aria-pressed', v === 'hom');
     ['busca', 'so', 'abrir', 'fechar'].forEach((i) => {
-      $(i).hidden = v;
+      $(i).hidden = v !== 'arv';
     });
-    if (v) desenharVinculos();
+    if (v === 'vinc') desenharVinculos();
+    if (v === 'hom') desenharHomologacao();
   }
-  $('ver-arv').addEventListener('click', () => visao(false));
-  $('ver-vinc').addEventListener('click', () => visao(true));
+  $('ver-arv').addEventListener('click', () => visao('arv'));
+  $('ver-vinc').addEventListener('click', () => visao('vinc'));
+  $('ver-hom').addEventListener('click', () => visao('hom'));
+
+  // ---------- Homologação ----------
+  let ehAdmin = null;
+  async function sabeAdmin() {
+    if (ehAdmin !== null) return ehAdmin;
+    try {
+      const r = await fetch('/api/v1/auth/eu', { credentials: 'same-origin' });
+      ehAdmin = r.ok ? (await r.json()).perfil === 'admin' : false;
+    } catch {
+      ehAdmin = false;
+    }
+    return ehAdmin;
+  }
+  const TIPO_ROT = { ESF: 'eSF', EAP: 'eAP', ESB: 'eSB', EMULTI: 'eMulti', ECR: 'eCR' };
+  async function desenharHomologacao() {
+    const admin = await sabeAdmin();
+    await HOMOLOGACAO.carregar();
+    const porIne = new Map();
+    for (const u of comp.unidades || [])
+      for (const e of u.equipes || []) {
+        const k = HOMOLOGACAO.ine10(e.ine);
+        if (!porIne.has(k)) porIne.set(k, { ine: k, nome: e.nome, tipo: e.tipo, unidades: [] });
+        porIne.get(k).unidades.push(u.nome);
+      }
+    const ordem = ['ESF', 'EAP', 'ESB', 'EMULTI', 'ECR'];
+    const lista = [...porIne.values()].sort(
+      (a, b) => ordem.indexOf(a.tipo) - ordem.indexOf(b.tipo) || String(a.nome).localeCompare(String(b.nome), 'pt-BR'),
+    );
+    let hom = 0;
+    const linhas = lista.map((e) => {
+      const regra = HOMOLOGACAO.padrao(e.ine, e.tipo, e.nome);
+      const m = HOMOLOGACAO.marcada(e.ine);
+      const vale = m === null ? regra : m;
+      if (vale) hom++;
+      return (
+        '<tr><td>' + esc(TIPO_ROT[e.tipo] || e.tipo) + '</td><td>' + esc(e.nome) + '</td><td>' + esc(e.unidades.join(', ')) + '</td><td>' + esc(e.ine) +
+        '</td><td>' + (regra ? 'homologada' : 'não homologada') + '</td><td>' +
+        (admin
+          ? '<input type="checkbox" data-ine="' + esc(e.ine) + '" aria-label="Homologada: ' + esc(e.nome) + '"' + (vale ? ' checked' : '') + '>' +
+            (m !== null ? ' <span class="marc">marcada</span>' : '')
+          : (vale ? 'Sim' : 'Não') + (m !== null ? ' <span class="marc">(marcada)</span>' : '')) +
+        '</td><td>' + (admin && m !== null ? '<button type="button" data-volta="' + esc(e.ine) + '">Voltar à regra</button>' : '') + '</td></tr>'
+      );
+    });
+    $('hom').querySelector('tbody').innerHTML = linhas.join('');
+    $('hom-resumo').textContent =
+      hom + ' de ' + lista.length + ' equipes homologadas.' + (admin ? '' : ' Só o administrador altera a marcação.');
+  }
+  async function gravaHom(ine, valor) {
+    $('hom-resumo').textContent = 'Salvando…';
+    try {
+      const r = await fetch('/api/v1/equipes/homologacao', {
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ ine, homologada: valor }),
+      });
+      if (!r.ok) throw new Error(r.status);
+      await HOMOLOGACAO.carregar(true);
+    } catch {
+      $('hom-resumo').textContent = 'Não foi possível salvar a marcação. Tente de novo.';
+      return;
+    }
+    desenharHomologacao();
+  }
+  $('hom').addEventListener('change', (ev) => {
+    const c = ev.target.closest('input[data-ine]');
+    if (c) {
+      const regra = (() => {
+        const e = (comp.unidades || []).flatMap((u) => u.equipes || []).find((x) => HOMOLOGACAO.ine10(x.ine) === c.dataset.ine);
+        return e ? HOMOLOGACAO.padrao(e.ine, e.tipo, e.nome) : null;
+      })();
+      // Marcar igual à regra equivale a voltar à regra.
+      gravaHom(c.dataset.ine, c.checked === regra ? null : c.checked);
+    }
+  });
+  $('hom').addEventListener('click', (ev) => {
+    const b = ev.target.closest('button[data-volta]');
+    if (b) gravaHom(b.dataset.volta, null);
+  });
 
   function mostrar(c) {
     comp = c;
     selV = '';
     if (!$('v-vinc').hidden) desenharVinculos();
+    if (!$('v-hom').hidden) desenharHomologacao();
     raiz = modelo(c);
     $('exemplo').hidden = !c.exemplo;
     const quando = c.coletadoEm ? ' Lida no PEC em ' + new Date(c.coletadoEm).toLocaleDateString('pt-BR') + '.' : '';

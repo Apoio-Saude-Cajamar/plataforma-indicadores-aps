@@ -138,6 +138,25 @@
         border-radius: 99px;
         padding: 3px 10px;
       }
+      .tab-hom {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 760px;
+        font-size: 14px;
+      }
+      .tab-hom th,
+      .tab-hom td {
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      .tab-hom .marc {
+        font-weight: 700;
+      }
+      .tab-hom input[type='checkbox'] {
+        width: 20px;
+        height: 20px;
+      }
       .rolo {
         overflow-x: auto;
         padding: 6px 2px 16px;
@@ -482,7 +501,8 @@
         <input type="search" id="busca" placeholder="Buscar unidade, equipe, categoria ou profissional" aria-label="Buscar" />
         <span class="seg" role="group" aria-label="Visão"
           ><button type="button" id="ver-arv" aria-pressed="true">Árvore</button
-          ><button type="button" id="ver-vinc" aria-pressed="false">Vínculos entre equipes</button></span
+          ><button type="button" id="ver-vinc" aria-pressed="false">Vínculos entre equipes</button
+          ><button type="button" id="ver-hom" aria-pressed="false">Homologação</button></span
         >
         <button type="button" id="so" aria-pressed="false">Só com pontos de atenção</button>
         <button type="button" id="abrir">Expandir tudo</button>
@@ -499,7 +519,32 @@
         <p class="resumo-v" id="vinc-resumo" role="status" aria-live="polite"></p>
         <div class="rolo"><div class="vinc" id="vinc"></div></div>
       </section>
+      <section id="v-hom" hidden>
+        <p class="sub" style="margin-bottom: 8px">
+          Equipes homologadas são as que o Ministério avalia no cofinanciamento federal (Siaps). A coluna "Regra" mostra o que o Painel supõe pelo
+          INE; o administrador pode corrigir marcando a equipe, e "Voltar à regra" desfaz a marcação. O Dashboard, Dados e a prévia do repasse
+          usam essa marcação. Confira a lista no e-Gestor.
+        </p>
+        <p class="resumo-v" id="hom-resumo" role="status" aria-live="polite"></p>
+        <div class="rolo">
+          <table class="tab-hom" id="hom">
+            <thead>
+              <tr>
+                <th scope="col">Tipo</th>
+                <th scope="col">Equipe</th>
+                <th scope="col">Unidade</th>
+                <th scope="col">INE</th>
+                <th scope="col">Regra</th>
+                <th scope="col">Homologada</th>
+                <th scope="col"><span class="sr">Ações</span></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
     </main>
+    <script src="/js/homologacao.js"></script>
     <script src="/js/sessao.js"></script>
     <script src="/js/composicao.js"></script>
   </body>

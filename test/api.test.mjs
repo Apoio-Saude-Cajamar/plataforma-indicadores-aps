@@ -319,3 +319,19 @@ test('dados da competência ficam prontos no banco e se refazem quando os dados 
   await chamar('POST', '/coletas/nova/concluir', {});
   assert.equal(await contar(env, 'dados_cache', 'competencia = ?', comp), 3);
 });
+
+test('homologação de equipes: grava, lê, volta à regra e valida o INE', async () => {
+  const env = ambiente();
+  const chamar = cliente(env, CHAVES.TOKEN_ADMIN);
+  assert.deepEqual((await chamar('GET', '/equipes/homologacao')).marcadas, {});
+  const r = await chamar('PUT', '/equipes/homologacao', { ine: '25925', homologada: true, x: 1 }, { permitirErro: true });
+  assert.equal(r.status, 400);
+  await chamar('PUT', '/equipes/homologacao', { ine: '0002526255', homologada: false });
+  await chamar('PUT', '/equipes/homologacao', { ine: '2526247', homologada: true });
+  const a = await chamar('GET', '/equipes/homologacao');
+  assert.deepEqual(a.marcadas, { '0002526255': false, '0002526247': true });
+  await chamar('PUT', '/equipes/homologacao', { ine: '0002526255', homologada: null });
+  assert.deepEqual((await chamar('GET', '/equipes/homologacao')).marcadas, { '0002526247': true });
+  assert.equal((await chamar('PUT', '/equipes/homologacao', { ine: '0002526247', homologada: 'sim' }, { permitirErro: true })).status, 400);
+  assert.equal((await chamar('PUT', '/equipes/homologacao', { ine: 'abc', homologada: true }, { permitirErro: true })).status, 400);
+});
