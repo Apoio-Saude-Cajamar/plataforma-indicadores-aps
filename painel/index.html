@@ -453,8 +453,15 @@
         fetch('/api/v1/monitoramento', { credentials: 'same-origin' })
           .then((r) => (r.ok ? r.json() : null))
           .then((d) => {
+            // Só acende para o que precisa de ação (falha ou coleta incompleta). Observações informativas ficam no Monitoramento.
             if (!d || !d.problemas) return;
             const a = document.getElementById('aviso-adm');
+            if (d.situacao === 'erro') {
+              a.style.background = '#fbe3e5';
+              a.style.borderColor = '#e8a3aa';
+              a.style.borderLeftColor = '#d64550';
+              a.style.color = '#7a1420';
+            }
             a.hidden = false;
             a.innerHTML =
               '⚠ ' +

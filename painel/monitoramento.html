@@ -319,6 +319,9 @@
       .d-atencao {
         background: #f2c14e;
       }
+      .d-info {
+        background: #3a9ad9;
+      }
       .d-ok {
         background: #1c9c76;
       }
@@ -434,7 +437,7 @@
     <script src="/js/sessao.js"></script>
     <script>
       const $ = (s) => document.querySelector(s);
-      const NIV = { erro: 'Atenção: falhou', atencao: 'Para conferir', ok: 'Em ordem' };
+      const NIV = { erro: 'Atenção: falhou', atencao: 'Para conferir', info: 'Informativo', ok: 'Em ordem' };
       async function carregar() {
         $('#lista').innerHTML = '<span class="carr">Carregando…</span>';
         try {
@@ -443,9 +446,11 @@
           const d = await r.json();
           $('#sit').className = 'pill ' + (d.situacao == 'ok' ? 'sit-Atingida' : d.situacao == 'atencao' ? 'sit-No' : 'sit-Crítica');
           $('#sit').textContent =
-            d.situacao == 'ok' ? 'Tudo em ordem' : d.problemas + ' ponto' + (d.problemas > 1 ? 's' : '') + ' a resolver';
+            d.situacao == 'ok'
+              ? 'Tudo em ordem' + (d.observacoes ? ' · ' + d.observacoes + (d.observacoes > 1 ? ' observações' : ' observação') : '')
+              : d.problemas + ' ponto' + (d.problemas > 1 ? 's' : '') + ' a resolver';
           $('#quando').textContent = 'Verificado em ' + new Date(d.verificadoEm).toLocaleString('pt-BR');
-          const ord = { erro: 0, atencao: 1, ok: 2 };
+          const ord = { erro: 0, atencao: 1, info: 2, ok: 3 };
           $('#lista').innerHTML = d.itens
             .slice()
             .sort((a, b) => ord[a.nivel] - ord[b.nivel])

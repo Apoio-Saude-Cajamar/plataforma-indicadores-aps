@@ -64,10 +64,10 @@ export async function monitoramento(env, agora = Date.now()) {
     ).results;
     if (avisos.length)
       add(
-        'atencao',
+        'info',
         'Coleta do PEC',
-        `${avisos.length} aviso(s) da extensão`,
-        'Itens que a extensão não conseguiu identificar ou que vieram fora do esperado.',
+        `${avisos.length} observação(ões) da extensão`,
+        'Informativo: a coleta foi concluída. São itens que o PEC devolveu vazios ou fora das notas (por exemplo, procedimento sem código conhecido).',
         { lista: avisos.map((a) => (a.etapa_chave ? a.etapa_chave + ' — ' : '') + a.mensagem.slice(0, 200)) },
       );
   }
@@ -98,22 +98,24 @@ export async function monitoramento(env, agora = Date.now()) {
     });
     if (alertas.length)
       add(
-        'atencao',
+        'info',
         'Composição das equipes',
         `${alertas.length} ponto(s) para conferir`,
-        'Situações que a extensão encontrou na composição (por exemplo, equipe sem médico).',
+        'Informativo: situações que a extensão encontrou na composição (por exemplo, profissional sem equipe ou equipe sem médico). Não impedem o cálculo.',
         { lista: alertas.slice(0, 40) },
       );
   }
 
   // 3. Fontes públicas (população do IBGE)
-  const gravidade = { erro: 2, atencao: 1, ok: 0 };
+  // "info" é só informativo: aparece no monitoramento, mas não conta como problema nem acende aviso no início.
+  const gravidade = { erro: 2, atencao: 1, info: 0, ok: 0 };
   const pior = itens.reduce((m, i) => Math.max(m, gravidade[i.nivel]), 0);
   return {
     verificadoEm: new Date(agora).toISOString(),
     limiteDias: limite,
     situacao: ['ok', 'atencao', 'erro'][pior],
-    problemas: itens.filter((i) => i.nivel !== 'ok').length,
+    problemas: itens.filter((i) => i.nivel === 'erro' || i.nivel === 'atencao').length,
+    observacoes: itens.filter((i) => i.nivel === 'info').length,
     itens,
   };
 }

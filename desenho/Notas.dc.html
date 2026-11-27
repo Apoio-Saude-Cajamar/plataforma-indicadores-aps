@@ -340,6 +340,7 @@ class Component extends DCLogic {
         tMelhorou: '#1F6FB2', tPiorou: '#D9822B', tMelhorouTexto: '#1F5F99', tPiorouTexto: '#A35A12', nomePiora: 'laranja', tSobe: '#1D6B45', tDesce: '#A8322A', tSemMudanca: '#8A979F',
         marca: { item: ['#0E5E8C', '#FFFFFF', '#0B3F5E'], ref: ['#0B3F5E', '#FFFFFF', '#0B3F5E'], filho: ['#FFFFFF', '#0E5E8C', '#FFFFFF'] },
         tinta: { regular: '#F6D5D1', suficiente: '#F8EBC6', bom: '#DCEBC8', otimo: '#BFE0CC', neutro: '#E3E8E6' }, trilha: 8,
+        faixa: { regular: '#D64550', suficiente: '#DDA01A', bom: '#3A9AD9', otimo: '#1C8C6A', neutro: '#B9C4C9' },
         subtitulo: 'Cajamar', selo: true
       },
       personalizado: {
@@ -352,6 +353,7 @@ class Component extends DCLogic {
         tMelhorou: '#0A6F9E', tPiorou: '#DA0E2B', tMelhorouTexto: '#0A6F9E', tPiorouTexto: '#B0001E', nomePiora: 'vermelho', tSobe: '#0A6F9E', tDesce: '#B0001E', tSemMudanca: '#7C8896',
         marca: { item: [cj, '#FFFFFF', cj], ref: ['#00A7E7', '#FFFFFF', cj], filho: ['#FFFFFF', cj, '#FFFFFF'] },
         tinta: { regular: '#F6C9CE', suficiente: '#F7E4B2', bom: '#C9DCE8', otimo: '#94D2F0', neutro: '#DDE3EA' }, trilha: 8,
+        faixa: { regular: '#D64550', suficiente: '#DDA01A', bom: '#3A9AD9', otimo: '#1C8C6A', neutro: '#A9B6C6' },
         subtitulo: 'Prefeitura de Cajamar', selo: false
       },
       escuro: {
@@ -364,11 +366,12 @@ class Component extends DCLogic {
         tMelhorou: '#5AA9E0', tPiorou: '#F0904F', tMelhorouTexto: '#7CC0EE', tPiorouTexto: '#F2A673', nomePiora: 'laranja', tSobe: '#7AD39E', tDesce: '#F29A72', tSemMudanca: '#6B7A88',
         marca: { item: ['#7CC0EE', '#16202A', '#7CC0EE'], ref: ['#E6EDF3', '#16202A', '#E6EDF3'], filho: ['#16202A', '#7CC0EE', '#16202A'] },
         tinta: { regular: '#5E2F35', suficiente: '#5C4B22', bom: '#2F4D3B', otimo: '#2B6B50', neutro: '#2E3B48' }, trilha: 8,
+        faixa: { regular: '#D9535F', suficiente: '#BC8714', bom: '#3F92D2', otimo: '#2A9A70', neutro: '#4B5D6E' },
         subtitulo: 'Cajamar', selo: true
       }
     };
     const T = TEMAS[tema] || TEMAS.claro;
-    const tinta = T.tinta;
+    const tinta = T.tinta, faixa = T.faixa;
     const nomeF = { regular: 'Regular', suficiente: 'Suficiente', bom: 'Bom', otimo: 'Ótimo' };
     const peso = { regular: 0, suficiente: 1, bom: 2, otimo: 3, neutro: 1.5 };
     const num = (v, c) => v.toLocaleString('pt-BR', { minimumFractionDigits: c, maximumFractionDigits: c });
@@ -632,9 +635,9 @@ class Component extends DCLogic {
       return [+lo.toFixed(2), +hi.toFixed(2), passo < 1 ? 1 : 0];
     };
     const segmentos = (n, lo, hi) => {
-      if (!n || !n.f) return [{ largura: '100%', cor: tinta.neutro }];
+      if (!n || !n.f) return [{ largura: '100%', cor: faixa.neutro }];
       return n.f.map((s) => ({ a: Math.max(lo, s[0]), b: Math.min(hi, s[1]), k: s[2] })).filter((s) => s.b > s.a)
-        .map((s) => ({ largura: ((s.b - s.a) / (hi - lo) * 100).toFixed(2) + '%', cor: tinta[s.k] }));
+        .map((s) => ({ largura: ((s.b - s.a) / (hi - lo) * 100).toFixed(2) + '%', cor: faixa[s.k] }));
     };
     const eixoDe = (n, lo, hi, casas) => {
       const un = n.un === '%' ? '%' : '';
@@ -1037,7 +1040,7 @@ class Component extends DCLogic {
     const resumoLocais = !dLocais.length ? (dVisao === 'unidades' ? 'Escolha unidades' : 'Escolha equipes')
       : dLocais.length === 1 ? dLocais[0].nome : dLocais.length + (dVisao === 'unidades' ? ' unidades' : ' equipes');
 
-    const { marca, tinta: _t, trilha, subtitulo, selo, ...tokens } = T;
+    const { marca, tinta: _t, faixa: _f, trilha, subtitulo, selo, ...tokens } = T;
     const RELS = [['geral', 'Como estamos'], ['apoio', 'Quem precisa de apoio'], ['pontos', 'Onde perdemos pontos'], ['meses', 'Mês a mês']];
     const ocultarVarios = (cods, ocultar) => { const o = { ...this.state.ocultas }; cods.forEach((c) => { if (ocultar) o[c] = true; else delete o[c]; }); this.setState({ ocultas: o }); };
     const K = colunas.length, cw = K > 6 ? 54 : 60, gap = temMesesCols && K > 6 ? 10 : 16;
@@ -1055,7 +1058,7 @@ class Component extends DCLogic {
       cabMeses: colunas.map((c) => ({ txt: c.txt, longo: c.longo })),
       temLegendaProj: quadAberto, legendaProj: 'fechamento previsto no ritmo de ' + rotMes(ATUAL),
       legendaPonto, legendaRef, legendaTraco, temLegendaRef: !!legendaRef, temLegendaTraco: !!legendaTraco, temLegendaCauda: (temComp && rel !== 'pontos') || rel === 'meses',
-      legendaFaixas: [{ rot: 'Regular', cor: tinta.regular }, { rot: 'Suficiente', cor: tinta.suficiente }, { rot: 'Bom', cor: tinta.bom }, { rot: 'Ótimo', cor: tinta.otimo }],
+      legendaFaixas: [{ rot: 'Regular', cor: faixa.regular }, { rot: 'Suficiente', cor: faixa.suficiente }, { rot: 'Bom', cor: faixa.bom }, { rot: 'Ótimo', cor: faixa.otimo }],
       temas: [['claro', 'Claro'], ['personalizado', 'Personalizado'], ['escuro', 'Escuro']].map(([id, rotulo]) => ({ rotulo, pressionado: tema === id ? 'true' : 'false',
         fundo: tema === id ? T.tTopoTexto : 'transparent', cor: tema === id ? T.tTopoFundo : T.tTopoTexto, peso: tema === id ? 600 : 400, escolher: () => this.setState({ tema: id }) })),
       relatorios: RELS.map(([id, titulo]) => ({ titulo, pressionado: rel === id ? 'true' : 'false', borda: rel === id ? T.tAbaLinha : 'transparent', cor: rel === id ? T.tAba : T.tAbaInativa,

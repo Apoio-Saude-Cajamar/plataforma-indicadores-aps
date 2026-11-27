@@ -258,7 +258,7 @@ test('monitoramento: só administrador; avisa quando não há coleta e quando a 
     headers: { 'content-type': 'application/json', authorization: 'Bearer ' + CHAVES.TOKEN_COLETA },
     body: JSON.stringify({ competencia: '2026-10', coletadoEm: new Date().toISOString(), unidades: [{ nome: 'U1', alertas: [], equipes: [{ nome: 'E1', tipo: 'ESF', alertas: ['Sem médico lotado.'] }] }] }) }), env);
   d = await (await nav.pedir('GET', '/api/v1/monitoramento')).json();
-  const c = d.itens.find(i => i.fonte === 'Composição das equipes' && i.nivel === 'atencao');
+  const c = d.itens.find(i => i.fonte === 'Composição das equipes' && i.nivel === 'info');
   assert.ok(c && c.lista[0].includes('Sem médico lotado.'));
   assert.equal((await nav.pedir('GET', '/monitoramento')).status, 200);
 });
