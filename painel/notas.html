@@ -1225,7 +1225,15 @@ class Component extends DCLogic {
     const MESES_ROT = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
     const retro = cs.filter((c) => { const [a, m] = c.competencia.split('-').map(Number); const fim = Date.UTC(a, m, 1); return c.ultimaColetaEm && Date.parse(c.ultimaColetaEm) - fim > 12 * 86400000; }).map((c) => MESES_ROT[Number(c.competencia.slice(5)) - 1] + '/' + c.competencia.slice(2, 4));
     if (retro.length) { const av = document.createElement('div'); av.id = 'aviso-retro'; av.style.cssText = 'flex-basis:100%;font-weight:400;font-size:13px;opacity:.95'; av.textContent = 'Coleta retroativa em ' + retro.join(', ') + ': C2 a C7, CVAT e CR2 a CR4 desses meses são estimativa e tendem a ficar abaixo do Siaps (o PEC só informa a última data de cada ação). Coletar perto do dia 10 do mês seguinte evita isso.'; filtroH.appendChild(av); }
-    document.getElementById('tela').parentNode.insertBefore(filtroH, document.getElementById('tela'));
+    // O filtro fica logo abaixo do cabeçalho das notas (dentro da tela). A tela é redesenhada a cada mudança, então ele é recolocado depois de cada desenho.
+    const telaEl = document.getElementById('tela');
+    const porFiltroH = () => {
+      const cab = telaEl.querySelector('header');
+      if (!cab) { if (filtroH.parentNode !== telaEl.parentNode) telaEl.parentNode.insertBefore(filtroH, telaEl); return; }
+      if (cab.nextSibling !== filtroH) cab.after(filtroH);
+    };
+    porFiltroH();
+    new MutationObserver(porFiltroH).observe(telaEl, { childList: true });
     const dadosH = HOMOLOGACAO.filtrar(porComp, modoH);
     if (!Object.values(dadosH).some((ls) => ls.length)) { aviso('Nenhuma equipe nesse grupo. Confira a marcação em Composição → Homologação. <a href="/notas">Ver todas as equipes</a>.'); return; }
     REAL = montarREAL(dadosH, ult ? new Date(ult).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '');
