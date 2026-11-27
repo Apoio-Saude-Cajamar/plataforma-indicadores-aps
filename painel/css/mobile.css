@@ -867,11 +867,11 @@
 @media screen and (min-width: 900px) {
   .m-filtros > [role='search'] {
     display: grid !important;
-    grid-template-columns: max-content max-content 1fr;
+    grid-template-columns: max-content max-content max-content 1fr;
     grid-template-areas:
-      'tper trec tcomp'
-      'int vis comp'
-      'tempo loc acoes';
+      'tper trec teq tcomp'
+      'int vis hom comp'
+      'tempo loc acoes acoes';
     align-items: start !important;
     gap: 8px 48px !important;
     padding-top: 16px !important;
@@ -896,6 +896,13 @@
   }
   .fx-locais {
     grid-area: loc;
+  }
+  .fx-tit-eq {
+    grid-area: teq;
+  }
+  .fx-homolog {
+    grid-area: hom;
+    justify-self: start;
   }
   .fx-tit-comp {
     grid-area: tcomp;
@@ -924,6 +931,7 @@
     align-self: flex-start;
   }
   .fx-tit-rec,
+  .fx-tit-eq,
   .fx-tit-comp {
     margin-top: 6px;
   }
@@ -939,6 +947,14 @@
   }
   .fx-acoes > button:last-child {
     flex: 1;
+  }
+  .fx-homolog {
+    align-self: stretch !important;
+  }
+  .fx-homolog > button {
+    flex: 1 1 auto;
+    padding: 0 8px !important;
+    white-space: nowrap;
   }
 }
 
@@ -1112,5 +1128,16 @@ tr.dir td {
   .barra-inferior,
   .mais-fundo {
     display: none !important;
+  }
+}
+
+/* Barra do Painel fixa no alto ao rolar (computador). A altura dela vai para --topo-fixo (medida em /js/publico/mobile.js),
+   e as faixas fixas de cada página (filtros) param logo abaixo. */
+@media screen and (min-width: 900px) {
+  body > header,
+  #barra-painel {
+    position: sticky;
+    top: 0;
+    z-index: 40;
   }
 }

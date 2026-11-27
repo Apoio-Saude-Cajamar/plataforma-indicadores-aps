@@ -112,7 +112,7 @@ marc = troca(marc, 'padding: 3px 10px">{{coletaTxt}}</span>', 'padding: 3px 10px
 # Filtros que se recolhem (computador e celular): abertos enquanto nada foi escolhido; "Buscar" aplica e recolhe numa linha com o
 # resumo do que está valendo (presa no topo); tocar na linha reabre. A troca entre os dois estados é animada (TRANSICAO).
 marc = troca(marc, '''  <div style="position: sticky; top: 0; z-index: 3; background: {{tPagina}}; border-bottom: 1px solid {{tBorda}}">
-    <div role="search"''', '''  <div class="m-filtros" style="position: {{posFiltros}}; top: 0; z-index: 3; background: {{tPagina}}; border-bottom: 1px solid {{tBorda}}">
+    <div role="search"''', '''  <div class="m-filtros" style="position: {{posFiltros}}; top: {{topoFiltros}}; z-index: 3; background: {{tPagina}}; border-bottom: 1px solid {{tBorda}}">
     <template data-sc="if" value="{{filtrosAbertos}}">
     <div role="search"''')
 marc = troca(marc, '''">Atualizar</button>
@@ -142,6 +142,11 @@ marc = troca(marc, '<div role="group" aria-label="Visualização" style="display
 marc = re.sub(r'<div style="position: relative">(\s*<button type="button" onClick="\{\{abrirTempo\}\}")', r'<div class="fx-tempo" style="position: relative">\1', marc, count=1)
 marc = re.sub(r'<div style="position: relative">(\s*<button type="button" onClick="\{\{abrirLocais\}\}")', r'<div class="fx-locais" style="position: relative">\1', marc, count=1)
 marc = troca(marc, '<label title="{{tituloComparar}}" style="', TIT.format(c='fx-tit-comp', t='Comparação') + '<label class="fx-comparar" title="{{tituloComparar}}" style="')
+# Equipes homologadas como mais um filtro (vale ao clicar em Buscar, como os demais).
+marc = troca(marc, TIT.format(c='fx-tit-comp', t='Comparação'), TIT.format(c='fx-tit-eq', t='Equipes') + '''<div role="group" aria-label="Equipes" class="fx-homolog" style="display: flex; border: 1px solid {{tControle}}; border-radius: 8px; overflow: hidden; background: {{tCartao}}">
+        <template data-sc="for" list="{{opcoesHomolog}}" as="oh"><button type="button" aria-pressed="{{oh.pressionado}}" onClick="{{oh.escolher}}" style="font: inherit; min-height: 42px; padding: 0 14px; border: 0; cursor: pointer; background: {{oh.fundo}}; color: {{oh.cor}}; font-weight: {{oh.peso}}">{{oh.rotulo}}</button></template>
+      </div>
+      ''' + TIT.format(c='fx-tit-comp', t='Comparação'))
 # Celular (até 599 px): a tabela das notas vira uma lista de cartões, sem rolar para o lado (classes m-*, regras em /css/mobile.css).
 # Nome e resultado na mesma linha, a régua embaixo na largura toda e, quando há colunas de meses, os quadradinhos numa faixa
 # com o mês escrito em cada um. Tablet e computador continuam com a tabela.
@@ -200,16 +205,28 @@ js = troca(js, """      if (!podeAtualizar) return;
       FILTROS_JA(true);
       TRANSICAO(() => set({ aplicado: Component.pega(this.state), painelF: '', aberta: '', abertas: {}, info: '', filtrosAbertos: false, jaRecolheu: true,
         atualizadoEm: String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0') }));""")
+js = troca(js, "      if (!podeAtualizar) return;\n", """      if (!podeAtualizar) return;
+      if ((dr.homologRasc || MODO_H()) !== MODO_H()) {
+        const u = new URL(LINK_DADOS(this.state), location.origin);
+        u.pathname = '/notas';
+        if (dr.homologRasc === 'todas') u.searchParams.delete('homolog'); else u.searchParams.set('homolog', dr.homologRasc);
+        FILTROS_JA(true);
+        location.href = u.toString();
+        return;
+      }
+""")
 js = troca(js, "      atualizar, atualizarInativo:", """      atualizar,
-      filtrosAbertos: !!dr.filtrosAbertos, filtrosFechados: !dr.filtrosAbertos, posFiltros: dr.filtrosAbertos ? 'relative' : 'sticky',
-      chipsFiltros: [tp.perTxt, localNome, temComp ? 'comparando com ' + tp.compTxt : ''].filter(Boolean),
+      filtrosAbertos: !!dr.filtrosAbertos, filtrosFechados: !dr.filtrosAbertos, posFiltros: dr.filtrosAbertos ? 'relative' : 'sticky', topoFiltros: dr.filtrosAbertos ? '0px' : 'var(--topo-fixo, 0px)',
+      chipsFiltros: [tp.perTxt, localNome, temComp ? 'comparando com ' + tp.compTxt : '', MODO_H() !== 'todas' ? HOMOLOGACAO.ROTULO[MODO_H()] : ''].filter(Boolean),
+      opcoesHomolog: ['todas', 'homologadas', 'nao'].map((id) => ({ ...seg((dr.homologRasc || MODO_H()) === id), rotulo: id === 'todas' ? 'Todas' : HOMOLOGACAO.ROTULO[id], escolher: () => set({ homologRasc: id }) })),
+      avisoRetro: AVISO_RETRO(), temAvisoRetro: !!AVISO_RETRO(),
       resumoFiltrosTxt: [tp.perTxt, localNome, temComp ? 'comparando com ' + tp.compTxt : ''].filter(Boolean).join(', '),
       temCancelar: !!dr.filtrosAbertos && !!dr.jaRecolheu,
       abrirFiltros: () => { if (window.scrollY > 120) { window.scrollTo({ top: 0, behavior: 'smooth' }); set({ filtrosAbertos: true }); } else TRANSICAO(() => set({ filtrosAbertos: true })); },
-      cancelarFiltros: () => TRANSICAO(() => set({ ...Component.pega(aplicado), painelF: '', filtrosAbertos: false })),
+      cancelarFiltros: () => TRANSICAO(() => set({ ...Component.pega(aplicado), painelF: '', filtrosAbertos: false, homologRasc: '' })),
       atualizarInativo:""")
 marc = troca(marc, '<main style="max-width: 1280px; margin: 0 auto; padding: 24px 24px 48px;', '<main class="m-main" style="max-width: 1280px; margin: 0 auto; padding: 24px 24px 48px;')
-marc = troca(marc, '<p style="margin: 0; color: {{tSuave}}">{{descricao}}</p>', '<p class="{{descCls}}" style="margin: 0; color: {{tSuave}}">{{descricao}}</p>')
+marc = troca(marc, '<p style="margin: 0; color: {{tSuave}}">{{descricao}}</p>', '<p class="{{descCls}}" style="margin: 0; color: {{tSuave}}">{{descricao}}</p>\n      <template data-sc="if" value="{{temAvisoRetro}}"><p style="margin: 2px 0 0; font-size: 13px; color: {{tSuave}}">ⓘ {{avisoRetro}}</p></template>')
 marc = troca(marc, '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px">', '<div class="m-faixa" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px">')
 marc = troca(marc, '<span style="font-size: 14px; color: {{tSuave}}">{{comoLer}}</span>', '<span class="m-recolhe" style="font-size: 14px; color: {{tSuave}}">{{comoLer}}</span>')
 marc = troca(marc, '{{rotuloAbrirTodas}}</button>', '<span class="so-largo">{{rotuloAbrirTodas}}</span><span class="so-movel">{{rotuloAbrirTodasCurto}}</span></button>')
@@ -287,6 +304,10 @@ const FILTROS_JA = (marcar) => {{
     return !!marcar;
   }}
 }};
+// Grupo de equipes (?homolog) e meses de coleta retroativa, definidos ao carregar a página.
+let MODO_H_V = 'todas', RETRO_V = [];
+const MODO_H = () => MODO_H_V;
+const AVISO_RETRO = () => !RETRO_V.length ? '' : 'Coleta retroativa em ' + (RETRO_V.length > 3 ? RETRO_V.length + ' meses (' + RETRO_V[RETRO_V.length - 1] + ' a ' + RETRO_V[0] + ')' : RETRO_V.join(', ')) + ': C2 a C7, CVAT e CR2 a CR4 desses meses são estimativa e tendem a ficar abaixo do Siaps. Coletar perto do dia 10 do mês seguinte evita isso.';
 const CTX_INICIAL = () => {{
   const q = new URLSearchParams(location.search), o = {{}};
   const num = (c) => (/^\\d{{4}}-\\d{{2}}$/.test(c || '') ? +c.slice(0, 4) * 12 + +c.slice(5, 7) - 1 : null);
@@ -333,26 +354,11 @@ const MENU_SITE = () => [['/composicao', 'Composição de Usuários'], ['/coleta
     // Equipes homologadas (as que o Ministério avalia): o filtro vem de ?homolog=homologadas|nao e recorta os dados antes de montar o relatório.
     await HOMOLOGACAO.carregar();
     const modoH = ['homologadas', 'nao'].indexOf(new URLSearchParams(location.search).get('homolog')) >= 0 ? new URLSearchParams(location.search).get('homolog') : 'todas';
-    const filtroH = document.createElement('div');
-    filtroH.id = 'filtro-homolog';
-    filtroH.setAttribute('role', 'group');
-    filtroH.setAttribute('aria-label', 'Equipes');
-    filtroH.style.cssText = 'background:#172B52;box-shadow:0 0 0 100vmax #172B52;clip-path:inset(0 -100vmax);max-width:1280px;margin:0 auto;box-sizing:content-box;color:#fff;padding:8px 24px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font:600 14px system-ui,sans-serif';
-    filtroH.innerHTML = '<span>Equipes:</span>' + ['todas', 'homologadas', 'nao'].map((m) => '<button type="button" data-m="' + m + '" aria-pressed="' + (m === modoH) + '" style="font:inherit;padding:6px 12px;border-radius:99px;border:1.5px solid currentColor;background:' + (m === modoH ? 'rgba(127,127,127,.25)' : 'transparent') + ';color:inherit;cursor:pointer">' + HOMOLOGACAO.ROTULO[m] + '</button>').join('') + (modoH === 'todas' ? '' : '<span style="font-weight:400">Filtrando pela marcação da página Composição.</span>');
-    filtroH.addEventListener('click', (ev) => {{ const b = ev.target.closest('button[data-m]'); if (!b) return; const u = new URL(location.href); if (b.dataset.m === 'todas') u.searchParams.delete('homolog'); else u.searchParams.set('homolog', b.dataset.m); location.href = u.toString(); }});
+    MODO_H_V = modoH;
     // Coleta retroativa: o PEC informa só a última data de cada ação e as listas são as de hoje; por isso, em mês coletado muito depois de acabar, os indicadores de situação (C2 a C7, CVAT, CR2 a CR4) são estimativa e tendem a sair abaixo do Siaps.
     const MESES_ROT = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
     const retro = cs.filter((c) => {{ const [a, m] = c.competencia.split('-').map(Number); const fim = Date.UTC(a, m, 1); return c.ultimaColetaEm && Date.parse(c.ultimaColetaEm) - fim > 12 * 86400000; }}).map((c) => MESES_ROT[Number(c.competencia.slice(5)) - 1] + '/' + c.competencia.slice(2, 4));
-    if (retro.length) {{ const av = document.createElement('div'); av.id = 'aviso-retro'; av.style.cssText = 'flex-basis:100%;font-weight:400;font-size:13px;opacity:.95'; av.textContent = 'Coleta retroativa em ' + retro.join(', ') + ': C2 a C7, CVAT e CR2 a CR4 desses meses são estimativa e tendem a ficar abaixo do Siaps (o PEC só informa a última data de cada ação). Coletar perto do dia 10 do mês seguinte evita isso.'; filtroH.appendChild(av); }}
-    // O filtro fica logo abaixo do cabeçalho das notas (dentro da tela). A tela é redesenhada a cada mudança, então ele é recolocado depois de cada desenho.
-    const telaEl = document.getElementById('tela');
-    const porFiltroH = () => {{
-      const cab = telaEl.querySelector('header');
-      if (!cab) {{ if (filtroH.parentNode !== telaEl.parentNode) telaEl.parentNode.insertBefore(filtroH, telaEl); return; }}
-      if (cab.nextSibling !== filtroH) cab.after(filtroH);
-    }};
-    porFiltroH();
-    new MutationObserver(porFiltroH).observe(telaEl, {{ childList: true }});
+    RETRO_V = retro;
     const dadosH = HOMOLOGACAO.filtrar(porComp, modoH);
     if (!Object.values(dadosH).some((ls) => ls.length)) {{ aviso('Nenhuma equipe nesse grupo. Confira a marcação em Composição → Homologação. <a href="/notas">Ver todas as equipes</a>.'); return; }}
     REAL = montarREAL(dadosH, ult ? new Date(ult).toLocaleString('pt-BR', {{ dateStyle: 'short', timeStyle: 'short' }}) : '');

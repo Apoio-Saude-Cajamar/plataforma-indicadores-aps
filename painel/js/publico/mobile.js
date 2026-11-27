@@ -34,6 +34,20 @@
     });
   }
 
+  // Altura da barra fixa do Painel (só no computador), para as faixas fixas de cada página pararem logo abaixo dela.
+  function medirTopo() {
+    var b = document.querySelector('body > header, #barra-painel');
+    var h = b && window.matchMedia && window.matchMedia('(min-width: 900px)').matches ? b.offsetHeight : 0;
+    document.documentElement.style.setProperty('--topo-fixo', h + 'px');
+  }
+  function vigiarTopo() {
+    medirTopo();
+    window.addEventListener('resize', medirTopo);
+    var tela = document.getElementById('tela');
+    if (tela && window.MutationObserver) new MutationObserver(medirTopo).observe(tela, { childList: true });
+  }
+  if (document.readyState !== 'loading') vigiarTopo();
+  else document.addEventListener('DOMContentLoaded', vigiarTopo);
   function iniciar() {
     preparar();
     // Na hora, antes de pintar: o dashboard refaz o cabeçalho a cada mudança, e o menu largo não pode aparecer nem por um
