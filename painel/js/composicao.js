@@ -8,6 +8,15 @@
       .toLowerCase();
   const TIPOS = { ESF: 'eSF', EAP: 'eAP', ESB: 'eSB', EMULTI: 'eMulti', ECR: 'eCR', EACS: 'eACS', EMAD: 'EMAD' };
   const plural = (n, um, varios) => n + ' ' + (n === 1 ? um : varios);
+  // "5 equipes: 2 eSF · 2 eSB · 1 eMulti" — quantas equipes de cada tipo, na ordem habitual.
+  const ORDEM_TIPOS = ['ESF', 'EAP', 'ESB', 'EMULTI', 'ECR', 'EACS', 'EMAD'];
+  const porTipo = (equipes) => {
+    const n = {};
+    equipes.forEach((e) => (n[e.tipo || '?'] = (n[e.tipo || '?'] || 0) + 1));
+    const tipos = Object.keys(n).sort((a, b) => (ORDEM_TIPOS.indexOf(a) + 1 || 99) - (ORDEM_TIPOS.indexOf(b) + 1 || 99));
+    const partes = tipos.map((k) => n[k] + ' ' + (TIPOS[k] || k));
+    return plural(equipes.length, 'equipe', 'equipes') + (partes.length ? ': ' + partes.join(' · ') : '');
+  };
   const horas = (h) => (typeof h === 'number' ? String(Math.round(h * 10) / 10).replace('.', ',') + ' h de agenda' : '');
 
   // Exemplo usado enquanto a extensão ainda não enviou a composição.
@@ -151,7 +160,7 @@
           alertas: [],
           filhos: categorias(u.foraDaUnidade),
         });
-      return { nivel: 1, rotulo: u.nome, sub: plural((u.equipes || []).length, 'equipe', 'equipes'), alertas: u.alertas || [], filhos };
+      return { nivel: 1, rotulo: u.nome, sub: porTipo(u.equipes || []), alertas: u.alertas || [], filhos };
     });
     const raiz = {
       nivel: 0,
@@ -159,11 +168,7 @@
       sub:
         plural(unidades.length, 'unidade', 'unidades') +
         ' · ' +
-        plural(
-          unidades.reduce((s, u) => s + u.filhos.filter((f) => f.chip !== '—' && f.chip !== '?').length, 0),
-          'equipe',
-          'equipes',
-        ),
+        porTipo((c.unidades || []).flatMap((u) => u.equipes || [])),
       alertas: c.alertas || [],
       filhos: unidades,
       aberto: true,
