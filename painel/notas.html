@@ -1218,7 +1218,7 @@ class Component extends DCLogic {
     filtroH.id = 'filtro-homolog';
     filtroH.setAttribute('role', 'group');
     filtroH.setAttribute('aria-label', 'Equipes');
-    filtroH.style.cssText = 'background:#172B52;color:#fff;padding:8px max(24px, calc((100% - 1280px) / 2 + 24px));display:flex;gap:8px;align-items:center;flex-wrap:wrap;font:600 14px system-ui,sans-serif';
+    filtroH.style.cssText = 'background:#172B52;box-shadow:0 0 0 100vmax #172B52;clip-path:inset(0 -100vmax);max-width:1280px;margin:0 auto;box-sizing:border-box;color:#fff;padding:8px 24px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font:600 14px system-ui,sans-serif';
     filtroH.innerHTML = '<span>Equipes:</span>' + ['todas', 'homologadas', 'nao'].map((m) => '<button type="button" data-m="' + m + '" aria-pressed="' + (m === modoH) + '" style="font:inherit;padding:6px 12px;border-radius:99px;border:1.5px solid currentColor;background:' + (m === modoH ? 'rgba(127,127,127,.25)' : 'transparent') + ';color:inherit;cursor:pointer">' + HOMOLOGACAO.ROTULO[m] + '</button>').join('') + (modoH === 'todas' ? '' : '<span style="font-weight:400">Filtrando pela marcação da página Composição.</span>');
     filtroH.addEventListener('click', (ev) => { const b = ev.target.closest('button[data-m]'); if (!b) return; const u = new URL(location.href); if (b.dataset.m === 'todas') u.searchParams.delete('homolog'); else u.searchParams.set('homolog', b.dataset.m); location.href = u.toString(); });
     // Coleta retroativa: o PEC informa só a última data de cada ação e as listas são as de hoje; por isso, em mês coletado muito depois de acabar, os indicadores de situação (C2 a C7, CVAT, CR2 a CR4) são estimativa e tendem a sair abaixo do Siaps.
