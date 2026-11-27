@@ -1008,6 +1008,13 @@
           </select></label
         >
         <label
+          >Tipo de equipe<select id="hm">
+            <option value="todas">Todas as equipes</option>
+            <option value="homologadas">Homologadas</option>
+            <option value="nao">Não homologadas</option>
+          </select></label
+        >
+        <label
           >Grupo<select id="gr">
             <option value="">Todos</option>
           </select></label
@@ -1089,9 +1096,11 @@
     <script src="/js/catalogo-indicadores.js"></script>
     <script src="/js/federal-calculo.js"></script>
     <script src="/js/repasse.js"></script>
+    <script src="/js/homologacao.js"></script>
     <script>
       const $ = (id) => document.getElementById(id);
-      let dados = {}; // competencia -> linhas
+      let dados = {}; // competencia -> linhas (já recortadas pelo filtro de equipes homologadas)
+      let dadosBrutos = {}; // competencia -> todas as linhas
       const abertos = new Set();
 
       const passa = (cod, v) => {
@@ -1664,7 +1673,14 @@
         FILTRO_EQ = $('eq').value;
         const varios = comps.length > 1;
         painel(comps, un);
-        repassePainel(comps, un);
+        // A prévia do repasse vale só para as equipes homologadas, qualquer que seja o filtro da tela.
+        const dadosTela = dados;
+        dados = HOMOLOGACAO.filtrar(dadosBrutos, 'homologadas');
+        try {
+          repassePainel(comps, un);
+        } finally {
+          dados = dadosTela;
+        }
         let html = '';
         let algum = false;
         for (const [nome, cods] of GRUPOS) {
@@ -1798,12 +1814,16 @@
           await Promise.all(
             cs.map(async (c) => {
               const d = await fetch('/api/v1/dados?partes=indicadores&competencia=' + c, { credentials: 'same-origin' });
-              if (d.ok) dados[c] = (await d.json()).indicadores || [];
+              if (d.ok) dadosBrutos[c] = (await d.json()).indicadores || [];
             }),
           );
+          await HOMOLOGACAO.carregar();
+          const hq = new URLSearchParams(location.search).get('homolog');
+          if (hq === 'homologadas' || hq === 'nao') $('hm').value = hq;
+          dados = HOMOLOGACAO.filtrar(dadosBrutos, $('hm').value);
           const uns = [
             ...new Set(
-              Object.values(dados)
+              Object.values(dadosBrutos)
                 .flat()
                 .map((l) => l.unidade)
                 .filter((u) => u && u !== 'Município'),
@@ -1877,8 +1897,12 @@
       }
       $('un').addEventListener('change', opcoesEquipe);
       // Com os filtros abertos, a escolha só vale ao tocar em "Buscar".
-      ['de', 'ate', 'un', 'eq', 'gr', 'co'].forEach((i) =>
+      ['de', 'ate', 'un', 'eq', 'gr', 'co', 'hm'].forEach((i) =>
         $(i).addEventListener('change', () => {
+          if (i === 'hm') {
+            dados = HOMOLOGACAO.filtrar(dadosBrutos, $('hm').value);
+            opcoesEquipe();
+          }
           if ($('de').value > $('ate').value) $('ate').value = $('de').value;
           if (!filtrosAbertos) desenhar();
         }),
@@ -1892,7 +1916,8 @@
       });
       $('cancelarFiltros').addEventListener('click', () => {
         if (aplicado) {
-          ['de', 'ate', 'un'].forEach((i) => ($(i).value = aplicado[i]));
+          ['de', 'ate', 'un', 'hm'].forEach((i) => ($(i).value = aplicado[i]));
+          dados = HOMOLOGACAO.filtrar(dadosBrutos, $('hm').value);
           opcoesEquipe();
           ['eq', 'gr', 'co'].forEach((i) => ($(i).value = aplicado[i]));
         }
@@ -1905,6 +1930,7 @@
         if ($('ate').value) p.set('ate', $('ate').value);
         if ($('eq').value) p.set('eq', $('eq').value);
         else if ($('un').value) p.set('un', $('un').value);
+        if ($('hm').value !== 'todas') p.set('homolog', $('hm').value);
         const q = p.toString();
         return '/notas' + (q ? '?' + q : '');
       }
@@ -1916,7 +1942,7 @@
       // Filtros: abertos enquanto nada foi escolhido nesta aba do navegador (e sem período/recorte vindo do link); "Buscar"
       // aplica e recolhe na linha com o resumo do que está valendo; tocar em "Filtros" reabre, com "Cancelar" para voltar
       // sem mudar. Mesmo padrão do Dashboard, com a mesma troca animada.
-      const CAMPOS_FILTRO = ['de', 'ate', 'un', 'eq', 'gr', 'co'];
+      const CAMPOS_FILTRO = ['de', 'ate', 'un', 'eq', 'gr', 'co', 'hm'];
       let filtrosAbertos = false,
         abaAtual = 'resumo',
         aplicado = null;
@@ -1964,6 +1990,7 @@
             [$('un').value ? txt('un') : 'Todas as unidades', !!$('un').value],
             [$('eq').value ? txt('eq') : 'Todas as equipes', !!$('eq').value],
           ];
+        if ($('hm').value !== 'todas') itens.push([txt('hm'), true]);
         if ($('gr').value) itens.push([txt('gr'), true]);
         if ($('co').value) itens.push(['Conceito: ' + txt('co'), true]);
         r.innerHTML = itens.map(([t, a]) => '<span class="fchip' + (a ? ' ativo' : '') + '">' + esc(t) + '</span>').join('');
@@ -2029,6 +2056,8 @@
         const ult = $('de').options.length ? $('de').options[$('de').options.length - 1].value : '';
         $('de').value = $('ate').value = ult;
         ['un', 'eq', 'gr', 'co'].forEach((i) => ($(i).value = ''));
+        $('hm').value = 'todas';
+        dados = HOMOLOGACAO.filtrar(dadosBrutos, 'todas');
         opcoesEquipe();
         aplicado = valoresFiltro();
         desenhar();

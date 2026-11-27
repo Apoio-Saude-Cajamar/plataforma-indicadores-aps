@@ -497,7 +497,7 @@
     if (ehAdmin !== null) return ehAdmin;
     try {
       const r = await fetch('/api/v1/auth/eu', { credentials: 'same-origin' });
-      ehAdmin = r.ok ? (await r.json()).perfil === 'admin' : false;
+      ehAdmin = r.ok ? ((await r.json()).usuario || {}).perfil === 'admin' : false;
     } catch {
       ehAdmin = false;
     }

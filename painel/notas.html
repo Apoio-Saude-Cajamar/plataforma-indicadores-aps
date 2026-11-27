@@ -352,6 +352,7 @@ button:focus-visible,select:focus-visible,a:focus-visible,input:focus-visible{ou
 </template>
 <script src="/js/dc-mini.js"></script>
 <script src="/js/catalogo-indicadores.js"></script>
+<script src="/js/homologacao.js"></script>
 <script src="/js/notas-real.js"></script>
 <script src="/js/rodape.js"></script>
 <script>
@@ -407,6 +408,8 @@ const LINK_DADOS = (st) => {
   ms = ms.filter((a) => REAL.temMes(a));
   const p = new URLSearchParams();
   if (ms.length) { p.set('de', mes(Math.min(...ms))); p.set('ate', mes(Math.max(...ms))); }
+  const hm = new URLSearchParams(location.search).get('homolog');
+  if (hm === 'homologadas' || hm === 'nao') p.set('homolog', hm);
   if (st.visao === 'unidades' && (st.unidades || []).length === 1) p.set('un', st.unidades[0]);
   if (st.visao === 'equipes' && (st.equipes || []).length === 1) { p.set('un', st.equipes[0].split('|')[0]); p.set('eq', st.equipes[0]); }
   const s = p.toString();
@@ -1205,7 +1208,20 @@ class Component extends DCLogic {
     if (!Object.keys(porComp).length) { aviso('Ainda não há indicadores coletados. Rode a coleta pela extensão no computador que acessa o PEC.'); return; }
     try { const e = await fetch('/api/v1/auth/eu', { credentials: 'same-origin' }); if (e.ok) USUARIO = (await e.json()).usuario || null; } catch (_) {}
     const ult = cs.map((c) => c.ultimaColetaEm).filter(Boolean).sort().pop();
-    REAL = montarREAL(porComp, ult ? new Date(ult).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '');
+    // Equipes homologadas (as que o Ministério avalia): o filtro vem de ?homolog=homologadas|nao e recorta os dados antes de montar o relatório.
+    await HOMOLOGACAO.carregar();
+    const modoH = ['homologadas', 'nao'].indexOf(new URLSearchParams(location.search).get('homolog')) >= 0 ? new URLSearchParams(location.search).get('homolog') : 'todas';
+    const filtroH = document.createElement('div');
+    filtroH.id = 'filtro-homolog';
+    filtroH.setAttribute('role', 'group');
+    filtroH.setAttribute('aria-label', 'Equipes');
+    filtroH.style.cssText = 'background:#172B52;color:#fff;padding:8px 28px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font:600 14px system-ui,sans-serif';
+    filtroH.innerHTML = '<span>Equipes:</span>' + ['todas', 'homologadas', 'nao'].map((m) => '<button type="button" data-m="' + m + '" aria-pressed="' + (m === modoH) + '" style="font:inherit;padding:6px 12px;border-radius:99px;border:1.5px solid currentColor;background:' + (m === modoH ? 'rgba(127,127,127,.25)' : 'transparent') + ';color:inherit;cursor:pointer">' + HOMOLOGACAO.ROTULO[m] + '</button>').join('') + (modoH === 'todas' ? '' : '<span style="font-weight:400">Filtrando pela marcação da página Composição.</span>');
+    filtroH.addEventListener('click', (ev) => { const b = ev.target.closest('button[data-m]'); if (!b) return; const u = new URL(location.href); if (b.dataset.m === 'todas') u.searchParams.delete('homolog'); else u.searchParams.set('homolog', b.dataset.m); location.href = u.toString(); });
+    document.getElementById('tela').parentNode.insertBefore(filtroH, document.getElementById('tela'));
+    const dadosH = HOMOLOGACAO.filtrar(porComp, modoH);
+    if (!Object.values(dadosH).some((ls) => ls.length)) { aviso('Nenhuma equipe nesse grupo. Confira a marcação em Composição → Homologação. <a href="/notas">Ver todas as equipes</a>.'); return; }
+    REAL = montarREAL(dadosH, ult ? new Date(ult).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '');
     let tema = ''; try { tema = localStorage.getItem('painelaps.tema') || ''; } catch (e) {}
     montarDC(document.getElementById('modelo'), Component, document.getElementById('tela'), { tema: tema || 'personalizado' });
     // Se for aberto dentro de um quadro (?incorporado=1), avisa a página de fora a altura do conteúdo, para o quadro não ter rolagem própria.
