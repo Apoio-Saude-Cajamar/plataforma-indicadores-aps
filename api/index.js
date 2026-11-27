@@ -11,6 +11,8 @@
 //   GET  /situacao?competencia=AAAA-MM           leitura   – etapas vigentes e pendentes da competência
 //   GET  /dados?competencia=AAAA-MM[&partes=…]   leitura   – indicadores e totais vigentes (partes: indicadores, atendimentos…)
 //   GET  /competencias                           leitura   – competências com coleta
+//   GET  /equipes/homologacao                    leitura   – equipes marcadas como homologadas (avaliadas pelo Ministério)
+//   PUT  /equipes/homologacao                    admin     – marca uma equipe { ine, homologada: true | false | null }
 //   GET  /backup/manifesto                       backup    – contagens e versão
 //   GET  /backup/tabela/:nome?depois=&limite=    backup    – uma página de uma tabela
 //   POST /restauracao/iniciar                    admin     – apaga tudo (exige confirmação)
@@ -40,6 +42,7 @@ import {
 import { criarColeta, gravarEtapa, concluirColeta, listarColetas, etapasDaColeta, registroDaColeta } from './coletas.js';
 import { situacao, dadosVigentes, competencias } from './consultas.js';
 import { gravarComposicao, lerComposicao } from './composicao.js';
+import { lerHomologacao, gravarHomologacao } from './equipes.js';
 import { populacaoMunicipio } from './populacao.js';
 import { monitoramento } from './monitoramento.js';
 import { pendencias } from './pendencias.js';
@@ -78,6 +81,18 @@ const ROTAS = [
 
   ['PUT', /^\/composicao$/, 'coleta', async (req, env) => json(await gravarComposicao(env, await lerJson(req)))],
   ['GET', /^\/composicao$/, 'leitura', async (req, env, m, url) => json(await lerComposicao(env, url.searchParams.get('competencia')))],
+  // Equipes homologadas (avaliadas pelo Ministério): todos leem; só administrador marca.
+  ['GET', /^\/equipes\/homologacao$/, 'leitura', async (req, env) => json(await lerHomologacao(env))],
+  [
+    'PUT',
+    /^\/equipes\/homologacao$/,
+    'usuarios',
+    async (req, env, m, url, quem) => {
+      const r = await gravarHomologacao(env, await lerJson(req), quem);
+      await registrar(env, quem, 'equipes.homologacao', r.ine + ' · ' + (r.homologada === null ? 'regra padrão' : r.homologada ? 'homologada' : 'não homologada'), req);
+      return json(r);
+    },
+  ],
 
   ['GET', /^\/chaves$/, 'usuarios', async (req, env) => json(await listarChaves(env))],
   ['POST', /^\/chaves$/, 'usuarios', async (req, env, m, url, quem) => json(await criarChave(req, env, quem), 201)],
